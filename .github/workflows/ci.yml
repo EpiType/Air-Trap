@@ -1,0 +1,250 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ '**' ]
+    branches-ignore: [ main ]
+  pull_request:
+
+env:
+  MIRROR_URL: ${{ secrets.MIRROR_URL }}
+  SSH_PRIVATE_KEY: ${{ secrets.MIRROR_SSH_KEY }}
+  DISCORD_WEBHOOK_MAINDEV: ${{ secrets.DISCORD_WEBHOOK_MAINDEV }}
+  DISCORD_WEBHOOK_OTHER: ${{ secrets.DISCORD_WEBHOOK_OTHER }}
+
+jobs:
+
+# ----------------------------------------------------------------------------------------------------------------------
+# |       MIRROR FOR NON-MAIN/DEV BRANCHES                                                                             |
+# ----------------------------------------------------------------------------------------------------------------------
+  direct-mirror:
+    if: github.event_name == 'push' && github.ref != 'refs/heads/main' && github.ref != 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      
+      - name: Setup SSH and Mirror repository
+        id: mirror
+        run: |
+          set -e
+          
+          # Configuration SSH
+          mkdir -p ~/.ssh
+          echo "${{ secrets.MIRROR_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+          
+          # Configuration Git
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git config --global url."git@github.com:".insteadOf "https://github.com/"
+          
+          # Mirroring
+          echo "📡 Démarrage du mirror..."
+          git remote add mirror "${{ env.MIRROR_URL }}"
+          git fetch --all --tags
+          
+          echo "🚀 Push vers le mirror..."
+          git push mirror --all --force
+          git push mirror --tags --force
+          
+          echo "✅ Mirror terminé avec succès"
+      
+      - name: Send Discord notification
+        if: always()
+        run: |
+          STATUS="${{ steps.mirror.outcome }}"
+          COMMIT="$(echo "${{ github.sha }}" | head -c 7)"
+          WEBHOOK="${{ env.DISCORD_WEBHOOK_OTHER }}"
+          COMMITTER="${{ github.event.head_commit.author.name }}"
+          MESSAGE="$(echo "${{ github.event.head_commit.message }}" | head -c 80)"
+          BRANCH_NAME="${{ github.ref_name }}"
+          
+          if [ "$STATUS" == "success" ]; then
+            STATUS_MSG="✅ Mirror OK"
+          else
+            STATUS_MSG="❌ Mirror failed"
+          fi
+          
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d "{\"content\": \"**[$STATUS_MSG]**\n🌿 Branch: \`$BRANCH_NAME\`\n📝 Commit: \`$COMMIT\` par **$COMMITTER**\n💬 Message: $MESSAGE\"}" \
+               "$WEBHOOK"
+
+# ----------------------------------------------------------------------------------------------------------------------
+# |       TEST + MIRROR FOR MAIN/DEV BRANCHES                                                                          |
+# ----------------------------------------------------------------------------------------------------------------------
+  build-test-and-mirror:
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.5'
+          channel: 'stable'
+
+      - name: Get dependencies
+        id: dependencies
+        run: |
+          echo "� Installation des dépendances Flutter..."
+          flutter pub get
+
+      - name: Analyze code
+        id: analyze
+        run: |
+          echo "🔍 Analyse du code Flutter..."
+          flutter analyze --no-fatal-infos
+
+      - name: Run tests
+        id: tests
+        run: |
+          echo "🧪 Exécution des tests Flutter..."
+          flutter test
+
+      - name: Build APK
+        id: build_apk
+        run: |
+          echo "🏗️ Construction de l'APK..."
+          flutter build apk --release
+
+      - name: Setup SSH and Mirror repository
+        id: mirror
+        if: success()
+        run: |
+          set -e
+          
+          # Configuration SSH
+          mkdir -p ~/.ssh
+          echo "${{ secrets.MIRROR_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+          
+          # Configuration Git
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git config --global url."git@github.com:".insteadOf "https://github.com/"
+          
+          # Mirroring
+          echo "📡 Démarrage du mirror après tests réussis..."
+          git remote add mirror "${{ env.MIRROR_URL }}"
+          git fetch --all --tags
+          
+          echo "🚀 Push vers le mirror..."
+          git push mirror --all --force
+          git push mirror --tags --force
+          
+          echo "✅ Mirror terminé avec succès"
+
+      - name: Deploy APK
+        id: deploy
+        if: success() && github.ref == 'refs/heads/main'
+        run: |
+          echo "📦 Déploiement de l'APK..."
+              
+          # Vérifier que l'APK existe
+          if [ ! -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
+            echo "❌ APK introuvable"
+            exit 1
+          fi
+              
+          # Afficher les infos de l'APK
+          ls -lh build/app/outputs/flutter-apk/app-release.apk
+              
+          # Renommer l'APK avec la version et le commit
+          VERSION="1.0.0"
+          COMMIT_SHORT="$(echo "${{ github.sha }}" | head -c 7)"
+          APK_NAME="dice-destiny-idle-rifts-v${VERSION}-${COMMIT_SHORT}.apk"
+          cp build/app/outputs/flutter-apk/app-release.apk "$APK_NAME"
+              
+          echo "✅ APK prêt: $APK_NAME"
+          echo "apk_path=$APK_NAME" >> $GITHUB_OUTPUT
+              
+      - name: Create GitHub Release
+        id: create_release
+        if: success() && github.ref == 'refs/heads/main' && steps.deploy.outcome == 'success'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v1.0.0-${{ github.run_number }}
+          name: Release v1.0.0-${{ github.run_number }}
+          body: |
+            ## 🎮 Dice Destiny: Idle Rifts - Release
+            
+            **Version:** 1.0.0
+            **Commit:** `${{ github.sha }}`
+            **Date:** ${{ github.event.head_commit.timestamp }}
+            
+            ### 📝 Changements
+            ${{ github.event.head_commit.message }}
+            
+            ### 📱 Installation
+            1. Téléchargez le fichier APK ci-dessous
+            2. Activez l'installation depuis des sources inconnues sur votre appareil Android
+            3. Installez l'APK
+            4. Lancez le jeu et profitez !
+            
+            ### 🎯 Commit complet
+            Auteur: ${{ github.event.head_commit.author.name }}
+            Message: ${{ github.event.head_commit.message }}
+          files: ${{ steps.deploy.outputs.apk_path }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Send Discord notification
+        if: always()
+        run: |
+          DEPENDENCIES_STATUS="${{ steps.dependencies.outcome }}"
+          ANALYZE_STATUS="${{ steps.analyze.outcome }}"
+          TESTS_STATUS="${{ steps.tests.outcome }}"
+          BUILD_STATUS="${{ steps.build_apk.outcome }}"
+          MIRROR_STATUS="${{ steps.mirror.outcome }}"
+          DEPLOY_STATUS="${{ steps.deploy.outcome }}"
+          BRANCH_NAME="${{ github.ref_name }}"
+          COMMIT="$(echo "${{ github.sha }}" | head -c 7)"
+          COMMITTER="${{ github.event.head_commit.author.name }}"
+          MESSAGE="$(echo "${{ github.event.head_commit.message }}" | head -c 80)"
+
+          ANALYZE_MSG=""
+          if [ "$ANALYZE_STATUS" = "failure" ]; then
+            ANALYZE_MSG=" (⚠️ Analyse avec warnings)"
+          fi
+
+          if [ "$DEPENDENCIES_STATUS" = "success" ] && ([ "$ANALYZE_STATUS" = "success" ] || [ "$ANALYZE_STATUS" = "failure" ]) && [ "$TESTS_STATUS" = "success" ] && [ "$BUILD_STATUS" = "success" ] && [ "$MIRROR_STATUS" = "success" ]; then
+            if [ "$BRANCH_NAME" = "main" ] && [ "$DEPLOY_STATUS" = "success" ]; then
+              STATUS_MSG="🚀 Tout OK: Flutter + Tests + Build + Mirror + Déploiement${ANALYZE_MSG}"
+            else
+              STATUS_MSG="✅ Tout OK: Flutter + Tests + Build + Mirror${ANALYZE_MSG}"
+            fi
+          elif [ "$DEPENDENCIES_STATUS" = "failure" ]; then
+            STATUS_MSG="❌ Installation des dépendances échouée"
+          elif [ "$ANALYZE_STATUS" = "failure" ]; then
+            STATUS_MSG="❌ Analyse du code échouée"
+          elif [ "$TESTS_STATUS" = "failure" ]; then
+            STATUS_MSG="❌ Tests Flutter échoués"
+          elif [ "$BUILD_STATUS" = "failure" ]; then
+            STATUS_MSG="❌ Build APK échoué"
+          elif [ "$MIRROR_STATUS" = "failure" ]; then
+            STATUS_MSG="❌ Tests OK mais Mirror échoué"
+          elif [ "$DEPLOY_STATUS" = "failure" ]; then
+            STATUS_MSG="❌ Tests OK mais Déploiement échoué"
+          elif [ "$MIRROR_STATUS" = "skipped" ]; then
+            STATUS_MSG="⚠️ Tests échoués, Mirror ignoré"
+          else
+            STATUS_MSG="❓ Statut inconnu"
+          fi
+
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d "{\"content\": \"**[$STATUS_MSG]**\n🌿 Branch: \`$BRANCH_NAME\`\n📝 Commit: \`$COMMIT\` par **$COMMITTER**\n💬 Message: $MESSAGE\"}" \
+               "${{ env.DISCORD_WEBHOOK_MAINDEV }}"
