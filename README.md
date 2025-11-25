@@ -1,6 +1,6 @@
 # Air-Trap - R-Type Clone
 
-Un moteur de jeu multi-joueur en réseau inspiré de R-Type, développé en C++17 avec une architecture ECS (Entity-Component-System).
+Un moteur de jeu multi-joueur en réseau inspiré de R-Type, développé en C++23 avec une architecture ECS (Entity-Component-System).
 
 ## 🏗️ Architecture
 
@@ -24,7 +24,7 @@ Un moteur de jeu multi-joueur en réseau inspiré de R-Type, développé en C++1
 
 ## 🔧 Technologies
 
-- **C++17** : Langage principal
+- **C++23** : Langage principal
 - **CMake** : Système de build
 - **Conan** : Gestionnaire de dépendances
 - **ASIO** : Communication réseau (UDP)
@@ -36,7 +36,7 @@ Un moteur de jeu multi-joueur en réseau inspiré de R-Type, développé en C++1
 ### Prérequis
 
 - CMake 3.20+
-- Compilateur C++17 (GCC 9+, Clang 10+, MSVC 2019+)
+- Compilateur C++23 (GCC 9+, Clang 10+, MSVC 2019+)
 - Python 3.11+ (pour Conan)
 - Conan 2.x
 
