@@ -1,0 +1,103 @@
+# Compiled object files, libraries, and executables
+*.o
+*.ko
+*.obj
+*.elf
+*.so
+*.dylib
+*.dll
+*.lib
+*.a
+*.la
+*.lo
+*.exe
+
+# Debug and release folders
+/build/
+/bin/
+/out/
+/dist/
+/Debug/
+/Release/
+/profile/
+/target/
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CTestTestfile.cmake
+Makefile
+install_manifest.txt
+
+# VS/Visual Studio
+.vs/
+*.vcxproj*
+*.sln
+*.suo
+*.user
+*.userosscache
+*.sdf
+*.opensdf
+
+# Xcode
+*.xcworkspace
+*.xcuserstate
+*.xcuserdata/
+*.xcodeproj/project.xcworkspace/
+
+# JetBrains IDEs (CLion, IntelliJ)
+.idea/
+*.iml
+cmake-build-*/
+
+# VS Code
+.vscode/
+
+# Build system and package managers
+node_modules/
+dist/
+pkg/
+build/
+target/
+
+# Conan
+conan/
+conaninfo.txt
+conanbuildinfo.*
+graph_info.json
+compile_commands.json
+
+# Dependency and binary caches
+*.stamp
+*.cache
+.vcpkg/
+vcpkg_installed/
+
+# Coverage and profiling
+coverage/
+*.gcda
+*.gcno
+*.gcov
+*.prof
+
+# Generated files
+tags
+TAGS
+cscope.files
+*.d
+
+# Logs, temp files, editor backups
+*.log
+*.tmp
+*.swp
+*~
+.project
+.metadata
+.DS_Store
+Thumbs.db
+
+# Certificates, keys, credentials
+*.pem
+*.key
+*.crt
