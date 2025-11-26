@@ -183,7 +183,7 @@ jobs:
     - name: Configure CMake
       run: |
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake
 
     - name: Build
       run: |
@@ -240,7 +240,7 @@ jobs:
     - name: Configure CMake
       run: |
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake
 
     - name: Build
       run: |
@@ -297,7 +297,7 @@ jobs:
     - name: Configure CMake
       run: |
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake
 
     - name: Build
       run: |
