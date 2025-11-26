@@ -1,0 +1,8 @@
+# Files to exclude when mirroring to external repository
+# This prevents CI/CD workflows from running on the mirror repo
+
+# GitHub Actions workflows
+.github/workflows/
+
+# CI/CD configuration
+.github/BRANCH_PROTECTION.md

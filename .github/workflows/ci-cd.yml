@@ -343,13 +343,19 @@ jobs:
         git config --global user.email "actions@github.com"
         git config --global url."git@github.com:".insteadOf "https://github.com/"
         
+        # Remove CI/CD workflows from mirror to avoid running tests there
+        echo "🗑️ Suppression des workflows CI/CD du mirror..."
+        rm -rf .github/workflows/
+        git add -A
+        git commit -m "[MIRROR] Remove CI/CD workflows from mirror" || echo "No changes to commit"
+        
         # Mirroring
         echo "📡 Démarrage du mirror..."
         git remote add mirror "${{ secrets.MIRROR_URL }}"
         git fetch --all --tags
         
         echo "🚀 Push vers le mirror..."
-        git push mirror --all --force
+        git push mirror HEAD:${GITHUB_REF#refs/heads/} --force
         git push mirror --tags --force
         
         echo "✅ Mirror terminé avec succès"
