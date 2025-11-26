@@ -4,7 +4,7 @@
 
 BasedOnStyle: Google
 Language: Cpp
-Standard: c++23
+Standard: Latest  # Use latest supported standard (c++23 on recent versions)
 
 # Indentation
 IndentWidth: 4
