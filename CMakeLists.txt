@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 project(AirTrap VERSION 1.0.0 LANGUAGES CXX)
 
 # C++ Standard
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -18,7 +18,7 @@ add_library(air-trap-common INTERFACE)
 target_include_directories(air-trap-common INTERFACE
     ${CMAKE_SOURCE_DIR}/common/include
 )
-target_compile_features(air-trap-common INTERFACE cxx_std_17)
+target_compile_features(air-trap-common INTERFACE cxx_std_23)
 
 # Server executable
 add_executable(r-type_server
