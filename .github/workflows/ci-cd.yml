@@ -2,15 +2,82 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches: [ '**' ]
   pull_request:
-    branches: [ main ]
+    branches: [ main ]  # Only PRs to main (dev → main)
+
+env:
+  MIRROR_URL: ${{ secrets.MIRROR_URL }}
+  MIRROR_SSH_KEY: ${{ secrets.MIRROR_SSH_KEY }}
+  DISCORD_WEBHOOK_MAINDEV: ${{ secrets.DISCORD_WEBHOOK_MAINDEV }}
+  DISCORD_WEBHOOK_OTHER: ${{ secrets.DISCORD_WEBHOOK_OTHER }}
 
 jobs:
-  # Job 1: Code Style Check
+  # Job 1: Commit Message Validation
+  commit-validation:
+    name: Validate Commit Messages
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Validate commit messages
+      run: |
+        # Custom commit pattern: [TYPE] description
+        # Types: ADD, FIX, CHORE, DOCS, STYLE, REFACTOR
+        PATTERN="^\[(ADD|FIX|CHORE|DOCS|STYLE|REFACTOR)\] .+"
+        
+        # Get commits from push
+        if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+          # New branch, check only the last commit
+          COMMITS=$(git log -1 --pretty=format:"%H")
+        else
+          COMMITS=$(git log ${{ github.event.before }}..${{ github.sha }} --pretty=format:"%H")
+        fi
+        
+        echo "🔍 Validation des messages de commit..."
+        INVALID=0
+        
+        for commit in $COMMITS; do
+          MSG=$(git log -1 --pretty=format:"%s" $commit)
+          
+          # Ignorer les commits de merge
+          if echo "$MSG" | grep -qE "^Merge "; then
+            echo "⏭️  SKIP (merge): $MSG"
+            continue
+          fi
+          
+          echo "Checking: $MSG"
+          
+          if ! echo "$MSG" | grep -qE "$PATTERN"; then
+            echo "❌ INVALID: $MSG"
+            echo ""
+            echo "Le message doit suivre le format: [TYPE] description"
+            echo "Types valides: [ADD], [FIX], [CHORE], [DOCS], [STYLE], [REFACTOR]"
+            echo "Exemple: [ADD] player connection handler to server"
+            INVALID=1
+          else
+            echo "✅ VALID"
+          fi
+          echo ""
+        done
+        
+        if [ $INVALID -eq 1 ]; then
+          exit 1
+        fi
+        
+        echo "✅ Tous les commits sont valides!"
+
+  # Job 2: Code Style Check
   style-check:
     name: Code Style Check (clang-format & clang-tidy)
     runs-on: ubuntu-latest
+    needs: commit-validation
+    if: always() && (needs.commit-validation.result == 'success' || needs.commit-validation.result == 'skipped')
     
     steps:
     - name: Checkout code
@@ -23,18 +90,41 @@ jobs:
 
     - name: Check code formatting
       run: |
-        find . -name "*.cpp" -o -name "*.hpp" | xargs clang-format --dry-run --Werror
+        echo "🎨 Vérification du formatage du code..."
+        FILES=$(find client server common -name "*.cpp" -o -name "*.hpp" 2>/dev/null || echo "")
+        
+        if [ -z "$FILES" ]; then
+          echo "⚠️ Aucun fichier C++ trouvé, skip"
+          exit 0
+        fi
+        
+        echo "$FILES" | xargs clang-format --dry-run --Werror
 
     - name: Run clang-tidy
       run: |
-        # Requires compile_commands.json - will be generated in build job
-        echo "clang-tidy check (requires compilation database)"
+        echo "🔍 Analyse statique avec clang-tidy..."
+        
+        # Check if compile_commands.json exists
+        if [ ! -f "build/compile_commands.json" ]; then
+          echo "⚠️ compile_commands.json non trouvé, clang-tidy sera exécuté lors du build"
+          exit 0
+        fi
+        
+        FILES=$(find client server common -name "*.cpp" 2>/dev/null || echo "")
+        
+        if [ -z "$FILES" ]; then
+          echo "⚠️ Aucun fichier C++ trouvé"
+          exit 0
+        fi
+        
+        echo "$FILES" | xargs clang-tidy -p build
 
-  # Job 2: Build on Linux
+  # Job 3: Build on Linux
   build-linux:
     name: Build on Linux
     runs-on: ubuntu-latest
     needs: style-check
+    # Always run - Linux is the primary dev platform
     
     steps:
     - name: Checkout code
@@ -87,11 +177,13 @@ jobs:
           build/r-type_server
           build/r-type_client
 
-  # Job 3: Build on Windows
+  # Job 4: Build on Windows
   build-windows:
     name: Build on Windows
     runs-on: windows-latest
     needs: style-check
+    # Only on PRs to main (dev → main validation)
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
     
     steps:
     - name: Checkout code
@@ -139,11 +231,13 @@ jobs:
           build/Release/r-type_server.exe
           build/Release/r-type_client.exe
 
-  # Job 4: Build on macOS
+  # Job 5: Build on macOS
   build-macos:
     name: Build on macOS
     runs-on: macos-latest
     needs: style-check
+    # Only on PRs to main (dev → main validation)
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
     
     steps:
     - name: Checkout code
@@ -191,7 +285,7 @@ jobs:
           build/r-type_server
           build/r-type_client
 
-  # Job 5: Unit Tests (Optional - requires test implementation)
+  # Job 6: Unit Tests (Optional - requires test implementation)
   tests:
     name: Run Unit Tests
     runs-on: ubuntu-latest
@@ -211,3 +305,106 @@ jobs:
       run: |
         # Execute test binaries
         ./r-type_tests
+
+  # Job 7: Mirror Repository
+  mirror:
+    name: Mirror to External Repository
+    runs-on: ubuntu-latest
+    needs: [commit-validation, style-check, build-linux]
+    # Mirror all branches after successful Linux build
+    if: github.event_name == 'push' && success()
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        fetch-tags: true
+    
+    - name: Setup SSH and Mirror repository
+      id: mirror
+      run: |
+        set -e
+        
+        # Configuration SSH
+        mkdir -p ~/.ssh
+        echo "${{ secrets.MIRROR_SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+        
+        # Configuration Git
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+        git config --global url."git@github.com:".insteadOf "https://github.com/"
+        
+        # Mirroring
+        echo "📡 Démarrage du mirror..."
+        git remote add mirror "${{ secrets.MIRROR_URL }}"
+        git fetch --all --tags
+        
+        echo "🚀 Push vers le mirror..."
+        git push mirror --all --force
+        git push mirror --tags --force
+        
+        echo "✅ Mirror terminé avec succès"
+
+  # Job 8: Notification Discord
+  notify:
+    name: Send Discord Notification
+    runs-on: ubuntu-latest
+    needs: [commit-validation, style-check, build-linux, build-windows, build-macos, mirror]
+    if: always() && github.event_name == 'push'
+    
+    steps:
+    - name: Send Discord notification
+      run: |
+        COMMIT_STATUS="${{ needs.commit-validation.result }}"
+        STYLE_STATUS="${{ needs.style-check.result }}"
+        LINUX_STATUS="${{ needs.build-linux.result }}"
+        WINDOWS_STATUS="${{ needs.build-windows.result }}"
+        MACOS_STATUS="${{ needs.build-macos.result }}"
+        MIRROR_STATUS="${{ needs.mirror.result }}"
+        
+        BRANCH_NAME="${{ github.ref_name }}"
+        COMMIT="$(echo "${{ github.sha }}" | head -c 7)"
+        COMMITTER="${{ github.event.head_commit.author.name }}"
+        MESSAGE="$(echo "${{ github.event.head_commit.message }}" | head -c 80)"
+        
+        # Déterminer le webhook selon la branche
+        if [ "$BRANCH_NAME" = "main" ] || [ "$BRANCH_NAME" = "dev" ]; then
+          WEBHOOK="${{ secrets.DISCORD_WEBHOOK_MAINDEV }}"
+        else
+          WEBHOOK="${{ secrets.DISCORD_WEBHOOK_OTHER }}"
+        fi
+        
+        # Construire le message de statut
+        if [ "$COMMIT_STATUS" = "failure" ]; then
+          STATUS_MSG="❌ Commits invalides"
+        elif [ "$STYLE_STATUS" = "failure" ]; then
+          STATUS_MSG="❌ Style check échoué"
+        elif [ "$LINUX_STATUS" = "failure" ]; then
+          STATUS_MSG="❌ Build Linux échoué"
+        elif [ "$WINDOWS_STATUS" = "failure" ] || [ "$MACOS_STATUS" = "failure" ]; then
+          STATUS_MSG="❌ Build multi-plateforme échoué"
+        elif [ "$MIRROR_STATUS" = "failure" ]; then
+          STATUS_MSG="⚠️ Build OK mais Mirror échoué"
+        elif [ "$MIRROR_STATUS" = "success" ]; then
+          STATUS_MSG="✅ Build + Mirror OK"
+        else
+          STATUS_MSG="✅ Build OK"
+        fi
+        
+        # Ajouter les détails des builds
+        BUILD_DETAILS=""
+        if [ "$LINUX_STATUS" = "success" ]; then BUILD_DETAILS="${BUILD_DETAILS}🐧"; fi
+        if [ "$WINDOWS_STATUS" = "success" ]; then BUILD_DETAILS="${BUILD_DETAILS}🪟"; fi
+        if [ "$MACOS_STATUS" = "success" ]; then BUILD_DETAILS="${BUILD_DETAILS}🍎"; fi
+        
+        if [ -n "$BUILD_DETAILS" ]; then
+          STATUS_MSG="$STATUS_MSG $BUILD_DETAILS"
+        fi
+        
+        curl -H "Content-Type: application/json" \
+             -X POST \
+             -d "{\"content\": \"**[$STATUS_MSG]**\n🌿 Branch: \\\`$BRANCH_NAME\\\`\n📝 Commit: \\\`$COMMIT\\\` par **$COMMITTER**\n💬 Message: $MESSAGE\"}" \
+             "$WEBHOOK"
