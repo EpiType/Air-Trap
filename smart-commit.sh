@@ -76,7 +76,7 @@ echo ""
 
 # Demander confirmation
 read -p "🚀 Créer des commits groupés ? (o/n): " confirm
-if [ "$confirm" != "o" ] && [ "$confirm" != "O" ]; then
+if [ -n "$confirm" ] && [ "$confirm" != "o" ] && [ "$confirm" != "O" ]; then
     echo "❌ Annulé"
     exit 0
 fi
@@ -200,7 +200,7 @@ echo ""
 # Demander si on push
 read -p "🚀 Push maintenant ? (o/n): " push_confirm
 
-if [ "$push_confirm" = "o" ] || [ "$push_confirm" = "O" ]; then
+if [ -n "$confirm" ] && [ "$confirm" != "o" ] && [ "$confirm" != "O" ]; then
     BRANCH=$(git branch --show-current)
     echo "📤 Push vers origin/$BRANCH..."
     git push origin "$BRANCH"
