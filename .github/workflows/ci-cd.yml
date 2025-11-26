@@ -344,8 +344,8 @@ jobs:
   mirror:
     name: Mirror to External Repository
     runs-on: ubuntu-latest
-    needs: [commit-validation, style-check, build-linux]
-    # Mirror all branches after successful Linux build, only from main repository
+    needs: [commit-validation, style-check]
+    # Mirror all branches after successful validation, only from main repository
     if: |
       github.repository == 'EpiType/Air-Trap' &&
       github.event_name == 'push' && 
@@ -390,11 +390,10 @@ jobs:
     name: Send Discord Notification
     runs-on: ubuntu-latest
     needs: [commit-validation, style-check, build-linux, build-windows, build-macos, mirror]
-    # Only notify from main repository
+    # Always notify from main repository (push and PR)
     if: |
       github.repository == 'EpiType/Air-Trap' &&
-      always() && 
-      github.event_name == 'push'
+      always()
     
     steps:
     - name: Send Discord notification
