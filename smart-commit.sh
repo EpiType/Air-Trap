@@ -103,40 +103,70 @@ for type in DOCS CHORE STYLE FIX ADD REFACTOR; do
     
     echo "📝 Groupe [$type]:"
     
-    # Générer une description automatique basée sur les fichiers
+    # Générer une description automatique basée sur les fichiers et leurs changements
     AUTO_DESC=""
     FILE_COUNT=$(echo $files | wc -w)
+    CHANGES_DESC=""
     
     # Afficher les fichiers avec leurs changements
     for f in $files; do
         # Vérifier si le fichier est nouveau
-        if git diff --cached --name-only | grep -q "^$f$"; then
+        if git diff --cached --name-only 2>/dev/null | grep -q "^$f$"; then
             CHANGES=$(git diff --cached --numstat "$f" 2>/dev/null || echo "")
+            DIFF_CONTENT=$(git diff --cached "$f" 2>/dev/null || echo "")
         else
             CHANGES=$(git diff --numstat "$f" 2>/dev/null || echo "")
+            DIFF_CONTENT=$(git diff "$f" 2>/dev/null || echo "")
         fi
         
         if [ -n "$CHANGES" ]; then
             ADDED=$(echo "$CHANGES" | awk '{print $1}')
             REMOVED=$(echo "$CHANGES" | awk '{print $2}')
             echo "   - $f (+$ADDED -$REMOVED)"
+            
+            # Analyser le contenu du diff pour extraire les changements importants
+            FILENAME=$(basename "$f")
+            CHANGE_SUMMARY=""
+            
+            # Détecter les patterns dans le diff
+            if echo "$DIFF_CONTENT" | grep -q "^\+.*function\|^\+.*def \|^\+.*class "; then
+                CHANGE_SUMMARY="add new functions/classes"
+            elif echo "$DIFF_CONTENT" | grep -q "^\+.*fix\|^\+.*bug"; then
+                CHANGE_SUMMARY="fix bugs"
+            elif echo "$DIFF_CONTENT" | grep -q "^\+.*TODO\|^\+.*FIXME"; then
+                CHANGE_SUMMARY="add TODOs"
+            elif echo "$DIFF_CONTENT" | grep -q "^\+.*comment\|^\+.*#\|^\+.*//"; then
+                CHANGE_SUMMARY="improve comments"
+            elif echo "$DIFF_CONTENT" | grep -q "^\+.*echo\|^\+.*print\|^\+.*STATUS_MSG"; then
+                CHANGE_SUMMARY="update messages"
+            elif echo "$DIFF_CONTENT" | grep -q "^\+.*if\|^\+.*for\|^\+.*while"; then
+                CHANGE_SUMMARY="refactor logic"
+            elif [ "$ADDED" -gt 50 ]; then
+                CHANGE_SUMMARY="add new implementation"
+            elif [ "$REMOVED" -gt 20 ]; then
+                CHANGE_SUMMARY="remove old code"
+            else
+                CHANGE_SUMMARY="update implementation"
+            fi
+            
+            if [ -z "$CHANGES_DESC" ]; then
+                CHANGES_DESC="$FILENAME: $CHANGE_SUMMARY"
+            else
+                CHANGES_DESC="$CHANGES_DESC, $FILENAME: $CHANGE_SUMMARY"
+            fi
         else
             echo "   - $f (nouveau)"
+            FILENAME=$(basename "$f")
+            CHANGES_DESC="$CHANGES_DESC, add $FILENAME"
         fi
     done
     
-    # Suggérer une description automatique
+    # Suggérer une description automatique intelligente
     if [ $FILE_COUNT -eq 1 ]; then
-        SINGLE_FILE=$(echo $files | xargs basename)
-        AUTO_DESC="update $SINGLE_FILE"
+        AUTO_DESC="$CHANGES_DESC"
     else
-        # Extraire les noms de dossiers/patterns communs
-        COMMON_DIR=$(echo $files | tr ' ' '\n' | xargs -n1 dirname | sort | uniq -c | sort -rn | head -1 | awk '{print $2}')
-        if [ "$COMMON_DIR" = "." ]; then
-            AUTO_DESC="update $FILE_COUNT files"
-        else
-            AUTO_DESC="update $(basename $COMMON_DIR) ($FILE_COUNT files)"
-        fi
+        # Résumer les changements multiples
+        AUTO_DESC="$CHANGES_DESC"
     fi
     
     echo ""
