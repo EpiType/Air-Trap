@@ -389,8 +389,8 @@ jobs:
   notify:
     name: Send Discord Notification
     runs-on: ubuntu-latest
-    needs: [commit-validation, style-check, build-linux, build-windows, build-macos, mirror]
-    # Always notify from main repository (push and PR)
+    needs: [commit-validation]
+    # Always notify from main repository (push and PR), même en cas d'échec
     if: |
       github.repository == 'EpiType/Air-Trap' &&
       always()
@@ -399,16 +399,18 @@ jobs:
     - name: Send Discord notification
       run: |
         COMMIT_STATUS="${{ needs.commit-validation.result }}"
-        STYLE_STATUS="${{ needs.style-check.result }}"
-        LINUX_STATUS="${{ needs.build-linux.result }}"
-        WINDOWS_STATUS="${{ needs.build-windows.result }}"
-        MACOS_STATUS="${{ needs.build-macos.result }}"
-        MIRROR_STATUS="${{ needs.mirror.result }}"
         
         BRANCH_NAME="${{ github.ref_name }}"
         COMMIT="$(echo "${{ github.sha }}" | head -c 7)"
-        COMMITTER="${{ github.event.head_commit.author.name }}"
-        MESSAGE="$(echo "${{ github.event.head_commit.message }}" | head -c 80)"
+        
+        # Gérer push vs PR
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          COMMITTER="${{ github.event.pull_request.user.login }}"
+          MESSAGE="$(echo "${{ github.event.pull_request.title }}" | head -c 80)"
+        else
+          COMMITTER="${{ github.event.head_commit.author.name }}"
+          MESSAGE="$(echo "${{ github.event.head_commit.message }}" | head -c 80)"
+        fi
         
         # Déterminer le webhook selon la branche
         if [ "$BRANCH_NAME" = "main" ] || [ "$BRANCH_NAME" = "dev" ]; then
@@ -422,29 +424,32 @@ jobs:
           STATUS_MSG="❌ Commits invalides"
         elif [ "$STYLE_STATUS" = "failure" ]; then
           STATUS_MSG="❌ Style check échoué"
-        elif [ "$LINUX_STATUS" = "failure" ]; then
-          STATUS_MSG="❌ Build Linux échoué"
-        elif [ "$WINDOWS_STATUS" = "failure" ] || [ "$MACOS_STATUS" = "failure" ]; then
-          STATUS_MSG="❌ Build multi-plateforme échoué"
-        elif [ "$MIRROR_STATUS" = "failure" ]; then
-          STATUS_MSG="⚠️ Build OK mais Mirror échoué"
-        elif [ "$MIRROR_STATUS" = "success" ]; then
-          STATUS_MSG="✅ Build + Mirror OK"
+        elif [ "$COMMIT_STATUS" = "cancelled" ] || [ "$STYLE_STATUS" = "cancelled" ]; then
+          STATUS_MSG="⚠️ CI/CD annulée"
+        elif [ "$STYLE_STATUS" = "success" ] && [ "$COMMIT_STATUS" = "success" ]; then
+          STATUS_MSG="✅ Validation OK"
+        elif [ "$STYLE_STATUS" = "success" ] || [ "$COMMIT_STATUS" = "success" ]; then
+          STATUS_MSG="✅ Checks partiels OK"
+        elif [ "$STYLE_STATUS" = "skipped" ] && [ "$COMMIT_STATUS" = "skipped" ]; then
+          STATUS_MSG="⏭️ CI/CD skippée"
         else
-          STATUS_MSG="✅ Build OK"
+          STATUS_MSG="⚠️ Statut inconnu"
         fi
         
-        # Ajouter les détails des builds
-        BUILD_DETAILS=""
-        if [ "$LINUX_STATUS" = "success" ]; then BUILD_DETAILS="${BUILD_DETAILS}🐧"; fi
-        if [ "$WINDOWS_STATUS" = "success" ]; then BUILD_DETAILS="${BUILD_DETAILS}🪟"; fi
-        if [ "$MACOS_STATUS" = "success" ]; then BUILD_DETAILS="${BUILD_DETAILS}🍎"; fi
+        # Ajouter le type d'événement
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          STATUS_MSG="$STATUS_MSG 🔀 PR"
+        else
+          STATUS_MSG="$STATUS_MSG 📤 Push"
+        fi
         
-        if [ -n "$BUILD_DETAILS" ]; then
-          STATUS_MSG="$STATUS_MSG $BUILD_DETAILS"
+        # Vérifier que le webhook est configuré
+        if [ -z "$WEBHOOK" ]; then
+          echo "⚠️ Webhook Discord non configuré pour la branche $BRANCH_NAME"
+          exit 0
         fi
         
         curl -H "Content-Type: application/json" \
              -X POST \
              -d "{\"content\": \"**[$STATUS_MSG]**\n🌿 Branch: \\\`$BRANCH_NAME\\\`\n📝 Commit: \\\`$COMMIT\\\` par **$COMMITTER**\n💬 Message: $MESSAGE\"}" \
-             "$WEBHOOK"
+             "$WEBHOOK" || echo "❌ Échec envoi Discord"
