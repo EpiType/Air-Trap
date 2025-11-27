@@ -413,8 +413,8 @@ Les tests sont décommentés progressivement au fur et à mesure de l'implément
 
 ## 📄 Documentation
 
-- [Sujet du projet (PDF)](./B-CPP-500_rtype.pdf)
-- [Annexes (PDF)](./B-CPP-500_rtype_apendix.pdf)
+- [Sujet du projet (PDF)](./docs/subject/B-CPP-500_rtype.pdf)
+- [Annexes (PDF)](./docs/subject/B-CPP-500_rtype_apendix.pdf)
 - [Protection des branches](./.github/BRANCH_PROTECTION.md)
 
 ## 🤝 Contribution
