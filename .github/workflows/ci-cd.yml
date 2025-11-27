@@ -42,11 +42,25 @@ jobs:
             - 'scripts/**'
     - name: Debug outputs
       run: |
+        echo "=== Paths Filter Outputs ==="
         echo "src=${{ steps.filter.outputs.src }}"
         echo "docs=${{ steps.filter.outputs.docs }}"
         echo "ci=${{ steps.filter.outputs.ci }}"
-        echo "Changed files in this push:"
+        echo ""
+        echo "=== Changed files in this push ==="
         git diff --name-only ${{ github.event.before }} ${{ github.sha }} || echo "No previous commit"
+        echo ""
+        echo "=== Manual pattern matching ==="
+        for file in $(git diff --name-only ${{ github.event.before }} ${{ github.sha }}); do
+          echo "File: $file"
+          [[ "$file" =~ ^(client|server|common)/ ]] && echo "  ✓ Matches src (code)"
+          [[ "$file" =~ ^CMakeLists\.txt$ ]] && echo "  ✓ Matches src (CMakeLists)"
+          [[ "$file" =~ ^conanfile\.txt$ ]] && echo "  ✓ Matches src (conanfile)"
+          [[ "$file" =~ \.md$ ]] && echo "  ✓ Matches docs (*.md)"
+          [[ "$file" =~ ^docs/ ]] && echo "  ✓ Matches docs (docs/)"
+          [[ "$file" =~ ^\.github/ ]] && echo "  ✓ Matches ci (.github/)"
+          [[ "$file" =~ ^scripts/ ]] && echo "  ✓ Matches ci (scripts/)"
+        done
 
   # Job 1: Commit Message Validation
   commit-validation:
