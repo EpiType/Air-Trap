@@ -455,6 +455,11 @@ jobs:
       always()
     
     steps:
+    - name: Checkout for commit list
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
     - name: Send Discord notification
       run: |
         # Récupérer TOUS les statuts (avec fallback sur 'skipped')
@@ -466,18 +471,26 @@ jobs:
         MIRROR_STATUS="${{ needs.mirror.result || 'skipped' }}"
         
         BRANCH_NAME="${{ github.ref_name }}"
-        COMMIT="$(echo "${{ github.sha }}" | head -c 7)"
         REPO_URL="https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
         
         # Gérer push vs PR
         if [ "${{ github.event_name }}" = "pull_request" ]; then
           COMMITTER="${{ github.event.pull_request.user.login }}"
-          MESSAGE="$(echo "${{ github.event.pull_request.title }}" | head -c 100)"
+          MESSAGE="${{ github.event.pull_request.title }}"
           PR_URL="${{ github.event.pull_request.html_url }}"
+          COMMIT_LIST="PR: $MESSAGE"
         else
           COMMITTER="${{ github.event.head_commit.author.name }}"
-          MESSAGE="$(echo "${{ github.event.head_commit.message }}" | head -c 100)"
+          # Récupérer tous les commits du push
+          if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+            # Nouvelle branche, afficher seulement le dernier commit
+            COMMIT_LIST=$(git log -1 --pretty=format:'%h %s')
+          else
+            # Liste tous les commits du push
+            COMMIT_LIST=$(git log --pretty=format:'%h %s' ${{ github.event.before }}..${{ github.sha }})
+          fi
           PR_URL=""
+        fi
         fi
         
         # Déterminer le webhook selon la branche
@@ -577,8 +590,19 @@ jobs:
         
         # Construire et envoyer le payload Discord
         REPORT_ESCAPED=$(echo "$REPORT" | sed 's/"/\\"/g' | tr '\n' ' ')
+        COMMIT_LIST_ESCAPED=$(echo "$COMMIT_LIST" | sed 's/"/\\"/g')
         
-        JSON_PAYLOAD="{\"embeds\":[{\"title\":\"$STATUS_MSG\",\"color\":$COLOR,\"description\":\"$REPORT_ESCAPED\",\"fields\":[{\"name\":\"📦 Repository\",\"value\":\"${{ github.repository }}\",\"inline\":true},{\"name\":\"🌿 Branch\",\"value\":\"$BRANCH_NAME\",\"inline\":true},{\"name\":\"👤 Author\",\"value\":\"$COMMITTER\",\"inline\":true},{\"name\":\"📝 Commit\",\"value\":\"$COMMIT\",\"inline\":true},{\"name\":\"🔔 Event\",\"value\":\"$EVENT_TYPE\",\"inline\":true},{\"name\":\"💬 Message\",\"value\":\"$MESSAGE\",\"inline\":false}],\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}]}"
+        # Limiter à 10 commits max pour Discord
+        COMMIT_COUNT=$(echo "$COMMIT_LIST" | wc -l)
+        if [ $COMMIT_COUNT -gt 10 ]; then
+          COMMIT_LIST_DISPLAY=$(echo "$COMMIT_LIST" | head -10)
+          COMMIT_LIST_DISPLAY="$COMMIT_LIST_DISPLAY\\n... and $((COMMIT_COUNT - 10)) more commits"
+        else
+          COMMIT_LIST_DISPLAY="$COMMIT_LIST"
+        fi
+        COMMIT_LIST_ESCAPED=$(echo "$COMMIT_LIST_DISPLAY" | sed 's/"/\\"/g')
+        
+        JSON_PAYLOAD="{\"embeds\":[{\"title\":\"$STATUS_MSG\",\"color\":$COLOR,\"description\":\"$REPORT_ESCAPED\",\"fields\":[{\"name\":\"📦 Repository\",\"value\":\"${{ github.repository }}\",\"inline\":true},{\"name\":\"🌿 Branch\",\"value\":\"$BRANCH_NAME\",\"inline\":true},{\"name\":\"👤 Author\",\"value\":\"$COMMITTER\",\"inline\":true},{\"name\":\"📝 Commits ($COMMIT_COUNT)\",\"value\":\"$COMMIT_LIST_ESCAPED\",\"inline\":false},{\"name\":\"🔔 Event\",\"value\":\"$EVENT_TYPE\",\"inline\":true},{\"name\":\"🔗 Link\",\"value\":\"$LINK\",\"inline\":true}],\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}]}"
         
         curl -H "Content-Type: application/json" -X POST -d "$JSON_PAYLOAD" "$WEBHOOK"
         
