@@ -426,7 +426,7 @@ Les tests sont décommentés progressivement au fur et à mesure de l'implément
 5. Créer une PR de `dev` vers `main` pour la validation finale
 
 **Outils recommandés** :
-- Utilisez `./scripts/smart-commit.sh` pour des commits propres
+- Utilisez `./scripts/smart-commit.sh` pour des commits propres et formatés
 - Exécutez `./scripts/format.sh` avant de push
 - Vérifiez avec `./scripts/lint.sh` pour éviter les erreurs de CI
 - Lancez `ctest` pour valider vos changements
@@ -434,21 +434,3 @@ Les tests sont décommentés progressivement au fur et à mesure de l'implément
 ## 📄 Licence
 
 Ce projet est développé dans un contexte éducatif (Epitech B-CPP-500).
-
-## 🎯 Roadmap
-
-- [x] Architecture ECS de base
-- [x] Protocole réseau UDP
-- [x] CI/CD complet avec multi-plateforme
-- [x] Outils de développement (format, lint, smart-commit)
-- [x] Git hooks et validation automatique
-- [x] Structure de tests unitaires (GTest)
-- [x] Organisation professionnelle (scripts/, config/, tests/)
-- [ ] Implémentation du gameplay R-Type
-- [ ] Tests unitaires et couverture de code
-- [ ] Système de collision avancé
-- [ ] Audio et effets visuels
-- [ ] Menu et interface utilisateur
-- [ ] Déploiement serveur automatique
-
-
