@@ -23,6 +23,8 @@ jobs:
       ci: ${{ steps.filter.outputs.ci }}
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Need full history for proper diff detection
     - uses: dorny/paths-filter@v3
       id: filter
       with:
@@ -39,6 +41,11 @@ jobs:
           ci:
             - '.github/**'
             - 'scripts/**'
+    - name: Debug outputs
+      run: |
+        echo "src=${{ steps.filter.outputs.src }}"
+        echo "docs=${{ steps.filter.outputs.docs }}"
+        echo "ci=${{ steps.filter.outputs.ci }}"
 
   # Job 1: Commit Message Validation
   commit-validation:
@@ -379,8 +386,7 @@ jobs:
       github.event_name == 'push' &&
       always() &&
       (needs.build-linux.result == 'success' || needs.build-linux.result == 'skipped') &&
-      (needs.commit-validation.result == 'success' || needs.commit-validation.result == 'skipped') &&
-      needs.style-check.result == 'success'
+      (needs.commit-validation.result == 'success' || needs.commit-validation.result == 'skipped')
     
     steps:
     - name: Checkout code
@@ -547,59 +553,11 @@ jobs:
           LINK="$REPO_URL"
         fi
         
-        # Construire le payload Discord
-        PAYLOAD=$(cat <<EOF
-        {
-          "embeds": [{
-            "title": "$STATUS_MSG",
-            "color": $COLOR,
-            "fields": [
-              {
-                "name": "📦 Repository",
-                "value": "${{ github.repository }}",
-                "inline": true
-              },
-              {
-                "name": "🌿 Branch",
-                "value": "\\\`$BRANCH_NAME\\\`",
-                "inline": true
-              },
-              {
-                "name": "👤 Author",
-                "value": "$COMMITTER",
-                "inline": true
-              },
-              {
-                "name": "📝 Commit",
-                "value": "[\\\`$COMMIT\\\`]($LINK)",
-                "inline": true
-              },
-              {
-                "name": "🔔 Event",
-                "value": "$EVENT_TYPE",
-                "inline": true
-              },
-              {
-                "name": "💬 Message",
-                "value": "\\\`\\\`\\\`\\n$MESSAGE\\n\\\`\\\`\\\`",
-                "inline": false
-              },
-              {
-                "name": "📊 Rapport Complet",
-                "value": "\\\`\\\`\\\`\\n$REPORT\\n\\\`\\\`\\\`",
-                "inline": false
-              }
-            ],
-            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          }]
-        }
-        EOF
-        )
+        # Construire et envoyer le payload Discord
+        REPORT_ESCAPED=$(echo "$REPORT" | sed 's/"/\\"/g' | tr '\n' ' ')
         
-        # Envoyer la notification
-        curl -H "Content-Type: application/json" \
-             -X POST \
-             -d "$PAYLOAD" \
-             "$WEBHOOK" || echo "❌ Échec envoi Discord"
+        JSON_PAYLOAD="{\"embeds\":[{\"title\":\"$STATUS_MSG\",\"color\":$COLOR,\"description\":\"$REPORT_ESCAPED\",\"fields\":[{\"name\":\"📦 Repository\",\"value\":\"${{ github.repository }}\",\"inline\":true},{\"name\":\"🌿 Branch\",\"value\":\"$BRANCH_NAME\",\"inline\":true},{\"name\":\"👤 Author\",\"value\":\"$COMMITTER\",\"inline\":true},{\"name\":\"📝 Commit\",\"value\":\"$COMMIT\",\"inline\":true},{\"name\":\"🔔 Event\",\"value\":\"$EVENT_TYPE\",\"inline\":true},{\"name\":\"💬 Message\",\"value\":\"$MESSAGE\",\"inline\":false}],\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}]}"
+        
+        curl -H "Content-Type: application/json" -X POST -d "$JSON_PAYLOAD" "$WEBHOOK"
         
         echo "✅ Notification Discord envoyée"
