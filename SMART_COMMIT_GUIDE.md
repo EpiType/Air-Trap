@@ -139,37 +139,81 @@ Le script classe automatiquement les fichiers dans 6 catégories :
 
 ## 🧠 Analyse Intelligente
 
-Le script analyse le contenu des diffs pour générer des descriptions précises :
+Le script analyse le contenu des diffs et **cumule tous les patterns détectés** pour générer des descriptions complètes :
 
-### Patterns Détectés
+### Patterns Détectés (cumulatifs)
 
-| Pattern dans le Diff | Description Générée |
+| Pattern dans le Diff | Description Ajoutée |
 |---------------------|---------------------|
-| `function`, `def`, `class` | `add new functions/classes` |
-| `fix`, `bug` | `fix bugs` |
-| `TODO`, `FIXME` | `add TODOs` |
-| `comment`, `#`, `//` | `improve comments` |
-| `echo`, `print`, `STATUS_MSG` | `update messages` |
-| `if`, `for`, `while` | `refactor logic` |
-| +50 lignes | `add new implementation` |
-| -20 lignes | `remove old code` |
-| Autres | `update implementation` |
+| `class ClassName` | `implement new class` |
+| `struct StructName` | `add new struct` |
+| `enum EnumName` | `define new enum` |
+| Nouvelles fonctions `name()` | `implement functions` |
+| Constructor/Destructor | `add constructor/destructor` |
+| `fix `, `bug ` (avec espace) | `fix bug` |
+| `error`, `crash`, `segfault` | `fix error/crash` |
+| `issue #123` | `fix issue` |
+| `test()`, `TEST`, `ASSERT`, `EXPECT` | `add tests` |
+| `template<>` | `implement template` |
+| `std::make_unique`, smart ptrs | `use smart pointers` |
+| `std::vector`, `std::map` | `use STL containers` |
+| `std::thread`, `std::mutex` | `add multithreading` |
+| `asio::`, `boost::asio` | `add network code` |
+| `sf::`, `SFML` | `add SFML code` |
+| `#include` | `update includes` |
+| `namespace Name` | `define namespace` |
+| `using namespace` | `import namespace` |
+| `throw`, `try`, `catch()` | `handle exceptions` |
+| `/** @brief */` | `add documentation` |
+| `TODO:`, `FIXME:`, `HACK:` | `add markers` |
+| `std::cout`, `printf`, `LOG` | `add logging` |
+| `constexpr`, `const ... =` | `add constants` |
+| `virtual`, `override`, `noexcept` | `update method signatures` |
+| `public:`, `private:`, `protected:` | `change access modifiers` |
+| `if`, `for`, `while`, `switch` | `add control flow` |
+| Suppression class/struct | `remove types` |
+| Suppression fonctions | `remove functions` |
+
+**Si aucun pattern spécifique** : Analyse basée sur les lignes (+/-) :
+- +150 lignes → `add major implementation`
+- -100 lignes → `cleanup old code`
+- +30/-30 lignes → `refactor code structure`
+- +10/-10 lignes → `update implementation`
+- Plus d'ajouts → `extend functionality`
+- Défaut → `modify code`
+
+**Cumul des changements** : Si plusieurs patterns sont détectés, ils sont combinés avec " + " :
+```
+Player.cpp: implement new class + add tests + add documentation
+Game.cpp: fix bug + add logging + handle exceptions
+Network.cpp: use smart pointers + use STL containers + add multithreading
+```
 
 ### Exemple d'Analyse
 
-**Fichier** : `smart-commit.sh`
+**Fichier** : `Player.cpp`
 
 **Diff** :
 ```diff
-+    if [ -n "$VSCODE_IPC_HOOK_CLI" ]; then
-+        echo "   🤖 Génération avec Copilot..."
-+    fi
++class Player {
++public:
++    Player() = default;
++    void move(float x, float y);
++    
++    // Test methods
++    void testMovement();
++private:
++    sf::Sprite sprite;
++    std::unique_ptr<Collider> collider;
++};
 ```
 
 **Description générée** :
 ```
-smart-commit.sh: refactor logic
+Player.cpp: implement new class + add tests + add SFML code + use smart pointers
 ```
+
+Ce système de **cumul** permet de capturer tous les types de modifications dans un fichier, donnant une vue complète des changements effectués.
 
 ## 📋 Exemples Complets
 
@@ -192,7 +236,7 @@ $ ./smart-commit.sh
    - README.md (+15 -3)
 
    💡 Suggestion:
-   README.md: add new implementation
+   README.md: extend functionality
 
    Description (Entrée pour accepter, ou écris la tienne): add smart-commit guide
 
@@ -235,7 +279,7 @@ $ ./smart-commit.sh
    - README.md (+50 -10)
 
    💡 Suggestion:
-   README.md: add new implementation
+   README.md: extend functionality
 
    Description (Entrée pour accepter, ou écris la tienne): 
 
@@ -246,8 +290,8 @@ $ ./smart-commit.sh
    - smart-commit.sh (+40 -15)
 
    💡 Suggestion:
-   - ci-cd.yml: update messages
-   - smart-commit.sh: refactor logic
+   - ci-cd.yml: add control flow + add logging
+   - smart-commit.sh: implement functions + add control flow
 
    Description (Entrée pour accepter, ou écris la tienne): enhance CI/CD with Discord embeds and improve commit automation
 
@@ -263,11 +307,11 @@ $ ./smart-commit.sh
 
 **Commits créés** :
 ```
-[DOCS] README.md: add new implementation
+[DOCS] README.md: extend functionality
 
 [CHORE] enhance CI/CD with Discord embeds and improve commit automation
-- ci-cd.yml: update messages
-- smart-commit.sh: refactor logic
+- ci-cd.yml: add control flow + add logging
+- smart-commit.sh: implement functions + add control flow
 ```
 
 ### Exemple 3 : Acceptation Automatique + Push
