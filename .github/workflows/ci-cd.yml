@@ -588,31 +588,50 @@ jobs:
         fi
         
         # Construire et envoyer le payload Discord
-        REPORT_CLEAN=$(echo "$REPORT" | sed 's/\\n/ | /g')
+        REPORT_CLEAN=$(echo "$REPORT" | sed 's/"/\\"/g' | sed 's/\\n/ | /g')
         
         # Limiter à 10 commits max pour Discord
         COMMIT_COUNT=$(echo "$COMMIT_LIST" | wc -l)
         if [ $COMMIT_COUNT -gt 10 ]; then
-          COMMIT_LIST_DISPLAY=$(echo "$COMMIT_LIST" | head -10 | sed 's/$/\\n/')
-          COMMIT_LIST_DISPLAY="${COMMIT_LIST_DISPLAY}... and $((COMMIT_COUNT - 10)) more commits"
+          COMMIT_LIST_DISPLAY=$(echo "$COMMIT_LIST" | head -10 | sed 's/"/\\"/g' | awk '{printf "%s\\n", $0}' | tr -d '\n')
+          COMMIT_LIST_DISPLAY="${COMMIT_LIST_DISPLAY}\\n... and $((COMMIT_COUNT - 10)) more commits"
         else
-          COMMIT_LIST_DISPLAY=$(echo "$COMMIT_LIST" | sed 's/$/\\n/')
+          COMMIT_LIST_DISPLAY=$(echo "$COMMIT_LIST" | sed 's/"/\\"/g' | awk '{printf "%s\\n", $0}' | tr -d '\n')
         fi
+        
+        # Échapper les caractères spéciaux pour JSON
+        STATUS_MSG_CLEAN=$(echo "$STATUS_MSG" | sed 's/"/\\"/g')
+        BRANCH_NAME_CLEAN=$(echo "$BRANCH_NAME" | sed 's/"/\\"/g')
+        COMMITTER_CLEAN=$(echo "$COMMITTER" | sed 's/"/\\"/g')
+        EVENT_TYPE_CLEAN=$(echo "$EVENT_TYPE" | sed 's/"/\\"/g')
+        LINK_CLEAN=$(echo "$LINK" | sed 's/"/\\"/g')
+        TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
         
         echo "=== Discord Notification Debug ==="
         echo "Webhook configured: $([ -n "$WEBHOOK" ] && echo "YES" || echo "NO")"
         echo "Branch: $BRANCH_NAME"
         echo "Commit count: $COMMIT_COUNT"
         echo "Status: $STATUS_MSG"
+        
+        # Construire JSON avec printf (évite les problèmes d'échappement)
+        printf '{"embeds":[{"title":"%s","color":%d,"description":"%s","fields":[{"name":"📦 Repo","value":"%s","inline":true},{"name":"🌿 Branch","value":"%s","inline":true},{"name":"👤 Author","value":"%s","inline":true},{"name":"📝 Commits","value":"%d","inline":true},{"name":"🔔 Event","value":"%s","inline":true},{"name":"🔗 Link","value":"%s","inline":true},{"name":"💬 Messages","value":"%s","inline":false}],"timestamp":"%s"}]}' \
+          "$STATUS_MSG_CLEAN" "$COLOR" "$REPORT_CLEAN" "${{ github.repository }}" \
+          "$BRANCH_NAME_CLEAN" "$COMMITTER_CLEAN" "$COMMIT_COUNT" "$EVENT_TYPE_CLEAN" \
+          "$LINK_CLEAN" "$COMMIT_LIST_DISPLAY" "$TIMESTAMP" > /tmp/payload.json
+        
+        echo ""
+        echo "=== JSON Payload ==="
+        cat /tmp/payload.json
         echo ""
         
-        # Envoyer avec curl et afficher la réponse
+        # Envoyer avec curl
         HTTP_CODE=$(curl -s -o /tmp/response.txt -w "%{http_code}" \
           -H "Content-Type: application/json" \
           -X POST \
-          -d "{\"embeds\":[{\"title\":\"$STATUS_MSG\",\"color\":$COLOR,\"description\":\"$REPORT_CLEAN\",\"fields\":[{\"name\":\"📦 Repo\",\"value\":\"${{ github.repository }}\",\"inline\":true},{\"name\":\"🌿 Branch\",\"value\":\"$BRANCH_NAME\",\"inline\":true},{\"name\":\"👤 Author\",\"value\":\"$COMMITTER\",\"inline\":true},{\"name\":\"📝 Commits\",\"value\":\"$COMMIT_COUNT\",\"inline\":true},{\"name\":\"🔔 Event\",\"value\":\"$EVENT_TYPE\",\"inline\":true},{\"name\":\"🔗 Link\",\"value\":\"$LINK\",\"inline\":true},{\"name\":\"💬 Messages\",\"value\":\"$COMMIT_LIST_DISPLAY\",\"inline\":false}],\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}]}" \
+          -d @/tmp/payload.json \
           "$WEBHOOK")
         
+        echo "=== Response ==="
         echo "HTTP Code: $HTTP_CODE"
         cat /tmp/response.txt
         echo ""
