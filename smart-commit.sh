@@ -75,8 +75,8 @@ if [ -n "$REFACTOR_FILES" ]; then echo "  [REFACTOR] : $(echo $REFACTOR_FILES | 
 echo ""
 
 # Demander confirmation
-read -p "🚀 Créer des commits groupés ? (o/n): " confirm
-if [ -n "$confirm" ] && [ "$confirm" != "o" ] && [ "$confirm" != "O" ]; then
+read -p "🚀 Créer des commits groupés ? (O/n): " confirm
+if [ "$confirm" = "n" ] || [ "$confirm" = "N" ]; then
     echo "❌ Annulé"
     exit 0
 fi
@@ -418,9 +418,10 @@ echo "✅ $COMMIT_COUNT commit(s) créé(s)"
 echo ""
 
 # Demander si on push
-read -p "🚀 Push maintenant ? (o/n): " push_confirm
+read -p "🚀 Push maintenant ? (O/n): " push_confirm
 
-if [ "$push_confirm" = "o" ] || [ "$push_confirm" = "O" ]; then
+# Entrée vide = oui par défaut
+if [ -z "$push_confirm" ] || [ "$push_confirm" = "o" ] || [ "$push_confirm" = "O" ]; then
     BRANCH=$(git branch --show-current)
     echo "📤 Push vers origin/$BRANCH..."
     git push origin "$BRANCH"
