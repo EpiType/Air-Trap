@@ -165,68 +165,43 @@ for type in DOCS CHORE STYLE FIX ADD REFACTOR; do
     if [ $FILE_COUNT -eq 1 ]; then
         AUTO_DESC="$CHANGES_DESC"
     else
-        # Résumer les changements multiples
-        AUTO_DESC="$CHANGES_DESC"
+        # Formater avec bullet points pour multi-fichiers
+        AUTO_DESC=""
+        for f in $files; do
+            FILENAME=$(basename "$f")
+            # Extraire le résumé du changement pour ce fichier
+            FILE_CHANGE=$(echo "$CHANGES_DESC" | grep -o "$FILENAME: [^,]*" | sed "s/$FILENAME: //")
+            if [ -z "$AUTO_DESC" ]; then
+                AUTO_DESC="- $FILENAME: $FILE_CHANGE"
+            else
+                AUTO_DESC="$AUTO_DESC\n- $FILENAME: $FILE_CHANGE"
+            fi
+        done
     fi
     
     echo ""
+    echo -e "   💡 Suggestion:\n$AUTO_DESC" | sed 's/^/   /'
     
-    # Essayer d'utiliser Copilot pour générer une meilleure suggestion
-    AI_DESC="$AUTO_DESC"
+    read -p "   Description (Entrée pour accepter, ou écris la tienne): " description
     
-    # Stager les fichiers pour permettre à Copilot d'analyser
-    git add $files 2>/dev/null
-    
-    # Créer un fichier temporaire avec contexte pour Copilot
-    TEMP_COMMIT_FILE=$(mktemp)
-    cat > "$TEMP_COMMIT_FILE" <<EOF
-# Type: $type
-# Files changed: $FILE_COUNT
-# Summary: $CHANGES_DESC
-#
-# Generate a concise commit description (max 72 chars) for these changes.
-# DO NOT include the [$type] prefix, only the description.
-#
-# Automatic suggestion: $AUTO_DESC
-#
-# Write your commit message below (delete these comments):
-
-EOF
-    
-    # Ouvrir dans l'éditeur par défaut (VS Code si disponible)
-    if [ -n "$VSCODE_IPC_HOOK_CLI" ] && command -v code &> /dev/null; then
-        echo "   🤖 Ouverture dans VS Code pour suggestion Copilot..."
-        echo "   💡 Utilisez Ctrl+I pour générer avec Copilot"
-        echo "   💡 Ou tapez directement votre message"
-        
-        # Ouvrir dans VS Code et attendre
-        code --wait "$TEMP_COMMIT_FILE"
-        
-        # Lire la description depuis le fichier (ignorer les commentaires)
-        description=$(grep -v "^#" "$TEMP_COMMIT_FILE" | grep -v "^$" | head -1)
-        
-        rm -f "$TEMP_COMMIT_FILE"
-        
-        if [ -z "$description" ]; then
-            echo "   ⚠️  Aucune description fournie, utilisation de la suggestion auto"
-            description="$AUTO_DESC"
-        fi
-    else
-        # Fallback: demander dans le terminal
-        rm -f "$TEMP_COMMIT_FILE"
-        echo "   💡 Suggestion auto: $AUTO_DESC"
-        read -p "   Description (Entrée pour accepter): " description
-        
-        if [ -z "$description" ]; then
-            description="$AUTO_DESC"
-        fi
+    # Utiliser la suggestion si vide
+    if [ -z "$description" ]; then
+        description="$AUTO_DESC"
     fi
     
     # Git add les fichiers du groupe
     git add $files
     
-    # Commit
-    git commit -m "[$type] $description"
+    # Formater le message de commit
+    if [ $FILE_COUNT -gt 1 ] && [[ "$description" == *$'\n'* ]]; then
+        # Multi-ligne : titre + détails
+        FIRST_LINE=$(echo -e "$description" | head -1)
+        REST_LINES=$(echo -e "$description" | tail -n +2)
+        git commit -m "[$type] $FIRST_LINE" -m "$REST_LINES"
+    else
+        # Simple ligne
+        git commit -m "[$type] $description"
+    fi
     
     COMMIT_COUNT=$((COMMIT_COUNT + 1))
     echo "   ✅ Commit créé"
@@ -244,7 +219,7 @@ echo ""
 # Demander si on push
 read -p "🚀 Push maintenant ? (o/n): " push_confirm
 
-if [ -n "$confirm" ] && [ "$confirm" != "o" ] && [ "$confirm" != "O" ]; then
+if [ "$push_confirm" = "o" ] || [ "$push_confirm" = "O" ]; then
     BRANCH=$(git branch --show-current)
     echo "📤 Push vers origin/$BRANCH..."
     git push origin "$BRANCH"
