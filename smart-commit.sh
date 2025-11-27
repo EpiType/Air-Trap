@@ -170,12 +170,45 @@ for type in DOCS CHORE STYLE FIX ADD REFACTOR; do
     fi
     
     echo ""
-    echo "   💡 Suggestion: $AUTO_DESC"
+    
+    # Essayer d'utiliser GitHub Copilot CLI si disponible
+    AI_DESC=""
+    if command -v gh &> /dev/null && gh copilot --version &> /dev/null 2>&1; then
+        echo "   🤖 Génération avec Copilot..."
+        
+        # Stager temporairement les fichiers pour Copilot
+        git add $files 2>/dev/null
+        
+        # Créer un prompt pour Copilot
+        COPILOT_PROMPT="Generate a concise git commit message for these changes. Format: [$type] <description (max 72 chars)>. Only output the description part without the [TYPE] prefix."
+        
+        # Essayer de générer avec Copilot (timeout 5s)
+        AI_SUGGESTION=$(timeout 5s gh copilot suggest "Git commit message for: $CHANGES_DESC" 2>/dev/null | grep -v "^>" | grep -v "^Suggestion" | head -1 | sed 's/^[[:space:]]*//' || echo "")
+        
+        if [ -n "$AI_SUGGESTION" ] && [ "$AI_SUGGESTION" != "null" ]; then
+            # Nettoyer la suggestion (retirer le [TYPE] si présent)
+            AI_DESC=$(echo "$AI_SUGGESTION" | sed "s/^\[$type\]//i" | sed 's/^[[:space:]]*//')
+            
+            if [ -n "$AI_DESC" ]; then
+                echo "   💡 Suggestion Copilot: $AI_DESC"
+            else
+                AI_DESC="$AUTO_DESC"
+                echo "   💡 Suggestion auto: $AUTO_DESC"
+            fi
+        else
+            AI_DESC="$AUTO_DESC"
+            echo "   💡 Suggestion auto: $AUTO_DESC"
+        fi
+    else
+        AI_DESC="$AUTO_DESC"
+        echo "   💡 Suggestion auto: $AUTO_DESC"
+    fi
+    
     read -p "   Description (Entrée pour accepter): " description
     
     # Utiliser la suggestion si vide
     if [ -z "$description" ]; then
-        description="$AUTO_DESC"
+        description="$AI_DESC"
     fi
     
     # Git add les fichiers du groupe
