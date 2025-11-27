@@ -127,50 +127,227 @@ for type in DOCS CHORE STYLE FIX ADD REFACTOR; do
             # Analyser le contenu du diff pour extraire les changements importants
             FILENAME=$(basename "$f")
             CHANGE_SUMMARY=""
+            CHANGES_LIST=()
             
-            # Détecter les patterns dans le diff
-            if echo "$DIFF_CONTENT" | grep -qE "^\+.*function |^\+.*def |^\+.*class |^\+.*struct |^\+.*enum "; then
-                CHANGE_SUMMARY="add new functions/classes"
-            elif echo "$DIFF_CONTENT" | grep -qE "^\+.*(fix|Fix|FIX|bug|Bug|BUG|error|Error|crash|Crash|issue|Issue)"; then
-                CHANGE_SUMMARY="fix bugs"
-            elif echo "$DIFF_CONTENT" | grep -qE "^\+.*(TODO|FIXME|XXX|HACK|NOTE|@todo|@fixme)"; then
-                CHANGE_SUMMARY="add TODOs"
-            elif echo "$DIFF_CONTENT" | grep -qE "^\+.*(\/\/|\/\*|\*\/|#|comment|Comment|@brief|@param|@return)"; then
-                CHANGE_SUMMARY="improve comments"
-            elif echo "$DIFF_CONTENT" | grep -qE "^\+.*(echo|print|printf|cout|cerr|STATUS_MSG|MESSAGE|LOG|log|Log|std::cout|std::cerr)"; then
-                CHANGE_SUMMARY="update messages"
-            elif echo "$DIFF_CONTENT" | grep -qE "^\+.*(test|Test|TEST|ASSERT|assert|expect|EXPECT|describe|it\()"; then
-                CHANGE_SUMMARY="add tests"
-            elif echo "$DIFF_CONTENT" | grep -qE "^\+.*(if |for |while |switch |case |else |elif |try |catch )"; then
-                CHANGE_SUMMARY="refactor logic"
-            elif echo "$DIFF_CONTENT" | grep -qE "^\+.*(const |static |inline |virtual |override |constexpr |noexcept |explicit )"; then
-                CHANGE_SUMMARY="update implementation"
-            elif echo "$DIFF_CONTENT" | grep -qE "^\+.*#include|^\+.*import "; then
-                CHANGE_SUMMARY="update includes"
-            elif echo "$DIFF_CONTENT" | grep -qE "^\+.*(namespace|using |typedef |using namespace)"; then
-                CHANGE_SUMMARY="update namespaces"
-            elif echo "$DIFF_CONTENT" | grep -qE "^\+.*(std::|boost::|asio::|sf::)"; then
-                CHANGE_SUMMARY="add library calls"
-            elif echo "$DIFF_CONTENT" | grep -qE "^\+.*(auto |int |void |bool |char |float |double |string |vector |map |pair )"; then
-                CHANGE_SUMMARY="add variables"
-            elif echo "$DIFF_CONTENT" | grep -qE "^\+.*(public:|private:|protected:)"; then
-                CHANGE_SUMMARY="update access modifiers"
-            elif echo "$DIFF_CONTENT" | grep -qE "^\+.*(throw |exception|Exception|std::runtime_error|std::logic_error)"; then
-                CHANGE_SUMMARY="add error handling"
-            elif echo "$DIFF_CONTENT" | grep -qE "^\+.*(template|typename|<.*>)"; then
-                CHANGE_SUMMARY="add template code"
-            elif echo "$DIFF_CONTENT" | grep -qE "^\-.*(function|class|struct|enum)"; then
-                CHANGE_SUMMARY="remove old code"
-            elif echo "$DIFF_CONTENT" | grep -qE "^\-.*(if |for |while |switch )"; then
-                CHANGE_SUMMARY="simplify logic"
-            elif [ "$ADDED" -gt 100 ]; then
-                CHANGE_SUMMARY="add new implementation"
-            elif [ "$REMOVED" -gt 50 ]; then
-                CHANGE_SUMMARY="remove old code"
-            elif [ "$ADDED" -gt 20 ] && [ "$REMOVED" -gt 20 ]; then
-                CHANGE_SUMMARY="refactor implementation"
+            # Analyse selon le type de fichier
+            if [[ "$f" == *.md ]] || [[ "$f" == *.txt ]] || [[ "$f" == *.pdf ]]; then
+                # Fichiers documentation : analyse basée sur les lignes
+                if [ "$ADDED" -gt 100 ]; then
+                    CHANGES_LIST+=("add major documentation")
+                elif [ "$REMOVED" -gt 50 ]; then
+                    CHANGES_LIST+=("remove old documentation")
+                elif [ "$ADDED" -gt 20 ] && [ "$REMOVED" -gt 20 ]; then
+                    CHANGES_LIST+=("update documentation")
+                elif [ "$ADDED" -gt "$REMOVED" ]; then
+                    CHANGES_LIST+=("extend documentation")
+                else
+                    CHANGES_LIST+=("modify documentation")
+                fi
+            elif [[ "$f" == *.yml ]] || [[ "$f" == *.yaml ]]; then
+                # Fichiers YAML/CI-CD : analyse basée sur les lignes
+                if [ "$ADDED" -gt 50 ]; then
+                    CHANGES_LIST+=("add major workflow changes")
+                elif [ "$REMOVED" -gt 30 ]; then
+                    CHANGES_LIST+=("remove old workflow steps")
+                elif [ "$ADDED" -gt 15 ] && [ "$REMOVED" -gt 15 ]; then
+                    CHANGES_LIST+=("update workflow configuration")
+                elif [ "$ADDED" -gt "$REMOVED" ]; then
+                    CHANGES_LIST+=("extend workflow")
+                else
+                    CHANGES_LIST+=("modify workflow")
+                fi
+            elif [[ "$f" == CMakeLists.txt ]] || [[ "$f" == *.cmake ]]; then
+                # Fichiers CMake : analyse basée sur les lignes
+                if [ "$ADDED" -gt 30 ]; then
+                    CHANGES_LIST+=("add major build changes")
+                elif [ "$REMOVED" -gt 20 ]; then
+                    CHANGES_LIST+=("remove old build config")
+                elif [ "$ADDED" -gt 10 ] && [ "$REMOVED" -gt 10 ]; then
+                    CHANGES_LIST+=("update build configuration")
+                elif [ "$ADDED" -gt "$REMOVED" ]; then
+                    CHANGES_LIST+=("extend build config")
+                else
+                    CHANGES_LIST+=("modify build config")
+                fi
+            elif [[ "$f" == conanfile.* ]]; then
+                # Fichiers Conan : analyse basée sur les lignes
+                if [ "$ADDED" -gt 10 ]; then
+                    CHANGES_LIST+=("add dependencies")
+                elif [ "$REMOVED" -gt 5 ]; then
+                    CHANGES_LIST+=("remove dependencies")
+                else
+                    CHANGES_LIST+=("update dependencies")
+                fi
+            elif [[ "$f" == *.sh ]]; then
+                # Scripts shell : détection générale des patterns bash
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].*function [a-zA-Z_][a-zA-Z0-9_]*\(\)"; then
+                    CHANGES_LIST+=("add functions")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].*(if|elif|case) .*then"; then
+                    CHANGES_LIST+=("add conditionals")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].*(for|while) .*do"; then
+                    CHANGES_LIST+=("add loops")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].*\$\(.*grep.*\)"; then
+                    CHANGES_LIST+=("add text processing")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].*(echo|printf) .*[\"']"; then
+                    CHANGES_LIST+=("add output")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].*#.*"; then
+                    CHANGES_LIST+=("add comments")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].*read -p"; then
+                    CHANGES_LIST+=("add user input")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].*(git|docker|cmake|conan) "; then
+                    CHANGES_LIST+=("add tool commands")
+                fi
+                
+                # Fallback si aucun pattern
+                if [ ${#CHANGES_LIST[@]} -eq 0 ]; then
+                    if [ "$ADDED" -gt 100 ]; then
+                        CHANGES_LIST+=("add major script logic")
+                    elif [ "$REMOVED" -gt 50 ]; then
+                        CHANGES_LIST+=("remove old script code")
+                    elif [ "$ADDED" -gt 30 ] && [ "$REMOVED" -gt 30 ]; then
+                        CHANGES_LIST+=("refactor script structure")
+                    elif [ "$ADDED" -gt 10 ] && [ "$REMOVED" -gt 10 ]; then
+                        CHANGES_LIST+=("update script logic")
+                    else
+                        CHANGES_LIST+=("modify script")
+                    fi
+                fi
+            elif [[ "$f" == .clang-format ]] || [[ "$f" == .clang-tidy ]] || [[ "$f" == *format* ]] || [[ "$f" == *lint* ]]; then
+                # Fichiers de configuration de style
+                CHANGES_LIST+=("update code style rules")
+            elif [[ "$f" == .gitignore ]] || [[ "$f" == .gitattributes ]]; then
+                # Fichiers Git
+                if [ "$ADDED" -gt "$REMOVED" ]; then
+                    CHANGES_LIST+=("add ignore rules")
+                else
+                    CHANGES_LIST+=("update ignore rules")
+                fi
+            elif [[ "$f" == *.json ]]; then
+                # Fichiers JSON : analyse basée sur les lignes
+                if [ "$ADDED" -gt 20 ]; then
+                    CHANGES_LIST+=("add configuration")
+                elif [ "$REMOVED" -gt 10 ]; then
+                    CHANGES_LIST+=("remove configuration")
+                else
+                    CHANGES_LIST+=("update configuration")
+                fi
+            elif [[ "$f" == *.cpp ]] || [[ "$f" == *.hpp ]] || [[ "$f" == *.c ]] || [[ "$f" == *.h ]] || [[ "$f" == *.cc ]] || [[ "$f" == *.cxx ]]; then
+                # Fichiers C/C++ : analyse détaillée
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].*\bclass [A-Z][a-zA-Z0-9_]* "; then
+                    CHANGES_LIST+=("implement new class")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].*\bstruct [A-Z][a-zA-Z0-9_]* "; then
+                    CHANGES_LIST+=("add new struct")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].*\benum (class )?[A-Z][a-zA-Z0-9_]* "; then
+                    CHANGES_LIST+=("define new enum")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].*[a-zA-Z_][a-zA-Z0-9_]*\([^)]*\) *\{"; then
+                    CHANGES_LIST+=("implement functions")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].*~[A-Z][a-zA-Z0-9_]*\("; then
+                    CHANGES_LIST+=("add constructor/destructor")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].* // .*(fix|Fix|bug|Bug)"; then
+                    CHANGES_LIST+=("fix bug")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].* // .*(error|Error|crash|Crash)"; then
+                    CHANGES_LIST+=("fix error/crash")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].* // .*issue #[0-9]"; then
+                    CHANGES_LIST+=("fix issue")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].*(TEST_|ASSERT_|EXPECT_)[A-Z]+"; then
+                    CHANGES_LIST+=("add tests")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].*\btemplate *<"; then
+                    CHANGES_LIST+=("implement template")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].*(std::make_unique|std::make_shared|std::unique_ptr|std::shared_ptr)<"; then
+                    CHANGES_LIST+=("use smart pointers")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].*(std::vector|std::map|std::unordered_map|std::set|std::array)<"; then
+                    CHANGES_LIST+=("use STL containers")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].*(std::thread|std::mutex|std::lock_guard|std::async|std::future)<"; then
+                    CHANGES_LIST+=("add multithreading")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].*(asio::[a-z_]+|boost::asio::[a-z_]+)"; then
+                    CHANGES_LIST+=("add network code")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].*\bsf::[A-Z][a-zA-Z]+"; then
+                    CHANGES_LIST+=("add SFML code")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].*#include *[<\"]"; then
+                    CHANGES_LIST+=("update includes")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].*\bnamespace [a-zA-Z_][a-zA-Z0-9_]* *\{"; then
+                    CHANGES_LIST+=("define namespace")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].*\busing namespace [a-zA-Z_]"; then
+                    CHANGES_LIST+=("import namespace")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].*(throw [a-zA-Z_]|std::runtime_error|std::logic_error|\btry *\{|\bcatch *)"; then
+                    CHANGES_LIST+=("handle exceptions")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].* /// .* @(brief|param|return)"; then
+                    CHANGES_LIST+=("add documentation")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].* // .*(TODO|FIXME|XXX|HACK|NOTE):"; then
+                    CHANGES_LIST+=("add markers")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].*(std::cout|std::cerr) *<<"; then
+                    CHANGES_LIST+=("add logging")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].*\b(constexpr|const) [a-zA-Z_][a-zA-Z0-9_]* *="; then
+                    CHANGES_LIST+=("add constants")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].* (virtual|override|noexcept) "; then
+                    CHANGES_LIST+=("update method signatures")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+](public|private|protected):"; then
+                    CHANGES_LIST+=("change access modifiers")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\+[^+].* (if|for|while|switch) *\("; then
+                    CHANGES_LIST+=("add control flow")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\-[^-].*\b(class|struct|enum) [A-Z]"; then
+                    CHANGES_LIST+=("remove types")
+                fi
+                if echo "$DIFF_CONTENT" | grep -qE "^\-[^-].*[a-zA-Z_][a-zA-Z0-9_]*\([^)]*\) *\{"; then
+                    CHANGES_LIST+=("remove functions")
+                fi
+            fi
+            
+            # Construire le résumé à partir des changements détectés
+            if [ ${#CHANGES_LIST[@]} -eq 0 ]; then
+                # Aucun pattern spécifique, analyser les lignes
+                if [ "$ADDED" -gt 150 ]; then
+                    CHANGE_SUMMARY="add major implementation"
+                elif [ "$REMOVED" -gt 100 ]; then
+                    CHANGE_SUMMARY="cleanup old code"
+                elif [ "$ADDED" -gt 30 ] && [ "$REMOVED" -gt 30 ]; then
+                    CHANGE_SUMMARY="refactor code structure"
+                elif [ "$ADDED" -gt 10 ] && [ "$REMOVED" -gt 10 ]; then
+                    CHANGE_SUMMARY="update implementation"
+                elif [ "$ADDED" -gt "$REMOVED" ]; then
+                    CHANGE_SUMMARY="extend functionality"
+                else
+                    CHANGE_SUMMARY="modify code"
+                fi
+            elif [ ${#CHANGES_LIST[@]} -eq 1 ]; then
+                # Un seul changement
+                CHANGE_SUMMARY="${CHANGES_LIST[0]}"
             else
-                CHANGE_SUMMARY="update implementation"
+                # Plusieurs changements : joindre avec " + "
+                CHANGE_SUMMARY=$(printf "%s + " "${CHANGES_LIST[@]}" | sed 's/ + $//')
             fi
             
             if [ -z "$CHANGES_DESC" ]; then
