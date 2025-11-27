@@ -29,6 +29,7 @@ Un moteur de jeu multi-joueur en réseau inspiré de R-Type, développé en C++2
 - **Conan 2.x** : Gestionnaire de dépendances
 - **ASIO** : Communication réseau (UDP)
 - **SFML 2.6+** : Rendu graphique et audio (client uniquement)
+- **GTest** : Tests unitaires
 - **GitHub Actions** : CI/CD avec mirroring Epitech
 
 ## 📦 Build
@@ -43,14 +44,14 @@ Un moteur de jeu multi-joueur en réseau inspiré de R-Type, développé en C++2
 ### Linux / macOS
 
 ```bash
-chmod +x build.sh
-./build.sh
+chmod +x scripts/build.sh
+./scripts/build.sh
 ```
 
 ### Windows
 
 ```cmd
-build.bat
+scripts\build.bat
 ```
 
 ### Build manuel
@@ -96,8 +97,8 @@ Par défaut, le client se connecte à **127.0.0.1:4242**.
 ### Formatage du code
 
 ```bash
-chmod +x format.sh
-./format.sh
+chmod +x scripts/format.sh
+./scripts/format.sh
 ```
 
 Utilise **clang-format-18** avec le style Google (IndentWidth: 4, ColumnLimit: 120).
@@ -105,19 +106,34 @@ Utilise **clang-format-18** avec le style Google (IndentWidth: 4, ColumnLimit: 1
 ### Analyse statique
 
 ```bash
-chmod +x lint.sh
-./lint.sh
+chmod +x scripts/lint.sh
+./scripts/lint.sh
 ```
 
 Exécute **clang-tidy-18** pour détecter les problèmes potentiels.
+
+### Tests Unitaires
+
+```bash
+# Lancer tous les tests
+cd build && ctest
+
+# Lancer un test spécifique
+./build/test_ecs
+./build/test_network
+```
+
+Les tests sont écrits avec **GTest** et couvrent :
+- **ECS** : Registry, composants, systèmes
+- **Network** : Protocole, sérialisation, paquets
 
 ### Smart Commit Tool
 
 Outil intelligent pour créer des commits groupés automatiquement :
 
 ```bash
-chmod +x smart-commit.sh
-./smart-commit.sh
+chmod +x scripts/smart-commit.sh
+./scripts/smart-commit.sh
 ```
 
 **Fonctionnalités** :
@@ -130,14 +146,14 @@ chmod +x smart-commit.sh
 **Exemple d'utilisation** :
 
 ```bash
-$ ./smart-commit.sh
+$ ./scripts/smart-commit.sh
 
 🔍 Analyse des fichiers modifiés...
 
 📦 Groupes détectés:
   [CHORE] : 2 fichier(s)
 
-🚀 Créer des commits groupés ? (o/n): o
+🚀 Créer des commits groupés ? (O/n): ⏎
 
 📝 Groupe [CHORE]:
    - .github/workflows/ci-cd.yml (+25 -10)
@@ -147,13 +163,13 @@ $ ./smart-commit.sh
    - ci-cd.yml: update messages
    - smart-commit.sh: refactor logic
 
-   Description (Entrée pour accepter, ou écris la tienne): 
+   Description (Entrée pour accepter, ou écris la tienne): ⏎
 
    ✅ Commit créé
 
 ✅ 1 commit(s) créé(s)
 
-🚀 Push maintenant ? (o/n): o
+🚀 Push maintenant ? (O/n): ⏎
 📤 Push vers origin/initArchi...
 ✅ Push terminé!
 
@@ -165,8 +181,8 @@ $ ./smart-commit.sh
 Installer les hooks locaux pour valider les messages de commit :
 
 ```bash
-chmod +x install-hooks.sh
-./install-hooks.sh
+chmod +x scripts/install-hooks.sh
+./scripts/install-hooks.sh
 ```
 
 Le hook `commit-msg` vérifie que tous les commits suivent le format :
@@ -297,7 +313,7 @@ L'outil `smart-commit.sh` automatise ce processus :
 ### Installation des Hooks Git
 
 ```bash
-./install-hooks.sh
+./scripts/install-hooks.sh
 ```
 
 Valide automatiquement le format avant chaque commit local.
@@ -308,7 +324,7 @@ Valide automatiquement le format avant chaque commit local.
 Air-Trap/
 ├── .github/
 │   ├── workflows/
-│   │   └── ci-cd.yml              # Pipeline CI/CD complet (452 lignes)
+│   │   └── ci-cd.yml              # Pipeline CI/CD complet
 │   └── BRANCH_PROTECTION.md       # Doc protection des branches
 ├── .githooks/
 │   └── commit-msg                 # Hook validation commits
@@ -327,25 +343,66 @@ Air-Trap/
 ├── client/
 │   ├── include/network/
 │   └── src/main.cpp               # Point d'entrée client
+├── tests/                         # Tests unitaires (GTest)
+│   ├── ecs/
+│   │   ├── test_registry.cpp
+│   │   └── test_components.cpp
+│   ├── network/
+│   │   └── test_protocol.cpp
+│   └── CMakeLists.txt
+├── config/                        # Configuration runtime
+│   ├── server.json                # Config serveur
+│   └── client.json                # Config client
+├── assets/                        # Ressources
+│   ├── sprites/
+│   │   ├── players/
+│   │   ├── enemies/
+│   │   ├── projectiles/
+│   │   └── effects/
+│   ├── sounds/
+│   ├── musics/
+│   ├── fonts/
+│   └── README.md
+├── scripts/                       # Scripts utilitaires
+│   ├── build.sh / build.bat
+│   ├── format.sh
+│   ├── lint.sh
+│   ├── smart-commit.sh
+│   └── install-hooks.sh
+├── docs/
+│   ├── ARCHITECTURE.md
+│   └── subject/
 ├── CMakeLists.txt                 # Configuration CMake (C++23)
-├── conanfile.txt                  # Dépendances (SFML 2.6.1, asio 1.28.0)
+├── conanfile.txt                  # Dépendances (SFML, ASIO, GTest)
 ├── .clang-format                  # Style Google + customizations
 ├── .clang-tidy                    # Règles analyse statique
-├── smart-commit.sh                # Outil commits intelligents
-├── install-hooks.sh               # Installation hooks Git
-├── build.sh / build.bat           # Scripts de build
-├── format.sh                      # Formatage automatique
-├── lint.sh                        # Analyse statique
 └── README.md
 ```
 
-## 🧪 Tests (à implémenter)
+## 🧪 Tests
 
-Les tests unitaires sont désactivés dans la CI (`if: false`). Pour les activer :
+Les tests unitaires sont activés par défaut avec **GTest**.
 
-1. Implémenter les tests (Google Test recommandé)
-2. Ajouter `r-type_tests` dans CMakeLists.txt
-3. Retirer `if: false` du job `tests` dans ci-cd.yml
+```bash
+# Compiler avec les tests
+./scripts/build.sh
+
+# Lancer tous les tests
+cd build && ctest --output-on-failure
+
+# Lancer un test spécifique
+./build/test_ecs
+./build/test_network
+
+# Voir les résultats détaillés
+ctest --verbose
+```
+
+**Tests actuels** :
+- ✅ `test_ecs` : Registry et composants ECS
+- ✅ `test_network` : Protocole et sérialisation
+
+Les tests sont décommentés progressivement au fur et à mesure de l'implémentation.
 
 ## 📊 Métriques (futures)
 
@@ -368,9 +425,10 @@ Les tests unitaires sont désactivés dans la CI (`if: false`). Pour les activer
 5. Créer une PR de `dev` vers `main` pour la validation finale
 
 **Outils recommandés** :
-- Utilisez `./smart-commit.sh` pour des commits propres
-- Exécutez `./format.sh` avant de push
-- Vérifiez avec `./lint.sh` pour éviter les erreurs de CI
+- Utilisez `./scripts/smart-commit.sh` pour des commits propres
+- Exécutez `./scripts/format.sh` avant de push
+- Vérifiez avec `./scripts/lint.sh` pour éviter les erreurs de CI
+- Lancez `ctest` pour valider vos changements
 
 ## 📄 Licence
 
@@ -383,6 +441,8 @@ Ce projet est développé dans un contexte éducatif (Epitech B-CPP-500).
 - [x] CI/CD complet avec multi-plateforme
 - [x] Outils de développement (format, lint, smart-commit)
 - [x] Git hooks et validation automatique
+- [x] Structure de tests unitaires (GTest)
+- [x] Organisation professionnelle (scripts/, config/, tests/)
 - [ ] Implémentation du gameplay R-Type
 - [ ] Tests unitaires et couverture de code
 - [ ] Système de collision avancé

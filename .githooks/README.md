@@ -7,7 +7,7 @@ Ce dossier contient les hooks Git personnalisés pour le projet Air-Trap.
 Pour activer les hooks, exécutez depuis la racine du projet :
 
 ```bash
-./install-hooks.sh
+./scripts/install-hooks.sh
 ```
 
 ## Hooks disponibles

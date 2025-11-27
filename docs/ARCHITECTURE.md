@@ -71,20 +71,46 @@ Air-Trap/
 │   └── src/
 │       └── main.cpp                 # Point d'entrée client (rendu + inputs)
 │
+├── tests/                            # Tests unitaires (GTest)
+│   ├── ecs/
+│   │   ├── test_registry.cpp        # Tests du Registry
+│   │   └── test_components.cpp      # Tests des composants
+│   ├── network/
+│   │   └── test_protocol.cpp        # Tests du protocole
+│   └── CMakeLists.txt               # Configuration des tests
+│
+├── config/                           # Configuration runtime
+│   ├── server.json                  # Config serveur (port, tick rate)
+│   └── client.json                  # Config client (résolution, audio)
+│
 ├── assets/                           # Ressources graphiques et sonores
 │   ├── sprites/
-│   └── musics/
+│   │   ├── players/                 # Sprites des joueurs
+│   │   ├── enemies/                 # Sprites des ennemis
+│   │   ├── projectiles/             # Sprites des projectiles
+│   │   └── effects/                 # Effets visuels
+│   ├── sounds/                      # Effets sonores
+│   ├── musics/                      # Musiques de fond
+│   ├── fonts/                       # Polices pour l'UI
+│   └── README.md                    # Organisation des assets
+│
+├── scripts/                          # Scripts utilitaires
+│   ├── build.sh / build.bat         # Scripts de build
+│   ├── format.sh                    # Formater le code
+│   ├── lint.sh                      # Analyser le code
+│   ├── smart-commit.sh              # Commits intelligents
+│   └── install-hooks.sh             # Installer les git hooks
 │
 ├── docs/                             # Documentation
-│   └── ARCHITECTURE.md              # Ce fichier
+│   ├── ARCHITECTURE.md              # Ce fichier
+│   └── subject/                     # Sujet du projet
 │
 ├── CMakeLists.txt                    # Configuration CMake principale
-├── conanfile.txt                     # Dépendances (ASIO, SFML)
+├── conanfile.txt                     # Dépendances (ASIO, SFML, GTest)
 ├── .clang-format                     # Style de code
 ├── .clang-tidy                       # Analyse statique
-├── build.sh / build.bat              # Scripts de build
-├── format.sh                         # Formater le code
-└── lint.sh                           # Analyser le code
+├── .gitignore                        # Fichiers ignorés par Git
+└── README.md                         # Documentation principale
 ```
 
 ---
@@ -271,6 +297,7 @@ Gérées par **Conan 2.x** :
 [requires]
 asio/1.28.0      # Communication réseau (header-only)
 sfml/2.6.1       # Rendu graphique (client uniquement)
+gtest/1.14.0     # Tests unitaires
 ```
 
 ### Scripts de Build
@@ -278,7 +305,7 @@ sfml/2.6.1       # Rendu graphique (client uniquement)
 #### Linux/macOS
 
 ```bash
-./build.sh
+./scripts/build.sh
 ```
 
 1. Crée le dossier `build/`
@@ -289,10 +316,21 @@ sfml/2.6.1       # Rendu graphique (client uniquement)
 #### Windows
 
 ```cmd
-build.bat
+scripts\build.bat
 ```
 
 Même processus, génère des `.exe` dans `build/Release/`.
+
+### Tests Unitaires
+
+```bash
+# Lancer tous les tests
+cd build && ctest
+
+# Lancer un test spécifique
+./build/test_ecs
+./build/test_network
+```
 
 ---
 

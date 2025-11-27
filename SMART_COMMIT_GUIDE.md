@@ -23,7 +23,7 @@ C'est tout ! L'outil est prêt à l'emploi.
 ### Commande de Base
 
 ```bash
-./smart-commit.sh
+./script./scripts/smart-commit.sh
 ```
 
 ### Workflow Complet
@@ -35,17 +35,17 @@ C'est tout ! L'outil est prêt à l'emploi.
 
 2. **Confirmation**
    - Demande confirmation avant de créer les commits
-   - Vous pouvez annuler en tapant `n`
+   - **Entrée = oui par défaut**, tapez `n` pour annuler
 
 3. **Création des commits**
    - Pour chaque groupe, affiche les fichiers avec stats (+/-)
    - Analyse les diffs et génère une suggestion intelligente
-   - Vous permet de modifier ou accepter la suggestion
+   - **Entrée = accepter la suggestion**, ou écrivez la vôtre
    - Crée automatiquement le commit avec le bon format
 
 4. **Push (optionnel)**
    - Propose de pusher tous les commits d'un coup
-   - Vous pouvez refuser et faire `git push` manuellement plus tard
+   - **Entrée = oui par défaut**, tapez `n` pour annuler
 
 ## 📦 Groupes de Fichiers
 
@@ -223,14 +223,14 @@ Ce système de **cumul** permet de capturer tous les types de modifications dans
 
 **Exécution** :
 ```bash
-$ ./smart-commit.sh
+$ ./scripts/smart-commit.sh
 
 🔍 Analyse des fichiers modifiés...
 
 📦 Groupes détectés:
   [DOCS] : 1 fichier(s)
 
-🚀 Créer des commits groupés ? (o/n): o
+🚀 Créer des commits groupés ? (O/n): ⏎  # Entrée = accepter
 
 📝 Groupe [DOCS]:
    - README.md (+15 -3)
@@ -244,7 +244,7 @@ $ ./smart-commit.sh
 
 ✅ 1 commit(s) créé(s)
 
-🚀 Push maintenant ? (o/n): o
+🚀 Push maintenant ? (O/n): ⏎  # Entrée = oui
 📤 Push vers origin/initArchi...
 ✅ Push terminé!
 
@@ -265,7 +265,7 @@ $ ./smart-commit.sh
 
 **Exécution** :
 ```bash
-$ ./smart-commit.sh
+$ ./scripts/smart-commit.sh
 
 🔍 Analyse des fichiers modifiés...
 
@@ -273,7 +273,7 @@ $ ./smart-commit.sh
   [DOCS] : 1 fichier(s)
   [CHORE] : 2 fichier(s)
 
-🚀 Créer des commits groupés ? (o/n): o
+🚀 Créer des commits groupés ? (O/n): ⏎
 
 📝 Groupe [DOCS]:
    - README.md (+50 -10)
@@ -281,7 +281,7 @@ $ ./smart-commit.sh
    💡 Suggestion:
    README.md: extend functionality
 
-   Description (Entrée pour accepter, ou écris la tienne): 
+   Description (Entrée pour accepter, ou écris la tienne): ⏎  # Accepter la suggestion
 
    ✅ Commit créé
 
@@ -299,7 +299,7 @@ $ ./smart-commit.sh
 
 ✅ 2 commit(s) créé(s)
 
-🚀 Push maintenant ? (o/n): n
+🚀 Push maintenant ? (O/n): n  # Refuser le push
 ℹ️  Push annulé. Utilise 'git push' plus tard.
 
 🎉 Terminé!
@@ -325,13 +325,13 @@ $ ./smart-commit.sh
    💡 Suggestion:
    ci-cd.yml: update messages
 
-   Description (Entrée pour accepter, ou écris la tienne): ⏎
+   Description (Entrée pour accepter, ou écris la tienne): ⏎  # Accepter
 
    ✅ Commit créé
 
 ✅ 1 commit(s) créé(s)
 
-🚀 Push maintenant ? (o/n): o
+🚀 Push maintenant ? (O/n): ⏎  # Push automatique
 📤 Push vers origin/initArchi...
 ✅ Push terminé!
 
@@ -405,7 +405,7 @@ esac
 **Solution** :
 ```bash
 git add <fichier>
-./smart-commit.sh
+./scripts/smart-commit.sh
 ```
 
 ### Problème : Le push ne fonctionne pas
@@ -449,17 +449,17 @@ git add <fichier>
 
 Le script fonctionne en complément des Git hooks :
 
-1. `./smart-commit.sh` → Crée les commits
+1. `./scripts/smart-commit.sh` → Crée les commits
 2. `commit-msg hook` → Valide le format automatiquement
 3. CI/CD → Valide à nouveau sur GitHub
 
 **Workflow recommandé** :
 ```bash
 # Installer les hooks (une fois)
-./install-hooks.sh
+./scripts/install-hooks.sh
 
 # Utiliser smart-commit quotidiennement
-./smart-commit.sh
+./scripts/smart-commit.sh
 ```
 
 ## 📊 Statistiques
@@ -500,7 +500,7 @@ git scp     # Lance smart-commit + push automatique
 Pour utiliser partout :
 
 ```bash
-sudo ln -s $PWD/smart-commit.sh /usr/local/bin/smart-commit
+sudo ln -s $PW./scripts/smart-commit.sh /usr/local/bin/smart-commit
 chmod +x /usr/local/bin/smart-commit
 ```
 

@@ -1,13 +1,14 @@
 [requires]
 asio/1.28.0
 sfml/2.6.1
+gtest/1.14.0
 
 [generators]
 CMakeDeps
 CMakeToolchain
 
 [options]
-sfml/*:shared=False
+sfml/*:shared=True
 sfml/*:graphics=True
 sfml/*:window=True
 sfml/*:audio=True

@@ -73,8 +73,8 @@ install(TARGETS r-type_server r-type_client
     RUNTIME DESTINATION bin
 )
 
-# Testing (optional, using GTest)
-option(BUILD_TESTS "Build unit tests" OFF)
+# Testing (GTest)
+option(BUILD_TESTS "Build unit tests" ON)
 if(BUILD_TESTS)
     enable_testing()
     find_package(GTest REQUIRED)
