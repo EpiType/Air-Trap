@@ -171,44 +171,55 @@ for type in DOCS CHORE STYLE FIX ADD REFACTOR; do
     
     echo ""
     
-    # Essayer d'utiliser GitHub Copilot CLI si disponible
-    AI_DESC=""
-    if command -v gh &> /dev/null && gh copilot --version &> /dev/null 2>&1; then
-        echo "   🤖 Génération avec Copilot..."
+    # Essayer d'utiliser Copilot pour générer une meilleure suggestion
+    AI_DESC="$AUTO_DESC"
+    
+    # Stager les fichiers pour permettre à Copilot d'analyser
+    git add $files 2>/dev/null
+    
+    # Créer un fichier temporaire avec contexte pour Copilot
+    TEMP_COMMIT_FILE=$(mktemp)
+    cat > "$TEMP_COMMIT_FILE" <<EOF
+# Type: $type
+# Files changed: $FILE_COUNT
+# Summary: $CHANGES_DESC
+#
+# Generate a concise commit description (max 72 chars) for these changes.
+# DO NOT include the [$type] prefix, only the description.
+#
+# Automatic suggestion: $AUTO_DESC
+#
+# Write your commit message below (delete these comments):
+
+EOF
+    
+    # Ouvrir dans l'éditeur par défaut (VS Code si disponible)
+    if [ -n "$VSCODE_IPC_HOOK_CLI" ] && command -v code &> /dev/null; then
+        echo "   🤖 Ouverture dans VS Code pour suggestion Copilot..."
+        echo "   💡 Utilisez Ctrl+I pour générer avec Copilot"
+        echo "   💡 Ou tapez directement votre message"
         
-        # Stager temporairement les fichiers pour Copilot
-        git add $files 2>/dev/null
+        # Ouvrir dans VS Code et attendre
+        code --wait "$TEMP_COMMIT_FILE"
         
-        # Créer un prompt pour Copilot
-        COPILOT_PROMPT="Generate a concise git commit message for these changes. Format: [$type] <description (max 72 chars)>. Only output the description part without the [TYPE] prefix."
+        # Lire la description depuis le fichier (ignorer les commentaires)
+        description=$(grep -v "^#" "$TEMP_COMMIT_FILE" | grep -v "^$" | head -1)
         
-        # Essayer de générer avec Copilot (timeout 5s)
-        AI_SUGGESTION=$(timeout 5s gh copilot suggest "Git commit message for: $CHANGES_DESC" 2>/dev/null | grep -v "^>" | grep -v "^Suggestion" | head -1 | sed 's/^[[:space:]]*//' || echo "")
+        rm -f "$TEMP_COMMIT_FILE"
         
-        if [ -n "$AI_SUGGESTION" ] && [ "$AI_SUGGESTION" != "null" ]; then
-            # Nettoyer la suggestion (retirer le [TYPE] si présent)
-            AI_DESC=$(echo "$AI_SUGGESTION" | sed "s/^\[$type\]//i" | sed 's/^[[:space:]]*//')
-            
-            if [ -n "$AI_DESC" ]; then
-                echo "   💡 Suggestion Copilot: $AI_DESC"
-            else
-                AI_DESC="$AUTO_DESC"
-                echo "   💡 Suggestion auto: $AUTO_DESC"
-            fi
-        else
-            AI_DESC="$AUTO_DESC"
-            echo "   💡 Suggestion auto: $AUTO_DESC"
+        if [ -z "$description" ]; then
+            echo "   ⚠️  Aucune description fournie, utilisation de la suggestion auto"
+            description="$AUTO_DESC"
         fi
     else
-        AI_DESC="$AUTO_DESC"
+        # Fallback: demander dans le terminal
+        rm -f "$TEMP_COMMIT_FILE"
         echo "   💡 Suggestion auto: $AUTO_DESC"
-    fi
-    
-    read -p "   Description (Entrée pour accepter): " description
-    
-    # Utiliser la suggestion si vide
-    if [ -z "$description" ]; then
-        description="$AI_DESC"
+        read -p "   Description (Entrée pour accepter): " description
+        
+        if [ -z "$description" ]; then
+            description="$AUTO_DESC"
+        fi
     fi
     
     # Git add les fichiers du groupe
