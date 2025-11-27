@@ -588,21 +588,37 @@ jobs:
         fi
         
         # Construire et envoyer le payload Discord
-        REPORT_ESCAPED=$(echo "$REPORT" | sed 's/"/\\"/g' | tr '\n' ' ')
-        COMMIT_LIST_ESCAPED=$(echo "$COMMIT_LIST" | sed 's/"/\\"/g')
+        REPORT_CLEAN=$(echo "$REPORT" | sed 's/\\n/ | /g')
         
         # Limiter à 10 commits max pour Discord
         COMMIT_COUNT=$(echo "$COMMIT_LIST" | wc -l)
         if [ $COMMIT_COUNT -gt 10 ]; then
-          COMMIT_LIST_DISPLAY=$(echo "$COMMIT_LIST" | head -10)
-          COMMIT_LIST_DISPLAY="$COMMIT_LIST_DISPLAY\\n... and $((COMMIT_COUNT - 10)) more commits"
+          COMMIT_LIST_DISPLAY=$(echo "$COMMIT_LIST" | head -10 | sed 's/$/\\n/')
+          COMMIT_LIST_DISPLAY="${COMMIT_LIST_DISPLAY}... and $((COMMIT_COUNT - 10)) more commits"
         else
-          COMMIT_LIST_DISPLAY="$COMMIT_LIST"
+          COMMIT_LIST_DISPLAY=$(echo "$COMMIT_LIST" | sed 's/$/\\n/')
         fi
-        COMMIT_LIST_ESCAPED=$(echo "$COMMIT_LIST_DISPLAY" | sed 's/"/\\"/g')
         
-        JSON_PAYLOAD="{\"embeds\":[{\"title\":\"$STATUS_MSG\",\"color\":$COLOR,\"description\":\"$REPORT_ESCAPED\",\"fields\":[{\"name\":\"📦 Repository\",\"value\":\"${{ github.repository }}\",\"inline\":true},{\"name\":\"🌿 Branch\",\"value\":\"$BRANCH_NAME\",\"inline\":true},{\"name\":\"👤 Author\",\"value\":\"$COMMITTER\",\"inline\":true},{\"name\":\"📝 Commits ($COMMIT_COUNT)\",\"value\":\"$COMMIT_LIST_ESCAPED\",\"inline\":false},{\"name\":\"🔔 Event\",\"value\":\"$EVENT_TYPE\",\"inline\":true},{\"name\":\"🔗 Link\",\"value\":\"$LINK\",\"inline\":true}],\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}]}"
+        echo "=== Discord Notification Debug ==="
+        echo "Webhook configured: $([ -n "$WEBHOOK" ] && echo "YES" || echo "NO")"
+        echo "Branch: $BRANCH_NAME"
+        echo "Commit count: $COMMIT_COUNT"
+        echo "Status: $STATUS_MSG"
+        echo ""
         
-        curl -H "Content-Type: application/json" -X POST -d "$JSON_PAYLOAD" "$WEBHOOK"
+        # Envoyer avec curl et afficher la réponse
+        HTTP_CODE=$(curl -s -o /tmp/response.txt -w "%{http_code}" \
+          -H "Content-Type: application/json" \
+          -X POST \
+          -d "{\"embeds\":[{\"title\":\"$STATUS_MSG\",\"color\":$COLOR,\"description\":\"$REPORT_CLEAN\",\"fields\":[{\"name\":\"📦 Repo\",\"value\":\"${{ github.repository }}\",\"inline\":true},{\"name\":\"🌿 Branch\",\"value\":\"$BRANCH_NAME\",\"inline\":true},{\"name\":\"👤 Author\",\"value\":\"$COMMITTER\",\"inline\":true},{\"name\":\"📝 Commits\",\"value\":\"$COMMIT_COUNT\",\"inline\":true},{\"name\":\"🔔 Event\",\"value\":\"$EVENT_TYPE\",\"inline\":true},{\"name\":\"🔗 Link\",\"value\":\"$LINK\",\"inline\":true},{\"name\":\"💬 Messages\",\"value\":\"$COMMIT_LIST_DISPLAY\",\"inline\":false}],\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}]}" \
+          "$WEBHOOK")
         
-        echo "✅ Notification Discord envoyée"
+        echo "HTTP Code: $HTTP_CODE"
+        cat /tmp/response.txt
+        echo ""
+        
+        if [ "$HTTP_CODE" = "204" ] || [ "$HTTP_CODE" = "200" ]; then
+          echo "✅ Notification Discord envoyée"
+        else
+          echo "❌ Échec (HTTP $HTTP_CODE)"
+        fi
