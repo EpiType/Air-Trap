@@ -23,11 +23,10 @@ jobs:
       ci: ${{ steps.filter.outputs.ci }}
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0  # Need full history for proper diff detection
     - uses: dorny/paths-filter@v3
       id: filter
       with:
+        list-files: shell
         filters: |
           src:
             - 'client/**'
@@ -46,6 +45,8 @@ jobs:
         echo "src=${{ steps.filter.outputs.src }}"
         echo "docs=${{ steps.filter.outputs.docs }}"
         echo "ci=${{ steps.filter.outputs.ci }}"
+        echo "Changed files in this push:"
+        git diff --name-only ${{ github.event.before }} ${{ github.sha }} || echo "No previous commit"
 
   # Job 1: Commit Message Validation
   commit-validation:
