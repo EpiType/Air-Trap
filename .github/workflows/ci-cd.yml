@@ -144,8 +144,11 @@ jobs:
     name: Build on Linux
     runs-on: ubuntu-latest
     needs: style-check
-    # Only run on push to dev branch, not on mirrors
-    if: github.repository == 'EpiType/Air-Trap' && github.ref_name == 'dev' && github.event_name == 'push'
+    # Run on push to dev or main branches
+    if: |
+      github.repository == 'EpiType/Air-Trap' && 
+      (github.ref_name == 'dev' || github.ref_name == 'main') && 
+      github.event_name == 'push'
     
     steps:
     - name: Checkout code
@@ -344,12 +347,15 @@ jobs:
   mirror:
     name: Mirror to External Repository
     runs-on: ubuntu-latest
-    needs: [commit-validation, style-check]
-    # Mirror all branches after successful validation, only from main repository
+    needs: [commit-validation, style-check, build-linux]
+    # Mirror after builds (if they ran), only from main repository
     if: |
       github.repository == 'EpiType/Air-Trap' &&
-      github.event_name == 'push' && 
-      success()
+      github.event_name == 'push' &&
+      always() &&
+      (needs.build-linux.result == 'success' || needs.build-linux.result == 'skipped') &&
+      (needs.commit-validation.result == 'success' || needs.commit-validation.result == 'skipped') &&
+      needs.style-check.result == 'success'
     
     steps:
     - name: Checkout code
@@ -389,7 +395,7 @@ jobs:
   notify:
     name: Send Discord Notification
     runs-on: ubuntu-latest
-    needs: [commit-validation]
+    needs: [commit-validation, style-check, build-linux, build-windows, build-macos, mirror]
     # Always notify from main repository (push and PR), même en cas d'échec
     if: |
       github.repository == 'EpiType/Air-Trap' &&
@@ -398,7 +404,13 @@ jobs:
     steps:
     - name: Send Discord notification
       run: |
-        COMMIT_STATUS="${{ needs.commit-validation.result }}"
+        # Récupérer TOUS les statuts (avec fallback sur 'skipped')
+        COMMIT_STATUS="${{ needs.commit-validation.result || 'skipped' }}"
+        STYLE_STATUS="${{ needs.style-check.result || 'skipped' }}"
+        BUILD_LINUX_STATUS="${{ needs.build-linux.result || 'skipped' }}"
+        BUILD_WINDOWS_STATUS="${{ needs.build-windows.result || 'skipped' }}"
+        BUILD_MACOS_STATUS="${{ needs.build-macos.result || 'skipped' }}"
+        MIRROR_STATUS="${{ needs.mirror.result || 'skipped' }}
         
         BRANCH_NAME="${{ github.ref_name }}"
         COMMIT="$(echo "${{ github.sha }}" | head -c 7)"
@@ -424,17 +436,17 @@ jobs:
         
         # Vérifier que le webhook est configuré
         if [ -z "$WEBHOOK" ]; then
-          echo "⚠️ Webhook Discord non configuré pour la branche $BRANCH_NAME"
-          exit 0
+          echo "❌ ERREUR: Webhook Discord non configuré pour $BRANCH_NAME"
+          echo "Configure DISCORD_WEBHOOK_MAINDEV ou DISCORD_WEBHOOK_OTHER dans les secrets GitHub"
+          exit 1
         fi
         
-        # Construire le rapport détaillé
+        # Construire le rapport COMPLET
         REPORT=""
         FAILED=0
         
-        # Vérifier chaque job
+        # Commit Validation
         if [ "$COMMIT_STATUS" = "failure" ]; then
-          STATUS_MSG="❌ CI/CD Failed"
           REPORT="$REPORT\\n❌ Commit Validation: Messages invalides"
           FAILED=1
         elif [ "$COMMIT_STATUS" = "success" ]; then
@@ -443,8 +455,8 @@ jobs:
           REPORT="$REPORT\\n⏭️ Commit Validation: Skipped (PR)"
         fi
         
+        # Style Check
         if [ "$STYLE_STATUS" = "failure" ]; then
-          STATUS_MSG="❌ CI/CD Failed"
           REPORT="$REPORT\\n❌ Style Check: Code non conforme"
           FAILED=1
         elif [ "$STYLE_STATUS" = "success" ]; then
@@ -453,21 +465,52 @@ jobs:
           REPORT="$REPORT\\n⏭️ Style Check: Skipped"
         fi
         
+        # Build Linux
+        if [ "$BUILD_LINUX_STATUS" = "failure" ]; then
+          REPORT="$REPORT\\n❌ Build Linux: Échec compilation"
+          FAILED=1
+        elif [ "$BUILD_LINUX_STATUS" = "success" ]; then
+          REPORT="$REPORT\\n✅ Build Linux: OK"
+        elif [ "$BUILD_LINUX_STATUS" = "skipped" ]; then
+          REPORT="$REPORT\\n⏭️ Build Linux: Skipped (branch: $BRANCH_NAME)"
+        fi
+        
+        # Build Windows
+        if [ "$BUILD_WINDOWS_STATUS" = "failure" ]; then
+          REPORT="$REPORT\\n❌ Build Windows: Échec compilation"
+          FAILED=1
+        elif [ "$BUILD_WINDOWS_STATUS" = "success" ]; then
+          REPORT="$REPORT\\n✅ Build Windows: OK"
+        elif [ "$BUILD_WINDOWS_STATUS" = "skipped" ]; then
+          REPORT="$REPORT\\n⏭️ Build Windows: Skipped (pas de PR vers main)"
+        fi
+        
+        # Build macOS
+        if [ "$BUILD_MACOS_STATUS" = "failure" ]; then
+          REPORT="$REPORT\\n❌ Build macOS: Échec compilation"
+          FAILED=1
+        elif [ "$BUILD_MACOS_STATUS" = "success" ]; then
+          REPORT="$REPORT\\n✅ Build macOS: OK"
+        elif [ "$BUILD_MACOS_STATUS" = "skipped" ]; then
+          REPORT="$REPORT\\n⏭️ Build macOS: Skipped (pas de PR vers main)"
+        fi
+        
+        # Mirror
         if [ "$MIRROR_STATUS" = "failure" ]; then
           REPORT="$REPORT\\n⚠️ Mirror: Échec sync Epitech"
         elif [ "$MIRROR_STATUS" = "success" ]; then
           REPORT="$REPORT\\n✅ Mirror: Sync Epitech OK"
         elif [ "$MIRROR_STATUS" = "skipped" ]; then
-          REPORT="$REPORT\\n⏭️ Mirror: Skipped"
+          REPORT="$REPORT\\n⏭️ Mirror: Skipped (builds non exécutés)"
         fi
         
         # Déterminer le statut global
         if [ $FAILED -eq 0 ]; then
-          if [ "$COMMIT_STATUS" = "success" ] || [ "$STYLE_STATUS" = "success" ]; then
-            STATUS_MSG="✅ CI/CD Success"
-          else
-            STATUS_MSG="⏭️ CI/CD Skipped"
-          fi
+          STATUS_MSG="✅ CI/CD Success"
+          COLOR="3066993"
+        else
+          STATUS_MSG="❌ CI/CD Failed"
+          COLOR="15158332"
         fi
         
         # Ajouter le type d'événement
@@ -484,7 +527,7 @@ jobs:
         {
           "embeds": [{
             "title": "$STATUS_MSG",
-            "color": $([ $FAILED -eq 0 ] && echo "3066993" || echo "15158332"),
+            "color": $COLOR,
             "fields": [
               {
                 "name": "📦 Repository",
@@ -517,7 +560,7 @@ jobs:
                 "inline": false
               },
               {
-                "name": "📊 Report",
+                "name": "📊 Rapport Complet",
                 "value": "\\\`\\\`\\\`\\n$REPORT\\n\\\`\\\`\\\`",
                 "inline": false
               }
