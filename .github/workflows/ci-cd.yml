@@ -29,8 +29,8 @@ jobs:
     - name: Validate commit messages
       run: |
         # Custom commit pattern: [TYPE] description
-        # Types: ADD, FIX, CHORE, DOCS, STYLE, REFACTOR
-        PATTERN="^\[(ADD|FIX|CHORE|DOCS|STYLE|REFACTOR)\] .+"
+        # Types: ADD, FIX, CHORE, DOCS, STYLE, DEL, REFACTOR
+        PATTERN="^\[(ADD|FIX|CHORE|DOCS|STYLE|DEL|REFACTOR)\] .+"
         
         # Get commits from push
         if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
