@@ -129,22 +129,46 @@ for type in DOCS CHORE STYLE FIX ADD REFACTOR; do
             CHANGE_SUMMARY=""
             
             # Détecter les patterns dans le diff
-            if echo "$DIFF_CONTENT" | grep -q "^\+.*function\|^\+.*def \|^\+.*class "; then
+            if echo "$DIFF_CONTENT" | grep -qE "^\+.*function |^\+.*def |^\+.*class |^\+.*struct |^\+.*enum "; then
                 CHANGE_SUMMARY="add new functions/classes"
-            elif echo "$DIFF_CONTENT" | grep -q "^\+.*fix\|^\+.*bug"; then
+            elif echo "$DIFF_CONTENT" | grep -qE "^\+.*(fix|Fix|FIX|bug|Bug|BUG|error|Error|crash|Crash|issue|Issue)"; then
                 CHANGE_SUMMARY="fix bugs"
-            elif echo "$DIFF_CONTENT" | grep -q "^\+.*TODO\|^\+.*FIXME"; then
+            elif echo "$DIFF_CONTENT" | grep -qE "^\+.*(TODO|FIXME|XXX|HACK|NOTE|@todo|@fixme)"; then
                 CHANGE_SUMMARY="add TODOs"
-            elif echo "$DIFF_CONTENT" | grep -q "^\+.*comment\|^\+.*#\|^\+.*//"; then
+            elif echo "$DIFF_CONTENT" | grep -qE "^\+.*(\/\/|\/\*|\*\/|#|comment|Comment|@brief|@param|@return)"; then
                 CHANGE_SUMMARY="improve comments"
-            elif echo "$DIFF_CONTENT" | grep -q "^\+.*echo\|^\+.*print\|^\+.*STATUS_MSG"; then
+            elif echo "$DIFF_CONTENT" | grep -qE "^\+.*(echo|print|printf|cout|cerr|STATUS_MSG|MESSAGE|LOG|log|Log|std::cout|std::cerr)"; then
                 CHANGE_SUMMARY="update messages"
-            elif echo "$DIFF_CONTENT" | grep -q "^\+.*if\|^\+.*for\|^\+.*while"; then
+            elif echo "$DIFF_CONTENT" | grep -qE "^\+.*(test|Test|TEST|ASSERT|assert|expect|EXPECT|describe|it\()"; then
+                CHANGE_SUMMARY="add tests"
+            elif echo "$DIFF_CONTENT" | grep -qE "^\+.*(if |for |while |switch |case |else |elif |try |catch )"; then
                 CHANGE_SUMMARY="refactor logic"
-            elif [ "$ADDED" -gt 50 ]; then
-                CHANGE_SUMMARY="add new implementation"
-            elif [ "$REMOVED" -gt 20 ]; then
+            elif echo "$DIFF_CONTENT" | grep -qE "^\+.*(const |static |inline |virtual |override |constexpr |noexcept |explicit )"; then
+                CHANGE_SUMMARY="update implementation"
+            elif echo "$DIFF_CONTENT" | grep -qE "^\+.*#include|^\+.*import "; then
+                CHANGE_SUMMARY="update includes"
+            elif echo "$DIFF_CONTENT" | grep -qE "^\+.*(namespace|using |typedef |using namespace)"; then
+                CHANGE_SUMMARY="update namespaces"
+            elif echo "$DIFF_CONTENT" | grep -qE "^\+.*(std::|boost::|asio::|sf::)"; then
+                CHANGE_SUMMARY="add library calls"
+            elif echo "$DIFF_CONTENT" | grep -qE "^\+.*(auto |int |void |bool |char |float |double |string |vector |map |pair )"; then
+                CHANGE_SUMMARY="add variables"
+            elif echo "$DIFF_CONTENT" | grep -qE "^\+.*(public:|private:|protected:)"; then
+                CHANGE_SUMMARY="update access modifiers"
+            elif echo "$DIFF_CONTENT" | grep -qE "^\+.*(throw |exception|Exception|std::runtime_error|std::logic_error)"; then
+                CHANGE_SUMMARY="add error handling"
+            elif echo "$DIFF_CONTENT" | grep -qE "^\+.*(template|typename|<.*>)"; then
+                CHANGE_SUMMARY="add template code"
+            elif echo "$DIFF_CONTENT" | grep -qE "^\-.*(function|class|struct|enum)"; then
                 CHANGE_SUMMARY="remove old code"
+            elif echo "$DIFF_CONTENT" | grep -qE "^\-.*(if |for |while |switch )"; then
+                CHANGE_SUMMARY="simplify logic"
+            elif [ "$ADDED" -gt 100 ]; then
+                CHANGE_SUMMARY="add new implementation"
+            elif [ "$REMOVED" -gt 50 ]; then
+                CHANGE_SUMMARY="remove old code"
+            elif [ "$ADDED" -gt 20 ] && [ "$REMOVED" -gt 20 ]; then
+                CHANGE_SUMMARY="refactor implementation"
             else
                 CHANGE_SUMMARY="update implementation"
             fi
