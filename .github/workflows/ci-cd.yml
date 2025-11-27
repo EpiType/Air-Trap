@@ -168,9 +168,6 @@ jobs:
       run: |
         pip install conan
         conan profile detect
-        # Increase download retries and timeout for flaky networks
-        conan config set general.download:retry=5
-        conan config set general.download:retry_wait=10
 
     - name: Cache Conan packages
       uses: actions/cache@v3
@@ -228,8 +225,6 @@ jobs:
       run: |
         pip install conan
         conan profile detect
-        conan config set general.download:retry=5
-        conan config set general.download:retry_wait=10
 
     - name: Cache Conan packages
       uses: actions/cache@v3
@@ -287,8 +282,6 @@ jobs:
       run: |
         pip install conan
         conan profile detect
-        conan config set general.download:retry=5
-        conan config set general.download:retry_wait=10
 
     - name: Cache Conan packages
       uses: actions/cache@v3
@@ -452,7 +445,7 @@ jobs:
         elif [ "$COMMIT_STATUS" = "success" ]; then
           REPORT="$REPORT\\n✅ Commit Validation: OK"
         elif [ "$COMMIT_STATUS" = "skipped" ]; then
-          REPORT="$REPORT\\n⏭️ Commit Validation: Skipped (PR)"
+          REPORT="$REPORT\\n⏭️ Commit Validation: Skipped - PR"
         fi
         
         # Style Check
@@ -472,7 +465,7 @@ jobs:
         elif [ "$BUILD_LINUX_STATUS" = "success" ]; then
           REPORT="$REPORT\\n✅ Build Linux: OK"
         elif [ "$BUILD_LINUX_STATUS" = "skipped" ]; then
-          REPORT="$REPORT\\n⏭️ Build Linux: Skipped (branch: $BRANCH_NAME)"
+          REPORT="$REPORT\\n⏭️ Build Linux: Skipped - branch: $BRANCH_NAME"
         fi
         
         # Build Windows
@@ -482,7 +475,7 @@ jobs:
         elif [ "$BUILD_WINDOWS_STATUS" = "success" ]; then
           REPORT="$REPORT\\n✅ Build Windows: OK"
         elif [ "$BUILD_WINDOWS_STATUS" = "skipped" ]; then
-          REPORT="$REPORT\\n⏭️ Build Windows: Skipped (pas de PR vers main)"
+          REPORT="$REPORT\\n⏭️ Build Windows: Skipped - pas de PR vers main"
         fi
         
         # Build macOS
@@ -492,7 +485,7 @@ jobs:
         elif [ "$BUILD_MACOS_STATUS" = "success" ]; then
           REPORT="$REPORT\\n✅ Build macOS: OK"
         elif [ "$BUILD_MACOS_STATUS" = "skipped" ]; then
-          REPORT="$REPORT\\n⏭️ Build macOS: Skipped (pas de PR vers main)"
+          REPORT="$REPORT\\n⏭️ Build macOS: Skipped - pas de PR vers main"
         fi
         
         # Mirror
@@ -501,7 +494,7 @@ jobs:
         elif [ "$MIRROR_STATUS" = "success" ]; then
           REPORT="$REPORT\\n✅ Mirror: Sync Epitech OK"
         elif [ "$MIRROR_STATUS" = "skipped" ]; then
-          REPORT="$REPORT\\n⏭️ Mirror: Skipped (builds non exécutés)"
+          REPORT="$REPORT\\n⏭️ Mirror: Skipped - builds non exécutés"
         fi
         
         # Déterminer le statut global
