@@ -1,0 +1,28 @@
+{
+  "server": {
+    "port": 4242,
+    "maxPlayers": 4,
+    "tickRate": 60,
+    "timeout": 30000
+  },
+  "game": {
+    "worldWidth": 1920,
+    "worldHeight": 1080,
+    "spawnPoints": [
+      { "x": 100, "y": 100 },
+      { "x": 1820, "y": 100 },
+      { "x": 100, "y": 980 },
+      { "x": 1820, "y": 980 }
+    ]
+  },
+  "logging": {
+    "level": "info",
+    "file": "logs/server.log",
+    "console": true
+  },
+  "network": {
+    "maxPacketSize": 1024,
+    "connectionTimeout": 5000,
+    "keepAliveInterval": 1000
+  }
+}
