@@ -416,6 +416,8 @@ Les tests sont décommentés progressivement au fur et à mesure de l'implément
 - [Sujet du projet (PDF)](./docs/subject/B-CPP-500_rtype.pdf)
 - [Annexes (PDF)](./docs/subject/B-CPP-500_rtype_apendix.pdf)
 - [Protection des branches](./.github/BRANCH_PROTECTION.md)
+- [Usage des Git Hooks](./.githooks/README.md)
+- [Usage du Smart Commit Tool](./SMART_COMMIT_GUIDE.md)
 
 ## 🤝 Contribution
 
