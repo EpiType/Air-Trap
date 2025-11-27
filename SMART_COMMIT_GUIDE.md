@@ -49,7 +49,7 @@ C'est tout ! L'outil est prêt à l'emploi.
 
 ## 📦 Groupes de Fichiers
 
-Le script classe automatiquement les fichiers dans 6 catégories :
+Le script classe automatiquement les fichiers dans 7 catégories :
 
 ### [DOCS] - Documentation
 **Pattern** : `*.md`, `*.txt`, `*.pdf`, `docs/*`, `README*`
@@ -126,6 +126,21 @@ Le script classe automatiquement les fichiers dans 6 catégories :
 [ADD] implement entity component system
 - Entity.hpp: add new functions/classes
 - Registry.hpp: add new implementation
+```
+
+### [DEL] - Suppressions
+**Pattern** : Fichiers supprimés
+
+**Exemples** :
+- Scripts déplacés vers `scripts/`
+- Fichiers obsolètes ou dépréciés
+- Configuration remplacée
+
+**Commit généré** :
+```
+[DEL] remove old build scripts
+- build.sh: remove (moved to scripts/)
+- format.sh: remove (moved to scripts/)
 ```
 
 ### [REFACTOR] - Refactoring
