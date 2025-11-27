@@ -18,49 +18,56 @@ jobs:
     name: Detect Changed Files
     runs-on: ubuntu-latest
     outputs:
-      src: ${{ steps.filter.outputs.src }}
-      docs: ${{ steps.filter.outputs.docs }}
-      ci: ${{ steps.filter.outputs.ci }}
+      src: ${{ steps.changes.outputs.src }}
+      docs: ${{ steps.changes.outputs.docs }}
+      ci: ${{ steps.changes.outputs.ci }}
     steps:
     - uses: actions/checkout@v4
-    - uses: dorny/paths-filter@v3
-      id: filter
       with:
-        list-files: shell
-        filters: |
-          src:
-            - 'client/**'
-            - 'server/**'
-            - 'common/**'
-            - 'CMakeLists.txt'
-            - 'conanfile.txt'
-          docs:
-            - '**.md'
-            - 'docs/**'
-          ci:
-            - '.github/**'
-            - 'scripts/**'
-    - name: Debug outputs
+        fetch-depth: 0
+    - name: Detect changes manually
+      id: changes
       run: |
-        echo "=== Paths Filter Outputs ==="
-        echo "src=${{ steps.filter.outputs.src }}"
-        echo "docs=${{ steps.filter.outputs.docs }}"
-        echo "ci=${{ steps.filter.outputs.ci }}"
+        # Get list of changed files
+        if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+          # New branch, check current commit only
+          FILES=$(git diff-tree --no-commit-id --name-only -r HEAD)
+        else
+          # Compare with previous commit
+          FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+        fi
+        
+        echo "Changed files:"
+        echo "$FILES"
         echo ""
-        echo "=== Changed files in this push ==="
-        git diff --name-only ${{ github.event.before }} ${{ github.sha }} || echo "No previous commit"
+        
+        # Check src files
+        SRC_CHANGED=false
+        if echo "$FILES" | grep -qE '^(client|server|common)/|^CMakeLists\.txt$|^conanfile\.txt$'; then
+          SRC_CHANGED=true
+        fi
+        
+        # Check docs files
+        DOCS_CHANGED=false
+        if echo "$FILES" | grep -qE '\.md$|^docs/'; then
+          DOCS_CHANGED=true
+        fi
+        
+        # Check ci files
+        CI_CHANGED=false
+        if echo "$FILES" | grep -qE '^\.github/|^scripts/'; then
+          CI_CHANGED=true
+        fi
+        
+        echo "src=$SRC_CHANGED" >> $GITHUB_OUTPUT
+        echo "docs=$DOCS_CHANGED" >> $GITHUB_OUTPUT
+        echo "ci=$CI_CHANGED" >> $GITHUB_OUTPUT
+        
         echo ""
-        echo "=== Manual pattern matching ==="
-        for file in $(git diff --name-only ${{ github.event.before }} ${{ github.sha }}); do
-          echo "File: $file"
-          [[ "$file" =~ ^(client|server|common)/ ]] && echo "  ✓ Matches src (code)"
-          [[ "$file" =~ ^CMakeLists\.txt$ ]] && echo "  ✓ Matches src (CMakeLists)"
-          [[ "$file" =~ ^conanfile\.txt$ ]] && echo "  ✓ Matches src (conanfile)"
-          [[ "$file" =~ \.md$ ]] && echo "  ✓ Matches docs (*.md)"
-          [[ "$file" =~ ^docs/ ]] && echo "  ✓ Matches docs (docs/)"
-          [[ "$file" =~ ^\.github/ ]] && echo "  ✓ Matches ci (.github/)"
-          [[ "$file" =~ ^scripts/ ]] && echo "  ✓ Matches ci (scripts/)"
-        done
+        echo "=== Detection Results ==="
+        echo "src=$SRC_CHANGED"
+        echo "docs=$DOCS_CHANGED"
+        echo "ci=$CI_CHANGED"
 
   # Job 1: Commit Message Validation
   commit-validation:
