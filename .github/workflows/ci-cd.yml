@@ -491,7 +491,6 @@ jobs:
           fi
           PR_URL=""
         fi
-        fi
         
         # Déterminer le webhook selon la branche
         if [ "$BRANCH_NAME" = "main" ] || [ "$BRANCH_NAME" = "dev" ]; then
