@@ -1,0 +1,108 @@
+name: C++ Coding Style
+
+on:
+  pull_request:
+    paths:
+      - '**/*.cpp'
+      - '**/*.h'
+      - 'coding-style/**'
+  workflow_dispatch:
+    inputs:
+      indent-width:
+        description: 'Indent width'
+        default: 4
+        required: true
+      tab-width:
+        description: 'Tab width'
+        default: 4
+        required: true
+      column-limit:
+        description: 'Column limit'
+        default: 80
+        required: true
+
+env:
+  FORMATTED_FILE: .formatted_files.json
+  TEMPLATE_FILE: coding-style/cpp-clang-format_base.yaml
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set formatting variables
+        run: |
+          echo "INDENT_WIDTH=${{ github.event.inputs.indent-width }}" >> $GITHUB_ENV
+          echo "TAB_WIDTH=${{ github.event.inputs.tab-width }}" >> $GITHUB_ENV
+          echo "COLUMN_LIMIT=${{ github.event.inputs.column-limit }}" >> $GITHUB_ENV
+
+      - name: Initialize formatted files tracking
+        run: |
+          if [ ! -f "$FORMATTED_FILE" ]; then
+            echo '{"files":[]}' > $FORMATTED_FILE
+          fi
+
+      - name: Generate new .clang-format dynamically
+        run: |
+          envsubst < $TEMPLATE_FILE > .clang-format
+
+      - name: Check if template or env changed
+        id: reset_tracking
+        run: |
+          # Compute hash of current .clang-format and env vars
+          CLANG_HASH=$(sha1sum .clang-format | cut -d' ' -f1)
+          ENV_HASH=$(echo "$INDENT_WIDTH:$TAB_WIDTH:$COLUMN_LIMIT" | sha1sum | cut -d' ' -f1)
+
+          # Save current hash state
+          echo "${CLANG_HASH}_${ENV_HASH}" > .clang-format.hash
+
+          # Compare with previous hash
+          if [ -f "$FORMATTED_FILE.hash" ]; then
+            PREV_HASH=$(cat "$FORMATTED_FILE.hash")
+          else
+            PREV_HASH=""
+          fi
+
+          if [ "$PREV_HASH" != "${CLANG_HASH}_${ENV_HASH}" ]; then
+            echo "Template or parameters changed. Clearing formatted files tracking."
+            echo '{"files":[]}' > $FORMATTED_FILE
+          fi
+
+          # Save new hash for next run
+          cp .clang-format.hash $FORMATTED_FILE.hash
+
+      - name: Clean formatted files tracking for deleted files
+        run: |
+          tmp=$(mktemp)
+          jq -r '.files[]' $FORMATTED_FILE | while read f; do
+              [ -f "$f" ] && echo "\"$f\""
+          done | jq -s '{files: .}' > "$tmp" && mv "$tmp" $FORMATTED_FILE
+
+      - name: Install dependencies (Python)
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install -r coding-style/requirements.txt || true
+
+      - name: Run custom C++ formatter
+        run: |
+          python3 coding-style/cpp-coding-style.py \
+            -i $INDENT_WIDTH \
+            -c $COLUMN_LIMIT
+
+      - name: Show formatted files
+        run: |
+          echo "Formatted files:"
+          cat $FORMATTED_FILE
+
+      - name: Commit updated formatted files tracking
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add $FORMATTED_FILE $FORMATTED_FILE.hash
+          git diff --quiet || git commit -m "Update formatted files tracking"
+          git push || echo "No changes to push"
