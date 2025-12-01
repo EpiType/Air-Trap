@@ -152,6 +152,16 @@ Le script classe automatiquement les fichiers dans 7 catégories :
 - GameSystem.cpp: refactor logic for better readability
 ```
 
+### [MERGE] - Merges de Branches
+**Pattern** : Merges de branches Git
+
+**Commit généré** :
+```
+[MERGE] merge feature branch into main
+- feature/login: merge into main
+
+```
+
 ## 🧠 Analyse Intelligente
 
 Le script analyse le contenu des diffs et **cumule tous les patterns détectés** pour générer des descriptions complètes :

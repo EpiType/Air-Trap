@@ -137,7 +137,7 @@ chmod +x scripts/smart-commit.sh
 ```
 
 **Fonctionnalités** :
-- ✅ Groupe automatiquement les fichiers par type ([DOCS], [CHORE], [STYLE], [FIX], [ADD], [DEL], [REFACTOR])
+- ✅ Groupe automatiquement les fichiers par type ([DOCS], [CHORE], [STYLE], [FIX], [ADD], [DEL], [REFACTOR], [MERGE])
 - 📊 Analyse les diffs et génère des descriptions intelligentes
 - 📝 Affiche les stats (+/-) pour chaque fichier
 - 🎯 Format multi-ligne pour les commits avec plusieurs fichiers
@@ -189,7 +189,7 @@ Le hook `commit-msg` vérifie que tous les commits suivent le format :
 ```
 [TYPE] description
 
-Types valides: [ADD], [FIX], [CHORE], [DOCS], [STYLE], [DEL], [REFACTOR]
+Types valides: [ADD], [FIX], [CHORE], [DOCS], [STYLE], [DEL], [REFACTOR], [MERGE]
 ```
 
 ## 🔄 CI/CD Pipeline
@@ -287,6 +287,7 @@ Types valides:
 - [STYLE]    : Formatage (whitespace, indentation)
 - [DEL]      : Suppression de fichiers
 - [REFACTOR] : Refactoring sans changement fonctionnel
+- [MERGE]    : Merge de branches
 ```
 
 **Pour plusieurs fichiers**, utiliser le format multi-ligne :

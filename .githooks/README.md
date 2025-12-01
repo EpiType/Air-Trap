@@ -25,6 +25,8 @@ Valide le format des messages de commit selon la norme du projet.
 - `[DOCS]` : Ajouter des instructions de documentation
 - `[STYLE]` : Appliquer format de style au projet
 - `[REFACTOR]` : Reformater le code
+- `[DEL]` : Suppression de fichiers
+- `[MERGE]` : Merge de branches
 
 **Exemples valides:**
 ```
@@ -34,6 +36,8 @@ Valide le format des messages de commit selon la norme du projet.
 [REFACTOR] ECS component registration system
 [CHORE] CMakeLists configuration for new dependencies
 [STYLE] clang-format on server codebase
+[DEL] removed deprecated networking module
+[MERGE] merge feature/login into main
 ```
 
 **Exemples invalides:**

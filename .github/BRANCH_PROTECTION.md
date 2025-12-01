@@ -86,7 +86,7 @@ git checkout -b feature/my-awesome-feature
 # Développer...
 git add .
 git commit -m "[ADD] awesome feature"
-# Types disponibles : [ADD], [FIX], [CHORE], [DOCS], [STYLE], [REFACTOR], [DEL]
+# Types disponibles : [ADD], [FIX], [CHORE], [DOCS], [STYLE], [REFACTOR], [DEL], [MERGE]
 git push origin feature/my-awesome-feature
 ```
 
