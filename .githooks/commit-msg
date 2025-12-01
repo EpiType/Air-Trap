@@ -7,7 +7,7 @@ COMMIT_MSG_FILE=$1
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
 
 # Pattern pour le format [TYPE] description
-PATTERN="^\[(ADD|FIX|CHORE|DOCS|STYLE|REFACTOR|DEL)\] .+"
+PATTERN="^\[(ADD|FIX|CHORE|DOCS|STYLE|REFACTOR|DEL|MERGE)\] .+"
 
 # Ignorer les commits de merge
 if echo "$COMMIT_MSG" | grep -qE "^Merge "; then
@@ -29,6 +29,7 @@ if ! echo "$COMMIT_MSG" | grep -qE "$PATTERN"; then
     echo "  - [STYLE]    : Appliquer format de style au projet"
     echo "  - [REFACTOR] : Reformater le code"
     echo "  - [DEL]      : Supprimer des fichiers"
+    echo "  - [MERGE]    : Merge de branches"
     echo ""
     echo "Exemples:"
     echo "  ✅ [ADD] player connection handler to server"
@@ -38,6 +39,7 @@ if ! echo "$COMMIT_MSG" | grep -qE "$PATTERN"; then
     echo "  ✅ [CHORE] configure CMakeLists for new dependencies"
     echo "  ✅ [STYLE] apply clang-format to server code"
     echo "  ✅ [DEL] remove obsolete configuration files"
+    echo "  ✅ [MERGE] merge feature/login into main"
     echo ""
     echo "Votre message: $COMMIT_MSG"
     echo ""
