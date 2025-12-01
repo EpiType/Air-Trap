@@ -86,8 +86,8 @@ jobs:
     - name: Validate commit messages
       run: |
         # Custom commit pattern: [TYPE] description
-        # Types: ADD, FIX, CHORE, DOCS, STYLE, DEL, REFACTOR
-        PATTERN="^\[(ADD|FIX|CHORE|DOCS|STYLE|DEL|REFACTOR)\] .+"
+        # Types: ADD, FIX, CHORE, DOCS, STYLE, DEL, REFACTOR, MERGE
+        PATTERN="^\[(ADD|FIX|CHORE|DOCS|STYLE|DEL|REFACTOR|MERGE)\] .+"
         
         # Get commits from push
         if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
@@ -115,7 +115,7 @@ jobs:
             echo "❌ INVALID: $MSG"
             echo ""
             echo "Le message doit suivre le format: [TYPE] description"
-            echo "Types valides: [ADD], [FIX], [CHORE], [DOCS], [STYLE], [REFACTOR]"
+            echo "Types valides: [ADD], [FIX], [CHORE], [DOCS], [STYLE], [REFACTOR], [DEL], [MERGE]"
             echo "Exemple: [ADD] player connection handler to server"
             INVALID=1
           else
