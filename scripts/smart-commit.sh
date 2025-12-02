@@ -744,41 +744,168 @@ for type in DOCS CHORE STYLE FIX ADD DEL REFACTOR; do
     # Nettoyer CHANGES_DESC (retirer la virgule initiale et les espaces)
     CHANGES_DESC=$(echo "$CHANGES_DESC" | sed 's/^[, ]*//')
     
-    # Suggérer une description automatique intelligente
-    if [ $FILE_COUNT -eq 1 ]; then
-        AUTO_DESC="$CHANGES_DESC"
-    else
-        # Formater avec bullet points pour multi-fichiers
-        AUTO_DESC=""
-        while IFS= read -r f; do
-            [ -z "$f" ] && continue
-            
-            # Pour les renames, extraire le nouveau nom
-            if [[ "$f" == *" -> "* ]]; then
-                FILENAME=$(echo "$f" | awk '{print $3}' | xargs basename)
+    # Générer un titre et une description détaillée
+    COMMIT_TITLE=""
+    COMMIT_BODY=""
+    
+    # Générer le titre selon le type (format [TYPE])
+    case "$type" in
+        DOCS)
+            if [ $FILE_COUNT -eq 1 ]; then
+                FILENAME=$(basename "$(echo "$files" | head -1)")
+                COMMIT_TITLE="update $FILENAME"
             else
-                FILENAME=$(basename "$f")
+                COMMIT_TITLE="update documentation files"
             fi
-            
-            # Extraire le résumé du changement pour ce fichier
-            FILE_CHANGE=$(echo "$CHANGES_DESC" | grep -o "$FILENAME: [^,]*" | sed "s/$FILENAME: //")
-            if [ -z "$AUTO_DESC" ]; then
-                AUTO_DESC="- $FILENAME: $FILE_CHANGE"
+            ;;
+        CHORE)
+            if [ $FILE_COUNT -eq 1 ]; then
+                FILENAME=$(basename "$(echo "$files" | head -1)")
+                COMMIT_TITLE="update configuration in $FILENAME"
             else
-                AUTO_DESC="$AUTO_DESC\n- $FILENAME: $FILE_CHANGE"
+                COMMIT_TITLE="update project configuration"
             fi
-        done <<< "$files"
+            ;;
+        STYLE)
+            if [ $FILE_COUNT -eq 1 ]; then
+                FILENAME=$(basename "$(echo "$files" | head -1)")
+                COMMIT_TITLE="apply formatting to $FILENAME"
+            else
+                COMMIT_TITLE="apply code formatting"
+            fi
+            ;;
+        ADD)
+            if [ $FILE_COUNT -eq 1 ]; then
+                # Extraire l'action principale
+                ACTION=$(echo "$CHANGES_DESC" | grep -oE "add [^,]+" | head -1 | sed 's/.*: //')
+                if [ -n "$ACTION" ]; then
+                    COMMIT_TITLE="$ACTION"
+                else
+                    COMMIT_TITLE="add new functionality"
+                fi
+            else
+                COMMIT_TITLE="add multiple features"
+            fi
+            ;;
+        FIX)
+            if [ $FILE_COUNT -eq 1 ]; then
+                # Extraire ce qui est fixé
+                BUG=$(echo "$CHANGES_DESC" | grep -oE "fix [^,]+" | head -1 | sed 's/.*: //')
+                if [ -n "$BUG" ]; then
+                    COMMIT_TITLE="$BUG"
+                else
+                    COMMIT_TITLE="resolve issues"
+                fi
+            else
+                COMMIT_TITLE="resolve multiple issues"
+            fi
+            ;;
+        DEL)
+            COMMIT_TITLE="remove obsolete files"
+            ;;
+        REFACTOR)
+            if [ $FILE_COUNT -eq 1 ]; then
+                FILENAME=$(basename "$(echo "$files" | head -1)")
+                COMMIT_TITLE="restructure $FILENAME"
+            else
+                COMMIT_TITLE="restructure code organization"
+            fi
+            ;;
+    esac
+    
+    # Construire le body avec des détails
+    COMMIT_BODY=""
+    while IFS= read -r f; do
+        [ -z "$f" ] && continue
+        
+        # Pour les renames, extraire le nouveau nom
+        if [[ "$f" == *" -> "* ]]; then
+            OLD_PATH=$(echo "$f" | awk '{print $1}')
+            NEW_PATH=$(echo "$f" | awk '{print $3}')
+            FILENAME=$(basename "$NEW_PATH")
+            OLD_NAME=$(basename "$OLD_PATH")
+            if [ "$OLD_NAME" = "$FILENAME" ]; then
+                COMMIT_BODY="$COMMIT_BODY\n• Move $FILENAME to new location"
+            else
+                COMMIT_BODY="$COMMIT_BODY\n• Rename $OLD_NAME → $FILENAME"
+            fi
+        else
+            FILENAME=$(basename "$f")
+            # Extraire le changement spécifique
+            FILE_CHANGE=$(echo "$CHANGES_DESC" | grep -oE "$FILENAME: [^,]+" | head -1 | sed "s/$FILENAME: //")
+            if [ -n "$FILE_CHANGE" ]; then
+                # Capitaliser la première lettre
+                FILE_CHANGE="$(echo ${FILE_CHANGE:0:1} | tr '[:lower:]' '[:upper:]')${FILE_CHANGE:1}"
+                COMMIT_BODY="$COMMIT_BODY\n• $FILENAME: $FILE_CHANGE"
+            else
+                COMMIT_BODY="$COMMIT_BODY\n• Modified $FILENAME"
+            fi
+        fi
+    done <<< "$files"
+    
+    # Ajouter le chemin complet si c'est pertinent
+    SCOPE=""
+    if echo "$files" | grep -q "^client/"; then
+        SCOPE="client"
+    elif echo "$files" | grep -q "^server/"; then
+        SCOPE="server"
+    elif echo "$files" | grep -q "^common/"; then
+        SCOPE="common"
+    fi
+    
+    if [ -n "$SCOPE" ] && [ $FILE_COUNT -gt 1 ]; then
+        COMMIT_BODY="$COMMIT_BODY\n\nScope: $SCOPE"
+    fi
+    
+    if [ $FILE_COUNT -gt 1 ]; then
+        COMMIT_BODY="$COMMIT_BODY\nFiles modified: $FILE_COUNT"
     fi
     
     echo ""
-    echo -e "   💡 Suggestion:\n$AUTO_DESC" | sed 's/^/   /'
-    
-    read -p "   Description (Entrée pour accepter, ou écris la tienne): " description
-    
-    # Utiliser la suggestion si vide
-    if [ -z "$description" ]; then
-        description="$AUTO_DESC"
+    echo "   💡 Commit suggéré:"
+    echo "   ════════════════════════════════════════"
+    echo "   [$type] $COMMIT_TITLE"
+    echo ""
+    if [ -n "$COMMIT_BODY" ]; then
+        echo "   Description:"
+        echo -e "$COMMIT_BODY" | sed 's/^/   /'
     fi
+    echo "   ════════════════════════════════════════"
+    echo ""
+    echo "   Options:"
+    echo "     [Entrée] Accepter"
+    echo "     [e] Éditer le message"
+    echo "     [s] Skipper ce groupe"
+    
+    read -p "   Votre choix: " choice
+    
+    case "$choice" in
+        "e"|"E")
+            # Éditer manuellement
+            echo "   Titre du commit (sans [TYPE]):"
+            read -p "   > " custom_title
+            echo "   Description (une ligne vide pour terminer):"
+            custom_body=""
+            while IFS= read -r line; do
+                [ -z "$line" ] && break
+                if [ -z "$custom_body" ]; then
+                    custom_body="$line"
+                else
+                    custom_body="$custom_body\n$line"
+                fi
+            done
+            if [ -n "$custom_title" ]; then
+                COMMIT_TITLE="$custom_title"
+            fi
+            if [ -n "$custom_body" ]; then
+                COMMIT_BODY="$custom_body"
+            fi
+            ;;
+        "s"|"S")
+            echo "   ⏭️  Groupe skippé"
+            continue
+            ;;
+    esac
     
     # Git add les fichiers du groupe (ou git rm pour les suppressions)
     if [ "$type" = "DEL" ]; then
@@ -804,15 +931,11 @@ for type in DOCS CHORE STYLE FIX ADD DEL REFACTOR; do
         done <<< "$files"
     fi
     
-    # Formater le message de commit
-    if [ $FILE_COUNT -gt 1 ] && [[ "$description" == *$'\n'* ]]; then
-        # Multi-ligne : titre + détails
-        FIRST_LINE=$(echo -e "$description" | head -1)
-        REST_LINES=$(echo -e "$description" | tail -n +2)
-        git commit -m "[$type] $FIRST_LINE" -m "$REST_LINES"
+    # Créer le commit avec format [TYPE] titre + body
+    if [ -n "$COMMIT_BODY" ]; then
+        git commit -m "[$type] $COMMIT_TITLE" -m "$(echo -e "$COMMIT_BODY")"
     else
-        # Simple ligne
-        git commit -m "[$type] $description"
+        git commit -m "[$type] $COMMIT_TITLE"
     fi
     
     COMMIT_COUNT=$((COMMIT_COUNT + 1))
