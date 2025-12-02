@@ -24,6 +24,12 @@ fi
 
 cd "$REPO_ROOT"
 
+# Vérifier si gh CLI est disponible (pour GitHub issues)
+USE_GITHUB_ISSUES=false
+if command -v gh &> /dev/null; then
+    USE_GITHUB_ISSUES=true
+fi
+
 # Vérifier s'il y a des changements
 if git diff --quiet && git diff --cached --quiet; then
     echo "✅ Aucun changement à commit"
@@ -36,38 +42,87 @@ fi
 echo "🔍 Analyse des fichiers modifiés..."
 echo ""
 
-# Récupérer tous les fichiers modifiés (staged + unstaged)
-# D'abord, stager tous les fichiers pour que git détecte les renames
-git add -A 2>/dev/null || true
+# Vérifier s'il y a des fichiers déjà stagés
+STAGED_FILES=$(git diff --cached --name-only)
+UNSTAGED_FILES=$(git diff --name-only)
+UNTRACKED_FILES=$(git ls-files --others --exclude-standard)
 
-STAGED_STATUS=$(git status --porcelain)
+if [ -n "$STAGED_FILES" ]; then
+    # Il y a des fichiers déjà stagés
+    echo "📌 Fichiers déjà ajoutés (git add):"
+    echo "$STAGED_FILES" | sed 's/^/  ✓ /'
+    echo ""
+    
+    read -p "Committer uniquement ces fichiers ? (O/n): " use_staged
+    
+    if [ "$use_staged" != "n" ] && [ "$use_staged" != "N" ]; then
+        # Utiliser uniquement les fichiers stagés
+        MODIFIED_FILES="$STAGED_FILES"
+        DELETED_FILES=""
+        RENAMED_FILES=""
+        
+        # Détecter les renames dans les fichiers stagés
+        RENAMED_FILES=$(git diff --cached --name-status | grep -E "^R" | sed -E 's/^R[0-9]*\t//' | sed 's/\t/ -> /')
+        
+        # Retirer les renames de MODIFIED_FILES
+        if [ -n "$RENAMED_FILES" ]; then
+            while IFS= read -r rename_line; do
+                [ -z "$rename_line" ] && continue
+                new_path=$(echo "$rename_line" | awk '{print $3}')
+                MODIFIED_FILES=$(echo "$MODIFIED_FILES" | grep -v "^$new_path$" || true)
+            done <<< "$RENAMED_FILES"
+        fi
+        
+        echo "✅ Utilisation des fichiers déjà stagés"
+        echo ""
+        
+        # Skip la sélection interactive
+        SKIP_SELECTION=true
+    else
+        # L'utilisateur veut choisir parmi tous les fichiers
+        # Unstage tout d'abord
+        git reset >/dev/null 2>&1
+        SKIP_SELECTION=false
+    fi
+else
+    SKIP_SELECTION=false
+fi
 
-# Détecter les fichiers déplacés (renamed) AVANT le reset
-# Format: "R  old -> new" ou "R100 old -> new"
-RENAMED_FILES=$(echo "$STAGED_STATUS" | grep -E "^R" | sed -E 's/^R[0-9 ]*//' | sed 's/^ *//')
+# Si on n'utilise pas les fichiers stagés, récupérer tous les fichiers
+if [ "$SKIP_SELECTION" != "true" ]; then
+    # Récupérer tous les fichiers modifiés (staged + unstaged)
+    # D'abord, stager tous les fichiers pour que git détecte les renames
+    git add -A 2>/dev/null || true
 
-# Unstage tout pour pouvoir stager sélectivement par groupe
-git reset >/dev/null 2>&1
+    STAGED_STATUS=$(git status --porcelain)
 
-# Maintenant récupérer le statut unstaged
-ALL_STATUS=$(git status --porcelain)
+    # Détecter les fichiers déplacés (renamed) AVANT le reset
+    # Format: "R  old -> new" ou "R100 old -> new"
+    RENAMED_FILES=$(echo "$STAGED_STATUS" | grep -E "^R" | sed -E 's/^R[0-9 ]*//' | sed 's/^ *//')
 
-# Détecter les fichiers supprimés (format: " D filename")
-DELETED_FILES=$(echo "$ALL_STATUS" | grep -E "^ D" | awk '{print $2}')
+    # Unstage tout pour pouvoir stager sélectivement par groupe
+    git reset >/dev/null 2>&1
 
-# Fichiers modifiés/ajoutés (format: " M filename", "?? filename")
-MODIFIED_FILES=$(echo "$ALL_STATUS" | grep -E "^( M|\?\?)" | awk '{print $2}')
+    # Maintenant récupérer le statut unstaged
+    ALL_STATUS=$(git status --porcelain)
 
-# Exclure les fichiers impliqués dans des renames de MODIFIED_FILES et DELETED_FILES
-if [ -n "$RENAMED_FILES" ]; then
-    while IFS= read -r rename_line; do
-        [ -z "$rename_line" ] && continue
-        old_path=$(echo "$rename_line" | awk '{print $1}')
-        new_path=$(echo "$rename_line" | awk '{print $3}')
-        # Retirer old et new des listes
-        DELETED_FILES=$(echo "$DELETED_FILES" | grep -v "^$old_path$" || true)
-        MODIFIED_FILES=$(echo "$MODIFIED_FILES" | grep -v "^$new_path$" || true)
-    done <<< "$RENAMED_FILES"
+    # Détecter les fichiers supprimés (format: " D filename")
+    DELETED_FILES=$(echo "$ALL_STATUS" | grep -E "^ D" | awk '{print $2}')
+
+    # Fichiers modifiés/ajoutés (format: " M filename", "?? filename")
+    MODIFIED_FILES=$(echo "$ALL_STATUS" | grep -E "^( M|\?\?)" | awk '{print $2}')
+
+    # Exclure les fichiers impliqués dans des renames de MODIFIED_FILES et DELETED_FILES
+    if [ -n "$RENAMED_FILES" ]; then
+        while IFS= read -r rename_line; do
+            [ -z "$rename_line" ] && continue
+            old_path=$(echo "$rename_line" | awk '{print $1}')
+            new_path=$(echo "$rename_line" | awk '{print $3}')
+            # Retirer old et new des listes
+            DELETED_FILES=$(echo "$DELETED_FILES" | grep -v "^$old_path$" || true)
+            MODIFIED_FILES=$(echo "$MODIFIED_FILES" | grep -v "^$new_path$" || true)
+        done <<< "$RENAMED_FILES"
+    fi
 fi
 
 if [ -z "$MODIFIED_FILES" ] && [ -z "$DELETED_FILES" ] && [ -z "$RENAMED_FILES" ]; then
@@ -79,85 +134,102 @@ fi
 # SÉLECTION SIMPLE DES FICHIERS
 # ============================================================
 
-ALL_FILES=$(echo -e "$MODIFIED_FILES\n$DELETED_FILES\n$RENAMED_FILES" | grep -v "^$")
+# Si on utilise les fichiers déjà stagés, skip la sélection
+if [ "$SKIP_SELECTION" = "true" ]; then
+    SELECTED_FILES="$MODIFIED_FILES"$'\n'"$RENAMED_FILES"
+    SELECTED_FILES=$(echo "$SELECTED_FILES" | grep -v "^$")
+else
+    # Sélection interactive normale
+    ALL_FILES=$(echo -e "$MODIFIED_FILES\n$DELETED_FILES\n$RENAMED_FILES" | grep -v "^$")
 
-echo "📂 Fichiers modifiés détectés:"
-echo ""
-
-# Afficher avec numéros
-file_array=()
-i=1
-while IFS= read -r file; do
-    [ -z "$file" ] && continue
-    echo "  [$i] $file"
-    file_array+=("$file")
-    ((i++))
-done <<< "$ALL_FILES"
-
-echo ""
-echo "💡 Sélection interactive:"
-echo ""
-
-# Sélection simple avec menu numéroté
-selected=()
-for ((i=0; i<${#file_array[@]}; i++)); do
-    selected+=(1)  # Tous sélectionnés par défaut
-done
-
-while true; do
-    echo "Fichiers à committer:"
+    echo "📂 Fichiers modifiés détectés:"
     echo ""
-    
-    # Afficher la liste
+
+    # Afficher avec numéros
+    file_array=()
+    i=1
+    while IFS= read -r file; do
+        [ -z "$file" ] && continue
+        echo "  [$i] $file"
+        file_array+=("$file")
+        ((i++))
+    done <<< "$ALL_FILES"
+
+    echo ""
+    echo "💡 Sélection interactive:"
+    echo ""
+
+    # Sélection simple avec menu numéroté
+    selected=()
     for ((i=0; i<${#file_array[@]}; i++)); do
-        num=$((i+1))
-        if [ "${selected[$i]}" -eq 1 ]; then
-            echo "  [$num] [✓] ${file_array[$i]}"
-        else
-            echo "  [$num] [ ] ${file_array[$i]}"
-        fi
+        selected+=(1)  # Tous sélectionnés par défaut
     done
-    
-    echo ""
-    echo "Commandes:"
-    echo "  - Numéro(s) pour cocher/décocher (ex: 1, 1 3, 1-3)"
-    echo "  - 'a' pour tout sélectionner"
-    echo "  - 'n' pour tout désélectionner"
-    echo "  - 'ok' ou Enter pour valider"
-    echo "  - 'q' pour quitter"
-    echo ""
-    read -p "Votre choix: " choice
-    
-    case "$choice" in
-        ""|"ok"|"OK")
-            # Valider
-            break
-            ;;
-        "q"|"Q")
-            echo "❌ Annulé"
-            exit 0
-            ;;
-        "a"|"A")
-            # Tout sélectionner
-            for ((i=0; i<${#file_array[@]}; i++)); do
-                selected[$i]=1
-            done
-            ;;
-        "n"|"N")
-            # Tout désélectionner
-            for ((i=0; i<${#file_array[@]}; i++)); do
-                selected[$i]=0
-            done
-            ;;
-        *)
-            # Parser les numéros
-            for item in $choice; do
-                if [[ "$item" =~ ^([0-9]+)-([0-9]+)$ ]]; then
-                    # Range (ex: 1-3)
-                    start=${BASH_REMATCH[1]}
-                    end=${BASH_REMATCH[2]}
-                    for ((j=start; j<=end; j++)); do
-                        idx=$((j-1))
+
+    while true; do
+        echo "Fichiers à committer:"
+        echo ""
+        
+        # Afficher la liste
+        for ((i=0; i<${#file_array[@]}; i++)); do
+            num=$((i+1))
+            if [ "${selected[$i]}" -eq 1 ]; then
+                echo "  [$num] [✓] ${file_array[$i]}"
+            else
+                echo "  [$num] [ ] ${file_array[$i]}"
+            fi
+        done
+        
+        echo ""
+        echo "Commandes:"
+        echo "  - Numéro(s) pour cocher/décocher (ex: 1, 1 3, 1-3)"
+        echo "  - 'a' pour tout sélectionner"
+        echo "  - 'n' pour tout désélectionner"
+        echo "  - 'ok' ou Enter pour valider"
+        echo "  - 'q' pour quitter"
+        echo ""
+        read -p "Votre choix: " choice
+        
+        case "$choice" in
+            ""|"ok"|"OK")
+                # Valider
+                break
+                ;;
+            "q"|"Q")
+                echo "❌ Annulé"
+                exit 0
+                ;;
+            "a"|"A")
+                # Tout sélectionner
+                for ((i=0; i<${#file_array[@]}; i++)); do
+                    selected[$i]=1
+                done
+                ;;
+            "n"|"N")
+                # Tout désélectionner
+                for ((i=0; i<${#file_array[@]}; i++)); do
+                    selected[$i]=0
+                done
+                ;;
+            *)
+                # Parser les numéros
+                for item in $choice; do
+                    if [[ "$item" =~ ^([0-9]+)-([0-9]+)$ ]]; then
+                        # Range (ex: 1-3)
+                        start=${BASH_REMATCH[1]}
+                        end=${BASH_REMATCH[2]}
+                        for ((j=start; j<=end; j++)); do
+                            idx=$((j-1))
+                            if [ $idx -ge 0 ] && [ $idx -lt ${#file_array[@]} ]; then
+                                if [ "${selected[$idx]}" -eq 1 ]; then
+                                    selected[$idx]=0
+                                else
+                                    selected[$idx]=1
+                                fi
+                            fi
+                        done
+                    elif [[ "$item" =~ ^[0-9]+$ ]]; then
+                        # Nombre simple
+                        idx=$((item-1))
                         if [ $idx -ge 0 ] && [ $idx -lt ${#file_array[@]} ]; then
                             if [ "${selected[$idx]}" -eq 1 ]; then
                                 selected[$idx]=0
@@ -165,67 +237,55 @@ while true; do
                                 selected[$idx]=1
                             fi
                         fi
-                    done
-                elif [[ "$item" =~ ^[0-9]+$ ]]; then
-                    # Nombre simple
-                    idx=$((item-1))
-                    if [ $idx -ge 0 ] && [ $idx -lt ${#file_array[@]} ]; then
-                        if [ "${selected[$idx]}" -eq 1 ]; then
-                            selected[$idx]=0
-                        else
-                            selected[$idx]=1
-                        fi
                     fi
-                fi
-            done
-            ;;
-    esac
-    
+                done
+                ;;
+        esac
+        
+        echo ""
+        echo "─────────────────────────────────────────────────────"
+        echo ""
+    done
+
     echo ""
-    echo "─────────────────────────────────────────────────────"
-    echo ""
-done
 
-echo ""
+    # Construire les listes avec seulement les fichiers sélectionnés
+    MODIFIED_FILES=""
+    DELETED_FILES=""
+    RENAMED_FILES=""
 
-echo ""
-
-# Construire les listes avec seulement les fichiers sélectionnés
-MODIFIED_FILES=""
-DELETED_FILES=""
-RENAMED_FILES=""
-
-any_selected=false
-for ((idx=0; idx<${#file_array[@]}; idx++)); do
-    if [ "${selected[$idx]}" -eq 1 ]; then
-        any_selected=true
-        file="${file_array[$idx]}"
-        # Reclassifier
-        if [[ "$file" == *" -> "* ]]; then
-            RENAMED_FILES="$RENAMED_FILES"$'\n'"$file"
-        elif echo "$ALL_STATUS" | grep -q "^ D $file"; then
-            DELETED_FILES="$DELETED_FILES"$'\n'"$file"
-        else
-            MODIFIED_FILES="$MODIFIED_FILES"$'\n'"$file"
+    any_selected=false
+    for ((idx=0; idx<${#file_array[@]}; idx++)); do
+        if [ "${selected[$idx]}" -eq 1 ]; then
+            any_selected=true
+            file="${file_array[$idx]}"
+            # Reclassifier
+            if [[ "$file" == *" -> "* ]]; then
+                RENAMED_FILES="$RENAMED_FILES"$'\n'"$file"
+            elif echo "$ALL_STATUS" | grep -q "^ D $file"; then
+                DELETED_FILES="$DELETED_FILES"$'\n'"$file"
+            else
+                MODIFIED_FILES="$MODIFIED_FILES"$'\n'"$file"
+            fi
         fi
+    done
+
+    # Nettoyer
+    MODIFIED_FILES=$(echo "$MODIFIED_FILES" | sed '/^$/d')
+    RENAMED_FILES=$(echo "$RENAMED_FILES" | sed '/^$/d')
+    DELETED_FILES=$(echo "$DELETED_FILES" | sed '/^$/d')
+
+    if [ "$any_selected" = false ]; then
+        echo "⚠️  Aucun fichier sélectionné"
+        exit 0
     fi
-done
 
-# Nettoyer
-MODIFIED_FILES=$(echo "$MODIFIED_FILES" | sed '/^$/d')
-RENAMED_FILES=$(echo "$RENAMED_FILES" | sed '/^$/d')
-DELETED_FILES=$(echo "$DELETED_FILES" | sed '/^$/d')
-
-if [ "$any_selected" = false ]; then
-    echo "⚠️  Aucun fichier sélectionné"
-    exit 0
+    echo "✅ Fichiers sélectionnés:"
+    if [ -n "$MODIFIED_FILES" ]; then echo "$MODIFIED_FILES" | sed 's/^/  /'; fi
+    if [ -n "$RENAMED_FILES" ]; then echo "$RENAMED_FILES" | sed 's/^/  /'; fi
+    if [ -n "$DELETED_FILES" ]; then echo "$DELETED_FILES" | sed 's/^/  /'; fi
+    echo ""
 fi
-
-echo "✅ Fichiers sélectionnés:"
-if [ -n "$MODIFIED_FILES" ]; then echo "$MODIFIED_FILES" | sed 's/^/  /'; fi
-if [ -n "$RENAMED_FILES" ]; then echo "$RENAMED_FILES" | sed 's/^/  /'; fi
-if [ -n "$DELETED_FILES" ]; then echo "$DELETED_FILES" | sed 's/^/  /'; fi
-echo ""
 
 # ============================================================
 # GROUPEMENT ET COMMITS
@@ -318,14 +378,35 @@ if [ -n "$DEL_FILES" ]; then echo "  [DEL] : $(echo "$DEL_FILES" | grep -c .) fi
 if [ -n "$REFACTOR_FILES" ]; then echo "  [REFACTOR] : $(echo "$REFACTOR_FILES" | grep -c .) fichier(s)"; fi
 echo ""
 
-# Demander confirmation
-read -p "🚀 Créer des commits groupés ? (O/n): " confirm
-if [ "$confirm" = "n" ] || [ "$confirm" = "N" ]; then
-    echo "❌ Annulé"
-    exit 0
-fi
+# ============================================================
+# LIEN AVEC GITHUB ISSUE (OPTIONNEL)
+# ============================================================
 
-echo ""
+ISSUE_NUMBER=""
+if [ "$USE_GITHUB_ISSUES" = true ]; then
+    echo "🔗 Lier à une issue GitHub ?"
+    read -p "Numéro d'issue (Enter pour skip): " issue_input
+    
+    if [ -n "$issue_input" ]; then
+        # Valider que c'est un nombre
+        if [[ "$issue_input" =~ ^[0-9]+$ ]]; then
+            # Vérifier que l'issue existe
+            if gh issue view "$issue_input" &>/dev/null; then
+                ISSUE_NUMBER="$issue_input"
+                echo "✅ Lié à l'issue #$ISSUE_NUMBER"
+                
+                # Afficher un aperçu de l'issue
+                ISSUE_TITLE=$(gh issue view "$ISSUE_NUMBER" --json title -q .title)
+                echo "   📌 $ISSUE_TITLE"
+            else
+                echo "⚠️  Issue #$issue_input introuvable, commit sans lien"
+            fi
+        else
+            echo "⚠️  Numéro d'issue invalide, commit sans lien"
+        fi
+    fi
+    echo ""
+fi
 
 # Créer les commits par groupe
 COMMIT_COUNT=0
@@ -861,6 +942,11 @@ for type in DOCS CHORE STYLE FIX ADD DEL REFACTOR; do
         COMMIT_BODY="$COMMIT_BODY\nFiles modified: $FILE_COUNT"
     fi
     
+    # Ajouter le lien vers l'issue GitHub si spécifié
+    if [ -n "$ISSUE_NUMBER" ]; then
+        COMMIT_BODY="$COMMIT_BODY\n\nCloses #$ISSUE_NUMBER"
+    fi
+    
     echo ""
     echo "   💡 Commit suggéré:"
     echo "   ════════════════════════════════════════"
@@ -869,6 +955,10 @@ for type in DOCS CHORE STYLE FIX ADD DEL REFACTOR; do
     if [ -n "$COMMIT_BODY" ]; then
         echo "   Description:"
         echo -e "$COMMIT_BODY" | sed 's/^/   /'
+    fi
+    if [ -n "$ISSUE_NUMBER" ]; then
+        echo ""
+        echo "   🔗 Lié à l'issue: #$ISSUE_NUMBER"
     fi
     echo "   ════════════════════════════════════════"
     echo ""
