@@ -75,6 +75,162 @@ if [ -z "$MODIFIED_FILES" ] && [ -z "$DELETED_FILES" ] && [ -z "$RENAMED_FILES" 
     exit 0
 fi
 
+# ============================================================
+# SÉLECTION SIMPLE DES FICHIERS
+# ============================================================
+
+ALL_FILES=$(echo -e "$MODIFIED_FILES\n$DELETED_FILES\n$RENAMED_FILES" | grep -v "^$")
+
+echo "📂 Fichiers modifiés détectés:"
+echo ""
+
+# Afficher avec numéros
+file_array=()
+i=1
+while IFS= read -r file; do
+    [ -z "$file" ] && continue
+    echo "  [$i] $file"
+    file_array+=("$file")
+    ((i++))
+done <<< "$ALL_FILES"
+
+echo ""
+echo "💡 Sélection interactive:"
+echo ""
+
+# Sélection simple avec menu numéroté
+selected=()
+for ((i=0; i<${#file_array[@]}; i++)); do
+    selected+=(1)  # Tous sélectionnés par défaut
+done
+
+while true; do
+    echo "Fichiers à committer:"
+    echo ""
+    
+    # Afficher la liste
+    for ((i=0; i<${#file_array[@]}; i++)); do
+        num=$((i+1))
+        if [ "${selected[$i]}" -eq 1 ]; then
+            echo "  [$num] [✓] ${file_array[$i]}"
+        else
+            echo "  [$num] [ ] ${file_array[$i]}"
+        fi
+    done
+    
+    echo ""
+    echo "Commandes:"
+    echo "  - Numéro(s) pour cocher/décocher (ex: 1, 1 3, 1-3)"
+    echo "  - 'a' pour tout sélectionner"
+    echo "  - 'n' pour tout désélectionner"
+    echo "  - 'ok' ou Enter pour valider"
+    echo "  - 'q' pour quitter"
+    echo ""
+    read -p "Votre choix: " choice
+    
+    case "$choice" in
+        ""|"ok"|"OK")
+            # Valider
+            break
+            ;;
+        "q"|"Q")
+            echo "❌ Annulé"
+            exit 0
+            ;;
+        "a"|"A")
+            # Tout sélectionner
+            for ((i=0; i<${#file_array[@]}; i++)); do
+                selected[$i]=1
+            done
+            ;;
+        "n"|"N")
+            # Tout désélectionner
+            for ((i=0; i<${#file_array[@]}; i++)); do
+                selected[$i]=0
+            done
+            ;;
+        *)
+            # Parser les numéros
+            for item in $choice; do
+                if [[ "$item" =~ ^([0-9]+)-([0-9]+)$ ]]; then
+                    # Range (ex: 1-3)
+                    start=${BASH_REMATCH[1]}
+                    end=${BASH_REMATCH[2]}
+                    for ((j=start; j<=end; j++)); do
+                        idx=$((j-1))
+                        if [ $idx -ge 0 ] && [ $idx -lt ${#file_array[@]} ]; then
+                            if [ "${selected[$idx]}" -eq 1 ]; then
+                                selected[$idx]=0
+                            else
+                                selected[$idx]=1
+                            fi
+                        fi
+                    done
+                elif [[ "$item" =~ ^[0-9]+$ ]]; then
+                    # Nombre simple
+                    idx=$((item-1))
+                    if [ $idx -ge 0 ] && [ $idx -lt ${#file_array[@]} ]; then
+                        if [ "${selected[$idx]}" -eq 1 ]; then
+                            selected[$idx]=0
+                        else
+                            selected[$idx]=1
+                        fi
+                    fi
+                fi
+            done
+            ;;
+    esac
+    
+    echo ""
+    echo "─────────────────────────────────────────────────────"
+    echo ""
+done
+
+echo ""
+
+echo ""
+
+# Construire les listes avec seulement les fichiers sélectionnés
+MODIFIED_FILES=""
+DELETED_FILES=""
+RENAMED_FILES=""
+
+any_selected=false
+for ((idx=0; idx<${#file_array[@]}; idx++)); do
+    if [ "${selected[$idx]}" -eq 1 ]; then
+        any_selected=true
+        file="${file_array[$idx]}"
+        # Reclassifier
+        if [[ "$file" == *" -> "* ]]; then
+            RENAMED_FILES="$RENAMED_FILES"$'\n'"$file"
+        elif echo "$ALL_STATUS" | grep -q "^ D $file"; then
+            DELETED_FILES="$DELETED_FILES"$'\n'"$file"
+        else
+            MODIFIED_FILES="$MODIFIED_FILES"$'\n'"$file"
+        fi
+    fi
+done
+
+# Nettoyer
+MODIFIED_FILES=$(echo "$MODIFIED_FILES" | sed '/^$/d')
+RENAMED_FILES=$(echo "$RENAMED_FILES" | sed '/^$/d')
+DELETED_FILES=$(echo "$DELETED_FILES" | sed '/^$/d')
+
+if [ "$any_selected" = false ]; then
+    echo "⚠️  Aucun fichier sélectionné"
+    exit 0
+fi
+
+echo "✅ Fichiers sélectionnés:"
+if [ -n "$MODIFIED_FILES" ]; then echo "$MODIFIED_FILES" | sed 's/^/  /'; fi
+if [ -n "$RENAMED_FILES" ]; then echo "$RENAMED_FILES" | sed 's/^/  /'; fi
+if [ -n "$DELETED_FILES" ]; then echo "$DELETED_FILES" | sed 's/^/  /'; fi
+echo ""
+
+# ============================================================
+# GROUPEMENT ET COMMITS
+# ============================================================
+
 # Variables pour grouper les fichiers par catégorie
 DOCS_FILES=""
 CHORE_FILES=""
