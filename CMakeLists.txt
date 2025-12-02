@@ -9,9 +9,11 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Export compile commands for clang-tidy
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+add_compile_options(-Wall -Wextra -Werror)
+
 # Find dependencies
 find_package(asio REQUIRED)
-find_package(SFML COMPONENTS system window graphics audio REQUIRED)
+find_package(SFML 3 REQUIRED COMPONENTS Graphics Window System Audio)
 
 # Common library (shared between client and server)
 add_library(air-trap-common INTERFACE)
@@ -53,10 +55,10 @@ target_include_directories(r-type_client PRIVATE
 target_link_libraries(r-type_client PRIVATE
     air-trap-common
     asio::asio
-    sfml-system
-    sfml-window
-    sfml-graphics
-    sfml-audio
+    SFML::Graphics
+    SFML::Audio
+    SFML::Window
+    SFML::System
 )
 
 # Platform-specific settings for client
@@ -65,6 +67,13 @@ if(WIN32)
     # Create .exe with console
     set_target_properties(r-type_client PROPERTIES
         WIN32_EXECUTABLE FALSE
+    )
+endif()
+
+if(APPLE)
+    set_target_properties(r-type_client PROPERTIES
+        MACOSX_RPATH TRUE
+        BUILD_WITH_INSTALL_RPATH TRUE
     )
 endif()
 

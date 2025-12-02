@@ -1,6 +1,6 @@
 [requires]
 asio/1.28.0
-sfml/2.6.1
+sfml/3.0.2
 gtest/1.14.0
 
 [generators]
