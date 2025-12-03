@@ -1,0 +1,15 @@
+[requires]
+asio/1.28.0
+sfml/3.0.2
+gtest/1.14.0
+
+[generators]
+CMakeDeps
+CMakeToolchain
+
+[options]
+sfml/*:shared=True
+sfml/*:graphics=True
+sfml/*:window=True
+sfml/*:audio=True
+sfml/*:network=False

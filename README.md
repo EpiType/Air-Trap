@@ -1,6 +1,6 @@
 # Air-Trap - R-Type Clone
 
-Un moteur de jeu multi-joueur en réseau inspiré de R-Type, développé en C++17 avec une architecture ECS (Entity-Component-System).
+Un moteur de jeu multi-joueur en réseau inspiré de R-Type, développé en C++23 avec une architecture ECS (Entity-Component-System).
 
 ## 🏗️ Architecture
 
@@ -24,33 +24,34 @@ Un moteur de jeu multi-joueur en réseau inspiré de R-Type, développé en C++1
 
 ## 🔧 Technologies
 
-- **C++17** : Langage principal
+- **C++23** : Langage principal
 - **CMake** : Système de build
-- **Conan** : Gestionnaire de dépendances
+- **Conan 2.x** : Gestionnaire de dépendances
 - **ASIO** : Communication réseau (UDP)
-- **SFML** : Rendu graphique et audio (client uniquement)
-- **GitHub Actions** : CI/CD
+- **SFML 2.6+** : Rendu graphique et audio (client uniquement)
+- **GTest** : Tests unitaires
+- **GitHub Actions** : CI/CD avec mirroring Epitech
 
 ## 📦 Build
 
 ### Prérequis
 
 - CMake 3.20+
-- Compilateur C++17 (GCC 9+, Clang 10+, MSVC 2019+)
+- Compilateur C++23 (GCC 11+, Clang 14+, MSVC 2022+)
 - Python 3.11+ (pour Conan)
 - Conan 2.x
 
 ### Linux / macOS
 
 ```bash
-chmod +x build.sh
-./build.sh
+chmod +x scripts/build.sh
+./scripts/build.sh
 ```
 
 ### Windows
 
 ```cmd
-build.bat
+scripts\build.bat
 ```
 
 ### Build manuel
@@ -58,11 +59,11 @@ build.bat
 ```bash
 # Installer les dépendances
 mkdir build && cd build
-conan install .. --build=missing -s build_type=Release
+conan install .. --build=missing -s build_type=Release -c tools.system.package_manager:mode=install
 
 # Compiler
-cmake .. -DCMAKE_BUILD_TYPE=Release
-cmake --build . --config Release
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake
+cmake --build . --config Release -j$(nproc)
 ```
 
 ## 🚀 Exécution
@@ -77,7 +78,7 @@ cmake --build . --config Release
 .\build\Release\r-type_server.exe [port]
 ```
 
-Par défaut, le serveur écoute sur le port 4242.
+Par défaut, le serveur écoute sur le port **4242**.
 
 ### Lancer le client
 
@@ -89,92 +90,350 @@ Par défaut, le serveur écoute sur le port 4242.
 .\build\Release\r-type_client.exe [server_ip] [port]
 ```
 
-Par défaut, le client se connecte à `127.0.0.1:4242`.
+Par défaut, le client se connecte à **127.0.0.1:4242**.
 
 ## 🔍 Outils de Développement
 
 ### Formatage du code
 
 ```bash
-chmod +x format.sh
-./format.sh
+chmod +x scripts/format.sh
+./scripts/format.sh
 ```
+
+Utilise **clang-format-18** avec le style Google (IndentWidth: 4, ColumnLimit: 120).
 
 ### Analyse statique
 
 ```bash
-chmod +x lint.sh
-./lint.sh
+chmod +x scripts/lint.sh
+./scripts/lint.sh
 ```
 
-## 🔄 CI/CD
+Exécute **clang-tidy-18** pour détecter les problèmes potentiels.
 
-Le projet utilise GitHub Actions pour l'intégration continue :
+### Tests Unitaires
 
-1. **Style Check** : Vérifie le formatage avec clang-format et clang-tidy
-2. **Build Linux** : Compilation sur Ubuntu (avec cache Conan)
-3. **Build Windows** : Compilation sur Windows (génère des .exe)
-4. **Build macOS** : Compilation sur macOS
-5. **Tests** : Exécution des tests unitaires (optionnel)
+```bash
+# Lancer tous les tests
+cd build && ctest
 
-Le pipeline s'exécute automatiquement sur chaque push et pull request vers les branches `main` et `develop`.
+# Lancer un test spécifique
+./build/test_ecs
+./build/test_network
+```
+
+Les tests sont écrits avec **GTest** et couvrent :
+- **ECS** : Registry, composants, systèmes
+- **Network** : Protocole, sérialisation, paquets
+
+### Smart Commit Tool
+
+Outil intelligent pour créer des commits groupés automatiquement :
+
+```bash
+chmod +x scripts/smart-commit.sh
+./scripts/smart-commit.sh
+```
+
+**Fonctionnalités** :
+- ✅ Groupe automatiquement les fichiers par type ([DOCS], [CHORE], [STYLE], [FIX], [ADD], [DEL], [REFACTOR], [MERGE])
+- 📊 Analyse les diffs et génère des descriptions intelligentes
+- 📝 Affiche les stats (+/-) pour chaque fichier
+- 🎯 Format multi-ligne pour les commits avec plusieurs fichiers
+- 🚀 Option de push automatique après les commits
+
+**Exemple d'utilisation** :
+
+```bash
+$ ./scripts/smart-commit.sh
+
+🔍 Analyse des fichiers modifiés...
+
+📦 Groupes détectés:
+  [CHORE] : 2 fichier(s)
+
+🚀 Créer des commits groupés ? (O/n): ⏎
+
+📝 Groupe [CHORE]:
+   - .github/workflows/ci-cd.yml (+25 -10)
+   - smart-commit.sh (+30 -15)
+
+   💡 Suggestion:
+   - ci-cd.yml: update messages
+   - smart-commit.sh: refactor logic
+
+   Description (Entrée pour accepter, ou écris la tienne): ⏎
+
+   ✅ Commit créé
+
+✅ 1 commit(s) créé(s)
+
+🚀 Push maintenant ? (O/n): ⏎
+📤 Push vers origin/initArchi...
+✅ Push terminé!
+
+🎉 Terminé!
+```
+
+### Git Hooks
+
+Installer les hooks locaux pour valider les messages de commit :
+
+```bash
+chmod +x scripts/install-hooks.sh
+./scripts/install-hooks.sh
+```
+
+Le hook `commit-msg` vérifie que tous les commits suivent le format :
+```
+[TYPE] description
+
+Types valides: [ADD], [FIX], [CHORE], [DOCS], [STYLE], [DEL], [REFACTOR], [MERGE]
+```
+
+## 🔄 CI/CD Pipeline
+
+Le projet utilise **GitHub Actions** avec une stratégie intelligente :
+
+### Jobs
+
+1. **commit-validation** (push uniquement)
+   - Valide le format des messages de commit
+   - Pattern : `[TYPE] description`
+   - Skip les merge commits
+
+2. **style-check**
+   - Installe clang-format-18 et clang-tidy-18 depuis LLVM
+   - Vérifie le code avec clang-tidy (si compile_commands.json existe)
+   - clang-format désactivé jusqu'à formatage complet du code
+
+3. **build-linux** (push sur `dev` uniquement)
+   - Compile sur Ubuntu avec GCC
+   - Cache Conan pour accélérer les builds
+   - 5 tentatives de téléchargement (réseau instable)
+   - Upload des binaires en artifacts
+
+4. **build-windows** (PR vers `main` uniquement)
+   - Compile sur Windows avec MSVC
+   - Génère des `.exe`
+   - Upload des exécutables en artifacts
+
+5. **build-macos** (PR vers `main` uniquement)
+   - Compile sur macOS avec Clang
+   - Build parallèle avec sysctl
+   - Upload des binaires en artifacts
+
+6. **mirror** (tous les push)
+   - Synchronise automatiquement vers le dépôt Epitech
+   - SSH avec clé déployée
+   - Push force de toutes les branches et tags
+
+7. **notify** (toujours exécuté)
+   - Envoie des notifications Discord avec embed
+   - Webhook différent pour main/dev vs autres branches
+   - Rapport détaillé : ✅/❌ pour chaque job
+   - Lien vers le commit et informations contextuelles
+
+### Stratégie de Branches
+
+```
+feature → dev (push direct) → PR → main (protection)
+```
+
+- **dev** : Build Linux systématique à chaque push
+- **main** : Build multi-plateforme (Windows + macOS) uniquement sur PR
+
+### Configuration Secrets
+
+Ajouter dans **Settings → Secrets and variables → Actions** :
+
+| Secret | Description | Exemple |
+|--------|-------------|---------|
+| `MIRROR_URL` | URL SSH du dépôt Epitech | `git@github.com:epitech/project.git` |
+| `MIRROR_SSH_KEY` | Clé SSH privée (deploy key sur mirror) | Contenu de `~/.ssh/id_rsa` |
+| `DISCORD_WEBHOOK_MAINDEV` | Webhook Discord pour main/dev | `https://discord.com/api/webhooks/...` |
+| `DISCORD_WEBHOOK_OTHER` | Webhook Discord pour features | `https://discord.com/api/webhooks/...` |
+
+### Créer un Webhook Discord
+
+1. Ouvrir les paramètres du canal Discord
+2. **Intégrations** → **Webhooks** → **Nouveau Webhook**
+3. Copier l'URL et l'ajouter dans GitHub Secrets
 
 ### Artifacts
 
-Les binaires compilés sont disponibles en tant qu'artifacts GitHub Actions :
-- `air-trap-linux` : Binaires Linux
+Les binaires sont disponibles pendant **90 jours** :
+- `air-trap-linux` : Exécutables Linux (serveur + client)
 - `air-trap-windows` : Exécutables Windows (.exe)
-- `air-trap-macos` : Binaires macOS
+- `air-trap-macos` : Exécutables macOS
 
-## 📝 Workflow Git
+Téléchargeables depuis l'onglet **Actions** → Run → **Artifacts**.
 
-Le projet utilise **Conventional Commits** :
+## 📝 Workflow Git & Commits
+
+### Format des Commits
+
+Le projet utilise un format personnalisé strict :
 
 ```
-<type>(<scope>): <description>
+[TYPE] description courte (max 72 caractères)
 
-Types:
-- [FEAT] Nouvelle fonctionnalité
-- [FIX] Correction de bug
-- [CHORE] Tâches de maintenance
-- [DOCS] Documentation
-- [STYLE] Formatage
-- [REFACTOR] Refactoring
+Types valides:
+- [ADD]      : Nouvelle fonctionnalité
+- [FIX]      : Correction de bug
+- [CHORE]    : Maintenance (CI/CD, config, outils)
+- [DOCS]     : Documentation
+- [STYLE]    : Formatage (whitespace, indentation)
+- [DEL]      : Suppression de fichiers
+- [REFACTOR] : Refactoring sans changement fonctionnel
+- [MERGE]    : Merge de branches
 ```
+
+**Pour plusieurs fichiers**, utiliser le format multi-ligne :
+
+```
+[CHORE] update CI/CD and commit tools
+- ci-cd.yml: enhance Discord notifications with embed format
+- smart-commit.sh: add intelligent file grouping and diff analysis
+```
+
+### Commits Automatiques avec smart-commit.sh
+
+L'outil `smart-commit.sh` automatise ce processus :
+
+1. **Analyse** tous les fichiers modifiés
+2. **Groupe** par type selon les patterns :
+   - `.md`, `.txt`, `docs/` → DOCS
+   - `.github/`, `CMakeLists.txt`, `*.sh` → CHORE
+   - `*.cpp`, `*.hpp` avec "fix/bug" dans le diff → FIX
+   - `*.cpp`, `*.hpp` autres → ADD
+3. **Génère** des descriptions basées sur l'analyse du diff
+4. **Crée** un commit par groupe
+5. **Push** optionnel à la fin
+
+### Installation des Hooks Git
+
+```bash
+./scripts/install-hooks.sh
+```
+
+Valide automatiquement le format avant chaque commit local.
 
 ## 📂 Structure du Projet
 
 ```
 Air-Trap/
 ├── .github/
-│   └── workflows/
-│       └── ci-cd.yml          # Pipeline CI/CD
+│   ├── workflows/
+│   │   └── ci-cd.yml              # Pipeline CI/CD complet
+│   └── BRANCH_PROTECTION.md       # Doc protection des branches
+├── .githooks/
+│   └── commit-msg                 # Hook validation commits
 ├── common/
 │   └── include/
-│       ├── ecs/               # Entity-Component-System
+│       ├── ecs/                   # Entity-Component-System
 │       │   ├── Entity.hpp
 │       │   ├── Registry.hpp
-│       │   ├── components/    # Composants
-│       │   └── systems/       # Systèmes
-│       ├── network/           # Protocole réseau
-│       └── events/            # Event Bus
+│       │   ├── components/        # Composants
+│       │   └── systems/           # Systèmes
+│       ├── network/               # Protocole réseau
+│       └── events/                # Event Bus
 ├── server/
-│   ├── include/
-│   │   └── network/
-│   └── src/
-│       └── main.cpp           # Point d'entrée serveur
+│   ├── include/network/
+│   └── src/main.cpp               # Point d'entrée serveur
 ├── client/
-│   ├── include/
-│   │   └── network/
-│   └── src/
-│       └── main.cpp           # Point d'entrée client
-├── CMakeLists.txt             # Configuration CMake
-├── conanfile.txt              # Dépendances Conan
-├── .clang-format              # Configuration formatage
-├── .clang-tidy                # Configuration linting
+│   ├── include/network/
+│   └── src/main.cpp               # Point d'entrée client
+├── tests/                         # Tests unitaires (GTest)
+│   ├── ecs/
+│   │   ├── test_registry.cpp
+│   │   └── test_components.cpp
+│   ├── network/
+│   │   └── test_protocol.cpp
+│   └── CMakeLists.txt
+├── config/                        # Configuration runtime
+│   ├── server.json                # Config serveur
+│   └── client.json                # Config client
+├── assets/                        # Ressources
+│   ├── sprites/
+│   │   ├── players/
+│   │   ├── enemies/
+│   │   ├── projectiles/
+│   │   └── effects/
+│   ├── sounds/
+│   ├── musics/
+│   ├── fonts/
+│   └── README.md
+├── scripts/                       # Scripts utilitaires
+│   ├── build.sh / build.bat
+│   ├── format.sh
+│   ├── lint.sh
+│   ├── smart-commit.sh
+│   └── install-hooks.sh
+├── docs/
+│   ├── ARCHITECTURE.md
+│   └── subject/
+├── CMakeLists.txt                 # Configuration CMake (C++23)
+├── conanfile.txt                  # Dépendances (SFML, ASIO, GTest)
+├── .clang-format                  # Style Google + customizations
+├── .clang-tidy                    # Règles analyse statique
 └── README.md
 ```
 
+## 🧪 Tests
+
+Les tests unitaires sont activés par défaut avec **GTest**.
+
+```bash
+# Compiler avec les tests
+./scripts/build.sh
+
+# Lancer tous les tests
+cd build && ctest --output-on-failure
+
+# Lancer un test spécifique
+./build/test_ecs
+./build/test_network
+
+# Voir les résultats détaillés
+ctest --verbose
+```
+
+**Tests actuels** :
+- ✅ `test_ecs` : Registry et composants ECS
+- ✅ `test_network` : Protocole et sérialisation
+
+Les tests sont décommentés progressivement au fur et à mesure de l'implémentation.
+
+## 📊 Métriques (futures)
+
+- **Code Coverage** : Intégration avec Codecov/Coveralls
+- **Performance** : Benchmarks automatiques
+- **Documentation** : Génération Doxygen dans la CI
+
+## 📄 Documentation
+
+- [Sujet du projet (PDF)](./docs/subject/B-CPP-500_rtype.pdf)
+- [Annexes (PDF)](./docs/subject/B-CPP-500_rtype_apendix.pdf)
+- [Protection des branches](./.github/BRANCH_PROTECTION.md)
+- [Usage des Git Hooks](./.githooks/README.md)
+- [Usage du Smart Commit Tool](./SMART_COMMIT_GUIDE.md)
+
+## 🤝 Contribution
+
+1. Créer une branche feature : `git checkout -b feature/ma-fonctionnalite`
+2. Faire vos modifications et commits avec le bon format
+3. Push vers `dev` : `git push origin feature/ma-fonctionnalite`
+4. Merger dans `dev` (pas de PR requise)
+5. Créer une PR de `dev` vers `main` pour la validation finale
+
+**Outils recommandés** :
+- Utilisez `./scripts/smart-commit.sh` pour des commits propres et formatés
+- Exécutez `./scripts/format.sh` avant de push
+- Vérifiez avec `./scripts/lint.sh` pour éviter les erreurs de CI
+- Lancez `ctest` pour valider vos changements
+
 ## 📄 Licence
 
-Ce projet est développé dans un contexte éducatif (Epitech).
+Ce projet est développé dans un contexte éducatif (Epitech B-CPP-500).
