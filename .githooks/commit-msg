@@ -1,0 +1,50 @@
+#!/bin/bash
+# Git hook pour valider le format des messages de commit
+# Format requis : [TYPE] description
+# Types valides : ADD, FIX, CHORE, DOCS, STYLE, REFACTOR, DEL
+
+COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# Pattern pour le format [TYPE] description
+PATTERN="^\[(ADD|FIX|CHORE|DOCS|STYLE|REFACTOR|DEL|MERGE)\] .+"
+
+# Ignorer les commits de merge
+if echo "$COMMIT_MSG" | grep -qE "^Merge "; then
+    exit 0
+fi
+
+# Valider le message
+if ! echo "$COMMIT_MSG" | grep -qE "$PATTERN"; then
+    echo ""
+    echo "❌ ERROR: Message de commit invalide!"
+    echo ""
+    echo "Format requis: [TYPE] description"
+    echo ""
+    echo "Types valides:"
+    echo "  - [ADD]      : Ajout d'une feature"
+    echo "  - [FIX]      : Corriger soucis d'une feature"
+    echo "  - [CHORE]    : Configurer files"
+    echo "  - [DOCS]     : Ajouter des instructions de documentation"
+    echo "  - [STYLE]    : Appliquer format de style au projet"
+    echo "  - [REFACTOR] : Reformater le code"
+    echo "  - [DEL]      : Supprimer des fichiers"
+    echo "  - [MERGE]    : Merge de branches"
+    echo ""
+    echo "Exemples:"
+    echo "  ✅ [ADD] player connection handler to server"
+    echo "  ✅ [FIX] rendering issue on client startup"
+    echo "  ✅ [DOCS] update README with build instructions"
+    echo "  ✅ [REFACTOR] simplify ECS component system"
+    echo "  ✅ [CHORE] configure CMakeLists for new dependencies"
+    echo "  ✅ [STYLE] apply clang-format to server code"
+    echo "  ✅ [DEL] remove obsolete configuration files"
+    echo "  ✅ [MERGE] merge feature/login into main"
+    echo ""
+    echo "Votre message: $COMMIT_MSG"
+    echo ""
+    exit 1
+fi
+
+echo "✅ Message de commit valide"
+exit 0

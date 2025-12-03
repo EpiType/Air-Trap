@@ -1,0 +1,34 @@
+{
+  "network": {
+    "serverAddress": "127.0.0.1",
+    "serverPort": 4242,
+    "connectionTimeout": 5000,
+    "reconnectAttempts": 3
+  },
+  "graphics": {
+    "windowWidth": 1920,
+    "windowHeight": 1080,
+    "fullscreen": false,
+    "vsync": true,
+    "frameRateLimit": 60
+  },
+  "audio": {
+    "masterVolume": 100,
+    "musicVolume": 80,
+    "sfxVolume": 100,
+    "muted": false
+  },
+  "controls": {
+    "moveUp": "Z",
+    "moveDown": "S",
+    "moveLeft": "Q",
+    "moveRight": "D",
+    "shoot": "Space",
+    "pause": "Escape"
+  },
+  "logging": {
+    "level": "warning",
+    "file": "logs/client.log",
+    "console": true
+  }
+}

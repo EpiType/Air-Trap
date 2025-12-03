@@ -1,0 +1,643 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ '**' ]
+  pull_request:
+    branches: [ main ]  # Only PRs to main (dev → main)
+
+env:
+  MIRROR_URL: ${{ secrets.MIRROR_URL }}
+  MIRROR_SSH_KEY: ${{ secrets.MIRROR_SSH_KEY }}
+  DISCORD_WEBHOOK_MAINDEV: ${{ secrets.DISCORD_WEBHOOK_MAINDEV }}
+  DISCORD_WEBHOOK_OTHER: ${{ secrets.DISCORD_WEBHOOK_OTHER }}
+
+jobs:
+  # Job 0: Detect changes
+  paths-filter:
+    name: Detect Changed Files
+    runs-on: ubuntu-latest
+    outputs:
+      src: ${{ steps.changes.outputs.src }}
+      docs: ${{ steps.changes.outputs.docs }}
+      ci: ${{ steps.changes.outputs.ci }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 10
+    - name: Detect changes manually
+      id: changes
+      run: |
+        # Get list of changed files
+        if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+          # New branch, check current commit only
+          FILES=$(git diff-tree --no-commit-id --name-only -r HEAD)
+        else
+          # Compare with previous commit
+          FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+        fi
+        
+        echo "Changed files:"
+        echo "$FILES"
+        echo ""
+        
+        # Check src files
+        SRC_CHANGED=false
+        if echo "$FILES" | grep -qE '^(client|server|common)/|^CMakeLists\.txt$|^conanfile\.txt$'; then
+          SRC_CHANGED=true
+        fi
+        
+        # Check docs files
+        DOCS_CHANGED=false
+        if echo "$FILES" | grep -qE '\.md$|^docs/'; then
+          DOCS_CHANGED=true
+        fi
+        
+        # Check ci files
+        CI_CHANGED=false
+        if echo "$FILES" | grep -qE '^\.github/|^scripts/'; then
+          CI_CHANGED=true
+        fi
+        
+        echo "src=$SRC_CHANGED" >> $GITHUB_OUTPUT
+        echo "docs=$DOCS_CHANGED" >> $GITHUB_OUTPUT
+        echo "ci=$CI_CHANGED" >> $GITHUB_OUTPUT
+        
+        echo ""
+        echo "=== Detection Results ==="
+        echo "src=$SRC_CHANGED"
+        echo "docs=$DOCS_CHANGED"
+        echo "ci=$CI_CHANGED"
+
+  # Job 1: Commit Message Validation
+  commit-validation:
+    name: Validate Commit Messages
+    runs-on: ubuntu-latest
+    needs: paths-filter
+    # Only run on main repository, not on mirrors
+    if: github.event_name == 'push' && github.repository == 'EpiType/Air-Trap'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Validate commit messages
+      run: |
+        # Custom commit pattern: [TYPE] description
+        # Types: ADD, FIX, CHORE, DOCS, STYLE, DEL, REFACTOR, MERGE
+        PATTERN="^\[(ADD|FIX|CHORE|DOCS|STYLE|DEL|REFACTOR|MERGE)\] .+"
+        
+        # Get commits from push
+        if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+          # New branch, check only the last commit
+          COMMITS=$(git log -1 --pretty=format:"%H")
+        else
+          COMMITS=$(git log ${{ github.event.before }}..${{ github.sha }} --pretty=format:"%H")
+        fi
+        
+        echo "🔍 Validation des messages de commit..."
+        INVALID=0
+        
+        for commit in $COMMITS; do
+          MSG=$(git log -1 --pretty=format:"%s" $commit)
+          
+          # Ignorer les commits de merge
+          if echo "$MSG" | grep -qE "^Merge "; then
+            echo "⏭️  SKIP (merge): $MSG"
+            continue
+          fi
+          
+          echo "Checking: $MSG"
+          
+          if ! echo "$MSG" | grep -qE "$PATTERN"; then
+            echo "❌ INVALID: $MSG"
+            echo ""
+            echo "Le message doit suivre le format: [TYPE] description"
+            echo "Types valides: [ADD], [FIX], [CHORE], [DOCS], [STYLE], [REFACTOR], [DEL], [MERGE]"
+            echo "Exemple: [ADD] player connection handler to server"
+            INVALID=1
+          else
+            echo "✅ VALID"
+          fi
+          echo ""
+        done
+        
+        if [ $INVALID -eq 1 ]; then
+          exit 1
+        fi
+        
+        echo "✅ Tous les commits sont valides!"
+
+  # Job 2: Code Style Check
+  style-check:
+    name: Code Style Check (clang-format & clang-tidy)
+    runs-on: ubuntu-latest
+    needs: [paths-filter, commit-validation]
+    # Only run on main repository and if source files changed
+    if: |
+      github.repository == 'EpiType/Air-Trap' &&
+      needs.paths-filter.outputs.src == 'true' &&
+      always() && 
+      (needs.commit-validation.result == 'success' || needs.commit-validation.result == 'skipped')
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install clang-format and clang-tidy
+      run: |
+        # Install clang-format-18 from Ubuntu repositories (has C++20, we'll use Latest for C++23)
+        sudo apt-get update
+        sudo apt-get install -y wget gnupg software-properties-common
+        
+        # Add LLVM official repository
+        wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc
+        sudo add-apt-repository -y "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-18 main"
+        sudo apt-get update
+        
+        # Install clang-format-18 and clang-tidy-18
+        sudo apt-get install -y clang-format-18 clang-tidy-18
+        
+        # Make them default
+        sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-18 100
+        sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-18 100
+        
+        clang-format --version
+
+    # - name: Check code formatting
+    #   run: |
+    #     echo "🎨 Vérification du formatage du code..."
+    #     FILES=$(find client server common -name "*.cpp" -o -name "*.hpp" 2>/dev/null || echo "")
+        
+    #     if [ -z "$FILES" ]; then
+    #       echo "⚠️ Aucun fichier C++ trouvé, skip"
+    #       exit 0
+    #     fi
+        
+    #     echo "$FILES" | xargs clang-format --dry-run --Werror
+
+    - name: Run clang-tidy
+      run: |
+        echo "🔍 Analyse statique avec clang-tidy..."
+        
+        # Check if compile_commands.json exists
+        if [ ! -f "build/compile_commands.json" ]; then
+          echo "⚠️ compile_commands.json non trouvé, clang-tidy sera exécuté lors du build"
+          exit 0
+        fi
+        
+        FILES=$(find client server common -name "*.cpp" 2>/dev/null || echo "")
+        
+        if [ -z "$FILES" ]; then
+          echo "⚠️ Aucun fichier C++ trouvé"
+          exit 0
+        fi
+        
+        echo "$FILES" | xargs clang-tidy -p build
+
+  # Job 3: Build on Linux
+  build-linux:
+    name: Build on Linux
+    runs-on: ubuntu-latest
+    needs: [paths-filter, style-check]
+    # Run on push to dev or main branches, and only if source files changed
+    if: |
+      github.repository == 'EpiType/Air-Trap' && 
+      (github.ref_name == 'dev' || github.ref_name == 'main') && 
+      github.event_name == 'push' &&
+      needs.paths-filter.outputs.src == 'true'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake build-essential libudev-dev libgl1-mesa-dev libx11-dev libxrandr-dev libfreetype6-dev libopenal-dev libflac-dev libvorbis-dev
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install Conan
+      run: |
+        pip install conan
+        conan profile detect
+
+    - name: Cache Conan packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.conan2
+        key: conan-linux-${{ hashFiles('**/conanfile.txt') }}
+        restore-keys: |
+          conan-linux-
+
+    - name: Install dependencies
+      run: |
+        mkdir -p build
+        cd build
+        conan install .. --build=missing -s build_type=Release -c tools.system.package_manager:mode=install -c tools.system.package_manager:sudo=True
+
+    - name: Configure CMake
+      run: |
+        cd build
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake
+
+    - name: Build
+      run: |
+        cd build
+        cmake --build . --config Release -j$(nproc)
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: air-trap-linux
+        path: |
+          build/r-type_server
+          build/r-type_client
+
+  # Job 4: Build on Windows
+  build-windows:
+    name: Build on Windows
+    runs-on: windows-latest
+    needs: [paths-filter, style-check]
+    # Only on PRs to main (dev → main validation), only on main repository, and if source files changed
+    if: |
+      github.repository == 'EpiType/Air-Trap' &&
+      github.event_name == 'pull_request' && 
+      github.base_ref == 'main' &&
+      needs.paths-filter.outputs.src == 'true'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install Conan
+      run: |
+        pip install conan
+        conan profile detect
+
+    - name: Cache Conan packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.conan2
+        key: conan-windows-${{ hashFiles('**/conanfile.txt') }}
+        restore-keys: |
+          conan-windows-
+
+    - name: Install dependencies
+      run: |
+        mkdir build
+        cd build
+        conan install .. --build=missing -s build_type=Release -c tools.system.package_manager:mode=install
+
+    - name: Configure CMake
+      run: |
+        cd build
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake
+
+    - name: Build
+      run: |
+        cd build
+        cmake --build . --config Release
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: air-trap-windows
+        path: |
+          build/Release/r-type_server.exe
+          build/Release/r-type_client.exe
+
+  # Job 5: Build on macOS
+  build-macos:
+    name: Build on macOS
+    runs-on: macos-latest
+    needs: [paths-filter, style-check]
+    # Only on PRs to main (dev → main validation), only on main repository, and if source files changed
+    if: |
+      github.repository == 'EpiType/Air-Trap' &&
+      github.event_name == 'pull_request' && 
+      github.base_ref == 'main' &&
+      needs.paths-filter.outputs.src == 'true'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install Conan
+      run: |
+        pip install conan
+        conan profile detect
+
+    - name: Cache Conan packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.conan2
+        key: conan-macos-${{ hashFiles('**/conanfile.txt') }}
+        restore-keys: |
+          conan-macos-
+
+    - name: Install dependencies
+      run: |
+        mkdir -p build
+        cd build
+        conan install .. --build=missing -s build_type=Release -c tools.system.package_manager:mode=install
+
+    - name: Configure CMake
+      run: |
+        cd build
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake
+
+    - name: Build
+      run: |
+        cd build
+        cmake --build . --config Release -j$(sysctl -n hw.ncpu)
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: air-trap-macos
+        path: |
+          build/r-type_server
+          build/r-type_client
+
+  # Job 6: Unit Tests (Optional - requires test implementation)
+  tests:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+    needs: build-linux
+    if: false  # Disabled until tests are implemented
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download Linux artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: air-trap-linux
+
+    - name: Run tests
+      run: |
+        # Execute test binaries
+        ./r-type_tests
+
+  # Job 7: Mirror Repository
+  mirror:
+    name: Mirror to External Repository
+    runs-on: ubuntu-latest
+    needs: [paths-filter, commit-validation, style-check, build-linux]
+    # Mirror after builds (if they ran), only from main repository
+    if: |
+      github.repository == 'EpiType/Air-Trap' &&
+      github.event_name == 'push' &&
+      always() &&
+      (needs.build-linux.result == 'success' || needs.build-linux.result == 'skipped') &&
+      (needs.commit-validation.result == 'success' || needs.commit-validation.result == 'skipped')
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        fetch-tags: true
+    
+    - name: Setup SSH and Mirror repository
+      id: mirror
+      run: |
+        set -e
+        
+        # Configuration SSH
+        mkdir -p ~/.ssh
+        echo "${{ secrets.MIRROR_SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+        
+        # Configuration Git
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+        git config --global url."git@github.com:".insteadOf "https://github.com/"
+        
+        # Mirroring
+        echo "📡 Démarrage du mirror..."
+        git remote add mirror "${{ secrets.MIRROR_URL }}"
+        git fetch --all --tags
+        
+        echo "🚀 Push vers le mirror..."
+        git push mirror --all --force
+        git push mirror --tags --force
+        
+        echo "✅ Mirror terminé avec succès"
+
+  # Job 8: Notification Discord
+  notify:
+    name: Send Discord Notification
+    runs-on: ubuntu-latest
+    needs: [paths-filter, commit-validation, style-check, build-linux, build-windows, build-macos, mirror]
+    # Always notify from main repository (push and PR), même en cas d'échec
+    if: |
+      github.repository == 'EpiType/Air-Trap' &&
+      always()
+    
+    steps:
+    - name: Checkout for commit list
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Send Discord notification
+      run: |
+        # Récupérer TOUS les statuts (avec fallback sur 'skipped')
+        COMMIT_STATUS="${{ needs.commit-validation.result || 'skipped' }}"
+        STYLE_STATUS="${{ needs.style-check.result || 'skipped' }}"
+        BUILD_LINUX_STATUS="${{ needs.build-linux.result || 'skipped' }}"
+        BUILD_WINDOWS_STATUS="${{ needs.build-windows.result || 'skipped' }}"
+        BUILD_MACOS_STATUS="${{ needs.build-macos.result || 'skipped' }}"
+        MIRROR_STATUS="${{ needs.mirror.result || 'skipped' }}"
+        
+        BRANCH_NAME="${{ github.ref_name }}"
+        REPO_URL="https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
+        
+        # Gérer push vs PR
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          COMMITTER="${{ github.event.pull_request.user.login }}"
+          MESSAGE="${{ github.event.pull_request.title }}"
+          PR_URL="${{ github.event.pull_request.html_url }}"
+          COMMIT_LIST="PR: $MESSAGE"
+        else
+          COMMITTER="${{ github.event.head_commit.author.name }}"
+          # Récupérer tous les commits du push
+          if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+            # Nouvelle branche, afficher seulement le dernier commit
+            COMMIT_LIST=$(git log -1 --pretty=format:'%h %s')
+          else
+            # Liste tous les commits du push
+            COMMIT_LIST=$(git log --pretty=format:'%h %s' ${{ github.event.before }}..${{ github.sha }})
+          fi
+          PR_URL=""
+        fi
+        
+        # Déterminer le webhook selon la branche
+        if [ "$BRANCH_NAME" = "main" ] || [ "$BRANCH_NAME" = "dev" ]; then
+          WEBHOOK="${{ secrets.DISCORD_WEBHOOK_MAINDEV }}"
+        else
+          WEBHOOK="${{ secrets.DISCORD_WEBHOOK_OTHER }}"
+        fi
+        
+        # Vérifier que le webhook est configuré
+        if [ -z "$WEBHOOK" ]; then
+          echo "❌ ERREUR: Webhook Discord non configuré pour $BRANCH_NAME"
+          echo "Configure DISCORD_WEBHOOK_MAINDEV ou DISCORD_WEBHOOK_OTHER dans les secrets GitHub"
+          exit 1
+        fi
+        
+        # Construire le rapport COMPLET
+        REPORT=""
+        FAILED=0
+        
+        # Commit Validation
+        if [ "$COMMIT_STATUS" = "failure" ]; then
+          REPORT="$REPORT\\n❌ Commit Validation: Messages invalides"
+          FAILED=1
+        elif [ "$COMMIT_STATUS" = "success" ]; then
+          REPORT="$REPORT\\n✅ Commit Validation: OK"
+        elif [ "$COMMIT_STATUS" = "skipped" ]; then
+          REPORT="$REPORT\\n⏭️ Commit Validation: Skipped - PR"
+        fi
+        
+        # Style Check
+        if [ "$STYLE_STATUS" = "failure" ]; then
+          REPORT="$REPORT\\n❌ Style Check: Code non conforme"
+          FAILED=1
+        elif [ "$STYLE_STATUS" = "success" ]; then
+          REPORT="$REPORT\\n✅ Style Check: OK"
+        elif [ "$STYLE_STATUS" = "skipped" ]; then
+          REPORT="$REPORT\\n⏭️ Style Check: Skipped"
+        fi
+        
+        # Build Linux
+        if [ "$BUILD_LINUX_STATUS" = "failure" ]; then
+          REPORT="$REPORT\\n❌ Build Linux: Échec compilation"
+          FAILED=1
+        elif [ "$BUILD_LINUX_STATUS" = "success" ]; then
+          REPORT="$REPORT\\n✅ Build Linux: OK"
+        elif [ "$BUILD_LINUX_STATUS" = "skipped" ]; then
+          REPORT="$REPORT\\n⏭️ Build Linux: Skipped - branch: $BRANCH_NAME"
+        fi
+        
+        # Build Windows
+        if [ "$BUILD_WINDOWS_STATUS" = "failure" ]; then
+          REPORT="$REPORT\\n❌ Build Windows: Échec compilation"
+          FAILED=1
+        elif [ "$BUILD_WINDOWS_STATUS" = "success" ]; then
+          REPORT="$REPORT\\n✅ Build Windows: OK"
+        elif [ "$BUILD_WINDOWS_STATUS" = "skipped" ]; then
+          REPORT="$REPORT\\n⏭️ Build Windows: Skipped - pas de PR vers main"
+        fi
+        
+        # Build macOS
+        if [ "$BUILD_MACOS_STATUS" = "failure" ]; then
+          REPORT="$REPORT\\n❌ Build macOS: Échec compilation"
+          FAILED=1
+        elif [ "$BUILD_MACOS_STATUS" = "success" ]; then
+          REPORT="$REPORT\\n✅ Build macOS: OK"
+        elif [ "$BUILD_MACOS_STATUS" = "skipped" ]; then
+          REPORT="$REPORT\\n⏭️ Build macOS: Skipped - pas de PR vers main"
+        fi
+        
+        # Mirror
+        if [ "$MIRROR_STATUS" = "failure" ]; then
+          REPORT="$REPORT\\n⚠️ Mirror: Échec sync Epitech"
+        elif [ "$MIRROR_STATUS" = "success" ]; then
+          REPORT="$REPORT\\n✅ Mirror: Sync Epitech OK"
+        elif [ "$MIRROR_STATUS" = "skipped" ]; then
+          REPORT="$REPORT\\n⏭️ Mirror: Skipped - builds non exécutés"
+        fi
+        
+        # Déterminer le statut global
+        if [ $FAILED -eq 0 ]; then
+          STATUS_MSG="✅ CI/CD Success"
+          COLOR="3066993"
+        else
+          STATUS_MSG="❌ CI/CD Failed"
+          COLOR="15158332"
+        fi
+        
+        # Ajouter le type d'événement
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          EVENT_TYPE="🔀 Pull Request"
+          LINK="$PR_URL"
+        else
+          EVENT_TYPE="📤 Push"
+          LINK="$REPO_URL"
+        fi
+        
+        # Construire et envoyer le payload Discord
+        REPORT_CLEAN=$(echo "$REPORT" | sed 's/"/\\"/g' | sed 's/\\n/ | /g')
+        
+        # Limiter à 10 commits max pour Discord
+        COMMIT_COUNT=$(echo "$COMMIT_LIST" | wc -l)
+        if [ $COMMIT_COUNT -gt 10 ]; then
+          COMMIT_LIST_DISPLAY=$(echo "$COMMIT_LIST" | head -10 | sed 's/"/\\"/g' | awk '{printf "%s\\n", $0}' | tr -d '\n')
+          COMMIT_LIST_DISPLAY="${COMMIT_LIST_DISPLAY}\\n... and $((COMMIT_COUNT - 10)) more commits"
+        else
+          COMMIT_LIST_DISPLAY=$(echo "$COMMIT_LIST" | sed 's/"/\\"/g' | awk '{printf "%s\\n", $0}' | tr -d '\n')
+        fi
+        
+        # Échapper les caractères spéciaux pour JSON
+        STATUS_MSG_CLEAN=$(echo "$STATUS_MSG" | sed 's/"/\\"/g')
+        BRANCH_NAME_CLEAN=$(echo "$BRANCH_NAME" | sed 's/"/\\"/g')
+        COMMITTER_CLEAN=$(echo "$COMMITTER" | sed 's/"/\\"/g')
+        EVENT_TYPE_CLEAN=$(echo "$EVENT_TYPE" | sed 's/"/\\"/g')
+        LINK_CLEAN=$(echo "$LINK" | sed 's/"/\\"/g')
+        TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+        
+        echo "=== Discord Notification Debug ==="
+        echo "Webhook configured: $([ -n "$WEBHOOK" ] && echo "YES" || echo "NO")"
+        echo "Branch: $BRANCH_NAME"
+        echo "Commit count: $COMMIT_COUNT"
+        echo "Status: $STATUS_MSG"
+        
+        # Construire JSON avec printf (évite les problèmes d'échappement)
+        printf '{"embeds":[{"title":"%s","color":%d,"description":"%s","fields":[{"name":"📦 Repo","value":"%s","inline":true},{"name":"🌿 Branch","value":"%s","inline":true},{"name":"👤 Author","value":"%s","inline":true},{"name":"📝 Commits","value":"%d","inline":true},{"name":"🔔 Event","value":"%s","inline":true},{"name":"🔗 Link","value":"%s","inline":true},{"name":"💬 Messages","value":"%s","inline":false}],"timestamp":"%s"}]}' \
+          "$STATUS_MSG_CLEAN" "$COLOR" "$REPORT_CLEAN" "${{ github.repository }}" \
+          "$BRANCH_NAME_CLEAN" "$COMMITTER_CLEAN" "$COMMIT_COUNT" "$EVENT_TYPE_CLEAN" \
+          "$LINK_CLEAN" "$COMMIT_LIST_DISPLAY" "$TIMESTAMP" > /tmp/payload.json
+        
+        echo ""
+        echo "=== JSON Payload ==="
+        cat /tmp/payload.json
+        echo ""
+        
+        # Envoyer avec curl
+        HTTP_CODE=$(curl -s -o /tmp/response.txt -w "%{http_code}" \
+          -H "Content-Type: application/json" \
+          -X POST \
+          -d @/tmp/payload.json \
+          "$WEBHOOK")
+        
+        echo "=== Response ==="
+        echo "HTTP Code: $HTTP_CODE"
+        cat /tmp/response.txt
+        echo ""
+        
+        if [ "$HTTP_CODE" = "204" ] || [ "$HTTP_CODE" = "200" ]; then
+          echo "✅ Notification Discord envoyée"
+        else
+          echo "❌ Échec (HTTP $HTTP_CODE)"
+        fi
