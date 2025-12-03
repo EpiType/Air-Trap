@@ -36,6 +36,7 @@ if git diff --quiet && git diff --cached --quiet; then
     exit 0
 fi
 
+# Appliquer le style de code (optionnel)
 # echo "🔧 Application du style de code C++..."
 # python .coding-style/cpp-coding-style.py
 
@@ -390,17 +391,9 @@ if [ "$USE_GITHUB_ISSUES" = true ]; then
     if [ -n "$issue_input" ]; then
         # Valider que c'est un nombre
         if [[ "$issue_input" =~ ^[0-9]+$ ]]; then
-            # Vérifier que l'issue existe
-            if gh issue view "$issue_input" &>/dev/null; then
-                ISSUE_NUMBER="$issue_input"
-                echo "✅ Lié à l'issue #$ISSUE_NUMBER"
-                
-                # Afficher un aperçu de l'issue
-                ISSUE_TITLE=$(gh issue view "$ISSUE_NUMBER" --json title -q .title)
-                echo "   📌 $ISSUE_TITLE"
-            else
-                echo "⚠️  Issue #$issue_input introuvable, commit sans lien"
-            fi
+            # Accepter le numéro sans vérification (simple et fiable)
+            ISSUE_NUMBER="$issue_input"
+            echo "✅ Lié à l'issue #$ISSUE_NUMBER"
         else
             echo "⚠️  Numéro d'issue invalide, commit sans lien"
         fi

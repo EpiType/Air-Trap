@@ -11,7 +11,6 @@
  */
 
 #include <format>
-#include "../../../../src/Core/DynamicLibraries/PlatformBackend.hpp" // To fix include path
 
 namespace rtp::dl
 {
@@ -22,18 +21,10 @@ namespace rtp::dl
         if (!this->_handle)
             return std::unexpected{"Dynamic library handle is null"};
 
-        /* ========== To check ============ */
-        auto result = impl::PlatformBackend::getSymbol(this->_handle, name);
-        // void *symbol = impl::PlatformBackend::getSymbol(this->_handle, name);
-       
-        if (!result)
-            return std::unexpected{std::format("Failed to get symbol '{}' : '{}'", name, result.error())};
-        void *symbol = *result;
-        /* ================================ */
-        
-        if (!symbol)
+        auto symbol = impl::PlatformBackend::getSymbol(this->_handle, name);
+        if (!symbol.has_value())
             return std::unexpected{std::format("Symbol '{}' not found", name)};
 
-        return reinterpret_cast<T>(symbol);
+        return reinterpret_cast<T>(symbol.value());
     }
 }
