@@ -23,7 +23,7 @@ namespace rtp::dl
 
         auto symbol = impl::PlatformBackend::getSymbol(this->_handle, name);
         if (!symbol.has_value())
-            return std::unexpected{std::format("Symbol '{}' not found"), name};
+            return std::unexpected{std::format("Symbol '{}' not found", name)};
 
         return reinterpret_cast<T>(symbol.value());
     }
