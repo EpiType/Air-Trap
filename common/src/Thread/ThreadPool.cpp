@@ -84,7 +84,7 @@ namespace rtp::thread
             {
                 std::unique_lock<std::mutex> lock(this->_queueMutex);
 
-                this->_condition.wait(lock, [this, &stopToken] (void) {
+                this->_condition.wait(lock, [this, &stopToken](void) {
                     return this->_stop || !this->_tasks.empty();
                 });
                 if ((stopToken.stop_requested() || this->_stop) &&

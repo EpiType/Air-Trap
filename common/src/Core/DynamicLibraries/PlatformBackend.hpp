@@ -51,8 +51,7 @@ namespace rtp::dl::impl
              * @return std::expected<void *, std::string>
              */
             [[nodiscard]]
-            static auto getSymbol(void *handle,
-                                  std::string_view name) noexcept
+            static auto getSymbol(void *handle, std::string_view name) noexcept
                 -> std::expected<void *, std::string>;
     };
 }
