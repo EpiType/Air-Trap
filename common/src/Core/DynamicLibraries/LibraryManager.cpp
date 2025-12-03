@@ -48,7 +48,7 @@ namespace rtp::dl
         -> std::expected<std::unique_ptr<DynamicLibrary>, std::string>
     {
         auto handle = impl::PlatformBackend::open(path);
-        if (!handle.has_value())
+        if (!handle.has_value()) [[unlikely]]
             return std::unexpected{
                 std::format("Failed to load dynamic library at '{}': '{}'",
                             path, handle.error())};
@@ -68,20 +68,20 @@ namespace rtp::dl
 
         // --- READ LOCK --- (Cache hit)
         {
-            std::shared_lock lock(this->_mutex);
+            std::shared_lock lock{this->_mutex};
             auto it = this->_libraries.find(pathStr);
-            if (it != this->_libraries.end())
+            if (it != this->_libraries.end()) [[likely]]
                 return it->second;
         }
         // --- WRITE LOCK --- (Cache miss)
         {
-            std::unique_lock lock(this->_mutex);
+            std::unique_lock lock{this->_mutex};
             auto it = this->_libraries.find(pathStr);
-            if (it != this->_libraries.end())
+            if (it != this->_libraries.end()) [[unlikely]]
                 return it->second;
 
             auto handle = impl::PlatformBackend::open(path);
-            if (!handle.has_value())
+            if (!handle.has_value()) [[unlikely]]
                 return std::unexpected{
                     std::format("Failed to load dynamic library at '{}': '{}'",
                                 path, handle.error())};

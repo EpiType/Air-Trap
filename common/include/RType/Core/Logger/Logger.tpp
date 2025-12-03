@@ -5,38 +5,8 @@
 ** Logger.tpp
 */
 
-#include "Logger.hpp"
-
 namespace rtp::log
 {
-    ///////////////////////////////////////////////////////////////////////////
-    // Public API
-    ///////////////////////////////////////////////////////////////////////////
-
-    template <typename... Args>
-    void info(std::format_string<Args...> &&fmt, Args &&...args,
-              const std::source_location location) noexcept
-    {
-        safeLog(Level::Info, location, fmt,
-                 std::forward<Args>(args)...);
-    }
-
-    template <typename... Args>
-    void error(std::format_string<Args...> &&fmt, Args &&...args,
-               const std::source_location location) noexcept
-    {
-        safeLog(Level::Error, location, fmt,
-                 std::forward<Args>(args)...);
-    }
-
-    template <typename... Args>
-    void warning(std::format_string<Args...> &&fmt, Args &&...args,
-                 const std::source_location location) noexcept
-    {
-        safeLog(Level::Warning, location, fmt,
-                 std::forward<Args>(args)...);
-    }
-
     ///////////////////////////////////////////////////////////////////////////
     // Private API
     ///////////////////////////////////////////////////////////////////////////
@@ -44,8 +14,8 @@ namespace rtp::log
     namespace detail
     {
         template <typename... Args>
-        void safeLog(Level level, const std::source_location& loc, 
-                     std::format_string<Args...> fmt, Args&&... args) noexcept
+        void safeLog(Level level, const std::source_location &loc, 
+                     std::format_string<Args...> fmt, Args &&...args) noexcept
         {
             try {
                 std::string msg = std::format(fmt,
@@ -56,5 +26,41 @@ namespace rtp::log
                                "LOGGER FORMAT ERROR (OOM?)", loc);
             }
         }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Public API
+    ///////////////////////////////////////////////////////////////////////////
+
+    template <typename... Args>
+    void debug(LogFmt<std::type_identity_t<Args>...> wrapper,
+               Args &&...args) noexcept
+    {
+        detail::safeLog(Level::Debug, wrapper.loc, wrapper.fmt,
+                std::forward<Args>(args)...);
+    }
+
+    template <typename... Args>
+    void info(LogFmt<std::type_identity_t<Args>...> wrapper,
+              Args &&...args) noexcept
+    {
+        detail::safeLog(Level::Info, wrapper.loc, wrapper.fmt,
+                std::forward<Args>(args)...);
+    }
+
+    template <typename... Args>
+    void error(LogFmt<std::type_identity_t<Args>...> wrapper,
+               Args &&...args) noexcept
+    {
+        detail::safeLog(Level::Error, wrapper.loc, wrapper.fmt,
+                std::forward<Args>(args)...);
+    }
+
+    template <typename... Args>
+    void warning(LogFmt<std::type_identity_t<Args>...> wrapper,
+                 Args &&...args) noexcept
+    {
+        detail::safeLog(Level::Warning, wrapper.loc, wrapper.fmt,
+                std::forward<Args>(args)...);
     }
 }

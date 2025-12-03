@@ -22,7 +22,7 @@ namespace rtp::dl::impl
     {
         std::string safeNullTerminatedPath(path);
         HMODULE handle = LoadLibraryA(safeNullTerminatedPath.c_str());
-        if (!handle)
+        if (!handle) [[unlikely]]
             return std::unexpected(
                 std::system_error{}.message(GetLastError()));
 
@@ -32,7 +32,7 @@ namespace rtp::dl::impl
     auto PlatformBackend::close(void *handle) noexcept
         -> std::expected<void, std::string>
     {
-        if (!FreeLibrary(reinterpret_cast<HMODULE>(handle)))
+        if (!FreeLibrary(reinterpret_cast<HMODULE>(handle))) [[unlikely]]
             return std::unexpected{
                 std::system_error{}.message(GetLastError())};
 
@@ -46,7 +46,7 @@ namespace rtp::dl::impl
         std::string safeNullTerminatedName(name);
         FARPROC symbol = GetProcAddress(reinterpret_cast<HMODULE>(handle),
                                         safeNullTerminatedName.c_str());
-        if (!symbol)
+        if (!symbol) [[unlikely]]
             return std::unexpected{
                 std::system_error{}.message(GetLastError())};
 

@@ -16,7 +16,7 @@ namespace rtp::dl
 
     DynamicLibrary::~DynamicLibrary() noexcept
     {
-        if (this->_handle)
+        if (this->_handle) [[unlikely]]
             impl::PlatformBackend::close(this->_handle);
     }
 
@@ -29,7 +29,7 @@ namespace rtp::dl
     DynamicLibrary &DynamicLibrary::operator=(DynamicLibrary &&other) noexcept
     {
         if (this != &other) {
-            if (this->_handle)
+            if (this->_handle) [[unlikely]]
                 impl::PlatformBackend::close(this->_handle);
             this->_handle = other._handle;
             other._handle = nullptr;

@@ -22,7 +22,7 @@ namespace rtp::dl::impl
         std::string safeNullTerminatedPath(path);
         void *handle = dlopen(safeNullTerminatedPath.c_str(),
                               RTLD_LAZY | RTLD_LOCAL);
-        if (!handle) {
+        if (!handle) [[unlikely]] {
             const char *err = dlerror();
             return std::unexpected{err ? err : "Unknown dlopen error"};
         }
@@ -33,7 +33,7 @@ namespace rtp::dl::impl
     auto PlatformBackend::close(void *handle) noexcept
         -> std::expected<void, std::string>
     {
-        if (dlclose(handle) != 0) {
+        if (dlclose(handle) != 0) [[unlikely]] {
             const char *err = dlerror();
             return std::unexpected{err ? err : "Unknown dlclose error"};
         }
@@ -50,7 +50,7 @@ namespace rtp::dl::impl
         std::string safeNullTerminatedName(name);
         void *symbol = dlsym(handle, safeNullTerminatedName.c_str());
         const char *err = dlerror();
-        if (err)
+        if (err) [[unlikely]]
             return std::unexpected{err};
 
         return symbol;

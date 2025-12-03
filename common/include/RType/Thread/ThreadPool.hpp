@@ -111,7 +111,7 @@ namespace rtp::thread
              * create method for instantiation.
              * It initializes the ThreadPool with the specified number of threads.
              */
-            ThreadPool() noexcept = default;
+            ThreadPool(void) noexcept = default;
 
             /**
              * @brief Starts the worker threads in the pool.

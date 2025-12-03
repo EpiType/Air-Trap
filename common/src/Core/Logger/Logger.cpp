@@ -5,7 +5,7 @@
 ** Logger.cpp, Logger class implementation
 */
 
-#include "Logger.hpp"
+#include "Core/Logger/Logger.hpp"
 
 #include <chrono>
 #include <filesystem>
@@ -71,7 +71,7 @@ namespace rtp::log
                             break;
                     }
 
-                    std::lock_guard lock(_mutex);
+                    std::lock_guard lock{this->_mutex};
 
                     std::cout << std::format("{}[{:%T}] [{}] {} \033[0m "
                                              "\t({}:{})\n",

@@ -13,6 +13,8 @@
     #include <source_location>
     #include <string>
     #include <string_view>
+    #include <type_traits>
+    #include <utility>
 
 namespace rtp::log
 {
@@ -21,6 +23,26 @@ namespace rtp::log
         Info,
         Warning,
         Error
+    };
+
+    template <typename... Args>
+    struct LogFmt {
+        std::format_string<Args...> fmt;
+        std::source_location loc;
+
+        consteval LogFmt(const char *s,
+                         std::source_location l =
+                             std::source_location::current())
+                        : fmt(s), loc(l)
+        {
+        }
+
+        consteval LogFmt(std::string_view s,
+                         std::source_location l =
+                             std::source_location::current())
+                        : fmt(s), loc(l)
+        {
+        }
     };
 
     /**
@@ -34,6 +56,17 @@ namespace rtp::log
         -> std::expected<void, std::string>;
 
     /**
+     * @brief Log a debug message.
+     * @tparam Args The types of the format arguments.
+     * @param fmt The format string.
+     * @param args The format arguments.
+     * @param location The source location of the log call.
+     */
+    template <typename... Args>
+    void debug(LogFmt<std::type_identity_t<Args>...> fmt,
+               Args &&...args) noexcept;
+
+    /**
      * @brief Log an informational message.
      * @tparam Args The types of the format arguments.
      * @param fmt The format string.
@@ -41,21 +74,18 @@ namespace rtp::log
      * @param location The source location of the log call.
      */
     template <typename... Args>
-    void info(std::format_string<Args...> fmt, Args &&...args,
-              const std::source_location location =
-                  std::source_location::current()) noexcept;
+    void info(LogFmt<std::type_identity_t<Args>...> fmt,
+              Args &&...args) noexcept;
 
     /**
      * @brief Log an error message.
      * @tparam Args The types of the format arguments.
      * @param fmt The format string.
      * @param args The format arguments.
-     * @param location The source location of the log call.
      */
     template <typename... Args>
-    void error(std::format_string<Args...> fmt, Args &&...args,
-               const std::source_location location =
-                   std::source_location::current()) noexcept;
+    void error(LogFmt<std::type_identity_t<Args>...> fmt,
+               Args &&...args) noexcept;
 
     /**
      * @brief Log a warning message.
@@ -65,9 +95,8 @@ namespace rtp::log
      * @param location The source location of the log call.
      */
     template <typename... Args>
-    void warning(std::format_string<Args...> fmt, Args &&...args,
-                 const std::source_location location =
-                     std::source_location::current()) noexcept;
+    void warning(LogFmt<std::type_identity_t<Args>...> fmt,
+                 Args &&...args) noexcept;
 
     ///////////////////////////////////////////////////////////////////////////
     // Private API

@@ -43,12 +43,12 @@ namespace rtp::thread
                       numThreads);
             pool->start(numThreads);
         } catch (const std::exception &e) {
-            std::string err{std::format("ThreadPool init failed: {}",
-                                          e.what())};
-            log::error("{}", err);
-            return std::unexpected{err};
+            const char *fmt{"ThreadPool init failed: {}"};
+            log::error(fmt, e.what());
+            return std::unexpected{std::format(fmt, e.what())};
         } catch (...) {
             std::string err{"ThreadPool init failed: unknown error"};
+            log::error("{}", err);
             return std::unexpected{err};
         }
 
@@ -88,9 +88,9 @@ namespace rtp::thread
                     return this->_stop || !this->_tasks.empty();
                 });
                 if ((stopToken.stop_requested() || this->_stop) &&
-                    this->_tasks.empty())
+                    this->_tasks.empty()) [[unlikely]]
                     break;
-                if (this->_tasks.empty())
+                if (this->_tasks.empty()) [[unlikely]]
                     continue;
 
                 task = std::move(this->_tasks.front());
