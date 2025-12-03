@@ -20,6 +20,9 @@ struct Animation {
     float frameDuration{0.1f}; /**< Duration of each frame in seconds */
     bool loop{true};           /**< Whether the animation should loop */
     float elapsedTime{0.0f};   /**< Time elapsed since the animation started */
-    sf::IntRect frameRect;     /**< Rectangle defining the current frame area */
+    int frameLeft{0};           /**< Left position of the current frame */
+    int frameTop{0};            /**< Top position of the current frame */
+    int frameWidth{0};         /**< Width of the current frame */
+    int frameHeight{0};        /**< Height of the current frame */
 };
 }  // namespace rtp::ecs::components

@@ -8,7 +8,7 @@
 #pragma once
 #include <queue>
 
-#include "RType/ECS/Component.hpp"
+#include "RType/ECS/Types.hpp"
 #include "RType/ECS/Types.hpp"
 
 namespace rtp::ecs {

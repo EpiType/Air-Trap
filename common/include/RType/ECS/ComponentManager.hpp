@@ -10,7 +10,7 @@
 #include <memory>
 #include <unordered_map>
 
-#include "RType/ECS/Component.hpp"
+#include "RType/ECS/Types.hpp"
 #include "RType/ECS/ComponentArray.hpp"
 
 namespace rtp::ecs {
