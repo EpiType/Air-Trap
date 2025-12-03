@@ -47,7 +47,7 @@
 //     registry.addComponent(e1, PositionComponent{0.0f, 0.0f});
 //     registry.addComponent(e1, VelocityComponent{1.0f, 1.0f});
 //     registry.addComponent(e2, PositionComponent{10.0f, 10.0f});
-//     
+//
 //     auto view = registry.view<PositionComponent, VelocityComponent>();
 //     EXPECT_EQ(view.size(), 1);  // Seulement e1 a les deux composants
 // }

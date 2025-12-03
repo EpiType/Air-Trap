@@ -10,7 +10,7 @@
 //     packet.header.sequence = 42;
 //     packet.playerId = 1;
 //     packet.inputFlags = 0b00001111;  // UP, DOWN, LEFT, RIGHT
-//     
+//
 //     // Sérialiser et vérifier la taille
 //     auto data = serialize(packet);
 //     EXPECT_GT(data.size(), 0);
@@ -23,10 +23,10 @@
 //     original.header.sequence = 42;
 //     original.playerId = 1;
 //     original.inputFlags = 0b00001111;
-//     
+//
 //     auto data = serialize(original);
 //     auto deserialized = deserialize<PlayerInputPacket>(data);
-//     
+//
 //     EXPECT_EQ(deserialized.header.type, PacketType::PLAYER_INPUT);
 //     EXPECT_EQ(deserialized.header.sequence, 42);
 //     EXPECT_EQ(deserialized.playerId, 1);

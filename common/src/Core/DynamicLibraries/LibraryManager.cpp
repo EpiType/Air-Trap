@@ -12,84 +12,71 @@
  * It provides APIs to load libraries in different modes:
  * - Main API: Load a library and return a raw pointer (observer).
  * - Shared API: Load a library and return a shared pointer (shared ownership).
- * - Isolated API: Load a library and return a unique pointer (unique ownership). 
+ * - Isolated API: Load a library and return a unique pointer (unique ownership).
  */
 
-#include "LibraryManager.hpp"
-#include "PlatformBackend.hpp"
+#include "RType/Core/DynamicLibraries/LibraryManager.hpp"
 
 #include <format>
 #include <mutex>
 
-namespace rtp::dl
-{
-    ///////////////////////////////////////////////////////////////////////////
-    // Public API
-    ///////////////////////////////////////////////////////////////////////////
+#include "PlatformBackend.hpp"
 
-    auto LibraryManager::load(std::string_view path) noexcept
-        -> std::expected<const DynamicLibrary *, std::string>
+namespace rtp::dl {
+///////////////////////////////////////////////////////////////////////////
+// Public API
+///////////////////////////////////////////////////////////////////////////
+
+auto LibraryManager::load(std::string_view path) noexcept -> std::expected<const DynamicLibrary*, std::string> {
+    return this->getOrLoadInternal(path).transform(
+        [](const std::shared_ptr<DynamicLibrary>& libPtr) -> const DynamicLibrary* { return libPtr.get(); });
+}
+
+auto LibraryManager::loadShared(std::string_view path) noexcept
+    -> std::expected<std::shared_ptr<DynamicLibrary>, std::string> {
+    return this->getOrLoadInternal(path);
+}
+
+auto LibraryManager::loadStandalone(std::string_view path) noexcept
+    -> std::expected<std::unique_ptr<DynamicLibrary>, std::string> {
+    auto handle = impl::PlatformBackend::open(path);
+    if (!handle.has_value())
+        return std::unexpected{std::format("Failed to load dynamic library at '{}': '{}'", path, handle.error())};
+
+    return std::make_unique<DynamicLibrary>(handle.value());
+}
+
+///////////////////////////////////////////////////////////////////////////
+// Private API
+///////////////////////////////////////////////////////////////////////////
+
+auto LibraryManager::getOrLoadInternal(std::string_view path) noexcept
+    -> std::expected<std::shared_ptr<DynamicLibrary>, std::string> {
+    const std::string pathStr{path};  // TODO: avoid copy, by adding HashStringView
+                                      //       as key in unordered_map
+
+    // --- READ LOCK --- (Cache hit)
     {
-        return this->getOrLoadInternal(path).transform(
-            [](const std::shared_ptr<DynamicLibrary> &libPtr) 
-                -> const DynamicLibrary *
-            {
-                return libPtr.get();
-            });
+        std::shared_lock lock(this->_mutex);
+        auto it = this->_libraries.find(pathStr);
+        if (it != this->_libraries.end())
+            return it->second;
     }
-
-    auto LibraryManager::loadShared(std::string_view path) noexcept
-        -> std::expected<std::shared_ptr<DynamicLibrary>, std::string>
+    // --- WRITE LOCK --- (Cache miss)
     {
-        return this->getOrLoadInternal(path);
-    }
+        std::unique_lock lock(this->_mutex);
+        auto it = this->_libraries.find(pathStr);
+        if (it != this->_libraries.end())
+            return it->second;
 
-    auto LibraryManager::loadStandalone(std::string_view path) noexcept
-        -> std::expected<std::unique_ptr<DynamicLibrary>, std::string>
-    {
         auto handle = impl::PlatformBackend::open(path);
         if (!handle.has_value())
-            return std::unexpected{
-                std::format("Failed to load dynamic library at '{}': '{}'",
-                            path, handle.error())};
+            return std::unexpected{std::format("Failed to load dynamic library at '{}': '{}'", path, handle.error())};
 
-        return std::make_unique<DynamicLibrary>(handle.value());
-    }
+        auto lib = std::make_shared<DynamicLibrary>(handle.value());
+        this->_libraries.emplace(std::string{path}, lib);
 
-    ///////////////////////////////////////////////////////////////////////////
-    // Private API
-    ///////////////////////////////////////////////////////////////////////////
-
-    auto LibraryManager::getOrLoadInternal(std::string_view path) noexcept
-        -> std::expected<std::shared_ptr<DynamicLibrary>, std::string>
-    {
-        const std::string pathStr{path}; // TODO: avoid copy, by adding HashStringView
-                                         //       as key in unordered_map
-
-        // --- READ LOCK --- (Cache hit)
-        {
-            std::shared_lock lock(this->_mutex);
-            auto it = this->_libraries.find(pathStr);
-            if (it != this->_libraries.end())
-                return it->second;
-        }
-        // --- WRITE LOCK --- (Cache miss)
-        {
-            std::unique_lock lock(this->_mutex);
-            auto it = this->_libraries.find(pathStr);
-            if (it != this->_libraries.end())
-                return it->second;
-
-            auto handle = impl::PlatformBackend::open(path);
-            if (!handle.has_value())
-                return std::unexpected{
-                    std::format("Failed to load dynamic library at '{}': '{}'",
-                                path, handle.error())};
-
-            auto lib = std::make_shared<DynamicLibrary>(handle.value());
-            this->_libraries.emplace(std::string{path}, lib);
-
-            return lib;
-        }
+        return lib;
     }
 }
+}  // namespace rtp::dl

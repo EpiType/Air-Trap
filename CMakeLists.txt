@@ -29,7 +29,8 @@ add_executable(r-type_server
 )
 
 target_include_directories(r-type_server PRIVATE
-    ${CMAKE_SOURCE_DIR}/server/include
+    ${CMAKE_SOURCE_DIR}/server/include,
+    ${CMAKE_SOURCE_DIR}/common/include
 )
 
 target_link_libraries(r-type_server PRIVATE
@@ -49,7 +50,8 @@ add_executable(r-type_client
 )
 
 target_include_directories(r-type_client PRIVATE
-    ${CMAKE_SOURCE_DIR}/client/include
+    ${CMAKE_SOURCE_DIR}/client/include,
+    ${CMAKE_SOURCE_DIR}/common/include
 )
 
 target_link_libraries(r-type_client PRIVATE

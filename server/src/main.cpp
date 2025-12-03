@@ -5,7 +5,4 @@
 ** main.cpp, entry point for the server application
 */
 
-int main(int argc, char **argv)
-{
-
-}
+int main(void) {}
