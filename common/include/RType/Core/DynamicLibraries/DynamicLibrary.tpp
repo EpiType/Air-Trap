@@ -21,10 +21,10 @@ namespace rtp::dl
         if (!this->_handle)
             return std::unexpected{"Dynamic library handle is null"};
 
-        void *symbol = impl::PlatformBackend::getSymbol(this->_handle, name);
-        if (!symbol)
+        auto symbol = impl::PlatformBackend::getSymbol(this->_handle, name);
+        if (!symbol.has_value())
             return std::unexpected{std::format("Symbol '{}' not found"), name};
 
-        return reinterpret_cast<T>(symbol);
+        return reinterpret_cast<T>(symbol.value());
     }
 }
