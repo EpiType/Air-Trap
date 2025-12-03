@@ -75,7 +75,7 @@ endif()
 if(APPLE)
     set_target_properties(r-type_client PROPERTIES
         MACOSX_RPATH TRUE
-        BUILD_WITH_INSTALL_RPATH TRUE
+        # BUILD_WITH_INSTALL_RPATH TRUE
     )
 endif()
 
