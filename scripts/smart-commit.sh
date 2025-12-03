@@ -36,6 +36,7 @@ if git diff --quiet && git diff --cached --quiet; then
     exit 0
 fi
 
+# Appliquer le style de code (optionnel)
 # echo "🔧 Application du style de code C++..."
 # python .coding-style/cpp-coding-style.py
 
