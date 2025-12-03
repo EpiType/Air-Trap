@@ -23,8 +23,8 @@ namespace rtp::dl::impl
         std::string safeNullTerminatedPath(path);
         HMODULE handle = LoadLibraryA(safeNullTerminatedPath.c_str());
         if (!handle) [[unlikely]]
-            return std::unexpected(
-                std::system_error{}.message(GetLastError()));
+            return std::unexpected{
+                std::system_error{}.message(GetLastError())};
 
         return reinterpret_cast<void *>(handle);
     }
