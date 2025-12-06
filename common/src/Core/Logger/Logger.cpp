@@ -9,11 +9,11 @@
 
 #include <chrono>
 #include <filesystem>
-#include <format>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <mutex>
+#include <print>
 
 namespace rtp::log
 {
@@ -73,14 +73,14 @@ namespace rtp::log
 
                     std::lock_guard lock{this->_mutex};
 
-                    std::cout << std::format("{}[{:%T}] [{}] {} \033[0m "
-                                             "\t({}:{})\n",
+                    std::println(std::cout, "{}[{:%T}] [{}] {} \033[0m "
+                                             "\t({}:{})",
                                              color, timePoint, levelStr, msg,
                                              loc.file_name(), loc.line());
                     if (this->_file.is_open()) {
-                        this->_file << std::format("[{:%T}] [{}] {} ({}:{})\n", 
-                                                   timePoint, levelStr, msg,
-                                                   cleanFileName, loc.line());
+                        std::println(this->_file, "[{:%T}] [{}] {} ({}:{})",
+                                     timePoint, levelStr, msg,
+                                     cleanFileName, loc.line());
                     }
                 }
 
@@ -101,7 +101,8 @@ namespace rtp::log
             try {
                 getBackend().write(level, message, loc);
             } catch (...) {
-                std::cerr << "[LOGGER FAILURE] " << message << std::endl;
+                std::println(std::cerr, "\033[31m[LOGGER FAILURE] {} \033[0m",
+                             message);
             }
         }
     }
