@@ -30,26 +30,24 @@ namespace rtp::thread
     auto ThreadPool::create(size_t numThreads) noexcept
         -> std::expected<std::unique_ptr<ThreadPool>, std::string>
     {
+        constexpr std::string_view fmt{"ThreadPool init failed: {}"};
+
         if (numThreads == 0)
-            return std::unexpected{
-                "ThreadPool must have at least one thread."};
+            return std::unexpected{std::format(
+                fmt, "number of threads must be at least 1")};
 
         std::unique_ptr<ThreadPool> pool{new (std::nothrow) ThreadPool{}};
         if (!pool)
-            return std::unexpected{
-                "ThreadPool init failed: memory allocation error"};
+            return std::unexpected{std::format(fmt,
+                                               "memory allocation failure")};
         try {
             log::info("ThreadPool initialized successfully with {} workers.",
                       numThreads);
             pool->start(numThreads);
         } catch (const std::exception &e) {
-            const char *fmt{"ThreadPool init failed: {}"};
-            log::error(fmt, e.what());
             return std::unexpected{std::format(fmt, e.what())};
         } catch (...) {
-            std::string err{"ThreadPool init failed: unknown error"};
-            log::error("{}", err);
-            return std::unexpected{err};
+            return std::unexpected{std::format(fmt, "unknown error")};
         }
 
         return pool;
