@@ -16,8 +16,8 @@
  * condition variables for task management and synchronization.
  */
 
-#ifndef THREADPOOL_HPP_
-    #define THREADPOOL_HPP_
+#ifndef RTYPE_THREADPOOL_HPP_
+    #define RTYPE_THREADPOOL_HPP_
     
     #include <concepts>
     #include <condition_variable>
@@ -140,4 +140,4 @@ namespace rtp::thread
 
     #include "ThreadPool.tpp" /* Enqueue method implementation */
 
-#endif /* !THREADPOOL_HPP_ */
+#endif /* !RTYPE_THREADPOOL_HPP_ */
