@@ -69,26 +69,26 @@ namespace rtp
         Success = 0,
         
         // --- Core ---
-        Unknown = 1,                ///< Unknown or unspecified error
-        InvalidParameter,           ///< Invalid function parameter provided
-        InternalRuntimeError,       ///< Internal runtime error
+        Unknown = 1,            /**< Unknown or unspecified error */
+        InvalidParameter,       /**< Invalid function parameter provided */
+        InternalRuntimeError,   /**< Internal runtime error */
 
         // --- Network ---
-        ConnectionFailed = 100,     ///< Failed to establish network connection
-        Disconnected,               ///< Connection was disconnected
-        Timeout,                    ///< Network operation timed out
-        PayloadError,               ///< Error in network payload data
+        ConnectionFailed = 100, /**< Failed to establish network connection */
+        Disconnected,           /**< Connection was disconnected */
+        Timeout,                /**< Network operation timed out */
+        PayloadError,           /**< Error in network payload data */
 
         // --- IO
-        FileNotFound = 200,         ///< Requested file does not exist
-        LibraryLoadFailed,          ///< Failed to load dynamic library
-        SymbolNotFound,             ///< Symbol not found in dynamic library
-        InvalidFormat,              ///< Invalid file or data format
+        FileNotFound = 200,     /**< Requested file does not exist */
+        LibraryLoadFailed,      /**< Failed to load dynamic library */
+        SymbolNotFound,         /**< Symbol not found in dynamic library */
+        InvalidFormat,          /**< Invalid file or data format */
 
         // --- ECS ---
-        ComponentMissing = 300,     ///< Requested component not found on entity
-        RegistryFull,               ///< Entity registry has reached maximum capacity
-        EntityInvalid               ///< Entity identifier is invalid or stale
+        ComponentMissing = 300, /**< Requested component not found on entity */
+        RegistryFull,           /**< Entity registry has reached maximum capacity */
+        EntityInvalid           /**< Entity identifier is invalid or stale */
     };
 
     /**
@@ -209,10 +209,10 @@ namespace rtp {
             std::uint8_t incrementRetryCount(void) noexcept;
 
         private:
-            ErrorCode _code;             ///< The error code
-            log::Level _severity;        ///< Severity level of the error
-            std::uint8_t _retryCount{0}; ///< Number of retry attempts
-            std::string _message;        ///< Formatted error message
+            ErrorCode _code;             /**< The error code */
+            log::Level _severity;        /**< Severity level of the error */
+            std::uint8_t _retryCount{0}; /**< Number of retry attempts */
+            std::string _message;        /**< Formatted error message */
 
         private:
             /**
