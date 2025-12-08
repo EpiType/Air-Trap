@@ -5,14 +5,42 @@
 ** LibraryManager.cpp, implementation of dynamic library manager
 */
 
+/*
+** MIT License
+**
+** Copyright (c) 2025 Robin Toillon
+**
+** Permission is hereby granted, free of charge, to any person obtaining
+** a copy of this software and associated documentation files (the
+** "Software"), to deal in the Software without restriction, including
+** without limitation the rights to use, copy, modify, merge, publish,
+** distribute, sublicense, and/or sell copies of the Software, and to
+** permit persons to whom the Software is furnished to do so, subject to
+** the following conditions:
+**
+** The above copyright notice and this permission notice shall be
+** included in all copies or substantial portions of the Software.
+**
+** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+** EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+** MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+** IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+** CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+** TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+** SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 /**
  * @file LibraryManager.cpp
- * @brief Implementation of the Dynamic Library Manager.
- * This class is responsible for loading and managing dynamic libraries.
- * It provides APIs to load libraries in different modes:
+ * @brief Implementation of the Dynamic Library Manager
+ * @author Robin Toillon
+ * @details This class is responsible for loading and managing dynamic
+ * libraries. It provides APIs to load libraries in different modes:
  * - Main API: Load a library and return a raw pointer (observer).
- * - Shared API: Load a library and return a shared pointer (shared ownership).
- * - Isolated API: Load a library and return a unique pointer (unique ownership). 
+ * - Shared API: Load a library and return a shared pointer (shared
+ *   ownership).
+ * - Isolated API: Load a library and return a unique pointer (unique
+ *   ownership).
  */
 
 #include "RType/System/LibraryManager.hpp"
