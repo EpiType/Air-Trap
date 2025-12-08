@@ -8,28 +8,37 @@
 cmake_minimum_required(VERSION 3.20)
 
 set(SRC_DYNLIB
-    src/Core/DynamicLibraries/LibraryManager.cpp
-    src/Core/DynamicLibraries/DynamicLibrary.cpp
+    src/System/LibraryManager.cpp
+    src/System/DynamicLibrary.cpp
 )
-
 if(WIN32)
-    list(APPEND SRC_DYNLIB src/Core/DynamicLibraries/impl/LibraryBackend_Win.cpp)
+    list(APPEND SRC_DYNLIB src/System/LibraryBackend_Win.cpp)
 elseif(UNIX)
-    list(APPEND SRC_DYNLIB src/Core/DynamicLibraries/impl/LibraryBackend_Unix.cpp)
+    list(APPEND SRC_DYNLIB src/System/LibraryBackend_Unix.cpp)
 endif()
 
 set(SRC_LOGGER
-    src/Core/Logger/Logger.cpp
+    src/Logger.cpp
 )
 
-# set(SRC_ECS
-#     src/RType/ECS/Registry.cpp
-# )
+set(SRC_THREADPOOL
+    src/Thread/ThreadPool.cpp
+)
+
+set(SRC_ERROR
+    src/Error/Error.cpp
+)
+
+set(SRC_ECS
+    src/ECS/Registry.cpp
+)
 
 add_library(RTypeCommon STATIC
     ${SRC_LOGGER}
     ${SRC_DYNLIB}
-    # ${SRC_ECS}
+    ${SRC_ECS}
+    ${SRC_THREADPOOL}
+    ${SRC_ERROR}
 )
 
 target_include_directories(RTypeCommon
