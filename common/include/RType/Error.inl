@@ -55,6 +55,8 @@ namespace rtp
                 return "Unknown error";
             case InvalidParameter:
                 return "Invalid parameter";
+            case InternalRuntimeError:
+                return "Internal runtime error";
 
         // --- Network ---
             case ConnectionFailed:
@@ -79,6 +81,8 @@ namespace rtp
         // --- ECS ---
             case ComponentMissing:
                 return "Component missing";
+            case RegistryFull:
+                return "Registry full";
             case EntityInvalid:
                 return "Entity invalid";
 
