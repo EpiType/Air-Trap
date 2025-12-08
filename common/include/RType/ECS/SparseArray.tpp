@@ -18,12 +18,8 @@ namespace rtp::ecs
         Entity entityLast = this->_dense[indexLast];
 
         if (indexRemoved != indexLast) {
-            std::swap(this->_data[indexRemoved],
-                      this->_data[indexLast]);
-
-            std::swap(this->_dense[indexRemoved],
-                      this->_dense[indexLast]);
-
+            this->_data[indexRemoved] = std::move(this->_data.back());
+            this->_dense[indexRemoved] = entityLast;
             this->_sparse[entityLast.index()] = indexRemoved;
         }
 
@@ -52,6 +48,7 @@ namespace rtp::ecs
     template <Component T>
     template <typename Self>
     auto &&SparseArray<T>::operator[](this Self &&self, Entity entity) noexcept
+        requires (std::is_lvalue_reference_v<Self>)
     {
         RTP_ASSERT(self.has(entity),
                    "SparseArray: Entity {} does not have component " \
@@ -59,24 +56,24 @@ namespace rtp::ecs
 
         size_t index = self._sparse[entity.index()];
 
-        return std::forward<Self>(self)._data[index];
+        return std::forward_like<Self>(self)._data[index];
     }
 
     template <Component T>
     template <typename... Args>
-    auto SparseArray<T>::emplace(Entity entity, Args &&...args) -> T &
+    auto SparseArray<T>::emplace(Entity entity, Args &&...args) & -> T &
     {
-        if (entity >= this->_sparse.size())
+        if (entity.index() >= this->_sparse.size())
             this->_sparse.resize(entity + 1, NullIndex);
 
-        if (this->_sparse[entity.index()] != NullIndex) {
-            size_t index = this->_sparse[entity.index()];
+        size_t index = this->_sparse[entity.index()];
+        if (index != NullIndex) {
             this->_data[index] = T(std::forward<Args>(args)...);
             return this->_data[index];
         }
 
-        size_t index = this->_data.size();
-        this->_sparse[entity] = index;
+        index = this->_data.size();
+        this->_sparse[entity.index()] = index;
         this->_dense.push_back(entity);
         
         return this->_data.emplace_back(std::forward<Args>(args)...);
@@ -85,6 +82,7 @@ namespace rtp::ecs
     template <Component T>
     template <typename Self>
     auto &&SparseArray<T>::getData(this Self &&self) noexcept
+        requires (std::is_lvalue_reference_v<Self>)
     {
         return std::forward<Self>(self)._data;   
     }
@@ -92,6 +90,7 @@ namespace rtp::ecs
     template <Component T>
     template <typename Self>
     auto &&SparseArray<T>::getEntities(this Self &&self) noexcept
+        requires (std::is_lvalue_reference_v<Self>)
     {
         return std::forward<Self>(self)._dense;
     }
@@ -99,6 +98,7 @@ namespace rtp::ecs
     template <Component T>
     template <typename Self>
     auto SparseArray<T>::begin(this Self &&self) noexcept
+        requires (std::is_lvalue_reference_v<Self>)
     {
         return std::forward<Self>(self)._data.begin();
     }
@@ -106,6 +106,7 @@ namespace rtp::ecs
     template <Component T>
     template <typename Self>
     auto SparseArray<T>::end(this Self &&self) noexcept
+        requires (std::is_lvalue_reference_v<Self>)
     {
         return std::forward<Self>(self)._data.end();
     }

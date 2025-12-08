@@ -10,6 +10,7 @@ namespace rtp::ecs
     template <Component T>
     auto Registry::registerComponent(void) -> SparseArray<T> &
     {
+        std::lock_guard lock(this->_mutex);
         std::type_index type = typeid(T);
 
         if (this->_arrays.contains(type)) {
@@ -17,17 +18,15 @@ namespace rtp::ecs
                 this->_arrays.find(type)->second.get());
         }
 
-        auto sparseArray = std::make_unique<SparseArray<T>>();
-        auto *ptr = sparseArray.get();
-
-        this->_arrays.emplace(type, std::move(sparseArray));
-
-        return *ptr;
+        auto [it, ok] =
+            this->_arrays.emplace(type, std::make_unique<SparseArray<T>>());
+        return *static_cast<SparseArray<T>*>(it->second.get());
     }
 
     template <Component T, typename Self>
     auto Registry::getComponents(this Self &&self)
-        -> std::expected<ConstLike<Self, SparseArray<T>> &, std::string>
+        -> std::expected<ConstLikeRef<Self, SparseArray<T>>, std::string>
+        requires (std::is_lvalue_reference_v<Self>)
     {
         std::type_index type = typeid(T);
 
@@ -42,7 +41,7 @@ namespace rtp::ecs
     }
 
     template <Component T, typename... Args>
-    auto Registry::addComponent(Entity entity, Args &&...args)
+    auto Registry::addComponent(Entity entity, Args &&...args) &
         -> std::expected<T &, std::string>
     {
         auto result = this->getComponents<T>();
@@ -54,8 +53,8 @@ namespace rtp::ecs
     }
 
     template <Component T, typename Self>
-    auto Registry::view(this Self &&self)
-        -> std::span<ConstLike<Self, T>>
+    auto Registry::view(this Self &&self) -> std::span<ConstLike<Self, T>>
+        requires (std::is_lvalue_reference_v<Self>)
     {
         auto result = self.template getComponents<T>();
 
@@ -69,23 +68,24 @@ namespace rtp::ecs
         return std::span<ComponentType>(result->getData());
     }
 
-    template <Component T, typename Self>
+    template <Component ...Ts, typename Self>
     auto Registry::zipView(this Self &&self)
+        requires (std::is_lvalue_reference_v<Self>)
     {
-        auto result = self.template getComponents<T>();
+        using FirstComponentType = std::tuple_element_t<0, std::tuple<Ts...>>;
+    
+        auto entityResult = self.template getComponents<FirstComponentType>();
 
-        using ComponentType = ConstLike<Self, T>;
+        if (!entityResult.has_value())
+            return std::views::zip();
 
-        if (!result.has_value()) [[unlikely]] {
-            log::warning("Registry::zip_view: {}", result.error());
-            return std::views::zip(std::span<const Entity>{},
-                                   std::span<ComponentType>{});
-        }
+        auto entitySpan = std::span<const Entity>(
+                              entityResult.value().getEntities());
 
-        auto &components = result.value();
+        auto componentSpans = std::make_tuple(self.template view<Ts>()...);
 
-        return std::views::zip(
-            std::span<const Entity>(components.getEntities()), 
-            std::span<ComponentType>(components.getData()));
+        return std::apply([&entitySpan](auto &&...componentViews) {
+            return std::views::zip(entitySpan, componentViews...);
+        }, componentSpans);
     }
 }

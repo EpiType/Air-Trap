@@ -9,7 +9,7 @@ namespace rtp::ecs
 {
     constexpr Entity::Entity(std::uint32_t index, std::uint32_t generation)
         : _id{static_cast<std::uint64_t>(generation) << GEN_SHIFT |
-              static_cast<std::uint64_t>(index) & INDEX_MASK}
+              static_cast<std::uint64_t>(index)}
     {
     }
 
