@@ -13,13 +13,12 @@
  * to the thread pool for asynchronous execution.
  */
 
-#include "ThreadPool.hpp"
 #include <format>
 
 namespace rtp::thread
 {
     template<std::invocable F, typename... Args>
-    auto ThreadPool::enqueue(F &&f, Args &&...args) noexcept
+    auto ThreadPool::enqueue(F &&f, Args &&...args)
         -> std::expected<std::future<std::invoke_result_t<F, Args...>>,
                          std::string>
     {

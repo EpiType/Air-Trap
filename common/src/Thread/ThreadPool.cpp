@@ -15,10 +15,12 @@
  * the task queue using mutexes and condition variables.
  */
 
-#include "ThreadPool.hpp"
-#include "RType/Core/Logger/Logger.hpp"
+#include "RType/Assert.hpp"
+#include "RType/Logger.hpp"
+#include "RType/Thread/ThreadPool.hpp"
 
 #include <format>
+#include <exception>
 
 namespace rtp::thread
 {
@@ -27,7 +29,7 @@ namespace rtp::thread
     // Public API
     ///////////////////////////////////////////////////////////////////////////
 
-    auto ThreadPool::create(size_t numThreads) noexcept
+    auto ThreadPool::create(size_t numThreads)
         -> std::expected<std::unique_ptr<ThreadPool>, std::string>
     {
         constexpr std::string_view fmt{"ThreadPool init failed: {}"};
@@ -36,21 +38,20 @@ namespace rtp::thread
             return std::unexpected{std::format(
                 fmt, "number of threads must be at least 1")};
 
-        std::unique_ptr<ThreadPool> pool{new (std::nothrow) ThreadPool{}};
-        if (!pool)
-            return std::unexpected{std::format(fmt,
-                                               "memory allocation failure")};
         try {
+            std::unique_ptr<ThreadPool> pool{new ThreadPool{}};
+
+            pool->start(numThreads);
             log::info("ThreadPool initialized successfully with {} workers.",
                       numThreads);
-            pool->start(numThreads);
-        } catch (const std::exception &e) {
+
+            return pool;
+
+        } catch (const std::system_error &e) {
             return std::unexpected{std::format(fmt, e.what())};
         } catch (...) {
             return std::unexpected{std::format(fmt, "unknown error")};
         }
-
-        return pool;
     }
 
     ThreadPool::~ThreadPool() noexcept
@@ -58,6 +59,10 @@ namespace rtp::thread
         {
             std::unique_lock<std::mutex> lock(this->_queueMutex);
             this->_stop = true;
+
+            RTP_VERIFY(this->_tasks.empty(), 
+                       "ThreadPool destroyed with {} pending tasks discarded!", 
+                       this->_tasks.size());
         }
         this->_condition.notify_all();
     }
@@ -90,10 +95,15 @@ namespace rtp::thread
                     break;
                 if (this->_tasks.empty()) [[unlikely]]
                     continue;
+                RTP_ASSERT(!this->_tasks.empty(), 
+                           "Worker: Try to pop from empty queue (Logic Error)");
 
                 task = std::move(this->_tasks.front());
                 this->_tasks.pop();
             }
+
+            RTP_ASSERT(task, "Worker: Popped an invalid/null task function!");
+
             try {
                 task();
             } catch (const std::exception &e) {
