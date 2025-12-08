@@ -80,8 +80,8 @@ namespace rtp {
                                 std::format_string<Args...> fmt,
                                 Args &&...args) -> Error;
 
-            static auto Error::fromSystem(ErrorCode code,
-                                          std::string_view prefix) -> Error;
+            static auto fromSystem(ErrorCode code,
+                                   std::string_view prefix) -> Error;
 
             log::Level severity(void) const noexcept;
             std::uint8_t retryCount(void) const noexcept;

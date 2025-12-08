@@ -47,27 +47,32 @@ namespace rtp::ecs
 
             template <typename Self>
             [[nodiscard]]
-            auto &&operator[](this Self &&self, Entity entity) noexcept;
+            auto &&operator[](this Self &&self, Entity entity) noexcept
+                requires (std::is_lvalue_reference_v<Self>);
 
             template <typename... Args>
             [[nodiscard]]
-            auto emplace(Entity entity, Args &&...args) -> T &;
+            auto emplace(Entity entity, Args &&...args) & -> T &;
 
             template <typename Self>
             [[nodiscard]]
-            auto &&getData(this Self &&self) noexcept;
+            auto &&getData(this Self &&self) noexcept
+                requires (std::is_lvalue_reference_v<Self>);
 
             template <typename Self>
             [[nodiscard]]
-            auto &&getEntities(this Self &&self) noexcept;
+            auto &&getEntities(this Self &&self) noexcept
+                requires (std::is_lvalue_reference_v<Self>);
 
             template <typename Self>
             [[nodiscard]]
-            auto begin(this Self &&self) noexcept;
+            auto begin(this Self &&self) noexcept
+                requires (std::is_lvalue_reference_v<Self>);
 
             template <typename Self>
             [[nodiscard]]
-            auto end(this Self &&self) noexcept;
+            auto end(this Self &&self) noexcept
+                requires (std::is_lvalue_reference_v<Self>);
 
             [[nodiscard]]
             std::size_t size(void) const noexcept;
