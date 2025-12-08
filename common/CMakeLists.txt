@@ -13,9 +13,9 @@ set(SRC_DYNLIB
 )
 
 if(WIN32)
-    list(APPEND SRC_DYNLIB src/Core/DynamicLibraries/impl/PlatformBackend_Win.cpp)
+    list(APPEND SRC_DYNLIB src/Core/DynamicLibraries/impl/LibraryBackend_Win.cpp)
 elseif(UNIX)
-    list(APPEND SRC_DYNLIB src/Core/DynamicLibraries/impl/PlatformBackend_Unix.cpp)
+    list(APPEND SRC_DYNLIB src/Core/DynamicLibraries/impl/LibraryBackend_Unix.cpp)
 endif()
 
 set(SRC_LOGGER
