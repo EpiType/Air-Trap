@@ -179,6 +179,6 @@ namespace rtp::ecs
     };
 }
 
-#include "Registry.tpp" /* Registry implementation */
+    #include "Registry.tpp" /* Registry implementation */
 
 #endif /* !RTYPE_REGISTRY_HPP_ */
