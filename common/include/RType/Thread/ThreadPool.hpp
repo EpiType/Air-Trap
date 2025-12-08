@@ -64,7 +64,7 @@ namespace rtp::thread
              * If the input is invalid, an appropriate error message is returned.
              */
             [[nodiscard]]
-            static auto create(size_t numThreads) noexcept
+            static auto create(size_t numThreads)
                 -> std::expected<std::unique_ptr<ThreadPool>, std::string>;
 
             /**
@@ -92,7 +92,7 @@ namespace rtp::thread
              */
             template<std::invocable F, typename... Args>
             [[nodiscard]]
-            auto enqueue(F &&f, Args &&...args) noexcept
+            auto enqueue(F &&f, Args &&...args)
                 -> std::expected<std::future<std::invoke_result_t<F, Args...>>,
                                  std::string>;
 
