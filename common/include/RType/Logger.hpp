@@ -9,6 +9,7 @@
     #define RTYPE_LOGGER_HPP_
 
     #include "RType/LogLevel.hpp"
+    #include "RType/Error.hpp"
 
     #include <expected>
     #include <format>
@@ -43,12 +44,12 @@ namespace rtp::log
     /**
      * @brief Configure the logger using a configuration file.
      * @param logFilePath The path to the configuration file.
-     * @return std::expected<void, std::string>
+     * @return std::expected<void, rtp::Error>
      * @note If the configuration fails, returns an error message.
      */
     [[nodiscard]]
     auto configure(std::string_view logFilePath) noexcept
-        -> std::expected<void, std::string>;
+        -> std::expected<void, rtp::Error>;
 
     /**
      * @brief Log a debug message.

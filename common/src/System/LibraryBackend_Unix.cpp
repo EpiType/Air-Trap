@@ -18,32 +18,38 @@
 namespace rtp::sys::impl
 {
     auto LibraryBackend::open(std::string_view path)
-        -> std::expected<void *, std::string>
+        -> std::expected<void *, rtp::Error>
     {
         std::string safeNullTerminatedPath(path);
         void *handle = dlopen(safeNullTerminatedPath.c_str(),
                               RTLD_LAZY | RTLD_LOCAL);
         if (!handle) [[unlikely]] {
             const char *err = dlerror();
-            return std::unexpected{err ? err : "Unknown dlopen error"};
+            return std::unexpected{Error::failure(ErrorCode::LibraryLoadFailed,
+                                   "dlopen error: {}",
+                                   err ? err : "Unknown dlopen error")};
         }
 
         return handle;
     }
 
     auto LibraryBackend::close(void *handle) noexcept
-        -> std::expected<void, std::string>
+        -> std::expected<void, rtp::Error>
     {
         if (dlclose(handle) != 0) [[unlikely]] {
             const char *err = dlerror();
-            return std::unexpected{err ? err : "Unknown dlclose error"};
+            if (err)
+                return std::unexpected{
+                    Error::failure(ErrorCode::LibraryLoadFailed,
+                                   "dlclose error: {}",
+                                   err ? err : "Unknown dlclose error")};
         }
 
         return {};
     }
 
     auto LibraryBackend::getSymbol(void *handle, std::string_view name)
-        -> std::expected<void *, std::string>
+        -> std::expected<void *, rtp::Error>
     {
         RTP_ASSERT(handle != nullptr,
                    "LoaderBackend: Handle cannot be null during symbol lookup");
@@ -54,7 +60,8 @@ namespace rtp::sys::impl
         void *symbol = dlsym(handle, safeNullTerminatedName.c_str());
         const char *err = dlerror();
         if (err) [[unlikely]]
-            return std::unexpected{err};
+            return std::unexpected{Error::failure(ErrorCode::SymbolNotFound,
+                                                  "dlsym error: {}", err)};
 
         return symbol;
     }

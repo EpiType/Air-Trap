@@ -39,7 +39,7 @@ namespace rtp::ecs
             ~Registry() noexcept;
 
             [[nodiscard]]
-            auto spawnEntity(void) -> std::expected<Entity, std::string>;
+            auto spawnEntity(void) -> std::expected<Entity, rtp::Error>;
 
             void killEntity(Entity entity);
 
@@ -51,13 +51,13 @@ namespace rtp::ecs
             [[nodiscard]]
             auto getComponents(this Self &&self)
                 -> std::expected<ConstLikeRef<Self, SparseArray<T>>,
-                                 std::string>
+                                 rtp::Error>
             requires (std::is_lvalue_reference_v<Self>);
 
             template <Component T, typename... Args>
             [[nodiscard]]
             auto addComponent(Entity entity, Args &&...args) &
-                -> std::expected<T &, std::string>;
+                -> std::expected<T &, rtp::Error>;
 
             template <Component T, typename Self>
             [[nodiscard]]

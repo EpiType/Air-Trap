@@ -28,7 +28,7 @@ namespace rtp::sys
     ///////////////////////////////////////////////////////////////////////////
 
     auto LibraryManager::load(std::string_view path)
-        -> std::expected<const DynamicLibrary *, std::string>
+        -> std::expected<const DynamicLibrary *, rtp::Error>
     {
         return this->getOrLoadInternal(path).transform(
             [](const std::shared_ptr<DynamicLibrary> &libPtr) 
@@ -39,19 +39,19 @@ namespace rtp::sys
     }
 
     auto LibraryManager::loadShared(std::string_view path)
-        -> std::expected<std::shared_ptr<DynamicLibrary>, std::string>
+        -> std::expected<std::shared_ptr<DynamicLibrary>, rtp::Error>
     {
         return this->getOrLoadInternal(path);
     }
 
     auto LibraryManager::loadStandalone(std::string_view path)
-        -> std::expected<std::unique_ptr<DynamicLibrary>, std::string>
+        -> std::expected<std::unique_ptr<DynamicLibrary>, rtp::Error>
     {
         auto handle = impl::LibraryBackend::open(path);
         if (!handle.has_value()) [[unlikely]]
-            return std::unexpected{
-                std::format("Failed to load dynamic library at '{}': '{}'",
-                            path, handle.error())};
+            return std::unexpected{Error::failure(ErrorCode::LibraryLoadFailed,
+                                   "Failed to load dynamic library at " \
+                                   "'{}': '{}'", path, handle.error())};
 
         return std::make_unique<DynamicLibrary>(handle.value());
     }
@@ -61,7 +61,7 @@ namespace rtp::sys
     ///////////////////////////////////////////////////////////////////////////
 
     auto LibraryManager::getOrLoadInternal(std::string_view path)
-        -> std::expected<std::shared_ptr<DynamicLibrary>, std::string>
+        -> std::expected<std::shared_ptr<DynamicLibrary>, rtp::Error>
     {
         const std::string pathStr{path}; // TODO: avoid copy, by adding HashStringView
                                          //       as key in unordered_map
@@ -83,8 +83,9 @@ namespace rtp::sys
             auto handle = impl::LibraryBackend::open(path);
             if (!handle.has_value()) [[unlikely]]
                 return std::unexpected{
-                    std::format("Failed to load dynamic library at '{}': '{}'",
-                                path, handle.error())};
+                    Error::failure(ErrorCode::LibraryLoadFailed,
+                                   "Failed to load dynamic library at " \
+                                   "'{}': '{}'", path, handle.error())};
 
             auto lib = std::make_shared<DynamicLibrary>(handle.value());
             this->_libraries.emplace(std::string{path}, lib);
