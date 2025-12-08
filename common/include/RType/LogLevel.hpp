@@ -52,12 +52,12 @@ namespace rtp::log
      * a different category of log message importance.
      */
     enum class Level : std::uint8_t {
-        Debug = 0,    ///< Detailed information for debugging purposes
-        Info,         ///< General informational messages
-        Warning,      ///< Warning messages for potentially harmful situations
-        Error,        ///< Error messages for error events
-        Fatal,        ///< Fatal error messages indicating critical failures
-        None          ///< No logging (used to disable logging)
+        Debug = 0,  /**< Detailed information for debugging purposes */
+        Info,       /**< General informational messages */
+        Warning,    /**< Warning messages for potentially harmful situations */
+        Error,      /**< Error messages for error events */
+        Fatal,      /**< Fatal error messages indicating critical failures */
+        None        /**< No logging (used to disable logging) */
     };
 
 }

@@ -96,11 +96,11 @@ namespace rtp::ecs
         void update(Registry &registry, float dt);
 
     private:
-        Registry *_registry{nullptr};  ///< Pointer to the entity registry
+        Registry *_registry{nullptr};  /**< Pointer to the entity registry */
 
         std::unordered_map<std::type_index,
-                           std::unique_ptr<ISystem>> _systems; ///< Registered systems
-        std::unordered_map<std::type_index, Signature> _signatures; ///< System signatures
+                           std::unique_ptr<ISystem>> _systems; /**< Registered systems */
+        std::unordered_map<std::type_index, Signature> _signatures; /**< System signatures */
     };
 }
 
