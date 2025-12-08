@@ -85,8 +85,9 @@ namespace rtp {
 
             log::Level severity(void) const noexcept;
             std::uint8_t retryCount(void) const noexcept;
-            const std::string &message(void) const noexcept;
-            
+            auto message(void) const noexcept
+                -> std::string_view;
+
             std::uint8_t incrementRetryCount(void) noexcept;
 
         private:
@@ -97,6 +98,7 @@ namespace rtp {
 
         private:
             Error(ErrorCode code, log::Level severity, std::string_view msg);
+
     };
 }
 
