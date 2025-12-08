@@ -25,7 +25,7 @@ namespace rtp::ecs
      * identifier for entities within the ECS framework.
      * Entities are
      * used to associate components and systems in the ECS design pattern.
- */
+     */
     class Entity {
         public:
             static constexpr std::uint32_t MAX_INDEX =

@@ -112,15 +112,18 @@ namespace rtp::log
     ///////////////////////////////////////////////////////////////////////////
 
     auto configure(std::string_view logFilePath) noexcept
-        -> std::expected<void, std::string>
+        -> std::expected<void, rtp::Error>
     {
         try {
             detail::getBackend().setOutputFile(logFilePath);
         } catch (const std::exception &e) {
             return std::unexpected{
-                std::format("Logger configuration failed: {}", e.what())};
+                Error::failure(ErrorCode::InvalidParameter,
+                               "Logger configuration failed: {}", e.what())};
         } catch (...) {
-            return std::unexpected{"Logger configuration failed: unknown error"};
+            return std::unexpected{
+                Error::failure(ErrorCode::Unknown,
+                               "Logger configuration failed: unknown error")};
         }
 
         return {};

@@ -25,14 +25,14 @@ namespace rtp::ecs
 
     template <Component T, typename Self>
     auto Registry::getComponents(this Self &&self)
-        -> std::expected<ConstLikeRef<Self, SparseArray<T>>, std::string>
+        -> std::expected<ConstLikeRef<Self, SparseArray<T>>, rtp::Error>
         requires (std::is_lvalue_reference_v<Self>)
     {
         std::type_index type = typeid(T);
 
         if (!self._arrays.contains(type)) [[unlikely]]
-            return std::unexpected(
-                std::format("Missing component: {}", type.name()));
+            return std::unexpected{Error::failure(ErrorCode::ComponentMissing,
+                                   "Missing component: {}", type.name())};
 
         auto &ptr = self._arrays.find(type)->second;
         auto *rawPtr = static_cast<SparseArray<T> *>(ptr.get());
@@ -41,13 +41,13 @@ namespace rtp::ecs
     }
 
     template <Component T, typename... Args>
-    auto Registry::addComponent(
-        Entity entity, Args &&...args) & -> std::expected<T &, std::string>
+    auto Registry::addComponent(Entity entity, Args &&...args) &
+        -> std::expected<T &, rtp::Error>
     {
         auto result = this->getComponents<T>();
 
         if (!result.has_value()) [[unlikely]]
-            return std::unexpected(result.error());
+            return std::unexpected{result.error()};
 
         return result->emplace(entity, std::forward<Args>(args)...);
     }
@@ -80,8 +80,10 @@ namespace rtp::ecs
             std::declval<std::span<const Entity>>(),
             std::declval<std::span<ConstLike<Self, Ts>>>()...));
 
-        if (!entityResult.has_value())
+        if (!entityResult.has_value()) [[unlikely]] {
+            log::warning("Registry::zipView: {}", entityResult.error());
             return ViewType{};
+        }
 
         auto entitySpan =
             std::span<const Entity>(entityResult.value().getEntities());

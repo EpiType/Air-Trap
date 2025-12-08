@@ -16,14 +16,16 @@ namespace rtp::sys
 {
     template <typename T>
     auto DynamicLibrary::get(std::string_view name) const
-        -> std::expected<T, std::string>
+        -> std::expected<T, rtp::Error>
     {
         if (!this->_handle)
-            return std::unexpected{"Dynamic library handle is null"};
+            return std::unexpected{
+                Error::failure(ErrorCode::LibraryLoadFailed,
+                               "Dynamic library handle is null")};
 
         auto symbol = this->getSymbolAddress(this->_handle, name);
         if (!symbol.has_value())
-            return std::unexpected{std::format("Symbol '{}' not found", name)};
+            return std::unexpected{symbol.error()};
 
         return reinterpret_cast<T>(symbol.value());
     }

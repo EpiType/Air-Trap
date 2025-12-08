@@ -25,6 +25,7 @@ namespace rtp
         // --- Core ---
         Unknown = 1,
         InvalidParameter,
+        InternalRuntimeError,
 
         // --- Network ---
         ConnectionFailed = 100,
@@ -40,6 +41,7 @@ namespace rtp
 
         // --- ECS ---
         ComponentMissing = 300,
+        RegistryFull,
         EntityInvalid
     };
 
@@ -61,7 +63,6 @@ namespace rtp {
 
     class Error {
         public:
-            
             template <typename ...Args>
             [[nodiscard]]
             static auto failure(ErrorCode code,
@@ -77,11 +78,8 @@ namespace rtp {
             template <typename ...Args>
             [[nodiscard]]
             static auto fatal(ErrorCode code,
-                                std::format_string<Args...> fmt,
-                                Args &&...args) -> Error;
-
-            static auto fromSystem(ErrorCode code,
-                                   std::string_view prefix) -> Error;
+                              std::format_string<Args...> fmt,
+                              Args &&...args) -> Error;
 
             log::Level severity(void) const noexcept;
             std::uint8_t retryCount(void) const noexcept;

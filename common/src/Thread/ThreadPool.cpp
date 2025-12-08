@@ -30,13 +30,14 @@ namespace rtp::thread
     ///////////////////////////////////////////////////////////////////////////
 
     auto ThreadPool::create(size_t numThreads)
-        -> std::expected<std::unique_ptr<ThreadPool>, std::string>
+        -> std::expected<std::unique_ptr<ThreadPool>, rtp::Error>
     {
         constexpr std::string_view fmt{"ThreadPool init failed: {}"};
 
         if (numThreads == 0)
-            return std::unexpected{std::format(
-                fmt, "number of threads must be at least 1")};
+            return std::unexpected{
+                Error::failure(ErrorCode::InvalidParameter,
+                               fmt, "number of threads must be at least 1")};
 
         try {
             std::unique_ptr<ThreadPool> pool{new ThreadPool{}};
@@ -48,9 +49,12 @@ namespace rtp::thread
             return pool;
 
         } catch (const std::system_error &e) {
-            return std::unexpected{std::format(fmt, e.what())};
+            return std::unexpected{
+                Error::failure(ErrorCode::InternalRuntimeError,
+                               fmt, e.what())};
         } catch (...) {
-            return std::unexpected{std::format(fmt, "unknown error")};
+            return std::unexpected{Error::failure(ErrorCode::Unknown,
+                                   fmt, "unknown error")};
         }
     }
 

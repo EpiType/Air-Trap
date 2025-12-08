@@ -39,7 +39,7 @@ namespace rtp::sys
     }
 
     auto DynamicLibrary::getSymbolAddress(std::string_view name) const 
-        -> std::expected<void *, std::string>
+        -> std::expected<void *, rtp::Error>
     {
         return impl::LibraryBackend::getSymbol(this->_handle, name);
     }

@@ -15,6 +15,8 @@
 #ifndef RTYPE_DYNAMICLIBRARY_HPP_
     #define RTYPE_DYNAMICLIBRARY_HPP_
 
+    #include "RType/Error.hpp"
+
     #include <expected>
     #include <string>
     #include <string_view>
@@ -51,12 +53,12 @@ namespace rtp::sys
              * @brief Get a symbol from the dynamic library.
              * @tparam T The expected type of the symbol.
              * @param name The name of the symbol to retrieve.
-             * @return std::expected<T, std::string>
+             * @return std::expected<T, rtp::Error>
              */
             template <typename T>
             [[nodiscard]]
             auto get(std::string_view name) const
-                -> std::expected<T, std::string>;
+                -> std::expected<T, rtp::Error>;
 
         private:
             void *_handle{nullptr}; /**< The handle to the dynamic library. */
@@ -64,11 +66,11 @@ namespace rtp::sys
             /**
              * @brief Get the address of a symbol from the dynamic library.
              * @param name The name of the symbol to retrieve.
-             * @return std::expected<void *, std::string>
+             * @return std::expected<void *, rtp::Error>
              */
             [[nodiscard]]
             auto getSymbolAddress(std::string_view name) const 
-                -> std::expected<void *, std::string>;
+                -> std::expected<void *, rtp::Error>;
 
     };
 }

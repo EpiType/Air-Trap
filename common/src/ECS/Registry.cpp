@@ -18,7 +18,7 @@ namespace rtp::ecs
     // Public API
     ///////////////////////////////////////////////////////////////////////////
 
-    auto Registry::spawnEntity(void) -> std::expected<Entity, std::string>
+    auto Registry::spawnEntity(void) -> std::expected<Entity, rtp::Error>
     {
         std::lock_guard<std::mutex> lock(this->_mutex);
 
@@ -30,7 +30,8 @@ namespace rtp::ecs
         }
 
         if (this->_generations.size() >= Entity::MAX_INDEX)
-            return std::unexpected("Registry: Max entities reached, cannot spawn new entity.");
+            return std::unexpected{Error::failure(ErrorCode::RegistryFull,
+                "Registry: Max entities reached, cannot spawn new entity.")};
 
         std::uint32_t idx = static_cast<std::uint32_t>(this->_generations.size());
 
