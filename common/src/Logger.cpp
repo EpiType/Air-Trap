@@ -5,7 +5,7 @@
 ** Logger.cpp, Logger class implementation
 */
 
-#include "RType/Core/Logger/Logger.hpp"
+#include "RType/Logger.hpp"
 
 #include <chrono>
 #include <filesystem>

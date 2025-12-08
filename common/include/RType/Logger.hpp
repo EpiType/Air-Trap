@@ -8,6 +8,8 @@
 #ifndef RTYPE_LOGGER_HPP_
     #define RTYPE_LOGGER_HPP_
 
+    #include "RType/LogLevel.hpp"
+
     #include <expected>
     #include <format>
     #include <source_location>
@@ -18,13 +20,6 @@
 
 namespace rtp::log
 {
-    enum class Level {
-        Debug,
-        Info,
-        Warning,
-        Error
-    };
-
     template <typename... Args>
     struct LogFmt {
         std::format_string<Args...> fmt;
@@ -97,6 +92,10 @@ namespace rtp::log
     template <typename... Args>
     void warning(LogFmt<std::type_identity_t<Args>...> fmt,
                  Args &&...args) noexcept;
+    
+    template <typename... Args>
+    void fatal(LogFmt<std::type_identity_t<Args>...> fmt,
+               Args &&...args) noexcept;
 
     ///////////////////////////////////////////////////////////////////////////
     // Private API

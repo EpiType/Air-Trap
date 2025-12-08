@@ -63,4 +63,12 @@ namespace rtp::log
         detail::safeLog(Level::Warning, wrapper.loc, wrapper.fmt,
                 std::forward<Args>(args)...);
     }
+
+    template <typename... Args>
+    void fatal(LogFmt<std::type_identity_t<Args>...> wrapper,
+               Args &&...args) noexcept
+    {
+        detail::safeLog(Level::Fatal, wrapper.loc, wrapper.fmt,
+                std::forward<Args>(args)...);
+    }
 }
