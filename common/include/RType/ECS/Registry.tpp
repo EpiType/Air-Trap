@@ -20,7 +20,7 @@ namespace rtp::ecs
 
         auto [it, ok] =
             this->_arrays.emplace(type, std::make_unique<SparseArray<T>>());
-        return *static_cast<SparseArray<T>*>(it->second.get());
+        return *static_cast<SparseArray<T> *>(it->second.get());
     }
 
     template <Component T, typename Self>
@@ -31,8 +31,8 @@ namespace rtp::ecs
         std::type_index type = typeid(T);
 
         if (!self._arrays.contains(type)) [[unlikely]]
-            return std::unexpected(std::format("Missing component: {}",
-                                               type.name()));
+            return std::unexpected(
+                std::format("Missing component: {}", type.name()));
 
         auto &ptr = self._arrays.find(type)->second;
         auto *rawPtr = static_cast<SparseArray<T> *>(ptr.get());
@@ -41,8 +41,8 @@ namespace rtp::ecs
     }
 
     template <Component T, typename... Args>
-    auto Registry::addComponent(Entity entity, Args &&...args) &
-        -> std::expected<T &, std::string>
+    auto Registry::addComponent(
+        Entity entity, Args &&...args) & -> std::expected<T &, std::string>
     {
         auto result = this->getComponents<T>();
 
@@ -68,24 +68,29 @@ namespace rtp::ecs
         return std::span<ComponentType>(result->getData());
     }
 
-    template <Component ...Ts, typename Self>
+    template <Component... Ts, typename Self>
     auto Registry::zipView(this Self &&self)
         requires (std::is_lvalue_reference_v<Self>)
     {
         using FirstComponentType = std::tuple_element_t<0, std::tuple<Ts...>>;
-    
+
         auto entityResult = self.template getComponents<FirstComponentType>();
 
-        if (!entityResult.has_value())
-            return std::views::zip();
+        using ViewType = decltype(std::views::zip(
+            std::declval<std::span<const Entity>>(),
+            std::declval<std::span<ConstLike<Self, Ts>>>()...));
 
-        auto entitySpan = std::span<const Entity>(
-                              entityResult.value().getEntities());
+        if (!entityResult.has_value())
+            return ViewType{};
+
+        auto entitySpan =
+            std::span<const Entity>(entityResult.value().getEntities());
 
         auto componentSpans = std::make_tuple(self.template view<Ts>()...);
 
-        return std::apply([&entitySpan](auto &&...componentViews) {
-            return std::views::zip(entitySpan, componentViews...);
-        }, componentSpans);
+        return std::apply(
+            [&entitySpan](auto &&...componentViews) {
+                return std::views::zip(entitySpan, componentViews...);
+            }, componentSpans);
     }
 }
