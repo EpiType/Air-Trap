@@ -172,10 +172,10 @@ namespace rtp::ecs
 
         private:
             std::unordered_map<std::type_index,
-                               std::unique_ptr<ISparseArray>> _arrays; ///< Component storage arrays
-            std::vector<std::uint32_t> _generations; ///< Entity generations for recycling
-            std::deque<std::uint32_t> _freeIndices;  ///< Recycled entity indices
-            std::mutex _mutex; ///< Mutex for thread safety
+                               std::unique_ptr<ISparseArray>> _arrays; /**< Component storage arrays */
+            std::vector<std::uint32_t> _generations; /**< Entity generations for recycling */
+            std::deque<std::uint32_t> _freeIndices;  /**< Recycled entity indices */
+            std::mutex _mutex; /**< Mutex for thread safety */
     };
 }
 
