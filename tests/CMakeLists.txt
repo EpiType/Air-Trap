@@ -11,7 +11,7 @@ add_executable(test_ecs
 
 target_link_libraries(test_ecs
     PRIVATE
-        air-trap-common
+        RTypeCommon
         GTest::gtest
         GTest::gtest_main
 )
@@ -28,7 +28,7 @@ add_executable(test_network
 
 target_link_libraries(test_network
     PRIVATE
-        air-trap-common
+        RTypeCommon
         GTest::gtest
         GTest::gtest_main
 )
