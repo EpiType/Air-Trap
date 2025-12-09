@@ -107,6 +107,14 @@ namespace rtp::log
                             color = "\033[31m";
                             levelStr = "ERROR";
                             break;
+                        case Fatal:
+                            color = "\033[1;31m";
+                            levelStr = "FATAL";
+                            break;
+                        case None:
+                            color = "\033[90m";
+                            levelStr = "NONE ";
+                            break;
                     }
 
                     std::lock_guard lock{this->_mutex};

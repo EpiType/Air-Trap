@@ -91,3 +91,9 @@ namespace rtp
         }
     }
 }
+
+auto std::formatter<rtp::ErrorCode>::format(rtp::ErrorCode e,
+                                            std::format_context &ctx) const
+{
+    return std::formatter<std::string_view>::format(rtp::toString(e), ctx);
+}

@@ -46,6 +46,8 @@
     #include "RType/ECS/ComponentConcept.hpp"
     #include "RType/ECS/Entity.hpp"
 
+    #include <vector>
+
 namespace rtp::ecs
 {
     /**
