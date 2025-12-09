@@ -216,7 +216,24 @@ jobs:
     - name: Install system dependencies
       run: |
         sudo apt-get update
+        
+        # Install GCC 14 for C++23 <print> support
+        sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+        sudo apt-get update
+        sudo apt-get install -y gcc-14 g++-14
+        
+        # Make GCC 14 default
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 100
+        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 100
+        sudo update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-14 100
+        sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-14 100
+        
+        # Install other dependencies
         sudo apt-get install -y cmake build-essential libudev-dev libgl1-mesa-dev libx11-dev libxrandr-dev libfreetype6-dev libopenal-dev libflac-dev libvorbis-dev
+        
+        # Verify GCC version
+        gcc --version
+        g++ --version
 
     - name: Set up Python
       uses: actions/setup-python@v5
