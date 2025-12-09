@@ -12,18 +12,20 @@
 
 #include <format>
 
-namespace rtp::dl
+namespace rtp::sys
 {
     template <typename T>
-    auto DynamicLibrary::getSymbol(std::string_view name) const
-        -> std::expected<T, std::string>
+    auto DynamicLibrary::get(std::string_view name) const
+        -> std::expected<T, rtp::Error>
     {
         if (!this->_handle)
-            return std::unexpected{"Dynamic library handle is null"};
+            return std::unexpected{
+                Error::failure(ErrorCode::LibraryLoadFailed,
+                               "Dynamic library handle is null")};
 
-        auto symbol = impl::PlatformBackend::getSymbol(this->_handle, name);
+        auto symbol = this->getSymbolAddress(name);
         if (!symbol.has_value())
-            return std::unexpected{std::format("Symbol '{}' not found", name)};
+            return std::unexpected{symbol.error()};
 
         return reinterpret_cast<T>(symbol.value());
     }

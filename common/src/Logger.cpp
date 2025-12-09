@@ -5,7 +5,41 @@
 ** Logger.cpp, Logger class implementation
 */
 
-#include "RType/Core/Logger/Logger.hpp"
+/*
+** MIT License
+**
+** Copyright (c) 2025 Robin Toillon
+**
+** Permission is hereby granted, free of charge, to any person obtaining
+** a copy of this software and associated documentation files (the
+** "Software"), to deal in the Software without restriction, including
+** without limitation the rights to use, copy, modify, merge, publish,
+** distribute, sublicense, and/or sell copies of the Software, and to
+** permit persons to whom the Software is furnished to do so, subject to
+** the following conditions:
+**
+** The above copyright notice and this permission notice shall be
+** included in all copies or substantial portions of the Software.
+**
+** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+** EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+** MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+** IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+** CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+** TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+** SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+/**
+ * @file Logger.cpp
+ * @brief Implementation of the logging system
+ * @author Robin Toillon
+ * @details Implements thread-safe logging with colored console output,
+ * file logging support, automatic source location tracking, and
+ * timestamp formatting.
+ */
+
+#include "RType/Logger.hpp"
 
 #include <chrono>
 #include <filesystem>
@@ -17,6 +51,10 @@
 
 namespace rtp::log
 {
+    ///////////////////////////////////////////////////////////////////////////
+    // Private API
+    ///////////////////////////////////////////////////////////////////////////
+
     namespace detail
     {
         class LoggerBackend {
@@ -69,6 +107,14 @@ namespace rtp::log
                             color = "\033[31m";
                             levelStr = "ERROR";
                             break;
+                        case Fatal:
+                            color = "\033[1;31m";
+                            levelStr = "FATAL";
+                            break;
+                        case None:
+                            color = "\033[90m";
+                            levelStr = "NONE ";
+                            break;
                     }
 
                     std::lock_guard lock{this->_mutex};
@@ -112,15 +158,18 @@ namespace rtp::log
     ///////////////////////////////////////////////////////////////////////////
 
     auto configure(std::string_view logFilePath) noexcept
-        -> std::expected<void, std::string>
+        -> std::expected<void, rtp::Error>
     {
         try {
             detail::getBackend().setOutputFile(logFilePath);
         } catch (const std::exception &e) {
             return std::unexpected{
-                std::format("Logger configuration failed: {}", e.what())};
+                Error::failure(ErrorCode::InvalidParameter,
+                               "Logger configuration failed: {}", e.what())};
         } catch (...) {
-            return std::unexpected{"Logger configuration failed: unknown error"};
+            return std::unexpected{
+                Error::failure(ErrorCode::Unknown,
+                               "Logger configuration failed: unknown error")};
         }
 
         return {};
