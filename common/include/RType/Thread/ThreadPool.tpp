@@ -54,7 +54,7 @@ namespace rtp::thread
         try {
             auto boundTask =
                 [func = std::forward<F>(f),
-                 ...captured_args = std::forward<Args>(args)...](void) mutable
+                 ...captured_args = std::forward<Args>(args)](void) mutable
                 -> return_t
             {
                 return std::invoke(std::move(func),

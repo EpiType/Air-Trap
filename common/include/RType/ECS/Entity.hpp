@@ -88,8 +88,6 @@ namespace rtp::ecs
 
             friend struct std::hash<Entity>;
     };
-
-    constexpr Entity NullEntity{};
 }
 
 namespace std
@@ -104,5 +102,10 @@ namespace std
 }
 
     #include "Entity.inl"
+
+namespace rtp::ecs
+{
+    constexpr Entity NullEntity{};
+}
 
 #endif /* !RTYPE_ENTITY_HPP_ */

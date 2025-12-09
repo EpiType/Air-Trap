@@ -42,6 +42,9 @@
     #define RTYPE_LOGLEVEL_HPP_
 
     #include <cstdint>
+    #include <format>
+    #include <string_view>
+    #include <utility>
 
 namespace rtp::log
 {
@@ -60,6 +63,23 @@ namespace rtp::log
         None        /**< No logging (used to disable logging) */
     };
 
+    constexpr std::string_view toString(Level level) noexcept;
 }
+
+template <>
+struct std::formatter<rtp::log::Level> : std::formatter<std::string_view> {
+    constexpr auto parse(std::format_parse_context& ctx) {
+        return ctx.begin();
+    }
+    /**
+     * @brief Format an log::Level enum value
+     * @param level The log level
+     * @param ctx The format context
+     * @return Iterator to the end of the formatted output
+     */
+    auto format(rtp::log::Level level, std::format_context &ctx) const;
+};
+
+    #include "LogLevel.inl" /* toString and format implementations */
 
 #endif /* !RTYPE_LOGLEVEL_HPP_ */

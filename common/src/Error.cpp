@@ -62,6 +62,11 @@ namespace rtp
         };
     }
 
+    Error::Error(ErrorCode code, log::Level severity, std::string_view msg)
+        : _code(code), _severity(severity), _message(msg)
+    {
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // Public API
     ///////////////////////////////////////////////////////////////////////////
@@ -77,4 +82,29 @@ namespace rtp
         return {static_cast<int>(e), rtype_category()};
     }
 
+    ErrorCode Error::code(void) const noexcept
+    {
+        return this->_code;
+    }
+
+    log::Level Error::severity(void) const noexcept
+    {
+        return this->_severity;
+    }
+
+    std::uint8_t Error::retryCount(void) const noexcept
+    {
+        return this->_retryCount;
+    }
+
+    auto Error::message(void) const noexcept
+        -> std::string_view
+    {
+        return this->_message;
+    }
+
+    std::uint8_t Error::incrementRetryCount(void) noexcept
+    {
+        return this->_retryCount++;
+    }
 }
