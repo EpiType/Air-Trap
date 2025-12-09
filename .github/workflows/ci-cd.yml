@@ -24,13 +24,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        fetch-depth: 10
+        fetch-depth: 0
     - name: Detect changes manually
       id: changes
       run: |
         # Get list of changed files
-        if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
-          # New branch, check current commit only
+        if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "${{ github.event.before }}" 2>/dev/null; then
+          # New branch OR commit doesn't exist (after rebase/amend), check current commit only
           FILES=$(git diff-tree --no-commit-id --name-only -r HEAD)
         else
           # Compare with previous commit
