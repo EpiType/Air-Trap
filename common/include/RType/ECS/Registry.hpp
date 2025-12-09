@@ -69,7 +69,9 @@ namespace rtp::ecs
      * @tparam To Destination type to apply const-ness to
      */
     template <typename From, typename To>
-    using ConstLike = std::copy_const_t<std::remove_reference_t<From>, To>;
+    using ConstLike =
+        std::conditional_t<std::is_const_v<std::remove_reference_t<From>>,
+                           std::add_const_t<To>, To>;
 
     /**
      * @brief Helper to copy const-ness and create reference

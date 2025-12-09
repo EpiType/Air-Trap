@@ -39,6 +39,7 @@
  * symbol resolution.
  */
 
+#include "RType/Logger.hpp"
 #include "RType/System/DynamicLibrary.hpp"
 #include "LibraryBackend.hpp"
 
@@ -54,8 +55,13 @@ namespace rtp::sys
 
     DynamicLibrary::~DynamicLibrary() noexcept
     {
-        if (this->_handle) [[unlikely]]
-            impl::LibraryBackend::close(this->_handle);
+        if (this->_handle) [[likely]] {
+            auto result = impl::LibraryBackend::close(this->_handle);
+            if (!result.has_value()) {
+                rtp::log::warning("Failed to close dynamic library: {}",
+                                  result.error().message());
+            }
+        }
     }
 
     DynamicLibrary::DynamicLibrary(DynamicLibrary &&other) noexcept
@@ -67,8 +73,13 @@ namespace rtp::sys
     DynamicLibrary &DynamicLibrary::operator=(DynamicLibrary &&other) noexcept
     {
         if (this != &other) {
-            if (this->_handle) [[unlikely]]
-                impl::LibraryBackend::close(this->_handle);
+            if (this->_handle) [[unlikely]] {
+                auto result = impl::LibraryBackend::close(this->_handle);
+                if (!result.has_value()) {
+                    rtp::log::warning("Failed to close dynamic library: {}",
+                                      result.error().message());
+                }
+            }
             this->_handle = other._handle;
             other._handle = nullptr;
         }

@@ -23,7 +23,7 @@ namespace rtp::sys
                 Error::failure(ErrorCode::LibraryLoadFailed,
                                "Dynamic library handle is null")};
 
-        auto symbol = this->getSymbolAddress(this->_handle, name);
+        auto symbol = this->getSymbolAddress(name);
         if (!symbol.has_value())
             return std::unexpected{symbol.error()};
 

@@ -117,6 +117,17 @@ namespace std
     struct is_error_code_enum<rtp::ErrorCode> : true_type {};
 }
 
+template <>
+struct std::formatter<rtp::ErrorCode> : std::formatter<std::string_view> {
+    /**
+     * @brief Format an ErrorCode enum value
+     * @param e The error code to format
+     * @param ctx The format context
+     * @return Iterator to the end of the formatted output
+     */
+    auto format(rtp::ErrorCode e, std::format_context &ctx) const;
+};
+
 namespace rtp {
 
     /**
@@ -139,7 +150,7 @@ namespace rtp {
      * Factory methods are provided to create errors with different
      * severity levels.
      */
-    class Error {
+    class Error final {
         public:
             /**
              * @brief Create a failure-level error
@@ -182,6 +193,12 @@ namespace rtp {
             static auto fatal(ErrorCode code,
                               std::format_string<Args...> fmt,
                               Args &&...args) -> Error;
+            
+            /**
+             * @brief Get the error code
+             * @return The ErrorCode of this error
+             */
+            ErrorCode code(void) const noexcept;
 
             /**
              * @brief Get the severity level of this error

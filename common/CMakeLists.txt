@@ -26,7 +26,7 @@ set(SRC_THREADPOOL
 )
 
 set(SRC_ERROR
-    src/Error/Error.cpp
+    src/Error.cpp
 )
 
 set(SRC_ECS

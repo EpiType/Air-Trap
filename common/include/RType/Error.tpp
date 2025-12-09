@@ -49,7 +49,7 @@ namespace rtp
                         Args &&...args) -> Error
     {
         return Error(code, log::Level::Error,
-                     formatMessage(fmt, std::forward<Args>(args)...));
+                     std::format(fmt, std::forward<Args>(args)...));
     }
             
     template <typename ...Args>
@@ -58,7 +58,7 @@ namespace rtp
                         Args &&...args) -> Error
     {
         return Error(code, log::Level::Warning,
-                     formatMessage(fmt, std::forward<Args>(args)...));
+                     std::format(fmt, std::forward<Args>(args)...));
     }
             
     template <typename ...Args>
@@ -67,13 +67,13 @@ namespace rtp
                       Args &&...args) -> Error
     {
         return Error(code, log::Level::Fatal,
-                     formatMessage(fmt, std::forward<Args>(args)...));
+                     std::format(fmt, std::forward<Args>(args)...));
     }
-
-
 }
 
 auto std::formatter<rtp::Error>::format(const rtp::Error &e,
                                         format_context &ctx) const
 {
+    return std::format_to(ctx.out(), "Error (code: {}, severity: {}): {}",
+                          rtp::toString(e.code()), e.severity(), e.message());
 }
