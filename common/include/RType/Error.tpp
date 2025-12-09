@@ -71,7 +71,7 @@ namespace rtp
     }
 }
 
-auto std::formatter<rtp::Error>::format(const rtp::Error &e,
+inline auto std::formatter<rtp::Error>::format(const rtp::Error &e,
                                         format_context &ctx) const
 {
     return std::format_to(ctx.out(), "Error (code: {}, severity: {}): {}",
