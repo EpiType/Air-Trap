@@ -5,4 +5,4 @@
 ** main.cpp, entry point for the client application
 */
 
-int main(void) {}
+int main(void) { }
