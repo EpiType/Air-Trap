@@ -201,7 +201,7 @@ jobs:
   build-linux:
     name: Build on Linux
     runs-on: ubuntu-latest
-    needs: [paths-filter, style-check]
+    # needs: [paths-filter, style-check]
     # Run on push to dev or main branches, and only if source files changed
     if: |
       github.repository == 'EpiType/Air-Trap'
@@ -278,7 +278,7 @@ jobs:
   build-windows:
     name: Build on Windows
     runs-on: windows-latest
-    needs: [paths-filter, style-check]
+    # needs: [paths-filter, style-check]
     # Only on PRs to main (dev → main validation), only on main repository, and if source files changed
     if: |
       github.repository == 'EpiType/Air-Trap'
@@ -333,7 +333,7 @@ jobs:
   build-macos:
     name: Build on macOS
     runs-on: macos-latest
-    needs: [paths-filter, style-check]
+    # needs: [paths-filter, style-check]
     # Only on PRs to main (dev → main validation), only on main repository, and if source files changed
     if: |
       github.repository == 'EpiType/Air-Trap'
