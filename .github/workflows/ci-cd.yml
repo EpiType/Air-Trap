@@ -204,10 +204,7 @@ jobs:
     needs: [paths-filter, style-check]
     # Run on push to dev or main branches, and only if source files changed
     if: |
-      github.repository == 'EpiType/Air-Trap' && 
-      (github.ref_name == 'dev' || github.ref_name == 'main') && 
-      github.event_name == 'push' &&
-      needs.paths-filter.outputs.src == 'true'
+      github.repository == 'EpiType/Air-Trap'
     
     steps:
     - name: Checkout code
@@ -284,10 +281,7 @@ jobs:
     needs: [paths-filter, style-check]
     # Only on PRs to main (dev → main validation), only on main repository, and if source files changed
     if: |
-      github.repository == 'EpiType/Air-Trap' &&
-      github.event_name == 'pull_request' && 
-      github.base_ref == 'main' &&
-      needs.paths-filter.outputs.src == 'true'
+      github.repository == 'EpiType/Air-Trap'
     
     steps:
     - name: Checkout code
@@ -342,10 +336,7 @@ jobs:
     needs: [paths-filter, style-check]
     # Only on PRs to main (dev → main validation), only on main repository, and if source files changed
     if: |
-      github.repository == 'EpiType/Air-Trap' &&
-      github.event_name == 'pull_request' && 
-      github.base_ref == 'main' &&
-      needs.paths-filter.outputs.src == 'true'
+      github.repository == 'EpiType/Air-Trap'
     
     steps:
     - name: Checkout code
