@@ -40,6 +40,8 @@
     #define RTYPE_VECBASE_HPP_
 
     #include "RType/Math/details/NumericConcept.hpp"
+
+    #include <cmath>
     #include <iostream>
 
 namespace rtp::details

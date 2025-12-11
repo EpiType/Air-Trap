@@ -36,8 +36,6 @@
  * @author Robin Toillon
  */
 
-#include "RType/Math/details/VecBase.hpp"
-
 namespace rtp::details
 {
     ///////////////////////////////////////////////////////////////////////////
@@ -66,7 +64,7 @@ namespace rtp::details
         const std::remove_cvref_t<Self> &other) noexcept
         -> RealT
     {
-        return static_cast<RealT>(sqrt(self.squaredDistance(other)));
+        return static_cast<RealT>(std::sqrt(self.squaredDistance(other)));
     }
 
     template <Numeric T, std::size_t N>
@@ -87,7 +85,7 @@ namespace rtp::details
     constexpr auto VecBase<T, N>::length(this const Self &self) noexcept
         -> RealT
     {
-        return static_cast<RealT>(sqrt(self.squaredLength()));
+        return static_cast<RealT>(std::sqrt(self.squaredLength()));
     }
 
     template <Numeric T, std::size_t N>
