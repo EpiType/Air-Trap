@@ -56,10 +56,12 @@ namespace rtp::dl::impl
     {
         std::string safeNullTerminatedPath(path);
         HMODULE handle = LoadLibraryA(safeNullTerminatedPath.c_str());
-        if (!handle) [[unlikely]]
+        if (!handle) [[unlikely]] {
+            DWORD errorCode = GetLastError();
             return std::unexpected{Error::failure(ErrorCode::LibraryLoadFailed,
-                "LoadLibrary error: {}",
-                std::system_error{}.message(GetLastError()))};
+                "LoadLibrary error: {} (code: {})",
+                std::system_category().message(errorCode), errorCode)};
+        }
 
         return reinterpret_cast<void *>(handle);
     }
@@ -67,11 +69,12 @@ namespace rtp::dl::impl
     auto LibraryBackend::close(void *handle) noexcept
         -> std::expected<void, rtp::Error>
     {
-        if (!FreeLibrary(reinterpret_cast<HMODULE>(handle))) [[unlikely]]
+        if (!FreeLibrary(reinterpret_cast<HMODULE>(handle))) [[unlikely]] {
+            DWORD errorCode = GetLastError();
             return std::unexpected{Error::failure(ErrorCode::LibraryLoadFailed,
-                                                  "FreeLibrary error: {}",
-                                                  std::system_error{}.message(
-                                                      GetLastError()))};
+                                                  "FreeLibrary error: {} (code: {})",
+                                                  std::system_category().message(errorCode), errorCode)};
+        }
 
         return {};
     }
@@ -86,11 +89,12 @@ namespace rtp::dl::impl
         std::string safeNullTerminatedName(name);
         FARPROC symbol = GetProcAddress(reinterpret_cast<HMODULE>(handle),
                                         safeNullTerminatedName.c_str());
-        if (!symbol) [[unlikely]]
+        if (!symbol) [[unlikely]] {
+            DWORD errorCode = GetLastError();
             return std::unexpected{Error::failure(ErrorCode::SymbolNotFound,
-                                                  "GetProcAddress error: {}",
-                                                  std::system_error{}.message(
-                                                      GetLastError()))};
+                                                  "GetProcAddress error: {} (code: {})",
+                                                  std::system_category().message(errorCode), errorCode)};
+        }
 
         return reinterpret_cast<void *>(symbol);
     }
