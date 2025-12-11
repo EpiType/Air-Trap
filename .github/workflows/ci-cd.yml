@@ -271,15 +271,13 @@ jobs:
       with:
         name: air-trap-linux
         path: |
-          build/r-type_server
-          build/r-type_client
+          build/server/r-type_server
+          build/client/r-type_client
 
   # Job 4: Build on Windows
   build-windows:
     name: Build on Windows
     runs-on: windows-latest
-    # needs: [paths-filter, style-check]
-    # Only on PRs to main (dev → main validation), only on main repository, and if source files changed
     if: |
       github.repository == 'EpiType/Air-Trap'
     
@@ -296,6 +294,13 @@ jobs:
       run: |
         pip install conan
         conan profile detect
+        
+        # ✅ Forcer C++23 dans le profil par défaut
+        conan profile show default
+        conan profile update settings.compiler.cppstd=23 default
+        
+        echo "=== Updated Conan Profile ==="
+        conan profile show default
 
     - name: Cache Conan packages
       uses: actions/cache@v3
@@ -309,7 +314,8 @@ jobs:
       run: |
         mkdir build
         cd build
-        conan install .. --build=missing -s build_type=Release -c tools.system.package_manager:mode=install
+        # ✅ Spécifier explicitement C++23
+        conan install .. --build=missing -s build_type=Release -s compiler.cppstd=23 -c tools.system.package_manager:mode=install
 
     - name: Configure CMake
       run: |
@@ -326,8 +332,8 @@ jobs:
       with:
         name: air-trap-windows
         path: |
-          build/Release/r-type_server.exe
-          build/Release/r-type_client.exe
+          build/client/Release/r-type_client.exe
+          build/server/Release/r-type_server.exe
 
   # Job 5: Build on macOS
   build-macos:
@@ -381,8 +387,8 @@ jobs:
       with:
         name: air-trap-macos
         path: |
-          build/r-type_server
-          build/r-type_client
+          build/server/r-type_server
+          build/client/r-type_client
 
   # Job 6: Unit Tests (Optional - requires test implementation)
   tests:
