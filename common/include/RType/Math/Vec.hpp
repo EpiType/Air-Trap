@@ -1,8 +1,6 @@
 /*
 ** EPITECH PROJECT, 2025
-** R-Type
-** File description:
-** DynamicLibrary.cpp, implementation of dynamic library handling
+** 
 */
 
 /*
@@ -31,26 +29,30 @@
 */
 
 /**
- * @file DynamicLibrary.tpp
- * @brief Implementation of the DynamicLibrary template methods.
+ * @file Vec.hpp
+ * @brief Smart alias that selects the optimized struct based on N.
  * @author Robin Toillon
  */
 
-namespace rtp::sys
+#ifndef RTYPE_VECTOR_HPP_
+    #define RTYPE_VECTOR_HPP_
+
+    #include "RType/Math/Vec2.hpp"
+    #include "RType/Math/Vec3.hpp"
+    #include "RType/Math/Vec4.hpp"
+    #include "RType/Math/details/VecN.hpp"
+    #include <type_traits>
+
+namespace rtp
 {
-    template <typename T>
-    auto DynamicLibrary::get(std::string_view name) const
-        -> std::expected<T, rtp::Error>
-    {
-        if (!this->_handle)
-            return std::unexpected{
-                Error::failure(ErrorCode::LibraryLoadFailed,
-                               "Dynamic library handle is null")};
-
-        auto symbol = this->getSymbolAddress(name);
-        if (!symbol.has_value())
-            return std::unexpected{symbol.error()};
-
-        return reinterpret_cast<T>(symbol.value());
-    }
+    /**
+     * @brief Smart alias that selects the optimized struct based on N.
+     */
+    template <Numeric T, std::size_t N>
+    using Vec = std::conditional_t<N == 2, Vec2<T>,
+                std::conditional_t<N == 3, Vec3<T>,
+                std::conditional_t<N == 4, Vec4<T>,
+                details::VecN<T, N>>>>;
 }
+
+#endif /* !RTYPE_VECTOR_HPP_ */
