@@ -59,7 +59,7 @@ namespace rtp::log
     }
 }
 
-auto std::formatter<rtp::log::Level>::format(rtp::log::Level level,
+inline auto std::formatter<rtp::log::Level>::format(rtp::log::Level level,
                                              std::format_context &ctx) const
 {
     return std::format_to(ctx.out(), "{}", rtp::log::toString(level));
