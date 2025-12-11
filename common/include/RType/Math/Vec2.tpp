@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2025
 ** R-Type
 ** File description:
-** DynamicLibrary.cpp, implementation of dynamic library handling
+** Vec2.hpp, Vector of 2 class implementation
 */
 
 /*
@@ -31,26 +31,25 @@
 */
 
 /**
- * @file DynamicLibrary.tpp
- * @brief Implementation of the DynamicLibrary template methods.
+ * @file Vec2.tpp
+ * @brief Implementation of the 2-dimensional vector class.
  * @author Robin Toillon
  */
 
-namespace rtp::sys
+namespace rtp
 {
-    template <typename T>
-    auto DynamicLibrary::get(std::string_view name) const
-        -> std::expected<T, rtp::Error>
+    template <Numeric T>
+    constexpr Vec2<T>::Vec2(T x_, T y_) noexcept : x{x_}, y{y_} {}
+
+    template <Numeric T>
+    constexpr auto &Vec2<T>::operator[](this auto &self,
+                                        std::size_t index) noexcept
     {
-        if (!this->_handle)
-            return std::unexpected{
-                Error::failure(ErrorCode::LibraryLoadFailed,
-                               "Dynamic library handle is null")};
-
-        auto symbol = this->getSymbolAddress(name);
-        if (!symbol.has_value())
-            return std::unexpected{symbol.error()};
-
-        return reinterpret_cast<T>(symbol.value());
+        if (index == 0)
+            return self.x;
+        if (index == 1)
+            return self.y;
+        RTP_ASSERT(false, "Vec2: Index {} out of bounds", index);
+        std::unreachable();
     }
 }
