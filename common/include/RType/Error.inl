@@ -52,48 +52,42 @@ namespace rtp
 
         // --- Core ---
             case Unknown:
-                return "Unknown error";
+                return "Unknown Error";
             case InvalidParameter:
-                return "Invalid parameter";
+                return "Invalid Parameter";
             case InternalRuntimeError:
-                return "Internal runtime error";
+                return "Internal Runtime Error";
 
         // --- Network ---
             case ConnectionFailed:
-                return "Connection failed";
+                return "Connection Failed";
             case Disconnected:
                 return "Disconnected";
             case Timeout:
-                return "Timeout occurred";
+                return "Timeout Occurred";
             case PayloadError:
-                return "Payload error";
+                return "Payload Error";
 
         // --- IO
             case FileNotFound:
-                return "File not found";
+                return "File Not Found";
             case LibraryLoadFailed:
-                return "Library load failed";
+                return "Library Load Failed";
             case SymbolNotFound:
-                return "Symbol not found";
+                return "Symbol Not Found";
             case InvalidFormat:
-                return "Invalid format";
+                return "Invalid Format";
 
         // --- ECS ---
             case ComponentMissing:
-                return "Component missing";
+                return "Component Missing";
             case RegistryFull:
-                return "Registry full";
+                return "Registry Full";
             case EntityInvalid:
-                return "Entity invalid";
+                return "Entity Invalid";
 
             default:
                 std::unreachable();
         }
     }
-}
-
-inline auto std::formatter<rtp::ErrorCode>::format(rtp::ErrorCode e,
-                                            std::format_context &ctx) const
-{
-    return std::formatter<std::string_view>::format(rtp::toString(e), ctx);
 }
