@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2025
 ** R-Type
 ** File description:
-** DynamicLibrary.cpp, implementation of dynamic library handling
+** Vec4.tpp, Vector of 4 class implementation
 */
 
 /*
@@ -31,26 +31,35 @@
 */
 
 /**
- * @file DynamicLibrary.tpp
- * @brief Implementation of the DynamicLibrary template methods.
+ * @file Vec4.tpp
+ * @brief Implementation of the 4-dimensional vector class.
  * @author Robin Toillon
  */
 
-namespace rtp::sys
+namespace rtp
 {
-    template <typename T>
-    auto DynamicLibrary::get(std::string_view name) const
-        -> std::expected<T, rtp::Error>
+    template<Numeric T>
+    constexpr Vec4<T>::Vec4(T x_, T y_, T z_, T w_) noexcept
+                           : x{x_}, y{y_}, z{z_}, w{w_}
     {
-        if (!this->_handle)
-            return std::unexpected{
-                Error::failure(ErrorCode::LibraryLoadFailed,
-                               "Dynamic library handle is null")};
+    }
 
-        auto symbol = this->getSymbolAddress(name);
-        if (!symbol.has_value())
-            return std::unexpected{symbol.error()};
-
-        return reinterpret_cast<T>(symbol.value());
+    template <Numeric T>
+    constexpr auto &Vec4<T>::operator[](this auto &self,
+                                        std::size_t index) noexcept
+    {
+        switch (index) {
+            case 0:
+                return self.x;
+            case 1:
+                return self.y;
+            case 2:
+                return self.z;
+            case 3:
+                return self.w;
+            default:
+                RTP_ASSERT(false, "Vec4: Index {} out of bounds", index);
+                std::unreachable();
+        }
     }
 }
