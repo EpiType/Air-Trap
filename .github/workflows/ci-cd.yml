@@ -274,7 +274,7 @@ jobs:
           build/server/r-type_server
           build/client/r-type_client
 
-    # Job 4: Build on Windows
+  # Job 4: Build on Windows
   build-windows:
     name: Build on Windows
     runs-on: windows-latest
@@ -305,21 +305,19 @@ jobs:
 
     - name: Install dependencies
       run: |
-        mkdir build
+        if (!(Test-Path build)) { New-Item -ItemType Directory -Path build }
         cd build
-        # ✅ Passer C++23 directement avec -s
+        
         conan install .. --build=missing -s build_type=Release -s compiler.cppstd=23 -c tools.system.package_manager:mode=install
+      shell: pwsh
 
     - name: Configure CMake
       run: |
-        cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$PWD/conan_toolchain.cmake"
-      shell: bash
+        cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=build/conan_toolchain.cmake
 
     - name: Build
       run: |
-        cd build
-        cmake --build . --config Release
+        cmake --build build --config Release
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
