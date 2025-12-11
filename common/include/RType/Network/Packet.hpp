@@ -15,6 +15,7 @@
     #define RTYPE_NETWORK_PACKET_HPP_
 
     #include "RType/ECS/ComponentConcept.hpp"
+    #include "RType/Math/Vec2f.hpp"
 
     #include <bit>
     #include <cstdint>
@@ -83,7 +84,7 @@ namespace rtp::net
      */
     struct EntitySnapshotPayload {
         uint32_t netId;         /**< Network entity identifier */
-        math::Vec2f position;   /**< Entity position */
+        Vec2f position;         /**< Entity position */
         int16_t angle;          /**< Entity rotation angle */
         uint8_t hp;             /**< Entity health points */
     };
@@ -95,7 +96,7 @@ namespace rtp::net
     struct EntitySpawnPayload {
         uint32_t netId;         /**< Network entity identifier */
         uint8_t type;           /**< Entity type */
-        math::Vec2f position;   /**< Spawn position */
+        Vec2f position;         /**< Spawn position */
     };
 
     /**
