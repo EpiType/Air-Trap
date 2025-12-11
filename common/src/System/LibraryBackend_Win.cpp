@@ -45,7 +45,7 @@
 #include <system_error>
 #include <windows.h>
 
-namespace rtp::dl::impl
+namespace rtp::sys::impl
 {
     ///////////////////////////////////////////////////////////////////////////
     // Public API
