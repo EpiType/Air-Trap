@@ -274,7 +274,7 @@ jobs:
           build/server/r-type_server
           build/client/r-type_client
 
-  # Job 4: Build on Windows
+    # Job 4: Build on Windows
   build-windows:
     name: Build on Windows
     runs-on: windows-latest
@@ -294,13 +294,6 @@ jobs:
       run: |
         pip install conan
         conan profile detect
-        
-        # ✅ Forcer C++23 dans le profil par défaut
-        conan profile show default
-        conan profile update settings.compiler.cppstd=23 default
-        
-        echo "=== Updated Conan Profile ==="
-        conan profile show default
 
     - name: Cache Conan packages
       uses: actions/cache@v3
@@ -314,7 +307,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        # ✅ Spécifier explicitement C++23
+        # ✅ Passer C++23 directement avec -s
         conan install .. --build=missing -s build_type=Release -s compiler.cppstd=23 -c tools.system.package_manager:mode=install
 
     - name: Configure CMake
