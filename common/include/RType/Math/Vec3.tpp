@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2025
 ** R-Type
 ** File description:
-** DynamicLibrary.cpp, implementation of dynamic library handling
+** Vec3.tpp, Vector of 3 class implementation
 */
 
 /*
@@ -31,26 +31,38 @@
 */
 
 /**
- * @file DynamicLibrary.tpp
- * @brief Implementation of the DynamicLibrary template methods.
+ * @file Vec3.tpp
+ * @brief Implementation of the 3-dimensional vector class.
  * @author Robin Toillon
  */
 
-namespace rtp::sys
+namespace rtp
 {
-    template <typename T>
-    auto DynamicLibrary::get(std::string_view name) const
-        -> std::expected<T, rtp::Error>
+    template<Numeric T>
+    constexpr Vec3<T>::Vec3(T x_, T y_, T z_) noexcept : x{x_}, y{y_}, z{z_}
     {
-        if (!this->_handle)
-            return std::unexpected{
-                Error::failure(ErrorCode::LibraryLoadFailed,
-                               "Dynamic library handle is null")};
+    }
 
-        auto symbol = this->getSymbolAddress(name);
-        if (!symbol.has_value())
-            return std::unexpected{symbol.error()};
+    template <Numeric T>
+    constexpr auto &Vec3<T>::operator[](this auto &self,
+                                        std::size_t index) noexcept
+    {
+        if (index == 0)
+            return self.x;
+        if (index == 1)
+            return self.y;
+        if (index == 2)
+            return self.z;
+        RTP_ASSERT(false, "Vec3: Index {} out of bounds", index);
+        std::unreachable();
+    }
 
-        return reinterpret_cast<T>(symbol.value());
+    template <Numeric T>
+    constexpr auto Vec3<T>::cross(const Vec3 &other) const noexcept
+        -> Vec3
+    {
+        return Vec3{y * other.z - z * other.y,
+                    z * other.x - x * other.z,
+                    x * other.y - y * other.x};
     }
 }

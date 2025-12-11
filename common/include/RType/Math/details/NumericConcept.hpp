@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2025
 ** R-Type
 ** File description:
-** DynamicLibrary.cpp, implementation of dynamic library handling
+** NumericConcept class implementation
 */
 
 /*
@@ -31,26 +31,28 @@
 */
 
 /**
- * @file DynamicLibrary.tpp
- * @brief Implementation of the DynamicLibrary template methods.
+ * @file NumericConcept.hpp
+ * @brief Definition of the Numeric concept.
  * @author Robin Toillon
  */
 
-namespace rtp::sys
+#ifndef RTYPE_NUMERIC_CONCEPT_HPP_
+    #define RTYPE_NUMERIC_CONCEPT_HPP_
+
+    #include <concepts>
+    #include <type_traits>
+
+namespace rtp
 {
-    template <typename T>
-    auto DynamicLibrary::get(std::string_view name) const
-        -> std::expected<T, rtp::Error>
-    {
-        if (!this->_handle)
-            return std::unexpected{
-                Error::failure(ErrorCode::LibraryLoadFailed,
-                               "Dynamic library handle is null")};
+    /**
+     * @brief A concept that checks
+     *        if a type is numeric (integral or floating-point).
+     *
+     * @tparam T The type to check.
+     */
+    template<typename T>
+    concept Numeric = std::is_arithmetic_v<T>;
 
-        auto symbol = this->getSymbolAddress(name);
-        if (!symbol.has_value())
-            return std::unexpected{symbol.error()};
-
-        return reinterpret_cast<T>(symbol.value());
-    }
 }
+
+#endif /* !RTYPE_NUMERIC_CONCEPT_HPP_ */
