@@ -313,7 +313,8 @@ jobs:
     - name: Configure CMake
       run: |
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$PWD/conan_toolchain.cmake"
+      shell: bash
 
     - name: Build
       run: |
