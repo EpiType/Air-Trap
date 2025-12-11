@@ -13,7 +13,7 @@ case "${1:-}" in
         ;;
     fclean)
         echo "Full clean (removing build and binaries)..."
-        if [ -d build ]; then
+        if [ -d !build ]; then
             ./build.sh clean
         fi
         rm -f r-type_client r-type_server
