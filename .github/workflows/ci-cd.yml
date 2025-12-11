@@ -274,7 +274,7 @@ jobs:
           build/server/r-type_server
           build/client/r-type_client
 
-  # Job 4: Build on Windows
+    # Job 4: Build on Windows
   build-windows:
     name: Build on Windows
     runs-on: windows-latest
@@ -303,17 +303,18 @@ jobs:
         restore-keys: |
           conan-windows-
 
-    - name: Install dependencies
+    - name: Install dependencies and configure CMake
       run: |
         if (!(Test-Path build)) { New-Item -ItemType Directory -Path build }
+        
         cd build
         
         conan install .. --build=missing -s build_type=Release -s compiler.cppstd=23 -c tools.system.package_manager:mode=install
+        
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake
+        
+        cd ..
       shell: pwsh
-
-    - name: Configure CMake
-      run: |
-        cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=build/conan_toolchain.cmake
 
     - name: Build
       run: |
