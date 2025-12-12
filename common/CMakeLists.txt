@@ -7,8 +7,9 @@
 
 cmake_minimum_required(VERSION 3.20)
 
-# SETUP THE SOURCES, DON'T USE GLOB_RECURSE
+# --- SOURCES ---
 
+# NOTE: DON'T USE GLOB_RECURSE,
 # If you need to add a file, add it MANUALLY here
 # If your file doesn't belong to any category, create a new variable for it.
 
@@ -64,7 +65,7 @@ target_include_directories(RTypeCommon
         ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_compile_features(RTypeCommon PUBLIC cxx_std_23)
+target_compile_features(RTypeCommon PUBLIC ${CMAKE_CXX_STANDARD})
 
 if(MSVC)
     target_compile_options(RTypeCommon PRIVATE /W4)

@@ -2,38 +2,38 @@
 ## EPITECH PROJECT, 2025
 ## R-Type
 ## File description:
-## CMakeLists.txt for Client
+## CMakeLists.txt for Client Executable
 ##
 
-file(GLOB_RECURSE CLIENT_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
-
-file(GLOB_RECURSE COMMON_SOURCES CONFIGURE_DEPENDS "../common/src/*.cpp")
-
-add_executable(r-type_client
-    ${CLIENT_SOURCES}
-    ${COMMON_SOURCES}
+# --- SOURCES ---
+# Add the core sources files here.
+set(SRC_CLIENT
+    src/main.cpp
+    src/Core/Application.cpp
+    # src/Input/InputManager.cpp
 )
 
-target_include_directories(r-type_client PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/../common/include
+# --- TARGET ---
+add_executable(r-type_client ${SRC_CLIENT})
+
+# --- INCLUDES ---
+target_include_directories(r-type_client
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-target_link_libraries(r-type_client PRIVATE
-    asio::asio
-    SFML::Graphics
-    SFML::Audio
-    SFML::Window
-    SFML::System
-)
+# --- CONFIGURATION ---
+target_compile_features(r-type_client)
 
-if(WIN32)
-    target_link_libraries(r-type_client PRIVATE ws2_32)
-    set_target_properties(r-type_client PROPERTIES WIN32_EXECUTABLE FALSE)
+if(NOT MSVC)
+    target_compile_options(r-type_client PRIVATE -Wall -Wextra)
 endif()
 
-if(APPLE)
-    set_target_properties(r-type_client PROPERTIES MACOSX_RPATH TRUE)
-endif()
+# --- LINKING ---
+target_link_libraries(r-type_client
+    PRIVATE
+        RTypeCommon
+)
 
-install(TARGETS r-type_client RUNTIME DESTINATION bin)
+# --- PLUGINS ---
+add_subdirectory(plugins)
