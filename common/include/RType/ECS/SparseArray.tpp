@@ -81,8 +81,7 @@ namespace rtp::ecs
 
     template <Component T>
     template <typename Self>
-    auto &&SparseArray<T>::operator[](this Self &&self, Entity entity) noexcept
-        requires (std::is_lvalue_reference_v<Self>)
+    auto &&SparseArray<T>::operator[](this Self &self, Entity entity) noexcept
     {
         RTP_ASSERT(self.has(entity),
                    "SparseArray: Entity {} does not have component " \
@@ -116,33 +115,29 @@ namespace rtp::ecs
     template <Component T>
     template <typename Self>
     auto &&SparseArray<T>::getData(this Self &&self) noexcept
-        requires (std::is_lvalue_reference_v<Self>)
     {
-        return std::forward<Self>(self)._data;   
+        return std::forward_like<Self>(self)._data;   
     }
 
     template <Component T>
     template <typename Self>
     auto &&SparseArray<T>::getEntities(this Self &&self) noexcept
-        requires (std::is_lvalue_reference_v<Self>)
     {
-        return std::forward<Self>(self)._dense;
+        return std::forward_like<Self>(self)._dense;
     }
 
     template <Component T>
     template <typename Self>
     auto SparseArray<T>::begin(this Self &&self) noexcept
-        requires (std::is_lvalue_reference_v<Self>)
     {
-        return std::forward<Self>(self)._data.begin();
+        return std::forward_like<Self>(self)._data.begin();
     }
 
     template <Component T>
     template <typename Self>
     auto SparseArray<T>::end(this Self &&self) noexcept
-        requires (std::is_lvalue_reference_v<Self>)
     {
-        return std::forward<Self>(self)._data.end();
+        return std::forward_like<Self>(self)._data.end();
     }
 
     template <Component T>
