@@ -1,8 +1,14 @@
-/*
-** EPITECH PROJECT, 2025
-** R-Type, Server
-** File description:
-** main.cpp, entry point for the server application
-*/
+/**
+ * File   : GameLoginSystem.hpp
+ * License: MIT
+ * Author : Elias Josué HAJJAR LLAUQUEN <elias-josue.hajjar-llauquen@epitech.eu>
+ * Date   : 10/12/2025
+ */
 
-int main(void) {}
+#include "RType/ECS/Registry.hpp"
+
+int main(void) {
+    RType::ECS::Registry registry;
+
+    return 0;
+}
