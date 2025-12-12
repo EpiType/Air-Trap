@@ -96,6 +96,15 @@ namespace rtp::thread
                        this->_tasks.size());
         }
         this->_condition.notify_all();
+
+#if defined(__APPLE__) && __cplusplus == 202002L
+        // C++20: Manually join std::thread workers
+        for (auto& worker : this->_workers) {
+            if (worker.joinable())
+                worker.join();
+        }
+#endif
+        // C++23: std::jthread auto-joins
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -105,12 +114,57 @@ namespace rtp::thread
     void ThreadPool::start(size_t numThreads)
     {
         for (size_t i = 0; i < numThreads; ++i)
-            this->_workers.emplace_back([this] (std::stop_token st)
+#if defined(__APPLE__) && __cplusplus == 202002L
+            // C++20: std::thread without stop_token
+            this->_workers.emplace_back([this](void)
+            {
+                this->workerThread();
+            });
+#else
+            // C++23: std::jthread with stop_token
+            this->_workers.emplace_back([this](std::stop_token st)
             {
                 this->workerThread(st);
             });
+#endif
     }
 
+#if defined(__APPLE__) && __cplusplus == 202002L
+    // C++20: std::function, no stop_token parameter
+    void ThreadPool::workerThread(void) noexcept
+    {
+        while (true) {
+            std::function<void(void)> task;
+            {
+                std::unique_lock<std::mutex> lock(this->_queueMutex);
+
+                this->_condition.wait(lock, [this](void) {
+                    return this->_stop || !this->_tasks.empty();
+                });
+                if (this->_stop && this->_tasks.empty()) [[unlikely]]
+                    break;
+                if (this->_tasks.empty()) [[unlikely]]
+                    continue;
+                RTP_ASSERT(!this->_tasks.empty(), 
+                           "Worker: Try to pop from empty queue (Logic Error)");
+
+                task = std::move(this->_tasks.front());
+                this->_tasks.pop();
+            }
+
+            RTP_ASSERT(task, "Worker: Popped an invalid/null task function!");
+
+            try {
+                task();
+            } catch (const std::exception &e) {
+                log::error("Exception in worker thread: {}", e.what());
+            } catch (...) {
+                log::error("Unknown exception in worker thread");
+            }
+        }
+    }
+#else
+    // C++23: std::move_only_function, stop_token parameter
     void ThreadPool::workerThread(std::stop_token stopToken) noexcept
     {
         while (true) {
@@ -145,4 +199,5 @@ namespace rtp::thread
             }
         }
     }
+#endif
 }
