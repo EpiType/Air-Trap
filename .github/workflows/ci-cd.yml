@@ -348,104 +348,107 @@ jobs:
           build/bin/Release/*.dll
 
   # Job 5: Build on macOS
+  # DISABLED: GCC does not support Objective-C blocks required by macOS frameworks
+  # SFML on macOS needs CoreAudio/IOKit which use Objective-C closures (^)
+  # Only Clang supports these, but Clang lacks full C++23 support
+  # Solution needed: Either use C++20 on macOS with preprocessor conditionals,
+  # or find alternative graphics library that doesn't require Objective-C
   build-macos:
-    name: Build on macOS
+    name: Build on macOS (DISABLED - GCC incompatibility)
     runs-on: macos-latest
-    # needs: [paths-filter, style-check]
-    # Only on PRs to main (dev → main validation), only on main repository, and if source files changed
-    if: |
-      github.repository == 'EpiType/Air-Trap'
+    if: false  # Disabled until C++20 conditionals or alternative solution implemented
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
+    # - name: Set up Python
+    #   uses: actions/setup-python@v5
+    #   with:
+    #     python-version: '3.11'
 
-    - name: Install Conan
-      run: |
-        pip install conan
-        conan profile detect --force
+    # - name: Install Conan
+    #   run: |
+    #     pip install conan
+    #     conan profile detect --force
 
-    - name: Install GCC 14
-      run: |
-        brew install gcc@14
+    # - name: Install GCC 14
+    #   run: |
+    #     brew install gcc@14
 
-    - name: Install SFML dependencies
-      run: |
-        brew install cmake freetype flac libvorbis libogg
+    # - name: Install SFML dependencies
+    #   run: |
+    #     brew install cmake freetype flac libvorbis libogg
 
-    - name: Build SFML from source with GCC 14
-      run: |
-        git clone --depth 1 --branch 3.0.0 https://github.com/SFML/SFML.git /tmp/sfml
-        cd /tmp/sfml
-        # Patch CMakeLists.txt to allow GCC on macOS
-        sed -i '' '175s/.*/# Clang check disabled for GCC support/' CMakeLists.txt
-        mkdir build && cd build
-        cmake .. \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_CXX_COMPILER=g++-14 \
-          -DCMAKE_C_COMPILER=gcc-14 \
-          -DCMAKE_CXX_STANDARD=23 \
-          -DCMAKE_INSTALL_PREFIX=/usr/local \
-          -DBUILD_SHARED_LIBS=ON \
-          -DSFML_USE_SYSTEM_DEPS=ON
-        cmake --build . --config Release -j$(sysctl -n hw.ncpu)
-        sudo cmake --install .
+    # - name: Build SFML from source with GCC 14
+    #   run: |
+    #     git clone --depth 1 --branch 3.0.0 https://github.com/SFML/SFML.git /tmp/sfml
+    #     cd /tmp/sfml
+    #     # Patch CMakeLists.txt to allow GCC on macOS
+    #     sed -i '' '175s/.*/# Clang check disabled for GCC support/' CMakeLists.txt
+    #     mkdir build && cd build
+    #     cmake .. \
+    #       -DCMAKE_BUILD_TYPE=Release \
+    #       -DCMAKE_CXX_COMPILER=g++-14 \
+    #       -DCMAKE_C_COMPILER=gcc-14 \
+    #       -DCMAKE_CXX_STANDARD=23 \
+    #       -DCMAKE_INSTALL_PREFIX=/usr/local \
+    #       -DBUILD_SHARED_LIBS=ON \
+    #       -DSFML_USE_SYSTEM_DEPS=ON
+    #     cmake --build . --config Release -j$(sysctl -n hw.ncpu)
+    #     sudo cmake --install .
 
-    - name: Create GCC 14 Conan profile
-      run: |
-        cat > ~/.conan2/profiles/gcc14 << EOF
-        [settings]
-        arch=armv8
-        build_type=Release
-        compiler=gcc
-        compiler.cppstd=23
-        compiler.libcxx=libstdc++11
-        compiler.version=14
-        os=Macos
-        
-        [conf]
-        tools.cmake.cmaketoolchain:generator=Unix Makefiles
-        tools.system.package_manager:mode=install
-        EOF
-        echo "GCC 14 profile created:"
-        cat ~/.conan2/profiles/gcc14
+    # - name: Create GCC 14 Conan profile
+    #   run: |
+    #     cat > ~/.conan2/profiles/gcc14 << EOF
+    #     [settings]
+    #     arch=armv8
+    #     build_type=Release
+    #     compiler=gcc
+    #     compiler.cppstd=23
+    #     compiler.libcxx=libstdc++11
+    #     compiler.version=14
+    #     os=Macos
+    #     
+    #     [conf]
+    #     tools.cmake.cmaketoolchain:generator=Unix Makefiles
+    #     tools.system.package_manager:mode=install
+    #     EOF
+    #     echo "GCC 14 profile created:"
+    #     cat ~/.conan2/profiles/gcc14
 
-    - name: Cache Conan packages
-      uses: actions/cache@v3
-      with:
-        path: ~/.conan2
-        key: conan-macos-gcc14-sfml-custom-${{ hashFiles('**/conanfile.txt') }}
-        restore-keys: |
-          conan-macos-gcc14-sfml-custom-
+    # - name: Cache Conan packages
+    #   uses: actions/cache@v3
+    #   with:
+    #     path: ~/.conan2
+    #     key: conan-macos-gcc14-sfml-custom-${{ hashFiles('**/conanfile.txt') }}
+    #     restore-keys: |
+    #       conan-macos-gcc14-sfml-custom-
 
-    - name: Install dependencies (without SFML from Conan)
-      run: |
-        mkdir -p build
-        cd build
-        # Install only non-SFML dependencies via Conan
-        conan install .. --profile:host=gcc14 --profile:build=default --build=missing -c tools.system.package_manager:mode=install || true
+    # - name: Install dependencies (without SFML from Conan)
+    #   run: |
+    #     mkdir -p build
+    #     cd build
+    #     # Install only non-SFML dependencies via Conan
+    #     conan install .. --profile:host=gcc14 --profile:build=default --build=missing -c tools.system.package_manager:mode=install || true
 
-    - name: Configure CMake
-      run: |
-        cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_CXX_COMPILER=g++-14
+    # - name: Configure CMake
+    #   run: |
+    #     cd build
+    #     cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_CXX_COMPILER=g++-14
 
-    - name: Build
-      run: |
-        cd build
-        cmake --build . --config Release -j$(sysctl -n hw.ncpu)
+    # - name: Build
+    #   run: |
+    #     cd build
+    #     cmake --build . --config Release -j$(sysctl -n hw.ncpu)
 
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: air-trap-macos
-        path: |
-          build/bin/r-type_server
+    # - name: Upload artifacts
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: air-trap-macos
+    #     path: |
+    #       build/bin/r-type_server
+    #       build/bin/r-type_client
           build/bin/r-type_client
 
   # Job 6: Unit Tests (Optional - requires test implementation)
