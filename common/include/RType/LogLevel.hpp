@@ -77,7 +77,10 @@ struct std::formatter<rtp::log::Level> : std::formatter<std::string_view> {
      * @param ctx The format context
      * @return Iterator to the end of the formatted output
      */
-    auto format(rtp::log::Level level, std::format_context &ctx) const;
+    auto format(rtp::log::Level level, std::format_context &ctx) const
+    {
+        return std::format_to(ctx.out(), "{}", rtp::log::toString(level));
+    }
 };
 
     #include "LogLevel.inl" /* toString and format implementations */
