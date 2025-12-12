@@ -1,0 +1,39 @@
+{
+    "level_id": 1,
+    "name": "The Deep Space Entry",
+
+    "game_metadata": {
+        "level_width_in_pixels": 32000,
+        "player_start_position": {"x": 100, "y": 450},
+        "tileset_path": "assets/levels/geometry/level_01_tiles.json"
+    },
+
+    "theme_data": {
+        "background_texture": "assets/textures/backgrounds/nebula_01.png",
+        "scroll_speed_factor": 0.5,
+        "music_track": "assets/audio/music/theme_A.ogg"
+    },
+    
+    "spawn_triggers": [
+        {
+            "at_position": 500, 
+            "template_path": "templates/enemy/fighter_01.json",
+            "start_position": {"x": 1280, "y": 250},
+            "count": 5,
+            "delay_between_spawn": 0.3
+        },
+        {
+            "at_position": 1500,
+            "template_path": "templates/enemy/fighter_01.json",
+            "start_position": {"x": 1280, "y": 600},
+            "count": 8,
+            "delay_between_spawn": 0.2
+        },
+        {
+            "at_position": 30000,
+            "template_path": "templates/boss/boss_01.json",
+            "start_position": {"x": 1200, "y": 450},
+            "count": 1
+        }
+    ]
+}
