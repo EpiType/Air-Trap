@@ -361,21 +361,30 @@ jobs:
     - name: Install Conan
       run: |
         pip install conan
+        conan profile detect --force
 
     - name: Install GCC 14
       run: |
         brew install gcc@14
 
-    - name: Configure Conan profile for GCC 14
+    - name: Create GCC 14 Conan profile
       run: |
-        conan profile detect --force
-        conan profile show default
-        # Override detected profile to use GCC 14
-        conan profile update settings.compiler=gcc default
-        conan profile update settings.compiler.version=14 default
-        conan profile update settings.compiler.libcxx=libstdc++11 default
-        conan profile update settings.compiler.cppstd=23 default
-        conan profile show default
+        cat > ~/.conan2/profiles/gcc14 << EOF
+        [settings]
+        arch=armv8
+        build_type=Release
+        compiler=gcc
+        compiler.cppstd=23
+        compiler.libcxx=libstdc++11
+        compiler.version=14
+        os=Macos
+        
+        [conf]
+        tools.cmake.cmaketoolchain:generator=Unix Makefiles
+        tools.system.package_manager:mode=install
+        EOF
+        echo "GCC 14 profile created:"
+        conan profile show gcc14
 
     - name: Cache Conan packages
       uses: actions/cache@v3
@@ -389,7 +398,7 @@ jobs:
       run: |
         mkdir -p build
         cd build
-        conan install .. --build=missing -s build_type=Release -c tools.system.package_manager:mode=install
+        conan install .. --profile:host=gcc14 --profile:build=default --build=missing -c tools.system.package_manager:mode=install
 
     - name: Configure CMake
       run: |
