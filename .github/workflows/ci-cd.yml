@@ -382,6 +382,8 @@ jobs:
       run: |
         git clone --depth 1 --branch 3.0.0 https://github.com/SFML/SFML.git /tmp/sfml
         cd /tmp/sfml
+        # Patch CMakeLists.txt to allow GCC on macOS
+        sed -i '' '175s/.*/# Clang check disabled for GCC support/' CMakeLists.txt
         mkdir build && cd build
         cmake .. \
           -DCMAKE_BUILD_TYPE=Release \
