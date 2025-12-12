@@ -127,7 +127,8 @@ namespace rtp::thread
         private:
             std::vector<std::jthread> _workers; /**< Vector of worker threads
                                                  */
-            std::queue<std::function<void()>> _tasks; /**< Queue of tasks
+            std::queue<std::move_only_function<void(void)>> _tasks;
+                                                        /**< Queue of tasks
                                                             to be executed */
             std::mutex _queueMutex; /**< Mutex for synchronizing access to
                                          the task queue */
