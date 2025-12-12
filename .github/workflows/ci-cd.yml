@@ -324,12 +324,11 @@ jobs:
         
         foreach ($dll in $dllFiles) {
           Write-Host "Copying $($dll.Name)..."
-          Copy-Item -Path $dll.FullName -Destination "build\client\Release\" -Force -ErrorAction SilentlyContinue
-          Copy-Item -Path $dll.FullName -Destination "build\server\Release\" -Force -ErrorAction SilentlyContinue
+          Copy-Item -Path $dll.FullName -Destination "build\bin\Release\" -Force -ErrorAction SilentlyContinue
         }
         
-        Write-Host "`nDLLs in client/Release:"
-        Get-ChildItem "build\client\Release\*.dll" | ForEach-Object { Write-Host "  - $($_.Name)" }
+        Write-Host "`nDLLs in bin/Release:"
+        Get-ChildItem "build\bin\Release\*.dll" | ForEach-Object { Write-Host "  - $($_.Name)" }
       shell: pwsh
 
     - name: Upload artifacts
@@ -337,10 +336,9 @@ jobs:
       with:
         name: air-trap-windows
         path: |
-          build/client/Release/r-type_client.exe
-          build/client/Release/*.dll
-          build/server/Release/r-type_server.exe
-          build/server/Release/*.dll
+          build/bin/Release/r-type_client.exe
+          build/bin/Release/r-type_server.exe
+          build/bin/Release/*.dll
 
   # Job 5: Build on macOS
   build-macos:
@@ -364,6 +362,11 @@ jobs:
       run: |
         pip install conan
         conan profile detect
+    
+    - name: Install GCC via Homebrew
+      run: |
+        brew install gcc@14
+        echo "✓ GCC 14 installed"
 
     - name: Cache Conan packages
       uses: actions/cache@v3
@@ -377,12 +380,12 @@ jobs:
       run: |
         mkdir -p build
         cd build
-        conan install .. --build=missing -s build_type=Release -c tools.system.package_manager:mode=install
+        conan install .. --build=missing -s build_type=Release -s compiler=gcc -s compiler.version=14 -s compiler.cppstd=23 -s compiler.libcxx=libstdc++11 -c tools.system.package_manager:mode=install
 
     - name: Configure CMake
       run: |
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_C_COMPILER=gcc-14 -DCMAKE_CXX_COMPILER=g++-14
 
     - name: Build
       run: |
