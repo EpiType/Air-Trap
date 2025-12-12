@@ -15,6 +15,7 @@
     #define RTYPE_NETWORK_PACKET_HPP_
 
     #include "RType/ECS/ComponentConcept.hpp"
+    #include "RType/Math/vec2f.hpp"
 
     #include <bit>
     #include <cstdint>
@@ -72,6 +73,7 @@ namespace rtp::net
     struct Header {
         uint16_t magic = MAGIC_NUMBER;  /**< Magic number for validation */
         uint16_t sequenceId = 0;        /**< Packet sequence number */
+        uint32_t bodySize = 0;          /**< Size of the packet body */
         uint16_t ackId = 0;             /**< Last acknowledged packet */
         OpCode opCode = OpCode::None;   /**< Operation code */
         uint8_t reserved = 0;           /**< Reserved for future use */

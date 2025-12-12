@@ -1,29 +1,31 @@
-/*
-** EPITECH PROJECT, 2025
-** Air-Trap
-** File description:
-** Position
-*/
+/**
+ * File   : Transform.hpp
+ * License: MIT
+ * Author : Elias Josué HAJJAR LLAUQUEN <elias-josue.hajjar-llauquen@epitech.eu>
+ * Date   : 11/12/2025
+ */
 
-#pragma once
+#ifndef RTYPE_ECS_COMPONENTS_TRANSFORM_HPP_
+#define RTYPE_ECS_COMPONENTS_TRANSFORM_HPP_
 
+    #include "RType/Math/vec2f.hpp"
+
+/**
+ * @namespace rtp::ecs::components
+ * @brief ECS components for R-Type protocol
+ */
 namespace rtp::ecs::components {
-/**
- * @struct Vector2f
- * @brief Simple 2D vector structure.
- */
-struct Vector2f {
-    float x, y;
-    Vector2f(float x = 0.0f, float y = 0.0f) : x(x), y(y) {}
-};
 
-/**
- * @struct Position
- * @brief Component representing a 2D position.
- */
-struct Transform {
-    Vector2f position{0.0f, 0.0f}; /**< X and Y coordinates */
-    float rotation{0.0f};          /**< Rotation in degrees */
-    Vector2f scale{1.0f, 1.0f};    /**< Scale factors for X and Y axes */
-};
-}  // namespace rtp::ecs::components
+    /**
+     * @struct Transform
+     * @brief Component representing position, rotation, and scale of an entity.
+     */
+    struct Transform {
+        math::Vec2f position{0.0f, 0.0f}; /**< X and Y coordinates */
+        float rotation{0.0f};          /**< Rotation in degrees */
+        math::Vec2f scale{1.0f, 1.0f}; /**< Scale factors for X and Y axes */
+    };
+
+} // namespace rtp::ecs::components
+
+#endif /* !RTYPE_ECS_COMPONENTS_TRANSFORM_HPP_ */
