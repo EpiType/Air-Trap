@@ -29,6 +29,25 @@ cmake_install.cmake
 CTestTestfile.cmake
 Makefile
 install_manifest.txt
+CMakePresets.json
+CMakeUserPresets.json
+
+# Conan generated files
+conan_toolchain.cmake
+conan*.cmake
+conanbuild*.sh
+conanrun*.sh
+deactivate_*.sh
+cmakedeps_macros.cmake
+*Targets.cmake
+*-release-*.cmake
+*-Target-*.cmake
+*Config.cmake
+*ConfigVersion.cmake
+*Config*.cmake
+*-config*.cmake
+Find*.cmake
+!FindDependencies.cmake
 
 # VS/Visual Studio
 .vs/

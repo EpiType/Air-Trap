@@ -51,7 +51,7 @@ mkdir -p build
 cd build
 
 # Install dependencies with detected GCC version
-conan install .. --output-folder=. --build=missing -s build_type=Release -s compiler.cppstd=23 -s compiler.version=$GCC_VERSION
+conan install .. --build=missing -s build_type=Release -s compiler.cppstd=23 -s compiler.version=$GCC_VERSION
 
 # Configure with detected compiler
 cmake .. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=$CMAKE_C_COMPILER -DCMAKE_CXX_COMPILER=$CMAKE_CXX_COMPILER
