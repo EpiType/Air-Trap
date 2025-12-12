@@ -27,13 +27,7 @@ if(NOT MSVC)
 endif()
 
 # --- DEPENDENCIES ---
-if(APPLE)
-    # On macOS, use system-installed SFML built with GCC
-    find_package(SFML 3 REQUIRED COMPONENTS graphics window system PATHS /usr/local)
-else()
-    # On other platforms, use Conan-provided SFML
-    find_package(SFML REQUIRED COMPONENTS graphics window system)
-endif()
+find_package(SFML REQUIRED COMPONENTS graphics window system)
 
 # --- LINKING ---
 target_link_libraries(r-type_client
