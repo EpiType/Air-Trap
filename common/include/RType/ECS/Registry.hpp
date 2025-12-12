@@ -132,10 +132,9 @@ namespace rtp::ecs
              */
             template <Component T, typename Self>
             [[nodiscard]]
-            auto getComponents(this Self &&self)
+            auto getComponents(this Self &self)
                 -> std::expected<ConstLikeRef<Self, SparseArray<T>>,
-                                 rtp::Error>
-            requires (std::is_lvalue_reference_v<Self>);
+                                 rtp::Error>;
 
             /**
              * @brief Add a component to an entity
@@ -158,8 +157,7 @@ namespace rtp::ecs
              */
             template <Component T, typename Self>
             [[nodiscard]]
-            auto view(this Self &&self) -> std::span<ConstLike<Self, T>>
-            requires (std::is_lvalue_reference_v<Self>);
+            auto view(this Self &self) -> std::span<ConstLike<Self, T>>;
 
             /**
              * @brief Create a zipped view over multiple component types
@@ -169,8 +167,7 @@ namespace rtp::ecs
              */
             template <Component... Ts, typename Self>
             [[nodiscard]]
-            auto zipView(this Self &&self)
-            requires (std::is_lvalue_reference_v<Self>);
+            auto zipView(this Self &self);
 
         private:
             std::unordered_map<std::type_index,

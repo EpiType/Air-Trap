@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2025
 ** R-Type
 ** File description:
-** LogLevel.inl
+** NumericConcept class implementation
 */
 
 /*
@@ -31,30 +31,28 @@
 */
 
 /**
- * @file LogLevel.inl
- * @brief Inline implementations for LogLevel.hpp
+ * @file NumericConcept.hpp
+ * @brief Definition of the Numeric concept.
+ * @author Robin Toillon
  */
 
-namespace rtp::log
+#ifndef RTYPE_NUMERIC_CONCEPT_HPP_
+    #define RTYPE_NUMERIC_CONCEPT_HPP_
+
+    #include <concepts>
+    #include <type_traits>
+
+namespace rtp
 {
-    constexpr std::string_view toString(Level level) noexcept
-    {
-        switch (level) {
-            using enum Level;
-            case Level::Debug:
-                return "Debug";
-            case Level::Info:
-                return "Info";
-            case Level::Warning:
-                return "Warning";
-            case Level::Error:
-                return "Error";
-            case Level::Fatal:
-                return "Fatal";
-            case Level::None:
-                return "None";
-            default:
-                std::unreachable();
-        }
-    }
+    /**
+     * @brief A concept that checks
+     *        if a type is numeric (integral or floating-point).
+     *
+     * @tparam T The type to check.
+     */
+    template<typename T>
+    concept Numeric = std::is_arithmetic_v<T>;
+
 }
+
+#endif /* !RTYPE_NUMERIC_CONCEPT_HPP_ */
