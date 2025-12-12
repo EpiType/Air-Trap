@@ -11,11 +11,9 @@ namespace rtp::ecs::components {
 /**
  * @struct Rect
  * @brief Component representing a rectangle area.
- * Used for defining boundaries, hitboxes, or UI elements.
+ * Used for defining bounding boxes or collision areas.
  */
-struct Rect {
-    float x{0.0f};      /**< X position of the rectangle */
-    float y{0.0f};      /**< Y position of the rectangle */
+struct BoundingBox {
     float width{0.0f};  /**< Width of the rectangle */
     float height{0.0f}; /**< Height of the rectangle */
 };

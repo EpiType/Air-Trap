@@ -39,6 +39,8 @@
  * with O(1) access by entity ID.
  */
 
+ #include <algorithm>
+
 namespace rtp::ecs
 {
     template <Component T>

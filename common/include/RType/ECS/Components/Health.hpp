@@ -13,7 +13,7 @@ namespace rtp::ecs::components {
  * @brief Component representing an entity's health.
  */
 struct Health {
-    int current{100}; /**< Current health value */
-    int max{100};     /**< Maximum health value */
+    int currentHealth{100}; /**< Current health value */
+    int maxHealth{100};     /**< Maximum health value */
 };
 }  // namespace rtp::ecs::components
