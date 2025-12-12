@@ -12,8 +12,8 @@ namespace rtp::ecs::components {
  * @struct Weapon
  * @brief Component representing a weapon.
  */
-struct Weapon {
-    float fireRate{1.0f};     /**< Shots per second */
+struct SimpleWeapon {
+    float fireRate{0.3f};     /**< Shots per second */
     float lastShotTime{0.0f}; /**< Time since last shot */
     int damage{10};           /**< Damage per shot */
 };
