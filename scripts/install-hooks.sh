@@ -48,11 +48,6 @@ if [ -f "$GIT_HOOKS_DIR/pre-commit" ]; then
     echo "   Compile le projet avant chaque commit."
     echo "   Si la compilation échoue, le commit est bloqué."
 fi
-if [ -f "$GIT_HOOKS_DIR/pre-push" ] && [ -x "$GIT_HOOKS_DIR/pre-push" ]; then
-    echo "🚀 pre-push   :"
-    echo "   Compile le projet avant de push vers 'dev'."
-    echo "   (Actuellement désactivé au profit de pre-commit)"
-fi
 echo "---------------------------------------------------"
 echo ""
 echo "Rappel des types de commits valides:"
