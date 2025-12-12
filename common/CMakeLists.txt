@@ -65,8 +65,6 @@ target_include_directories(RTypeCommon
         ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_compile_features(RTypeCommon PUBLIC ${CMAKE_CXX_STANDARD})
-
 if(MSVC)
     target_compile_options(RTypeCommon PRIVATE /W4)
 else()

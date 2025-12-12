@@ -22,17 +22,20 @@ target_include_directories(r-type_client
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-# --- CONFIGURATION ---
-target_compile_features(r-type_client)
-
 if(NOT MSVC)
     target_compile_options(r-type_client PRIVATE -Wall -Wextra)
 endif()
+
+# --- DEPENDENCIES ---
+find_package(SFML REQUIRED COMPONENTS graphics window system)
 
 # --- LINKING ---
 target_link_libraries(r-type_client
     PRIVATE
         RTypeCommon
+        SFML::Graphics
+        SFML::Window
+        SFML::System
 )
 
 # --- PLUGINS ---
