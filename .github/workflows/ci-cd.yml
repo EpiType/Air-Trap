@@ -353,14 +353,18 @@ jobs:
   # Only Clang supports these, but Clang lacks full C++23 support
   # Solution needed: Either use C++20 on macOS with preprocessor conditionals,
   # or find alternative graphics library that doesn't require Objective-C
-  build-macos:
-    name: Build on macOS (DISABLED - GCC incompatibility)
-    runs-on: macos-latest
-    if: false  # Disabled until C++20 conditionals or alternative solution implemented
+  # build-macos:
+  #   name: Build on macOS (DISABLED - GCC incompatibility)
+  #   runs-on: macos-latest
+  #   if: |
+  #     github.repository == 'EpiType/Air-Trap' &&
+  #     github.event_name == 'pull_request' &&
+  #     github.base_ref == 'main' &&
+  #     needs.paths-filter.outputs.src == 'true'
     
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v4
 
     # - name: Set up Python
     #   uses: actions/setup-python@v5
@@ -449,7 +453,7 @@ jobs:
     #     path: |
     #       build/bin/r-type_server
     #       build/bin/r-type_client
-          build/bin/r-type_client
+          # build/bin/r-type_client
 
   # Job 6: Unit Tests (Optional - requires test implementation)
   tests:
@@ -523,7 +527,7 @@ jobs:
   notify:
     name: Send Discord Notification
     runs-on: ubuntu-latest
-    needs: [paths-filter, commit-validation, style-check, build-linux, build-windows, build-macos, mirror]
+    needs: [paths-filter, commit-validation, style-check, build-linux, build-windows, mirror]
     # Always notify from main repository (push and PR), même en cas d'échec
     if: |
       github.repository == 'EpiType/Air-Trap' &&
