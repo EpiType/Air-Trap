@@ -198,24 +198,28 @@ namespace rtp {
              * @brief Get the error code
              * @return The ErrorCode of this error
              */
+            [[nodiscard]]
             ErrorCode code(void) const noexcept;
 
             /**
              * @brief Get the severity level of this error
              * @return The log level representing error severity
              */
+            [[nodiscard]]
             log::Level severity(void) const noexcept;
             
             /**
              * @brief Get the current retry count
              * @return Number of times this error has been retried
              */
+            [[nodiscard]]
             std::uint8_t retryCount(void) const noexcept;
             
             /**
              * @brief Get the error message
              * @return String view of the formatted error message
              */
+            [[nodiscard]]
             auto message(void) const noexcept
                 -> std::string_view;
 
