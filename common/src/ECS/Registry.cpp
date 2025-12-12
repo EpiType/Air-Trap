@@ -48,6 +48,12 @@ namespace rtp::ecs
     // Public API
     ///////////////////////////////////////////////////////////////////////////
 
+    Registry::~Registry() noexcept
+    {
+        log::info("Registry destroyed. All ECS components and arrays freed.");
+    }
+
+
     auto Registry::spawnEntity(void) -> std::expected<Entity, rtp::Error>
     {
         std::lock_guard<std::mutex> lock(this->_mutex);

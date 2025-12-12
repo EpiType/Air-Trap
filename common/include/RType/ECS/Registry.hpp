@@ -79,7 +79,7 @@ namespace rtp::ecs
      * @tparam To Destination type to apply const-ness to
      */
     template <typename From, typename To>
-    using ConstLikeRef = ConstLike<From, To> &;
+    using ConstLikePtr = ConstLike<From, To> *;
 
     /**
      * @class Registry
@@ -133,7 +133,7 @@ namespace rtp::ecs
             template <Component T, typename Self>
             [[nodiscard]]
             auto getComponents(this Self &self)
-                -> std::expected<ConstLikeRef<Self, SparseArray<T>>,
+                -> std::expected<ConstLikePtr<Self, SparseArray<T>>,
                                  rtp::Error>;
 
             /**

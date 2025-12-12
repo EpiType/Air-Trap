@@ -59,7 +59,7 @@ namespace rtp::ecs
 
     template <Component T, typename Self>
     auto Registry::getComponents(this Self &self)
-        -> std::expected<ConstLikeRef<Self, SparseArray<T>>, rtp::Error>
+        -> std::expected<ConstLikePtr<Self, SparseArray<T>>, rtp::Error>
     {
         std::type_index type = typeid(T);
 
@@ -70,7 +70,7 @@ namespace rtp::ecs
         auto &ptr = self._arrays.find(type)->second;
         auto *rawPtr = static_cast<SparseArray<T> *>(ptr.get());
 
-        return std::forward_like<Self>(*rawPtr);
+        return std::forward_like<Self>(rawPtr);
     }
 
     template <Component T, typename... Args>
