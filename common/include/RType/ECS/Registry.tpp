@@ -58,9 +58,8 @@ namespace rtp::ecs
     }
 
     template <Component T, typename Self>
-    auto Registry::getComponents(this Self &&self)
+    auto Registry::getComponents(this Self &self)
         -> std::expected<ConstLikeRef<Self, SparseArray<T>>, rtp::Error>
-        requires (std::is_lvalue_reference_v<Self>)
     {
         std::type_index type = typeid(T);
 
@@ -87,8 +86,7 @@ namespace rtp::ecs
     }
 
     template <Component T, typename Self>
-    auto Registry::view(this Self &&self) -> std::span<ConstLike<Self, T>>
-        requires (std::is_lvalue_reference_v<Self>)
+    auto Registry::view(this Self &self) -> std::span<ConstLike<Self, T>>
     {
         auto result = self.template getComponents<T>();
 
@@ -103,8 +101,7 @@ namespace rtp::ecs
     }
 
     template <Component... Ts, typename Self>
-    auto Registry::zipView(this Self &&self)
-        requires (std::is_lvalue_reference_v<Self>)
+    auto Registry::zipView(this Self &self)
     {
         using FirstComponentType = std::tuple_element_t<0, std::tuple<Ts...>>;
 

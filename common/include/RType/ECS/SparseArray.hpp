@@ -132,8 +132,7 @@ namespace rtp::ecs
              */
             template <typename Self>
             [[nodiscard]]
-            auto &&operator[](this Self &&self, Entity entity) noexcept
-                requires (std::is_lvalue_reference_v<Self>);
+            auto &&operator[](this Self &self, Entity entity) noexcept;
 
             /**
              * @brief Construct a component in-place for an entity
@@ -143,7 +142,6 @@ namespace rtp::ecs
              * @return Reference to the newly created component
              */
             template <typename... Args>
-            [[nodiscard]]
             auto emplace(Entity entity, Args &&...args) & -> T &;
 
             /**
@@ -153,8 +151,7 @@ namespace rtp::ecs
              */
             template <typename Self>
             [[nodiscard]]
-            auto &&getData(this Self &&self) noexcept
-                requires (std::is_lvalue_reference_v<Self>);
+            auto &&getData(this Self &&self) noexcept;
 
             /**
              * @brief Get the entity array corresponding to components
@@ -163,8 +160,7 @@ namespace rtp::ecs
              */
             template <typename Self>
             [[nodiscard]]
-            auto &&getEntities(this Self &&self) noexcept
-                requires (std::is_lvalue_reference_v<Self>);
+            auto &&getEntities(this Self &&self) noexcept;
 
             /**
              * @brief Get iterator to the beginning of components
@@ -173,8 +169,7 @@ namespace rtp::ecs
              */
             template <typename Self>
             [[nodiscard]]
-            auto begin(this Self &&self) noexcept
-                requires (std::is_lvalue_reference_v<Self>);
+            auto begin(this Self &&self) noexcept;
 
             /**
              * @brief Get iterator to the end of components
@@ -183,8 +178,7 @@ namespace rtp::ecs
              */
             template <typename Self>
             [[nodiscard]]
-            auto end(this Self &&self) noexcept
-                requires (std::is_lvalue_reference_v<Self>);
+            auto end(this Self &&self) noexcept;
 
             /**
              * @brief Get the number of components stored
