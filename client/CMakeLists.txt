@@ -2,26 +2,24 @@
 ## EPITECH PROJECT, 2025
 ## R-Type
 ## File description:
-## CMakeLists.txt, CMake configuration for Client Binary
+## CMakeLists.txt for Client
 ##
 
-# Find SFML (Conan)
-find_package(SFML REQUIRED CONFIG COMPONENTS Graphics Window System Audio)
-find_package(asio REQUIRED CONFIG)
+file(GLOB_RECURSE CLIENT_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
 
-# Client executable
+file(GLOB_RECURSE COMMON_SOURCES CONFIGURE_DEPENDS "../common/src/*.cpp")
+
 add_executable(r-type_client
-    src/main.cpp
-    src/Core/Application.cpp
+    ${CLIENT_SOURCES}
+    ${COMMON_SOURCES}
 )
 
 target_include_directories(r-type_client PRIVATE
-    ${CMAKE_SOURCE_DIR}/client/include
-    ${CMAKE_SOURCE_DIR}/common/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../common/include
 )
 
 target_link_libraries(r-type_client PRIVATE
-    RTypeCommon
     asio::asio
     SFML::Graphics
     SFML::Audio
@@ -29,16 +27,13 @@ target_link_libraries(r-type_client PRIVATE
     SFML::System
 )
 
-# Platform-specific settings
 if(WIN32)
     target_link_libraries(r-type_client PRIVATE ws2_32)
-    set_target_properties(r-type_client PROPERTIES
-        WIN32_EXECUTABLE FALSE
-    )
+    set_target_properties(r-type_client PROPERTIES WIN32_EXECUTABLE FALSE)
 endif()
 
 if(APPLE)
-    set_target_properties(r-type_client PROPERTIES
-        MACOSX_RPATH TRUE
-    )
+    set_target_properties(r-type_client PROPERTIES MACOSX_RPATH TRUE)
 endif()
+
+install(TARGETS r-type_client RUNTIME DESTINATION bin)

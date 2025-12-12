@@ -39,6 +39,7 @@
  * error handling using GetLastError for Windows systems.
  */
 
+#if defined(_WIN32) || defined(_WIN64)
 #include "RType/Assert.hpp"
 #include "LibraryBackend.hpp"
 
@@ -95,3 +96,5 @@ namespace rtp::dl::impl
         return reinterpret_cast<void *>(symbol);
     }
 }
+
+#endif /* Windows platform */
