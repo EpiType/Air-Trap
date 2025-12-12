@@ -125,11 +125,18 @@ namespace rtp::thread
                                  rtp::Error>;
 
         private:
+#if defined(__APPLE__) && __cplusplus == 202002L
+            // macOS with C++20: use std::thread instead of std::jthread
+            std::vector<std::thread> _workers;
+            std::queue<std::function<void(void)>> _tasks;
+#else
+            // C++23: use std::jthread and std::move_only_function
             std::vector<std::jthread> _workers; /**< Vector of worker threads
                                                  */
             std::queue<std::move_only_function<void(void)>> _tasks;
                                                         /**< Queue of tasks
                                                             to be executed */
+#endif
             std::mutex _queueMutex; /**< Mutex for synchronizing access to
                                          the task queue */
             std::condition_variable _condition; /**< Condition variable for
@@ -172,7 +179,11 @@ namespace rtp::thread
              *          queue, and then executes the task. It continues this
              *          cycle until the ThreadPool is signaled to stop.
              */
-            void workerThread(std::stop_token stopToken) noexcept;
+#if defined(__APPLE__) && __cplusplus == 202002L
+            void workerThread(void) noexcept;  // macOS C++20: no stop_token
+#else
+            void workerThread(std::stop_token stopToken) noexcept;  // C++23
+#endif
 
     };
 }
