@@ -13,6 +13,7 @@ namespace Client::Core
     Application::Application()
         : _window(sf::VideoMode({1280, 720}), "Air-Trap - R-Type Clone")
     {
+        initECS();
         this->_window.setFramerateLimit(60);
         rtp::log::info("Window created: 1280x720 @ 60 FPS");
     }
@@ -68,6 +69,8 @@ namespace Client::Core
     {
         // Clear screen with dark blue (space-like background)
         this->_window.clear(sf::Color(10, 10, 30));
+        if (_renderSystem)
+            _renderSystem->render(this->_window, sf::seconds(1.f / 60.f));
 
         // TODO: Render entities when ECS is ready
 

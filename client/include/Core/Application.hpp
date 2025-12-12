@@ -14,6 +14,7 @@
 #include "Graphics/AssetManager.hpp"
 #include "Systems/InputSystem.hpp"
 #include "Systems/RenderSystem.hpp"
+#include "RType/ECS/Registry.hpp"
 
 namespace Client::Core {
 /**
@@ -35,9 +36,10 @@ class Application {
     void render();
 
     sf::RenderWindow _window;
+    rtp::ecs::Registry _registry;
 
     Graphics::AssetManager _assetManager;
-    // Systems::RenderSystem _renderSystem;
-    // Systems::InputSystem _inputSystem;
+    std::unique_ptr<Client::Systems::InputSystem> _inputSystem;
+    std::unique_ptr<Client::Systems::RenderSystem> _renderSystem;
 };
 }  // namespace Client::Core
