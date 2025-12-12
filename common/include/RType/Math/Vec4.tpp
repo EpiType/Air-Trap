@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2025
 ** R-Type
 ** File description:
-** LogLevel.inl
+** Vec4.tpp, Vector of 4 class implementation
 */
 
 /*
@@ -31,29 +31,34 @@
 */
 
 /**
- * @file LogLevel.inl
- * @brief Inline implementations for LogLevel.hpp
+ * @file Vec4.tpp
+ * @brief Implementation of the 4-dimensional vector class.
+ * @author Robin Toillon
  */
 
-namespace rtp::log
+namespace rtp
 {
-    constexpr std::string_view toString(Level level) noexcept
+    template<Numeric T>
+    constexpr Vec4<T>::Vec4(T x_, T y_, T z_, T w_) noexcept
+                           : x{x_}, y{y_}, z{z_}, w{w_}
     {
-        switch (level) {
-            using enum Level;
-            case Level::Debug:
-                return "Debug";
-            case Level::Info:
-                return "Info";
-            case Level::Warning:
-                return "Warning";
-            case Level::Error:
-                return "Error";
-            case Level::Fatal:
-                return "Fatal";
-            case Level::None:
-                return "None";
+    }
+
+    template <Numeric T>
+    constexpr auto &Vec4<T>::operator[](this auto &self,
+                                        std::size_t index) noexcept
+    {
+        switch (index) {
+            case 0:
+                return self.x;
+            case 1:
+                return self.y;
+            case 2:
+                return self.z;
+            case 3:
+                return self.w;
             default:
+                RTP_ASSERT(false, "Vec4: Index {} out of bounds", index);
                 std::unreachable();
         }
     }

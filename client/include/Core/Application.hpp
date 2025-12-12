@@ -11,13 +11,9 @@
 #include <memory>
 #include <string>
 
-#include "Client/Graphics/AssetManager.hpp"
-#include "Client/Systems/InputSystem.hpp"
-#include "Client/Systems/RenderSystem.hpp"
-#include "RType/ECS/Components/Position.hpp"
-#include "RType/ECS/Components/Sprite.hpp"
-#include "RType/ECS/Components/Velocity.hpp"
-#include "RType/ECS/Coordinator.hpp"
+#include "Graphics/AssetManager.hpp"
+#include "Systems/InputSystem.hpp"
+#include "Systems/RenderSystem.hpp"
 
 namespace Client::Core {
 /**
@@ -40,11 +36,8 @@ class Application {
 
     sf::RenderWindow _window;
 
-    std::unique_ptr<rtp::ecs::Coordinator> _coordinator;
-
     Graphics::AssetManager _assetManager;
-
-    std::shared_ptr<rtp::ecs::System> _renderSystem;
-    std::shared_ptr<rtp::ecs::System> _inputSystem;
+    Systems::RenderSystem _renderSystem;
+    Systems::InputSystem _inputSystem;
 };
 }  // namespace Client::Core

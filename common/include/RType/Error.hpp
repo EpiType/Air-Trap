@@ -125,7 +125,10 @@ struct std::formatter<rtp::ErrorCode> : std::formatter<std::string_view> {
      * @param ctx The format context
      * @return Iterator to the end of the formatted output
      */
-    auto format(rtp::ErrorCode e, std::format_context &ctx) const;
+    auto format(rtp::ErrorCode e, std::format_context &ctx) const
+    {
+        return std::formatter<std::string_view>::format(rtp::toString(e), ctx);
+    }
 };
 
 namespace rtp {
@@ -260,7 +263,13 @@ struct std::formatter<rtp::Error> : std::formatter<std::string> {
      * @param ctx The format context
      * @return Iterator to the end of the formatted output
      */
-    auto format(const rtp::Error &e, format_context &ctx) const;
+    inline auto format(const rtp::Error &e, format_context &ctx) const
+    {
+        return std::format_to(ctx.out(), "[{}] {}: {}",
+                              e.severity(),
+                              rtp::toString(e.code()),
+                              e.message());
+    }
 };
 
     #include "Error.inl" /* Inline/Constexpr implementations */
