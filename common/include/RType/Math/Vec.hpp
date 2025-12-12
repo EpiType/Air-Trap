@@ -1,8 +1,6 @@
 /*
 ** EPITECH PROJECT, 2025
-** R-Type
-** File description:
-** LogLevel.inl
+** 
 */
 
 /*
@@ -31,30 +29,30 @@
 */
 
 /**
- * @file LogLevel.inl
- * @brief Inline implementations for LogLevel.hpp
+ * @file Vec.hpp
+ * @brief Smart alias that selects the optimized struct based on N.
+ * @author Robin Toillon
  */
 
-namespace rtp::log
+#ifndef RTYPE_VECTOR_HPP_
+    #define RTYPE_VECTOR_HPP_
+
+    #include "RType/Math/Vec2.hpp"
+    #include "RType/Math/Vec3.hpp"
+    #include "RType/Math/Vec4.hpp"
+    #include "RType/Math/details/VecN.hpp"
+    #include <type_traits>
+
+namespace rtp
 {
-    constexpr std::string_view toString(Level level) noexcept
-    {
-        switch (level) {
-            using enum Level;
-            case Level::Debug:
-                return "Debug";
-            case Level::Info:
-                return "Info";
-            case Level::Warning:
-                return "Warning";
-            case Level::Error:
-                return "Error";
-            case Level::Fatal:
-                return "Fatal";
-            case Level::None:
-                return "None";
-            default:
-                std::unreachable();
-        }
-    }
+    /**
+     * @brief Smart alias that selects the optimized struct based on N.
+     */
+    template <Numeric T, std::size_t N>
+    using Vec = std::conditional_t<N == 2, Vec2<T>,
+                std::conditional_t<N == 3, Vec3<T>,
+                std::conditional_t<N == 4, Vec4<T>,
+                details::VecN<T, N>>>>;
 }
+
+#endif /* !RTYPE_VECTOR_HPP_ */

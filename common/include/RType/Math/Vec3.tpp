@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2025
 ** R-Type
 ** File description:
-** LogLevel.inl
+** Vec3.tpp, Vector of 3 class implementation
 */
 
 /*
@@ -31,30 +31,38 @@
 */
 
 /**
- * @file LogLevel.inl
- * @brief Inline implementations for LogLevel.hpp
+ * @file Vec3.tpp
+ * @brief Implementation of the 3-dimensional vector class.
+ * @author Robin Toillon
  */
 
-namespace rtp::log
+namespace rtp
 {
-    constexpr std::string_view toString(Level level) noexcept
+    template<Numeric T>
+    constexpr Vec3<T>::Vec3(T x_, T y_, T z_) noexcept : x{x_}, y{y_}, z{z_}
     {
-        switch (level) {
-            using enum Level;
-            case Level::Debug:
-                return "Debug";
-            case Level::Info:
-                return "Info";
-            case Level::Warning:
-                return "Warning";
-            case Level::Error:
-                return "Error";
-            case Level::Fatal:
-                return "Fatal";
-            case Level::None:
-                return "None";
-            default:
-                std::unreachable();
-        }
+    }
+
+    template <Numeric T>
+    constexpr auto &Vec3<T>::operator[](this auto &self,
+                                        std::size_t index) noexcept
+    {
+        if (index == 0)
+            return self.x;
+        if (index == 1)
+            return self.y;
+        if (index == 2)
+            return self.z;
+        RTP_ASSERT(false, "Vec3: Index {} out of bounds", index);
+        std::unreachable();
+    }
+
+    template <Numeric T>
+    constexpr auto Vec3<T>::cross(const Vec3 &other) const noexcept
+        -> Vec3
+    {
+        return Vec3{y * other.z - z * other.y,
+                    z * other.x - x * other.z,
+                    x * other.y - y * other.x};
     }
 }

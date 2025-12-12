@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2025
 ** R-Type
 ** File description:
-** LogLevel.inl
+** Vec2.hpp, Vector of 2 class implementation
 */
 
 /*
@@ -31,30 +31,25 @@
 */
 
 /**
- * @file LogLevel.inl
- * @brief Inline implementations for LogLevel.hpp
+ * @file Vec2.tpp
+ * @brief Implementation of the 2-dimensional vector class.
+ * @author Robin Toillon
  */
 
-namespace rtp::log
+namespace rtp
 {
-    constexpr std::string_view toString(Level level) noexcept
+    template <Numeric T>
+    constexpr Vec2<T>::Vec2(T x_, T y_) noexcept : x{x_}, y{y_} {}
+
+    template <Numeric T>
+    constexpr auto &Vec2<T>::operator[](this auto &self,
+                                        std::size_t index) noexcept
     {
-        switch (level) {
-            using enum Level;
-            case Level::Debug:
-                return "Debug";
-            case Level::Info:
-                return "Info";
-            case Level::Warning:
-                return "Warning";
-            case Level::Error:
-                return "Error";
-            case Level::Fatal:
-                return "Fatal";
-            case Level::None:
-                return "None";
-            default:
-                std::unreachable();
-        }
+        if (index == 0)
+            return self.x;
+        if (index == 1)
+            return self.y;
+        RTP_ASSERT(false, "Vec2: Index {} out of bounds", index);
+        std::unreachable();
     }
 }

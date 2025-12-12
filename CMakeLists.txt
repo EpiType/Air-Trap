@@ -1,5 +1,12 @@
+##
+## EPITECH PROJECT, 2025
+## R-Type
+## File description:
+## CMakeLists.txt, Root CMake configuration
+##
+
 cmake_minimum_required(VERSION 3.20)
-project(AirTrap VERSION 1.0.0 LANGUAGES CXX)
+project(RType VERSION 1.0.0 LANGUAGES CXX)
 
 # --- GLOBAL CONFIGURATION ---
 set(CMAKE_CXX_STANDARD 23)
