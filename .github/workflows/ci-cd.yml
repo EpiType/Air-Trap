@@ -391,7 +391,8 @@ jobs:
           -DCMAKE_C_COMPILER=gcc-14 \
           -DCMAKE_CXX_STANDARD=23 \
           -DCMAKE_INSTALL_PREFIX=/usr/local \
-          -DBUILD_SHARED_LIBS=ON
+          -DBUILD_SHARED_LIBS=ON \
+          -DSFML_USE_SYSTEM_DEPS=ON
         cmake --build . --config Release -j$(sysctl -n hw.ncpu)
         sudo cmake --install .
 
