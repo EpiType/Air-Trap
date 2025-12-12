@@ -5,6 +5,47 @@ set -e
 
 # Parse arguments
 case "${1:-}" in
+    test)
+        echo "Running tests..."
+        if [ ! -d build ]; then
+            echo "❌ Build directory not found. Run './build.sh' first."
+            exit 1
+        fi
+        cd build
+        ./bin/test_logger
+        echo "✅ Tests complete!"
+        exit 0
+        ;;
+    coverage)
+        echo "Running tests with coverage..."
+        if [ ! -d build ]; then
+            echo "❌ Build directory not found. Building with coverage..."
+            ./scripts/build.sh clean
+        fi
+        
+        # Build with coverage
+        mkdir -p build
+        cd build
+        conan install .. --build=missing -s build_type=Debug
+        cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DENABLE_COVERAGE=ON
+        cmake --build . -j$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
+        
+        # Run tests
+        ./bin/test_logger
+        
+        # Generate coverage report
+        if command -v gcovr &> /dev/null; then
+            echo ""
+            echo "📊 Coverage Report:"
+            gcovr --root .. --filter '../common/src/.*' --print-summary
+            gcovr --root .. --filter '../common/src/.*' --xml coverage.xml
+            echo "✅ Coverage report generated: build/coverage.xml"
+        else
+            echo "⚠ gcovr not installed. Install with: pip install gcovr"
+        fi
+        cd ..
+        exit 0
+        ;;
     clean)
         echo "Cleaning build artifacts..."
         rm -rf build/
@@ -18,6 +59,18 @@ case "${1:-}" in
         fi
         rm -f r-type_client r-type_server
         echo "✅ Full clean complete!"
+        exit 0
+        ;;
+    help|--help|-h)
+        echo "Usage: ./scripts/build.sh [COMMAND]"
+        echo ""
+        echo "Commands:"
+        echo "  (none)    Build the project in Release mode"
+        echo "  test      Run unit tests"
+        echo "  coverage  Build with coverage and run tests with coverage report"
+        echo "  clean     Remove build directory"
+        echo "  fclean    Remove build directory and binaries"
+        echo "  help      Show this help message"
         exit 0
         ;;
 esac
@@ -68,3 +121,6 @@ echo ""
 echo "✅ Build complete!"
 echo "Server: ./r-type_server"
 echo "Client: ./r-type_client"
+echo ""
+echo "💡 Run tests with: ./scripts/build.sh test"
+echo "💡 Run coverage with: ./scripts/build.sh coverage"
