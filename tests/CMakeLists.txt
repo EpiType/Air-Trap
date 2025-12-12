@@ -32,5 +32,5 @@ target_link_libraries(test_ecs
 )
 
 include(GoogleTest)
-gtest_discover_tests(test_network)
-gtest_discover_tests(test_ecs)
+gtest_discover_tests(test_network DISCOVERY_MODE PRE_BUILD)
+gtest_discover_tests(test_ecs DISCOVERY_MODE PRE_BUILD)
