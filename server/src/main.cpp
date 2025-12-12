@@ -8,7 +8,6 @@
 #include "RType/ECS/Registry.hpp"
 
 int main(void) {
-    RType::ECS::Registry registry;
-
+    // RType::ECS::Registry registry;
     return 0;
 }

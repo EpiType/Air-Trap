@@ -37,7 +37,7 @@ class Application {
     sf::RenderWindow _window;
 
     Graphics::AssetManager _assetManager;
-    Systems::RenderSystem _renderSystem;
-    Systems::InputSystem _inputSystem;
+    // Systems::RenderSystem _renderSystem;
+    // Systems::InputSystem _inputSystem;
 };
 }  // namespace Client::Core
