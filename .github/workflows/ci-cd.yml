@@ -274,8 +274,8 @@ jobs:
       with:
         name: air-trap-linux
         path: |
-          build/r-type_server
-          build/r-type_client
+          build/bin/r-type_server
+          build/bin/r-type_client
 
   # Job 4: Build on Windows
   build-windows:
@@ -332,8 +332,8 @@ jobs:
       with:
         name: air-trap-windows
         path: |
-          build/Release/r-type_server.exe
-          build/Release/r-type_client.exe
+          build/bin/Release/r-type_server.exe
+          build/bin/Release/r-type_client.exe
 
   # Job 5: Build on macOS
   build-macos:
@@ -390,8 +390,8 @@ jobs:
       with:
         name: air-trap-macos
         path: |
-          build/r-type_server
-          build/r-type_client
+          build/bin/r-type_server
+          build/bin/r-type_client
 
   # Job 6: Unit Tests (Optional - requires test implementation)
   tests:
