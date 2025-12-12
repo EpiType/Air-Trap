@@ -316,13 +316,31 @@ jobs:
       run: |
         cmake --build build --config Release
 
+    - name: Copy SFML DLLs to executables
+      run: |
+        # Find and copy all SFML DLLs from Conan cache to executable directories
+        $conanPath = "$env:USERPROFILE\.conan2"
+        $dllFiles = Get-ChildItem -Path $conanPath -Filter "*.dll" -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.Directory.Name -eq "bin" }
+        
+        foreach ($dll in $dllFiles) {
+          Write-Host "Copying $($dll.Name)..."
+          Copy-Item -Path $dll.FullName -Destination "build\client\Release\" -Force -ErrorAction SilentlyContinue
+          Copy-Item -Path $dll.FullName -Destination "build\server\Release\" -Force -ErrorAction SilentlyContinue
+        }
+        
+        Write-Host "`nDLLs in client/Release:"
+        Get-ChildItem "build\client\Release\*.dll" | ForEach-Object { Write-Host "  - $($_.Name)" }
+      shell: pwsh
+
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: air-trap-windows
         path: |
           build/client/Release/r-type_client.exe
+          build/client/Release/*.dll
           build/server/Release/r-type_server.exe
+          build/server/Release/*.dll
 
   # Job 5: Build on macOS
   build-macos:
