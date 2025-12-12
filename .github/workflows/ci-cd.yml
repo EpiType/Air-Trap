@@ -201,10 +201,13 @@ jobs:
   build-linux:
     name: Build on Linux
     runs-on: ubuntu-latest
-    # needs: [paths-filter, style-check]
+    needs: [paths-filter, style-check]
     # Run on push to dev or main branches, and only if source files changed
     if: |
-      github.repository == 'EpiType/Air-Trap'
+      github.repository == 'EpiType/Air-Trap' && 
+      (github.ref_name == 'dev' || github.ref_name == 'main') && 
+      github.event_name == 'push' &&
+      needs.paths-filter.outputs.src == 'true'
     
     steps:
     - name: Checkout code
@@ -278,8 +281,12 @@ jobs:
   build-windows:
     name: Build on Windows
     runs-on: windows-latest
+    needs: [paths-filter, style-check]
     if: |
-      github.repository == 'EpiType/Air-Trap'
+      github.repository == 'EpiType/Air-Trap' &&
+      github.event_name == 'pull_request' && 
+      github.base_ref == 'main' &&
+      needs.paths-filter.outputs.src == 'true'
     
     steps:
     - name: Checkout code
@@ -384,7 +391,7 @@ jobs:
         tools.system.package_manager:mode=install
         EOF
         echo "GCC 14 profile created:"
-        conan profile show gcc14
+        cat ~/.conan2/profiles/gcc14
 
     - name: Cache Conan packages
       uses: actions/cache@v3
