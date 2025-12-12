@@ -43,10 +43,15 @@ if [ -f "$GIT_HOOKS_DIR/commit-msg" ]; then
     echo "📝 commit-msg :"
     echo "   Valide que le message respecte : [TYPE] description"
 fi
-if [ -f "$GIT_HOOKS_DIR/pre-push" ]; then
-    echo "🏗️  pre-push   :"
-    echo "   Compile le projet dans un dossier temporaire avant d'envoyer."
-    echo "   Si la compilation échoue, le push est annulé."
+if [ -f "$GIT_HOOKS_DIR/pre-commit" ]; then
+    echo "🏗️  pre-commit :"
+    echo "   Compile le projet avant chaque commit."
+    echo "   Si la compilation échoue, le commit est bloqué."
+fi
+if [ -f "$GIT_HOOKS_DIR/pre-push" ] && [ -x "$GIT_HOOKS_DIR/pre-push" ]; then
+    echo "🚀 pre-push   :"
+    echo "   Compile le projet avant de push vers 'dev'."
+    echo "   (Actuellement désactivé au profit de pre-commit)"
 fi
 echo "---------------------------------------------------"
 echo ""
