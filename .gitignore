@@ -41,6 +41,7 @@ deactivate_*.sh
 cmakedeps_macros.cmake
 *Targets.cmake
 *-release-*.cmake
+*-debug-*.cmake
 *-Target-*.cmake
 *Config.cmake
 *ConfigVersion.cmake
@@ -48,6 +49,7 @@ cmakedeps_macros.cmake
 *-config*.cmake
 Find*.cmake
 !FindDependencies.cmake
+module-*.cmake
 
 # VS/Visual Studio
 .vs/
@@ -95,6 +97,7 @@ vcpkg_installed/
 
 # Coverage and profiling
 coverage/
+coverage.xml
 *.gcda
 *.gcno
 *.gcov
