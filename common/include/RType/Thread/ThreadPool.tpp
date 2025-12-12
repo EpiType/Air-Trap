@@ -69,15 +69,8 @@ namespace rtp::thread
                     return std::unexpected{
                         Error::failure(ErrorCode::InternalRuntimeError,
                                        "enqueue on stopped ThreadPool")};
-#if defined(__APPLE__) && __cplusplus == 202002L
-                // C++20: std::function requires copyable wrapper
                 this->_tasks.emplace([task = std::move(task)](void) mutable
                                     { task(); });
-#else
-                // C++23: std::move_only_function supports move-only lambda
-                this->_tasks.emplace([task = std::move(task)](void) mutable
-                                    { task(); });
-#endif
             }
             this->_condition.notify_one();
 
