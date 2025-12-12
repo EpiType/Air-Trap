@@ -1,10 +1,36 @@
 #!/bin/bash
 # Git hook pour vérifier la compilation avant le push
-# Empêche le push si le projet ne compile pas
+# Empêche le push sur 'dev' si le projet ne compile pas
 
+# ---------------------------------------------------------
+# 1. Vérification de la branche cible
+# ---------------------------------------------------------
+
+PROTECTED_BRANCH="refs/heads/dev" # La branche qu'on veut protéger
+SHOULD_CHECK=0
+
+# Lecture des informations de push depuis l'entrée standard (stdin)
+# Format: <local_ref> <local_sha> <remote_ref> <remote_sha>
+while read local_ref local_sha remote_ref remote_sha
+do
+    if [[ "$remote_ref" == "$PROTECTED_BRANCH" ]]; then
+        SHOULD_CHECK=1
+    fi
+done
+
+if [ $SHOULD_CHECK -eq 0 ]; then
+    echo "🕊️  [PRE-PUSH] Branche non protégée. Push autorisé sans vérification."
+    exit 0
+fi
+
+# ---------------------------------------------------------
+# 2. Logique de compilation (Exécutée seulement pour dev)
+# ---------------------------------------------------------
+
+echo "🛑 [PRE-PUSH] Push vers 'dev' détecté !"
 echo "🏗️  [PRE-PUSH] Démarrage de la vérification de compilation..."
 
-# Définition d'un dossier de build temporaire pour ne pas toucher à votre dossier de travail
+# Définition d'un dossier de build temporaire
 BUILD_DIR="build_check_pre_push"
 
 # Nettoyage d'une éventuelle exécution précédente interrompue
@@ -15,22 +41,35 @@ fi
 mkdir "$BUILD_DIR"
 cd "$BUILD_DIR" || exit 1
 
-# Détection du nombre de cœurs pour la compilation parallèle
+# Détection du nombre de cœurs
 if [[ "$OSTYPE" == "darwin"* ]]; then
     CORES=$(sysctl -n hw.ncpu) # Mac
+elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "win32" ]]; then
+    CORES=${NUMBER_OF_PROCESSORS:-1} # Windows
 else
     CORES=$(nproc) # Linux
 fi
 
-echo "⚙️  [PRE-PUSH] Configuration CMake..."
+echo "⚙️  [PRE-PUSH] Installation des dépendances Conan..."
 
-# On redirige la sortie vers un log pour ne pas polluer le terminal sauf en cas d'erreur
 LOG_FILE="../pre_push_build.log"
 
-# Exécution de CMake (On assume que Conan est déjà géré ou que le CMake est autonome)
-# Si vous utilisez Conan, décommentez la ligne suivante :
-# conan install .. --build=missing -s build_type=Release > "$LOG_FILE" 2>&1 && \
-cmake .. -DCMAKE_BUILD_TYPE=Release > "$LOG_FILE" 2>&1
+# Installation Conan
+conan install .. --output-folder=. --build=missing -s build_type=Release > "$LOG_FILE" 2>&1
+
+if [ $? -ne 0 ]; then
+    echo "❌ [PRE-PUSH] Échec de l'installation Conan !"
+    echo "📜 Voir le log ci-dessous :"
+    cat "$LOG_FILE"
+    cd ..
+    rm -rf "$BUILD_DIR"
+    rm -f "$LOG_FILE"
+    exit 1
+fi
+
+echo "⚙️  [PRE-PUSH] Configuration CMake..."
+
+cmake .. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc-14 -DCMAKE_CXX_COMPILER=g++-14 >> "$LOG_FILE" 2>&1
 
 if [ $? -ne 0 ]; then
     echo "❌ [PRE-PUSH] Échec de la configuration CMake !"
@@ -49,7 +88,6 @@ cmake --build . -- -j"$CORES" >> "$LOG_FILE" 2>&1
 if [ $? -ne 0 ]; then
     echo "❌ [PRE-PUSH] Échec de la compilation !"
     echo "📜 Voir les erreurs ci-dessous :"
-    # On affiche les 20 dernières lignes du log pour voir l'erreur
     tail -n 20 "$LOG_FILE"
     cd ..
     rm -rf "$BUILD_DIR"
@@ -57,10 +95,9 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Nettoyage
 cd ..
 rm -rf "$BUILD_DIR"
 rm -f "$LOG_FILE"
 
-echo "✅ [PRE-PUSH] Compilation réussie. Push autorisé."
+echo "✅ [PRE-PUSH] Compilation réussie. Push vers 'dev' autorisé."
 exit 0
