@@ -15,8 +15,7 @@ target_include_directories(r-type_server PRIVATE
 )
 
 target_link_libraries(r-type_server PRIVATE
-    air-trap-common
-    asio::asio
+    RTypeCommon
 )
 
 if(WIN32)

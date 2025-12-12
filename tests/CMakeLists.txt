@@ -18,7 +18,7 @@ add_executable(test_network network/test_protocol.cpp)
 
 target_link_libraries(test_network 
     PRIVATE 
-        air-trap-common
+        RTypeCommon
         asio::asio
         gtest::gtest 
 )
@@ -27,7 +27,7 @@ add_executable(test_ecs ecs/test_registry.cpp)
 
 target_link_libraries(test_ecs 
     PRIVATE 
-        air-trap-common
+        RTypeCommon
         gtest::gtest
 )
 
