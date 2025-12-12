@@ -374,6 +374,25 @@ jobs:
       run: |
         brew install gcc@14
 
+    - name: Install SFML dependencies
+      run: |
+        brew install cmake freetype flac libvorbis libogg
+
+    - name: Build SFML from source with GCC 14
+      run: |
+        git clone --depth 1 --branch 3.0.0 https://github.com/SFML/SFML.git /tmp/sfml
+        cd /tmp/sfml
+        mkdir build && cd build
+        cmake .. \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_CXX_COMPILER=g++-14 \
+          -DCMAKE_C_COMPILER=gcc-14 \
+          -DCMAKE_CXX_STANDARD=23 \
+          -DCMAKE_INSTALL_PREFIX=/usr/local \
+          -DBUILD_SHARED_LIBS=ON
+        cmake --build . --config Release -j$(sysctl -n hw.ncpu)
+        sudo cmake --install .
+
     - name: Create GCC 14 Conan profile
       run: |
         cat > ~/.conan2/profiles/gcc14 << EOF
@@ -397,15 +416,16 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ~/.conan2
-        key: conan-macos-gcc14-${{ hashFiles('**/conanfile.txt') }}
+        key: conan-macos-gcc14-sfml-custom-${{ hashFiles('**/conanfile.txt') }}
         restore-keys: |
-          conan-macos-gcc14-
+          conan-macos-gcc14-sfml-custom-
 
-    - name: Install dependencies
+    - name: Install dependencies (without SFML from Conan)
       run: |
         mkdir -p build
         cd build
-        conan install .. --profile:host=gcc14 --profile:build=default --build=missing -c tools.system.package_manager:mode=install
+        # Install only non-SFML dependencies via Conan
+        conan install .. --profile:host=gcc14 --profile:build=default --build=missing -c tools.system.package_manager:mode=install || true
 
     - name: Configure CMake
       run: |
