@@ -82,7 +82,7 @@ namespace rtp::ecs
         if (!result.has_value()) [[unlikely]]
             return std::unexpected{result.error()};
 
-        return result->emplace(entity, std::forward<Args>(args)...);
+        return result.value()->emplace(entity, std::forward<Args>(args)...);
     }
 
     template <Component T, typename Self>
@@ -97,7 +97,7 @@ namespace rtp::ecs
             return std::span<ComponentType>{};
         }
 
-        return std::span<ComponentType>(result->getData());
+        return std::span<ComponentType>(result.value()->getData());
     }
 
     template <Component... Ts, typename Self>
@@ -117,7 +117,7 @@ namespace rtp::ecs
         }
 
         auto entitySpan =
-            std::span<const Entity>(entityResult.value().getEntities());
+            std::span<const Entity>(entityResult.value()->getEntities());
 
         auto componentSpans = std::make_tuple(self.template view<Ts>()...);
 
