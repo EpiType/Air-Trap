@@ -113,6 +113,26 @@ namespace rtp::net
     };
 
     /**
+     * @struct EntityDeathPayload
+     * @brief Entity death notification data
+     */
+    struct EntityDeathPayload {
+        uint32_t netId;         /**< Network entity identifier */
+        uint8_t type;           /**< Entity type */
+        Vec2f position;         /**< Death position */
+    };
+
+    /**
+     * @using BufferSequence
+     * @brief Buffer sequence for efficient multi-part network transmission
+     * 
+     * Represents a sequence of constant buffers (header and body) that can be
+     * sent atomically to avoid multiple system calls. Allows ASIO to gather
+     * and send packet header and body in a single operation.
+     */
+    using BufferSequence = std::array<asio::const_buffer, 2>;
+
+    /**
      * @struct InputPayload
      * @brief Client input state data
      */
@@ -154,7 +174,25 @@ namespace rtp::net
              * @brief Get buffer sequence for network transmission
              * @return Buffer sequence containing header and body
              */
-            auto getBufferSequence(void) const;
+            BufferSequence getBufferSequence(void) const;
+
+            /**
+             * @brief Converts a primitive type (integer, float) from machine endianness to Big-Endian (network).
+             * @note Uses std::byteswap for endianness conversion if necessary.
+             * @param value The value to convert.
+             * @return The value in network endianness format.
+             */
+            template <typename T>
+            static inline T to_network(T value);
+
+            /**
+             * @brief Converts a primitive type (integer, float) from Big-Endian (network) to machine endianness.
+             * @note Uses std::byteswap for endianness conversion if necessary.
+             * @param value The value to convert.
+             * @return The value in machine endianness format.
+             */
+            template <typename T>
+            static inline T from_network(T value);
 
             /**
              * @brief Serialize data into packet body
@@ -162,7 +200,7 @@ namespace rtp::net
              * @param data Data to serialize
              * @return Reference to this packet for chaining
              */
-            template <rtp::ecs::Serializable T>
+            template <typename T>
             auto operator<<(T data) -> Packet &;
 
             /**
@@ -171,7 +209,7 @@ namespace rtp::net
              * @param vec Vector to serialize
              * @return Reference to this packet for chaining
              */
-            template <rtp::ecs::Serializable T>
+            template <typename T>
             auto operator<<(const std::vector<T> &vec) -> Packet &;
             
             /**
@@ -187,7 +225,7 @@ namespace rtp::net
              * @param data Reference to store deserialized data
              * @return Reference to this packet for chaining
              */
-            template <rtp::ecs::Serializable T>
+            template <typename T>
             auto operator>>(T &data) -> Packet &;
 
             /**
@@ -196,7 +234,7 @@ namespace rtp::net
              * @param vec Reference to store deserialized vector
              * @return Reference to this packet for chaining
              */
-            template <rtp::ecs::Serializable T>
+            template <typename T>
             auto operator>>(std::vector<T> &vec) -> Packet &;
 
             /**

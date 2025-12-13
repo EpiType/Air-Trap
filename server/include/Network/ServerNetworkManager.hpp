@@ -1,12 +1,12 @@
 /**
- * File   : NetworkManager.hpp
+ * File   : ServerNetworkManager.hpp
  * License: MIT
  * Author : Elias Josué HAJJAR LLAUQUEN <elias-josue.hajjar-llauquen@epitech.eu>
  * Date   : 11/12/2025
  */
 
-#ifndef RTYPE_NETWORK_NetworkManager_HPP_
-    #define RTYPE_NETWORK_NetworkManager_HPP_
+#ifndef RTYPE_NETWORK_ServerNetworkManager_HPP_
+    #define RTYPE_NETWORK_ServerNetworkManager_HPP_
 
     #include "RType/Network/INetwork.hpp"
     #include "RType/Network/Core/Session.hpp"
@@ -26,17 +26,17 @@
 namespace rtp::net {
 
     /**
-     * @class NetworkManager
+     * @class ServerNetworkManager
      * @brief ASIO-based implementation of the INetwork interface.
      * 
      * This class provides network functionalities using ASIO for TCP and UDP
      * communication. It manages sessions, handles incoming connections and
      * packets, and provides methods for sending and broadcasting packets.
      */
-    class NetworkManager : public INetwork {
+    class ServerNetworkManager : public INetwork {
         public:
-            NetworkManager();
-            ~NetworkManager() override;
+            ServerNetworkManager();
+            ~ServerNetworkManager() override;
 
             void start(uint16_t port) override;
             void stop(void) override;
@@ -92,4 +92,4 @@ namespace rtp::net {
     };
 } // namespace rtp::net
 
-#endif /* !RTYPE_NETWORK_NetworkManager_HPP_ */
+#endif /* !RTYPE_NETWORK_ServerServerNetworkManager_HPP_ */

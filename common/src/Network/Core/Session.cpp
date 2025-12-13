@@ -6,9 +6,10 @@
  */
 
 #include "RType/Network/Core/Session.hpp"
-#include "RType/Network/NetworkManager.hpp"
 #include "RType/Logger.hpp"
 #include "RType/Network/Packet.hpp"
+#include "RType/Network/INetwork.hpp"
+#include "RType/Network/IEventPublisher.hpp"
 
 namespace rtp::net
 {
@@ -17,8 +18,8 @@ namespace rtp::net
     ///////////////////////////////////////////////////////////////////////////
 
     Session::Session(asio::ip::tcp::socket socket,
-                     NetworkManager &manager)
-        : _socket(std::move(socket)), _manager(manager), _timer(_socket.get_executor())
+                     IEventPublisher &publisher)
+        : _socket(std::move(socket)), _publisher(publisher), _timer(_socket.get_executor())
     {
         log::info("Session created with remote endpoint: {}",
                   this->_socket.remote_endpoint().address().to_string());
@@ -221,7 +222,7 @@ namespace rtp::net
                 rtp::net::NetworkEvent event;
                 event.sessionId = self->_id;
                 event.packet = std::move(recivedPacket);
-                self->_manager.publishEvent(std::move(event));
+                self->_publisher.publishEvent(std::move(event));
 
                 self->resetTimer();
             }
