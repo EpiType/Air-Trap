@@ -80,7 +80,7 @@ namespace rtp::net {
              * @param event Reference to store the polled network event
              * @return True if an event was polled, false otherwise
              */
-            virtual bool pollEvent(NetworkEvent &event) = 0;
+            virtual std::optional<NetworkEvent> pollEvent(void) = 0;
     };
 }
 

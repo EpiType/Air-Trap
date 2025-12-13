@@ -14,6 +14,8 @@
     #include <deque>
     #include <mutex>
     #include "RType/Network/Packet.hpp"
+    #include <asio/read.hpp>
+    #include <asio/write.hpp>
 
 /**
  * @namespace rtp::net
@@ -91,6 +93,11 @@ namespace rtp::net
              * @return UDP endpoint
              */
             asio::ip::udp::endpoint getUdpEndpoint() const;
+
+            /**
+             * @brief Check if the session has a valid UDP endpoint
+             * @return true if UDP endpoint is set, false otherwise
+             */
             bool hasUdp() const;
 
             //////////////////////////////////////////////////
@@ -162,6 +169,12 @@ namespace rtp::net
              * @return Current session ID
              */
             uint32_t getId() const;
+
+            /**
+             * @brief Reset the session timer
+             * @note Used for managing timeouts
+             */
+            void resetTimer(void);
 
         private:
             /**
