@@ -14,6 +14,8 @@
     #include <deque>
     #include <mutex>
     #include "RType/Network/Packet.hpp"
+    #include "RType/Network/INetwork.hpp"
+    #include "RType/Network/IEventPublisher.hpp"
     #include <asio/read.hpp>
     #include <asio/write.hpp>
 
@@ -23,8 +25,7 @@
  */
 namespace rtp::net
 {
-
-    class NetworkManager;
+    class IEventPublisher; /**< Forward declaration of IEventPublisher */
 
     /**
      * @enum PlayerState
@@ -49,7 +50,7 @@ namespace rtp::net
             * @param socket UDP socket for the session
             * @param manager Reference to the NetworkManager managing this session
             */
-            Session(asio::ip::tcp::socket _socket, NetworkManager &manager);
+            Session(asio::ip::tcp::socket _socket, IEventPublisher &publisher);
             
             /**
             * @brief Destructor for Session
@@ -193,7 +194,7 @@ namespace rtp::net
             /* === Network Core === */
             uint32_t _id = 0;                        /**< Unique session identifier */
             bool _stopped = false;                   /**< Indicates if the session is stopped */
-            NetworkManager& _manager;                /**< Reference to the network manager */
+            IEventPublisher& _publisher;             /**< Reference to the event publisher */
             asio::ip::tcp::socket _socket;           /**< TCP socket for the session */
             asio::ip::udp::endpoint _udpEndpoint;    /**< UDP endpoint for the session */
 
