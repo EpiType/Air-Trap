@@ -15,7 +15,7 @@
     #define RTYPE_NETWORK_PACKET_HPP_
 
     #include "RType/ECS/ComponentConcept.hpp"
-    #include "RType/Math/vec2f.hpp"
+    #include "RType/Math/Vec2.hpp"
 
     #include <bit>
     #include <cstdint>
@@ -26,6 +26,8 @@
     #include <string_view>
     #include <utility>
     #include <vector>
+    #include <asio/buffer.hpp>
+    #include <array>
 
 /**
  * @namespace rtp::net
@@ -55,13 +57,23 @@ namespace rtp::net
         Welcome = 0x02,        /**< Server welcome response */
         Disconnect = 0x03,     /**< Disconnect notification */
 
+        ListRooms = 0x04,     /**< Request for room list */
+        RoomList = 0x05,      /**< Response with room list */
+        CreateRoom = 0x06,    /**< Request to create a room */
+        JoinRoom = 0x07,      /**< Request to join a room */
+        LeaveRoom = 0x08,     /**< Request to leave a room */
+        RoomUpdate = 0x09,   /**< Notification of room update */
+        SetReady = 0x0A,      /**< Set player readiness status */
+
         // Gameplay (C -> S)
         InputTick = 0x10,      /**< Client input state */
 
         // Game State (S -> C)
         EntitySnapshot = 0x20, /**< Entity state snapshot */
         EntitySpawn = 0x21,    /**< Entity spawn notification */
-        EntityDeath = 0x22     /**< Entity death notification */
+        EntityDeath = 0x22,     /**< Entity death notification */
+
+        StartGame = 0x30      /**< Notification to start the game */
     };
 
     #pragma pack(push, 1)

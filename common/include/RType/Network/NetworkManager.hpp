@@ -12,6 +12,7 @@
     #include "RType/Network/Core/Session.hpp"
 
     #include <asio.hpp>
+    #include <asio/write.hpp>
     #include <memory>
     #include <unordered_map>
     #include <thread>
@@ -43,7 +44,7 @@ namespace rtp::net {
             void sendPacket(uint32_t sessionId, const Packet &packet, NetworkMode mode) override;
             void broadcastPacket(const Packet &packet, NetworkMode mode) override;
 
-            bool pollEvent(NetworkEvent &event) override;
+            std::optional<NetworkEvent> pollEvent(void) override;
 
             /**
              * @brief Publish a network event to the event queue

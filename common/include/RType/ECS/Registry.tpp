@@ -61,6 +61,7 @@ namespace rtp::ecs
     auto Registry::getComponents(this Self &self)
         -> std::expected<ConstLikeRef<Self, SparseArray<T>>, rtp::Error>
     {
+        std::lock_guard lock(self._mutex);
         std::type_index type = typeid(T);
 
         if (!self._arrays.contains(type)) [[unlikely]]
@@ -88,6 +89,7 @@ namespace rtp::ecs
     template <Component T, typename Self>
     auto Registry::view(this Self &self) -> std::span<ConstLike<Self, T>>
     {
+        std::lock_guard lock(self._mutex);
         auto result = self.template getComponents<T>();
 
         using ComponentType = ConstLike<Self, T>;
@@ -103,6 +105,7 @@ namespace rtp::ecs
     template <Component... Ts, typename Self>
     auto Registry::zipView(this Self &self)
     {
+        std::lock_guard lock(self._mutex);
         using FirstComponentType = std::tuple_element_t<0, std::tuple<Ts...>>;
 
         auto entityResult = self.template getComponents<FirstComponentType>();
