@@ -37,6 +37,7 @@ set(SRC_ERROR
 
 set(SRC_ECS
     src/ECS/Registry.cpp
+    src/ECS/SystemManager.cpp
 )
 
 set(SRC_NETWORK
