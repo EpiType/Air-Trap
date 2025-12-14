@@ -13,7 +13,6 @@
 
 #include "Graphics/AssetManager.hpp"
 #include "Systems/InputSystem.hpp"
-#include "Systems/RenderSystem.hpp"
 
 namespace Client::Core {
 /**
@@ -37,7 +36,5 @@ class Application {
     sf::RenderWindow _window;
 
     Graphics::AssetManager _assetManager;
-    // Systems::RenderSystem _renderSystem;
-    // Systems::InputSystem _inputSystem;
 };
 }  // namespace Client::Core
