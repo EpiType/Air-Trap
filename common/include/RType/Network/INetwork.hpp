@@ -53,7 +53,7 @@ namespace rtp::net {
              * @brief Start the network on the specified port
              * @param port Port number to start the network on
              */
-            virtual void start(uint16_t port) = 0;
+            virtual void start(void) = 0;
 
             /**
              * @brief Stop the network
@@ -80,7 +80,7 @@ namespace rtp::net {
              * @param event Reference to store the polled network event
              * @return True if an event was polled, false otherwise
              */
-            virtual bool pollEvent(NetworkEvent &event) = 0;
+            virtual std::optional<NetworkEvent> pollEvent(void) = 0;
     };
 }
 

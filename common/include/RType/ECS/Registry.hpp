@@ -97,7 +97,7 @@ namespace rtp::ecs
      */
     class Registry {
         public:
-            ~Registry() noexcept;
+            ~Registry() noexcept = default;
 
             /**
              * @brief Create a new entity

@@ -39,6 +39,11 @@ set(SRC_ECS
     src/ECS/Registry.cpp
 )
 
+set(SRC_NETWORK
+    src/Network/Core/Session.cpp
+    src/Network/Packet.cpp
+)
+
 # USE OF GLOBAL RECURSE JUST TO COLLECT HEADERS FOR INSTALLATION PURPOSES
 file(GLOB_RECURSE PUBLIC_HEADERS "include/*.hpp")
 
@@ -50,6 +55,7 @@ add_library(RTypeCommon STATIC
     ${SRC_ECS}
     ${SRC_THREADPOOL}
     ${SRC_ERROR}
+    ${SRC_NETWORK}
 
     ${PUBLIC_HEADERS}
 )

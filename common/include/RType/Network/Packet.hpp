@@ -15,7 +15,7 @@
     #define RTYPE_NETWORK_PACKET_HPP_
 
     #include "RType/ECS/ComponentConcept.hpp"
-    #include "RType/Math/vec2f.hpp"
+    #include "RType/Math/Vec2.hpp"
 
     #include <bit>
     #include <cstdint>
@@ -26,6 +26,8 @@
     #include <string_view>
     #include <utility>
     #include <vector>
+    #include <asio/buffer.hpp>
+    #include <array>
 
 /**
  * @namespace rtp::net
@@ -33,6 +35,11 @@
  */
 namespace rtp::net
 {
+    /**
+     * @brief Native endianness of the machine
+     */
+    constexpr std::endian NATIVE_ENDIAN = std::endian::native;
+    
     /**
      * @brief Magic number for packet validation
      */
@@ -55,13 +62,23 @@ namespace rtp::net
         Welcome = 0x02,        /**< Server welcome response */
         Disconnect = 0x03,     /**< Disconnect notification */
 
+        ListRooms = 0x04,     /**< Request for room list */
+        RoomList = 0x05,      /**< Response with room list */
+        CreateRoom = 0x06,    /**< Request to create a room */
+        JoinRoom = 0x07,      /**< Request to join a room */
+        LeaveRoom = 0x08,     /**< Request to leave a room */
+        RoomUpdate = 0x09,   /**< Notification of room update */
+        SetReady = 0x0A,      /**< Set player readiness status */
+
         // Gameplay (C -> S)
         InputTick = 0x10,      /**< Client input state */
 
         // Game State (S -> C)
         EntitySnapshot = 0x20, /**< Entity state snapshot */
         EntitySpawn = 0x21,    /**< Entity spawn notification */
-        EntityDeath = 0x22     /**< Entity death notification */
+        EntityDeath = 0x22,     /**< Entity death notification */
+
+        StartGame = 0x30      /**< Notification to start the game */
     };
 
     #pragma pack(push, 1)
@@ -99,6 +116,26 @@ namespace rtp::net
         uint8_t type;           /**< Entity type */
         Vec2f position;         /**< Spawn position */
     };
+
+    /**
+     * @struct EntityDeathPayload
+     * @brief Entity death notification data
+     */
+    struct EntityDeathPayload {
+        uint32_t netId;         /**< Network entity identifier */
+        uint8_t type;           /**< Entity type */
+        Vec2f position;         /**< Death position */
+    };
+
+    /**
+     * @using BufferSequence
+     * @brief Buffer sequence for efficient multi-part network transmission
+     * 
+     * Represents a sequence of constant buffers (header and body) that can be
+     * sent atomically to avoid multiple system calls. Allows ASIO to gather
+     * and send packet header and body in a single operation.
+     */
+    using BufferSequence = std::array<asio::const_buffer, 2>;
 
     /**
      * @struct InputPayload
@@ -142,7 +179,32 @@ namespace rtp::net
              * @brief Get buffer sequence for network transmission
              * @return Buffer sequence containing header and body
              */
-            auto getBufferSequence(void) const;
+            BufferSequence getBufferSequence(void) const;
+
+            /**
+             * @brief Converts a primitive type (integer, float) from machine endianness to Big-Endian (network).
+             * @note Uses std::byteswap for endianness conversion if necessary.
+             * @param value The value to convert.
+             * @return The value in network endianness format.
+             */
+            template <typename T>
+            static inline T to_network(T value) {
+                if constexpr (sizeof(T) > 1 && NATIVE_ENDIAN == std::endian::little) {
+                    return std::byteswap(value); 
+                }
+                return value;
+            };
+
+            /**
+             * @brief Converts a primitive type (integer, float) from Big-Endian (network) to machine endianness.
+             * @note Uses std::byteswap for endianness conversion if necessary.
+             * @param value The value to convert.
+             * @return The value in machine endianness format.
+             */
+            template <typename T>
+            static inline T from_network(T value) {
+                return to_network(value);
+            };
 
             /**
              * @brief Serialize data into packet body
@@ -150,7 +212,7 @@ namespace rtp::net
              * @param data Data to serialize
              * @return Reference to this packet for chaining
              */
-            template <rtp::ecs::Serializable T>
+            template <typename T>
             auto operator<<(T data) -> Packet &;
 
             /**
@@ -159,7 +221,7 @@ namespace rtp::net
              * @param vec Vector to serialize
              * @return Reference to this packet for chaining
              */
-            template <rtp::ecs::Serializable T>
+            template <typename T>
             auto operator<<(const std::vector<T> &vec) -> Packet &;
             
             /**
@@ -175,7 +237,7 @@ namespace rtp::net
              * @param data Reference to store deserialized data
              * @return Reference to this packet for chaining
              */
-            template <rtp::ecs::Serializable T>
+            template <typename T>
             auto operator>>(T &data) -> Packet &;
 
             /**
@@ -184,7 +246,7 @@ namespace rtp::net
              * @param vec Reference to store deserialized vector
              * @return Reference to this packet for chaining
              */
-            template <rtp::ecs::Serializable T>
+            template <typename T>
             auto operator>>(std::vector<T> &vec) -> Packet &;
 
             /**
