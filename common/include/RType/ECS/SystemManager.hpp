@@ -44,64 +44,31 @@
 
     #include "RType/ECS/ISystem.hpp"
     #include "RType/ECS/Registry.hpp"
-    #include "RType/ECS/Signature.hpp"
     #include <memory>
     #include <unordered_map>
     #include <typeindex>
 
-
 namespace rtp::ecs
 {
-    /**
-     * @class SystemManager
-     * @brief Manages all systems in the ECS architecture
-     * @details The SystemManager is responsible for:
-     * - Registering system instances
-     * - Associating component signatures with systems
-     * - Coordinating system updates each frame
-     * - Managing system lifecycle
-     */
     class SystemManager {
-    public:
-        /**
-         * @brief Register a new system
-         * @tparam T The system type to register
-         * @note The system type must derive from ISystem
-         */
-        template <typename T>
-        void registerSystem(void);
+        public:
+            explicit SystemManager(Registry &registry);
 
-        /**
-         * @brief Get a registered system instance
-         * @tparam T The system type to retrieve
-         * @return Reference to the system instance
-         */
-        template <typename T>
-        auto getSystem(void) -> T &;
+            template <typename T, typename... Args>
+            T& addSystem(Args&&... args);
 
-        /**
-         * @brief Set the component signature for a system
-         * @tparam T The system type
-         * @param signature Bitset indicating which components the system
-         * requires
-         */
-        template <typename T>
-        void setSignature(Signature signature);
+            template <typename T>
+            T &getSystem(void);
+            
+            void update(float dt);
 
-        /**
-         * @brief Update all registered systems
-         * @param registry The entity registry
-         * @param dt Delta time since last update in seconds
-         */
-        void update(Registry &registry, float dt);
-
-    private:
-        Registry *_registry{nullptr};  /**< Pointer to the entity registry */
-
-        std::unordered_map<std::type_index,
-                           std::unique_ptr<ISystem>> _systems; /**< Registered systems */
-        std::unordered_map<std::type_index, Signature> _signatures; /**< System signatures */
+        private:
+            Registry &_registry;                            /**< Reference to the entity registry */
+            std::unordered_map<std::type_index,
+                std::unique_ptr<ISystem>> _systems;         /**< Registered systems */
     };
 }
 
-#endif /* !RTYPE_SYSTEMMANAGER_HPP_ */
+#include "SystemManager.tpp" // Si tu as du template code
+
+#endif
