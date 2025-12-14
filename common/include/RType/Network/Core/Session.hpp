@@ -209,7 +209,6 @@ namespace rtp::net
             mutable std::mutex _stateMutex;          /**< Mutex for thread-safe state access */
             std::string _username = "Unknown";       /**< Player username */
             PlayerState _state = PlayerState::None;  /**< Current state of the player */
-
     };
 } // namespace rtp::net
 
