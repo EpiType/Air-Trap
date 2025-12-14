@@ -9,8 +9,10 @@
 #include "RType/ECS/Components/Velocity.hpp"
 #include "RType/ECS/Components/Controllable.hpp"
 #include "RType/ECS/Components/Sprite.hpp"
+#include "RType/ECS/Components/Animation.hpp"
 
 /* Systems */
+#include "Systems/AnimationSystem.hpp"
 #include "Systems/InputSystem.hpp"
 #include "Systems/MovementSystem.hpp"
 #include "Systems/RenderSystem.hpp"
@@ -28,9 +30,11 @@ int main() {
     registry.registerComponent<rtp::ecs::components::Velocity>();
     registry.registerComponent<rtp::ecs::components::Controllable>();
     registry.registerComponent<rtp::ecs::components::Sprite>();
+    registry.registerComponent<rtp::ecs::components::Animation>();
 
     sysManager.addSystem<rtp::client::InputSystem>(registry);
     sysManager.addSystem<rtp::client::MovementSystem>(registry);
+    sysManager.addSystem<rtp::client::AnimationSystem>(registry);
     auto renderSys = std::make_unique<rtp::client::RenderSystem>(registry, window);
 
     auto playerRes = registry.spawnEntity();
@@ -38,21 +42,33 @@ int main() {
         rtp::ecs::Entity p = playerRes.value();
 
         registry.addComponent<rtp::ecs::components::Transform>(p, 
-            rtp::Vec2f{400.f, 300.f}, 0.0f, rtp::Vec2f{2.0f, 2.0f});
+            rtp::Vec2f{200.f, 150.f}, 0.0f, rtp::Vec2f{1.0f, 1.0f});
         
         registry.addComponent<rtp::ecs::components::Velocity>(p);
         registry.addComponent<rtp::ecs::components::Controllable>(p);
 
         rtp::ecs::components::Sprite spriteData;
-        spriteData.texturePath = "assets/sprites/players/image.png";
+        spriteData.texturePath = "assets/sprites/r-typesheet42.gif";
         spriteData.rectLeft = 0;
         spriteData.rectTop = 0;
         spriteData.rectWidth = 33;
         spriteData.rectHeight = 17;
         spriteData.zIndex = 10;
-        spriteData.red = 255; 
+        spriteData.red = 255;
+
 
         auto drawRes = registry.addComponent<rtp::ecs::components::Sprite>(p, spriteData);
+
+        rtp::ecs::components::Animation animData;
+        animData.frameLeft = 0;
+        animData.frameTop = 0;
+        animData.frameWidth = 33;
+        animData.totalFrames = 5;
+        animData.frameDuration = 0.1f;
+        animData.currentFrame = 0;
+        animData.elapsedTime = 0.0f;
+
+        registry.addComponent<rtp::ecs::components::Animation>(p, animData);
 
         if (!drawRes) {
             rtp::log::error("Erreur critique lors de l'ajout du Sprite.");
