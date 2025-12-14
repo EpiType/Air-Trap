@@ -13,6 +13,7 @@
 
 #include "RType/ECS/Components/Velocity.hpp"
 #include "RType/ECS/Components/Controllable.hpp"
+#include "RType/ECS/Components/Transform.hpp"
 
 #include <SFML/Window/Event.hpp>
 

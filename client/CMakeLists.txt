@@ -9,7 +9,7 @@
 # Add the core sources files here.
 set(SRC_CLIENT
     src/main.cpp
-    # src/Core/Application.cpp
+    src/Core/Application.cpp
     # src/Systems/MovementSystem.cpp
     # src/Systems/RenderSystem.cpp
     # src/Systems/InputSystem.cpp
