@@ -29,7 +29,7 @@ namespace rtp::client {
                     transform.position.y -= 1.0f;
                     rtp::log::info("Up key pressed");
                 }
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down))
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down))
                     transform.position.y += 1.0f;
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Q) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
                     transform.position.x -= 1.0f;
