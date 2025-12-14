@@ -145,7 +145,7 @@ namespace rtp::ecs
              * @return Reference to the newly created component
              */
             template <typename... Args>
-            auto emplace(Entity entity, Args &&...args) & -> T &;
+            T &emplace(Entity entity, Args &&...args);
 
             /**
              * @brief Get the underlying dense component array
@@ -198,11 +198,9 @@ namespace rtp::ecs
             bool empty(void) const noexcept;
 
         private:
-            std::vector<size_t> _sparse; /**< The Sparse Array (The Map) */
-            std::vector<Entity> _dense; /** The Dense Entity Array
-                                        (The Reverse Lookup) */
-            container_t _data; /**< The Dense Component Array
-                               (The Cache Friendly Data) */
+            std::vector<size_t> _sparse;   /**< The Sparse Array (The Map) */
+            std::vector<Entity> _dense;    /**< The Dense Entity Array (The Reverse Lookup) */
+            container_t _data;             /**< The Dense Component Array (The Cache Friendly Data) */
     };
 }
 

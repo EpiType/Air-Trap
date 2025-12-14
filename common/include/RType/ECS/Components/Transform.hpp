@@ -21,9 +21,9 @@ namespace rtp::ecs::components {
      * @brief Component representing position, rotation, and scale of an entity.
      */
     struct Transform {
-        Vec2f position{0.0f, 0.0f}; /**< X and Y coordinates */
+        Vec2f position{0.0f, 0.0f};    /**< X and Y coordinates */
         float rotation{0.0f};          /**< Rotation in degrees */
-        Vec2f scale{1.0f, 1.0f}; /**< Scale factors for X and Y axes */
+        Vec2f scale{1.0f, 1.0f};       /**< Scale factors for X and Y axes */
     };
 
 } // namespace rtp::ecs::components
