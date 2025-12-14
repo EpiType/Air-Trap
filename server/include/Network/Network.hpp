@@ -29,7 +29,7 @@
  * @namespace rtp::net
  * @brief Network layer for R-Type protocol
  */
-namespace rtp::server::net {
+namespace rtp::server {
     /**
      * @class ServerNetworkManager
      * @brief ASIO-based implementation of the INetwork interface.
