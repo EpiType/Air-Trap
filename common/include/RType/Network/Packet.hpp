@@ -36,6 +36,11 @@
 namespace rtp::net
 {
     /**
+     * @brief Native endianness of the machine
+     */
+    constexpr std::endian NATIVE_ENDIAN = std::endian::native;
+    
+    /**
      * @brief Magic number for packet validation
      */
     constexpr uint16_t MAGIC_NUMBER = 0xA1B2;
@@ -183,7 +188,12 @@ namespace rtp::net
              * @return The value in network endianness format.
              */
             template <typename T>
-            static inline T to_network(T value);
+            static inline T to_network(T value) {
+                if constexpr (sizeof(T) > 1 && NATIVE_ENDIAN == std::endian::little) {
+                    return std::byteswap(value); 
+                }
+                return value;
+            };
 
             /**
              * @brief Converts a primitive type (integer, float) from Big-Endian (network) to machine endianness.
@@ -192,7 +202,9 @@ namespace rtp::net
              * @return The value in machine endianness format.
              */
             template <typename T>
-            static inline T from_network(T value);
+            static inline T from_network(T value) {
+                return to_network(value);
+            };
 
             /**
              * @brief Serialize data into packet body

@@ -6,15 +6,53 @@
  */
 
 #include "Network/Network.hpp"
+#include "Game/GameManager.hpp"
+#include "RType/Logger.hpp"
 
-using namespace rtp::server::net;
+#include <iostream>
+#include <csignal>
+#include <thread>
+#include <chrono>
+
+using namespace rtp::server;
+
+Network* g_networkManager = nullptr;
+GameManager* g_gameManager = nullptr;
+
+void signal_handler(int signum) {
+    if (signum == SIGINT) {
+        rtp::log::info("Server received SIGINT (Ctrl+C). Initiating graceful shutdown...");
+        
+        if (g_networkManager) {
+            g_networkManager->stop();
+            exit(0);
+        }
+    }
+}
 
 int main(void) {
-    Network server(12345);
-    server.start();
+    const uint16_t SERVER_PORT = 12345;
+    
+    std::signal(SIGINT, signal_handler);
+    
+    try {
+        rtp::log::info("Starting R-Type Server...");
+        
+        Network networkManager(SERVER_PORT); 
+        GameManager gameManager(networkManager);
+        
+        g_networkManager = &networkManager;
+        g_gameManager = &gameManager;
 
-    // simulation
-    std::this_thread::sleep_for(std::chrono::hours(24));
+        networkManager.start(); 
+        
+        gameManager.gameLoop(); 
+        
+    } catch (const std::exception& e) {
+        rtp::log::fatal("Fatal error during server startup or game loop: {}", e.what());
+        return 84;
+    }
 
+    rtp::log::info("Server main thread exiting.");
     return 0;
 }

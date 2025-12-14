@@ -79,60 +79,6 @@ namespace rtp::net
         return _udpEndpoint.address().is_v4() || _udpEndpoint.address().is_v6();
     }
 
-    void Session::setUsername(const std::string &username)
-    {
-        std::lock_guard<std::mutex> lock(_stateMutex);
-        _username = username;
-    }
-
-    std::string Session::getUsername() const
-    {
-        std::lock_guard<std::mutex> lock(_stateMutex);
-        return _username;
-    }
-
-    void Session::setRoomId(uint32_t roomId)
-    {
-        std::lock_guard<std::mutex> lock(_stateMutex);
-        _roomId = roomId;
-    }
-
-    uint32_t Session::getRoomId() const
-    {
-        std::lock_guard<std::mutex> lock(_stateMutex);
-        return _roomId;
-    }
-
-    bool Session::isInRoom() const
-    {
-        std::lock_guard<std::mutex> lock(_stateMutex);
-        return _roomId != 0;
-    }
-
-    void Session::setState(PlayerState state)
-    {
-        std::lock_guard<std::mutex> lock(_stateMutex);
-        _state = state;
-    }
-
-    PlayerState Session::getState() const
-    {
-        std::lock_guard<std::mutex> lock(_stateMutex);
-        return _state;
-    }
-
-    void Session::setReady(bool ready)
-    {
-        std::lock_guard<std::mutex> lock(_stateMutex);
-        _isReady = ready;
-    }
-
-    bool Session::isReady() const
-    {
-        std::lock_guard<std::mutex> lock(_stateMutex);
-        return _isReady;
-    }
-
     void Session::setId(uint32_t id)
     {
         _id = id;
@@ -183,6 +129,9 @@ namespace rtp::net
         {
             if (e.code() == asio::error::eof) {
                 log::info("Connection from {} closed by peer", self->_id);
+            } else if (e.code() == asio::error::operation_aborted) {
+                log::info("Writer for client {} operation aborted", self->_id);
+                co_return;
             } else {
                 log::error("Writer of {} system error: {}", self->_id, e.what());
             }
@@ -198,30 +147,40 @@ namespace rtp::net
         auto self = shared_from_this();
 
         try {
-            rtp::net::Header header;
-
+            rtp::net::Header rawHeader;
+            
             for (;;)
             {
                 co_await asio::async_read(self->_socket,
-                                           asio::buffer(&header, sizeof(rtp::net::Header)),
-                                           asio::use_awaitable);
+                                        asio::buffer(&rawHeader, sizeof(rtp::net::Header)),
+                                        asio::use_awaitable);
 
-                if (header.magic != rtp::net::MAGIC_NUMBER) {
+                if (rtp::net::Packet::from_network(rawHeader.magic) != rtp::net::MAGIC_NUMBER) {
                     log::warning("Invalid magic number from client {}", self->_id);
-                    continue;
+                    co_return;
                 }
 
-                rtp::net::Packet recivedPacket;
-                recivedPacket.header = header;
+                rtp::net::Packet receivedPacket;
+                
+                receivedPacket.header = rawHeader; 
+                
+                uint32_t bodySize = rtp::net::Packet::from_network(rawHeader.bodySize);
 
-                recivedPacket.body.resize(header.bodySize);
-                co_await asio::async_read(self->_socket,
-                                               asio::buffer(recivedPacket.body.data(), header.bodySize),
-                                               asio::use_awaitable);
+                if (bodySize > 0) {
+                    if (bodySize > rtp::net::MTU_SIZE * 2) {
+                        log::error("Received excessively large packet body size: {}", bodySize);
+                        co_return; 
+                    }
+                    
+                    receivedPacket.body.resize(bodySize);
+                    co_await asio::async_read(self->_socket,
+                                            asio::buffer(receivedPacket.body.data(), bodySize),
+                                            asio::use_awaitable);
+                }
 
                 rtp::net::NetworkEvent event;
                 event.sessionId = self->_id;
-                event.packet = std::move(recivedPacket);
+                event.packet = std::move(receivedPacket);
                 self->_publisher.publishEvent(std::move(event));
 
                 self->resetTimer();

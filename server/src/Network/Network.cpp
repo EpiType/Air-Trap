@@ -7,7 +7,7 @@
 
 #include "Network/Network.hpp"
 
-namespace rtp::server::net {
+namespace rtp::server {
 
     //////////////////////////////////////////////////////////////////////////
     // Public API
@@ -259,5 +259,4 @@ namespace rtp::server::net {
                         endpoint.address().to_string(), endpoint.port(), e.what());
         }
     }
-
 } // namespace rtp::server::net

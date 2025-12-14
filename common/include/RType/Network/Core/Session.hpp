@@ -106,60 +106,6 @@ namespace rtp::net
             //////////////////////////////////////////////////
 
             /**
-             * @brief Set the username of the player
-             * @param username New username
-             */
-            void setUsername(const std::string &username);
-
-            /**
-             * @brief Get the username of the player
-             * @return Current username
-             */
-            std::string getUsername() const;
-
-            /**
-            * @brief Set the room ID the player is in
-            * @param roomId New room ID
-            */
-            void setRoomId(uint32_t roomId);
-
-            /**
-             * @brief Get the room ID the player is in
-             * @return Current room ID
-             */
-            uint32_t getRoomId() const;
-
-            /**
-             * @brief Check if the player is in a room
-             * @return true if in a room, false otherwise
-             */
-            bool isInRoom() const;
-
-            /**
-             * @brief Set the state of the player
-             * @param state New player state
-             */
-            void setState(PlayerState state);
-
-            /**
-             * @brief Get the state of the player
-             * @return Current player state
-             */
-            PlayerState getState() const;
-
-            /**
-             * @brief Set the readiness status of the player
-             * @param ready New readiness status
-             */
-            void setReady(bool ready);
-
-            /**
-             * @brief Get the readiness status of the player
-             * @return Current readiness status
-             */
-            bool isReady() const;
-
-            /**
              * @brief Set the unique identifier of the session
              * @param id New session ID
              */
@@ -202,13 +148,6 @@ namespace rtp::net
             std::mutex _writeMutex;                  /**< Mutex for thread-safe write queue access */
             asio::steady_timer _timer;               /**< Timer for managing timeouts */
             std::deque<Packet> _writeQueue;          /**< Queue of packets to be sent */
-
-            /* === Session State/Data === */
-            uint32_t _roomId = 0;                    /**< ID of the room the player is in ; by default 0 (no room) */
-            bool _isReady = false;                   /**< Player readiness status */
-            mutable std::mutex _stateMutex;          /**< Mutex for thread-safe state access */
-            std::string _username = "Unknown";       /**< Player username */
-            PlayerState _state = PlayerState::None;  /**< Current state of the player */
     };
 } // namespace rtp::net
 

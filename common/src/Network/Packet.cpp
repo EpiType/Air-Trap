@@ -16,29 +16,9 @@ using BufferSequence = std::array<asio::const_buffer, 2>;
 
 namespace rtp::net
 {
-    /**
-     * @brief Native endianness of the machine
-     */
-    constexpr std::endian NATIVE_ENDIAN = std::endian::native;
-
     ///////////////////////////////////////////////////////////////////////////
     // Public API
     ///////////////////////////////////////////////////////////////////////////
-
-    template <typename T>
-    inline T Packet::to_network(T value)
-    {
-        if constexpr (sizeof(T) > 1 && NATIVE_ENDIAN == std::endian::little) {
-            return std::byteswap(value); 
-        }
-        return value;
-    }
-
-    template <typename T>
-    inline T Packet::from_network(T value)
-    {
-        return to_network(value);
-    }
 
     Packet::Packet(OpCode op)
         : header{}, body{}, _readPos(0)
@@ -155,4 +135,12 @@ namespace rtp::net
         _readPos += strSize;
         return *this;
     }
+
+    /**
+     * @brief Converts a primitive type (integer, float) from Big-Endian (network) to machine endianness.
+     * @note Uses std::byteswap for endianness conversion if necessary.
+     * @param value The value to convert.
+     * @return The value in machine endianness format.
+     */
+    template rtp::net::Packet& rtp::net::Packet::operator<<<uint32_t>(uint32_t data);
 }
