@@ -40,6 +40,17 @@ namespace rtp::net
         return to_network(value);
     }
 
+    Packet::Packet(OpCode op)
+        : header{}, body{}, _readPos(0)
+    {
+        header.opCode = op;
+        header.magic = MAGIC_NUMBER;
+        header.sequenceId = 0;
+        header.bodySize = 0;
+        header.ackId = 0;
+        header.reserved = 0;
+    };
+
 
     void Packet::resetRead(void)
     {

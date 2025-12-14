@@ -53,7 +53,7 @@ namespace rtp::net {
              * @brief Start the network on the specified port
              * @param port Port number to start the network on
              */
-            virtual void start(uint16_t port) = 0;
+            virtual void start(void) = 0;
 
             /**
              * @brief Stop the network

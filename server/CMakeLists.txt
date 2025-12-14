@@ -8,10 +8,12 @@
 
 add_executable(r-type_server
     src/main.cpp
+    src/Network/Network.cpp
 )
 
 target_include_directories(r-type_server PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Network
 )
 
 target_link_libraries(r-type_server PRIVATE
