@@ -26,25 +26,37 @@ namespace Client::Core {
  * This class initializes and runs the main application loop,
  * handling window creation, ECS setup, and system management.
  */
+
+enum class GameState {
+    Menu,
+    Playing,
+    Settings,
+    Paused
+};
+
 class Application {
-   public:
+public:
     Application();
     void run();
 
-   private:
+private:
     void initECS();
+    void initMenu();
+    void initGame();
+    
     void processInput();
     void update(sf::Time delta);
     void render();
+    
+    void changeState(GameState newState);
 
     sf::RenderWindow _window;
-
-    Graphics::AssetManager _assetManager;
     rtp::ecs::Registry _registry;
     rtp::ecs::SystemManager _systemManager;
-
-    std::unique_ptr<rtp::client::RenderSystem> _renderSystem;
+    Graphics::AssetManager _assetManager;
+    
+    GameState _currentState{GameState::Menu};
     float _lastDt{0.0f};
-    // Systems::InputSystem _inputSystem;
 };
+
 }  // namespace Client::Core
