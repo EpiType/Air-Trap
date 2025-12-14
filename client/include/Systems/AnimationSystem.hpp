@@ -1,7 +1,7 @@
 /**
  * File   : AnimationSystem.hpp
  * License: MIT
- * Author : Enzo LOBATO COUTINHO <enzo.lobato-coutinho@example.com>
+ * Author : Enzo LOBATO COUTINHO <enzo.lobato-coutinho@epitech.eu>
  * Date   : 14/12/2025
  */
 
