@@ -10,6 +10,8 @@
 set(SRC_CLIENT
     src/main.cpp
     src/Core/Application.cpp
+    src/Systems/MenuSystem.cpp
+    src/Systems/UIRenderSystem.cpp
     # src/Systems/MovementSystem.cpp
     # src/Systems/RenderSystem.cpp
     # src/Systems/InputSystem.cpp
