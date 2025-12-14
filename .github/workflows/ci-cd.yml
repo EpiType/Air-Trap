@@ -90,8 +90,8 @@ jobs:
         PATTERN="^\[(ADD|FIX|CHORE|DOCS|STYLE|DEL|REFACTOR|MERGE)\] .+"
         
         # Get commits from push
-        if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
-          # New branch, check only the last commit
+        if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "${{ github.event.before }}" 2>/dev/null; then
+          # New branch OR commit doesn't exist (after rebase/amend), check only the last commit
           COMMITS=$(git log -1 --pretty=format:"%H")
         else
           COMMITS=$(git log ${{ github.event.before }}..${{ github.sha }} --pretty=format:"%H")
