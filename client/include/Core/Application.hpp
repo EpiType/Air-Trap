@@ -13,6 +13,7 @@
 
 #include "Graphics/AssetManager.hpp"
 #include "Systems/InputSystem.hpp"
+#include "Systems/RenderSystem.hpp"
 
 #include "RType/ECS/Registry.hpp"
 #include "RType/ECS/SystemManager.hpp"
@@ -44,5 +45,6 @@ class Application {
 
     std::unique_ptr<rtp::client::RenderSystem> _renderSystem;
     float _lastDt{0.0f};
+    // Systems::InputSystem _inputSystem;
 };
 }  // namespace Client::Core

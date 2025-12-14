@@ -66,6 +66,9 @@ namespace Client::Core
         _systemManager.addSystem<rtp::client::MovementSystem>(_registry);
         _systemManager.addSystem<rtp::client::AnimationSystem>(_registry);
 
+        _renderSystem = std::make_unique<rtp::client::RenderSystem>(_registry, _window);
+
+        // Spawn player (comme ton main.cpp)
         auto playerRes = _registry.spawnEntity();
         if (!playerRes) return;
         rtp::ecs::Entity p = playerRes.value();
