@@ -14,6 +14,10 @@
     #include <deque>
     #include <mutex>
     #include "RType/Network/Packet.hpp"
+    #include "RType/Network/INetwork.hpp"
+    #include "RType/Network/IEventPublisher.hpp"
+    #include <asio/read.hpp>
+    #include <asio/write.hpp>
 
 /**
  * @namespace rtp::net
@@ -21,8 +25,7 @@
  */
 namespace rtp::net
 {
-
-    class NetworkManager;
+    class IEventPublisher; /**< Forward declaration of IEventPublisher */
 
     /**
      * @enum PlayerState
@@ -47,7 +50,7 @@ namespace rtp::net
             * @param socket UDP socket for the session
             * @param manager Reference to the NetworkManager managing this session
             */
-            Session(asio::ip::tcp::socket _socket, NetworkManager &manager);
+            Session(asio::ip::tcp::socket _socket, IEventPublisher &publisher);
             
             /**
             * @brief Destructor for Session
@@ -91,65 +94,16 @@ namespace rtp::net
              * @return UDP endpoint
              */
             asio::ip::udp::endpoint getUdpEndpoint() const;
+
+            /**
+             * @brief Check if the session has a valid UDP endpoint
+             * @return true if UDP endpoint is set, false otherwise
+             */
             bool hasUdp() const;
 
             //////////////////////////////////////////////////
             // Session State/Data Accessors
             //////////////////////////////////////////////////
-
-            /**
-             * @brief Set the username of the player
-             * @param username New username
-             */
-            void setUsername(const std::string &username);
-
-            /**
-             * @brief Get the username of the player
-             * @return Current username
-             */
-            std::string getUsername() const;
-
-            /**
-            * @brief Set the room ID the player is in
-            * @param roomId New room ID
-            */
-            void setRoomId(uint32_t roomId);
-
-            /**
-             * @brief Get the room ID the player is in
-             * @return Current room ID
-             */
-            uint32_t getRoomId() const;
-
-            /**
-             * @brief Check if the player is in a room
-             * @return true if in a room, false otherwise
-             */
-            bool isInRoom() const;
-
-            /**
-             * @brief Set the state of the player
-             * @param state New player state
-             */
-            void setState(PlayerState state);
-
-            /**
-             * @brief Get the state of the player
-             * @return Current player state
-             */
-            PlayerState getState() const;
-
-            /**
-             * @brief Set the readiness status of the player
-             * @param ready New readiness status
-             */
-            void setReady(bool ready);
-
-            /**
-             * @brief Get the readiness status of the player
-             * @return Current readiness status
-             */
-            bool isReady() const;
 
             /**
              * @brief Set the unique identifier of the session
@@ -162,6 +116,12 @@ namespace rtp::net
              * @return Current session ID
              */
             uint32_t getId() const;
+
+            /**
+             * @brief Reset the session timer
+             * @note Used for managing timeouts
+             */
+            void resetTimer(void);
 
         private:
             /**
@@ -180,7 +140,7 @@ namespace rtp::net
             /* === Network Core === */
             uint32_t _id = 0;                        /**< Unique session identifier */
             bool _stopped = false;                   /**< Indicates if the session is stopped */
-            NetworkManager& _manager;                /**< Reference to the network manager */
+            IEventPublisher& _publisher;             /**< Reference to the event publisher */
             asio::ip::tcp::socket _socket;           /**< TCP socket for the session */
             asio::ip::udp::endpoint _udpEndpoint;    /**< UDP endpoint for the session */
 
@@ -188,14 +148,6 @@ namespace rtp::net
             std::mutex _writeMutex;                  /**< Mutex for thread-safe write queue access */
             asio::steady_timer _timer;               /**< Timer for managing timeouts */
             std::deque<Packet> _writeQueue;          /**< Queue of packets to be sent */
-
-            /* === Session State/Data === */
-            uint32_t _roomId = 0;                    /**< ID of the room the player is in ; by default 0 (no room) */
-            bool _isReady = false;                   /**< Player readiness status */
-            mutable std::mutex _stateMutex;          /**< Mutex for thread-safe state access */
-            std::string _username = "Unknown";       /**< Player username */
-            PlayerState _state = PlayerState::None;  /**< Current state of the player */
-
     };
 } // namespace rtp::net
 

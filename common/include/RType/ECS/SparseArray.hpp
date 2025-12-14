@@ -47,6 +47,7 @@
     #include "RType/ECS/Entity.hpp"
 
     #include <vector>
+    #include <limits>
 
 namespace rtp::ecs
 {
@@ -129,6 +130,8 @@ namespace rtp::ecs
              * @tparam Self Deduced self type (const or non-const)
              * @param entity The entity to get the component for
              * @return Reference to the component
+             * @note Asserts if the entity does not have this component
+             * If the entity does not have the component, behavior is undefined
              */
             template <typename Self>
             [[nodiscard]]
