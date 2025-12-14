@@ -61,7 +61,11 @@ namespace rtp::net
     void Session::sendTcp(const Packet &packet)
     {
         std::lock_guard<std::mutex> lock(_writeMutex);
+        bool wasEmpty = _writeQueue.empty();
         _writeQueue.push_back(packet);
+        if (wasEmpty) {
+            _timer.cancel();
+        }
     }
 
     void Session::setUdp(const asio::ip::udp::endpoint& endpoint)
@@ -113,7 +117,15 @@ namespace rtp::net
                     if (_writeQueue.empty()) {
                         lock.unlock();
                         self->_timer.expires_after(std::chrono::milliseconds(1));
-                        co_await self->_timer.async_wait(asio::use_awaitable);
+                        asio::error_code ec;
+                        co_await self->_timer.async_wait(
+                            asio::redirect_error(asio::use_awaitable, ec)
+                        );
+                        
+                        if (ec && ec != asio::error::operation_aborted) {
+                            throw asio::system_error(ec);
+                        }
+                        
                         continue;
                     }
 
@@ -127,19 +139,17 @@ namespace rtp::net
             }
         } catch (asio::system_error &e)
         {
-            if (e.code() == asio::error::eof) {
+            if (e.code() == asio::error::eof || e.code() == asio::error::operation_aborted || e.code() == asio::error::connection_reset) {
                 log::info("Connection from {} closed by peer", self->_id);
-            } else if (e.code() == asio::error::operation_aborted) {
-                log::info("Writer for client {} operation aborted", self->_id);
-                co_return;
             } else {
                 log::error("Writer of {} system error: {}", self->_id, e.what());
+                self->stop();
             }
         } catch (std::exception &e)
         {
             log::error("Writer from client {} exception: {}", _id ,e.what());
+            self->stop();
         }
-        self->stop();
     }
 
     asio::awaitable<void> Session::reader()
@@ -189,6 +199,8 @@ namespace rtp::net
         {
             if (e.code() == asio::error::eof) {
                 log::info("Connection from {} closed by peer", self->_id);
+            } else if (e.code() == asio::error::operation_aborted) {
+                log::info("Reader for client {} operation aborted", self->_id);
             } else {
                 log::error("Writer by {} system error: {}", self->_id, e.what());
             }

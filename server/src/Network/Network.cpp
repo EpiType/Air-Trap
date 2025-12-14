@@ -185,8 +185,6 @@ namespace rtp::server {
                 }
                 session->start();
 
-                publishEvent({sessionId, Packet(OpCode::Hello)});
-
                 log::info("New TCP connection accepted. Assigned Session ID {}", sessionId);
             } catch (const asio::system_error& e) {
                 log::error("Error accepting TCP connection: {}", e.what());

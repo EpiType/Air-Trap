@@ -126,6 +126,8 @@ namespace rtp::server
             welcomePacket << player->getId();
             _networkManager.sendPacket(player->getId(), welcomePacket, rtp::net::NetworkMode::TCP);
             
+            std::this_thread::yield();
+
             sendLobbyUpdate(*targetRoom);
 
         } else {
