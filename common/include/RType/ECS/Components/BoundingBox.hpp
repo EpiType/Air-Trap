@@ -14,7 +14,7 @@ namespace rtp::ecs::components {
  * Used for defining bounding boxes or collision areas.
  */
 struct BoundingBox {
-    float width{0.0f};  /**< Width of the rectangle */
-    float height{0.0f}; /**< Height of the rectangle */
+    float width{0.0f};   /**< Width of the rectangle */
+    float height{0.0f};  /**< Height of the rectangle */
 };
 }  // namespace rtp::ecs::components

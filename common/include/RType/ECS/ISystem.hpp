@@ -63,7 +63,7 @@ namespace rtp::ecs
              * @param registry The entity registry to operate on
              * @param deltaTime Time elapsed since last update in seconds
              */
-            virtual void update(Registry &registry, float deltaTime) = 0;
+            virtual void update(float deltaTime) = 0;
     };
 }
 
