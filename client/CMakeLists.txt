@@ -9,8 +9,10 @@
 # Add the core sources files here.
 set(SRC_CLIENT
     src/main.cpp
-    src/Core/Application.cpp
-    # src/Input/InputManager.cpp
+    # src/Core/Application.cpp
+    # src/Systems/MovementSystem.cpp
+    # src/Systems/RenderSystem.cpp
+    # src/Systems/InputSystem.cpp
 )
 
 # --- TARGET ---
@@ -20,6 +22,11 @@ add_executable(r-type_client ${SRC_CLIENT})
 target_include_directories(r-type_client
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/Core
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/Network
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/Graphics
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/Systems
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/Input
 )
 
 if(NOT MSVC)
