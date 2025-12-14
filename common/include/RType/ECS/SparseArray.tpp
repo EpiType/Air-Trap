@@ -96,7 +96,7 @@ namespace rtp::ecs
 
     template <Component T>
     template <typename... Args>
-    auto SparseArray<T>::emplace(Entity entity, Args &&...args) & -> T &
+    T &SparseArray<T>::emplace(Entity entity, Args &&...args)
     {
         if (entity.index() >= this->_sparse.size())
             this->_sparse.resize(entity + 1, NullIndex);
@@ -111,7 +111,7 @@ namespace rtp::ecs
         this->_sparse[entity.index()] = index;
         this->_dense.push_back(entity);
         
-        return this->_data.emplace_back(std::forward<Args>(args)...);
+        return _data.emplace_back(std::forward<Args>(args)...);
     }
 
     template <Component T>

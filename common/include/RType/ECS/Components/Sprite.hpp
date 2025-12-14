@@ -20,12 +20,12 @@ namespace rtp::ecs::components {
  * defined according to the rendering library used (e.g., SFML, SDL).
  */
 struct Sprite {
-    std::string textureId{"0"}; /**< Identifier for the texture resource */
+    std::string texturePath{"0"}; /**< Identifier for the texture resource */
 
-    int rectLeft{0}; /**< Left position of the texture rectangle */
-    int rectTop{0};  /**< Top position of the texture rectangle */
-    int rectWidth{0};/**< Width of the texture rectangle */
-    int rectHeight{0};/**< Height of the texture rectangle */
+    int rectLeft{0};         /**< Left position of the texture rectangle */
+    int rectTop{0};          /**< Top position of the texture rectangle */
+    int rectWidth{0};        /**< Width of the texture rectangle */
+    int rectHeight{0};       /**< Height of the texture rectangle */
 
     int zIndex{0};           /**< Z-index for rendering order */
 
