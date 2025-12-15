@@ -9,11 +9,14 @@
 
 #include <SFML/Graphics.hpp>
 #include <memory>
+#include <optional>
+#include <vector>
 #include <string>
 
 #include "Graphics/AssetManager.hpp"
 #include "Systems/InputSystem.hpp"
 #include "Systems/RenderSystem.hpp"
+#include "Game/EnemyBuilder.hpp"
 
 #include "RType/ECS/Registry.hpp"
 #include "RType/ECS/SystemManager.hpp"
@@ -38,8 +41,8 @@ class Application {
 public:
     Application();
     void run();
-
-private:
+    
+    private:
     void initECS();
     void initMenu();
     void initGame();
@@ -49,11 +52,15 @@ private:
     void render();
     
     void changeState(GameState newState);
-
+    void spawnEnemy();
+    void killEnemy(std::size_t index);
+    
+    std::vector<rtp::ecs::Entity> _spawnedEnemy;
     sf::RenderWindow _window;
     rtp::ecs::Registry _registry;
     rtp::ecs::SystemManager _systemManager;
     Graphics::AssetManager _assetManager;
+    Game::EnemyBuilder _enemyBuilder;
     
     GameState _currentState{GameState::Menu};
     float _lastDt{0.0f};
