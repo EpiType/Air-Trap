@@ -15,7 +15,7 @@
     #include <memory>
     #include <map>
     #include "Game/Room.hpp"
-    #include "RType/Network/INetwork.hpp"
+    #include "ServerNetwork/ServerNetwork.hpp"
 
     using namespace rtp::net;
 
@@ -32,7 +32,7 @@ namespace rtp::server
      */
     class GameManager {
         public:
-            GameManager(INetwork &networkManager);
+            GameManager(ServerNetwork &networkManager);
 
             /**
              * @brief Destructor for GameManager
@@ -83,7 +83,7 @@ namespace rtp::server
              */
             void sendLobbyUpdate(const Room &room);
 
-            INetwork &_networkManager;                                  /**< Reference to the network manager */
+            ServerNetwork &_networkManager;                                  /**< Reference to the network manager */
             std::map<uint32_t, std::shared_ptr<Room>> _rooms;           /**< Map of room ID to Room instances */
             std::map<uint32_t, uint32_t> _playerRoomMap;                /**< Map of player session ID to room ID */
             uint32_t _nextRoomId = 1;                                   /**< Next available room ID */

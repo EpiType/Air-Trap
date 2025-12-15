@@ -142,12 +142,12 @@ namespace rtp::net
             bool _stopped = false;                   /**< Indicates if the session is stopped */
             IEventPublisher& _publisher;             /**< Reference to the event publisher */
             asio::ip::tcp::socket _socket;           /**< TCP socket for the session */
-            asio::ip::udp::endpoint _udpEndpoint;    /**< UDP endpoint for the session */
+            asio::ip::udp::endpoint _udpEndpoint{}; /**< UDP endpoint for the session */
 
             /* === Network data === */
             std::mutex _writeMutex;                  /**< Mutex for thread-safe write queue access */
             asio::steady_timer _timer;               /**< Timer for managing timeouts */
-            std::deque<Packet> _writeQueue;          /**< Queue of packets to be sent */
+            std::deque<Packet> _writeQueue{};        /**< Queue of packets to be sent */
     };
 } // namespace rtp::net
 
