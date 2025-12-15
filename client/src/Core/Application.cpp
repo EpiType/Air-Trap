@@ -50,7 +50,6 @@ namespace Client::Core
         _systemManager.setWindow(_window);
         _settings.load();
         
-        // ✅ Setup des callbacks pour changements en temps réel
         setupSettingsCallbacks();
         
         initECS();
@@ -96,7 +95,6 @@ namespace Client::Core
     {
         rtp::log::info("Initializing menu...");
         
-        // ✅ Create title text
         auto titleResult = _registry.spawnEntity();
         if (titleResult) {
             rtp::ecs::Entity title = titleResult.value();
@@ -104,7 +102,7 @@ namespace Client::Core
             rtp::ecs::components::ui::Text titleText;
             titleText.content = _translations.get("menu.title");
             titleText.position = rtp::Vec2f{400.0f, 100.0f};
-            titleText.fontPath = "assets/fonts/title.otf";
+            titleText.fontPath = "assets/fonts/title.ttf";
             titleText.fontSize = 72;
             titleText.red = 2;
             titleText.green = 100;
@@ -114,7 +112,6 @@ namespace Client::Core
             _registry.addComponent<rtp::ecs::components::ui::Text>(title, titleText);
         }
         
-        // ✅ Create Play button
         auto playBtnResult = _registry.spawnEntity();
         if (playBtnResult) {
             rtp::ecs::Entity playBtn = playBtnResult.value();
@@ -209,6 +206,100 @@ namespace Client::Core
         animData.elapsedTime = 0.0f;
 
         _registry.addComponent<rtp::ecs::components::Animation>(p, animData);
+    }
+
+    void Application::initKeyBindingMenu()
+    {
+        rtp::log::info("Initializing key bindings menu...");
+
+        // Title
+        auto titleResult = _registry.spawnEntity();
+        if (titleResult) {
+            rtp::ecs::Entity title = titleResult.value();
+            rtp::ecs::components::ui::Text titleText;
+            titleText.content = _translations.get("keybindings.title");
+            titleText.position = rtp::Vec2f{450.0f, 50.0f};
+            titleText.fontPath = "assets/fonts/main.ttf";
+            titleText.fontSize = 60;
+            titleText.red = 255;
+            titleText.green = 200;
+            titleText.blue = 100;
+            _registry.addComponent<rtp::ecs::components::ui::Text>(title, titleText);
+        }
+
+        float yPos = 150.0f;
+        const float buttonSpacing = 60.0f;
+
+        struct KeyBindingButton {
+            const char* labelKey;
+            KeyAction action;
+        };
+
+        std::vector<KeyBindingButton> bindings = {
+            {"keybindings.move_up", KeyAction::MoveUp},
+            {"keybindings.move_down", KeyAction::MoveDown},
+            {"keybindings.move_left", KeyAction::MoveLeft},
+            {"keybindings.move_right", KeyAction::MoveRight},
+            {"keybindings.shoot", KeyAction::Shoot},
+            {"keybindings.pause", KeyAction::Pause}
+        };
+
+        for (const auto& binding : bindings) {
+            // Label de l'action
+            auto labelRes = _registry.spawnEntity();
+            if (labelRes) {
+                rtp::ecs::Entity label = labelRes.value();
+                rtp::ecs::components::ui::Text text;
+                text.content = _translations.get(binding.labelKey);
+                text.position = rtp::Vec2f{200.0f, yPos + 10.0f};
+                text.fontPath = "assets/fonts/main.ttf";
+                text.fontSize = 24;
+                _registry.addComponent<rtp::ecs::components::ui::Text>(label, text);
+            }
+
+            // Bouton avec la touche actuelle
+            auto btnRes = _registry.spawnEntity();
+            if (btnRes) {
+                rtp::ecs::Entity btn = btnRes.value();
+
+                rtp::ecs::components::ui::Button button;
+                sf::Keyboard::Key currentKey = _settings.getKey(binding.action);
+                button.text = _settings.getKeyName(currentKey);
+                button.position = rtp::Vec2f{500.0f, yPos};
+                button.size = rtp::Vec2f{250.0f, 50.0f};
+
+                // ✅ Capturer action par valeur, pas par référence !
+                KeyAction actionToBind = binding.action;  // Copie locale
+                button.onClick = [this, actionToBind]() {  // ✅ Capture par valeur
+                    rtp::log::info("Waiting for key input for action: {}", 
+                                  static_cast<int>(actionToBind));
+                    _isWaitingForKey = true;
+                    _keyActionToRebind = actionToBind;
+                };
+
+                _registry.addComponent<rtp::ecs::components::ui::Button>(btn, button);
+            }
+
+            yPos += buttonSpacing;
+        }
+
+        // Back Button
+        auto backBtnRes = _registry.spawnEntity();
+        if (backBtnRes) {
+            rtp::ecs::Entity backBtn = backBtnRes.value();
+
+            rtp::ecs::components::ui::Button button;
+            button.text = _translations.get("settings.back");
+            button.position = rtp::Vec2f{490.0f, 650.0f};
+            button.size = rtp::Vec2f{300.0f, 60.0f};
+            button.onClick = [this]() {
+                rtp::log::info("Back to settings clicked!");
+                _settings.save();
+                changeState(GameState::Settings);
+            };
+
+            _registry.addComponent<rtp::ecs::components::ui::Button>(backBtn, button);
+        }
     }
 
     void Application::initSettingsMenu()
@@ -377,14 +468,33 @@ namespace Client::Core
             _registry.addComponent<rtp::ecs::components::ui::Dropdown>(dropdown, dropdownComp);
         }
         
-        // Back Button
+        yPos += 80.0f;
+    
+        // ✅ Bouton "Key Bindings"
+        auto keyBindingsBtnRes = _registry.spawnEntity();
+        if (keyBindingsBtnRes) {
+            rtp::ecs::Entity btn = keyBindingsBtnRes.value();
+
+            rtp::ecs::components::ui::Button button;
+            button.text = _translations.get("settings.key_bindings"); // "KEY BINDINGS"
+            button.position = rtp::Vec2f{490.0f, yPos};
+            button.size = rtp::Vec2f{300.0f, 60.0f};
+            button.onClick = [this]() {
+                rtp::log::info("Key Bindings button clicked!");
+                changeState(GameState::KeyBindings);
+            };
+
+            _registry.addComponent<rtp::ecs::components::ui::Button>(btn, button);
+        }
+
+        // Back Button (déplacer plus bas)
         auto backBtnRes = _registry.spawnEntity();
         if (backBtnRes) {
             rtp::ecs::Entity backBtn = backBtnRes.value();
 
             rtp::ecs::components::ui::Button button;
             button.text = _translations.get("settings.back");
-            button.position = rtp::Vec2f{490.0f, 650.0f};
+            button.position = rtp::Vec2f{490.0f, 700.0f};  // ✅ Descendre
             button.size = rtp::Vec2f{300.0f, 60.0f};
             button.onClick = [this]() {
                 rtp::log::info("Back button clicked!");
@@ -416,6 +526,9 @@ namespace Client::Core
             case GameState::Settings:
                 initSettingsMenu();
                 break;
+            case GameState::KeyBindings:
+                initKeyBindingMenu();
+                break;
             default:
                 break;
         }
@@ -427,8 +540,31 @@ namespace Client::Core
             if (event->is<sf::Event::Closed>())
                 _window.close();
 
+            if (_isWaitingForKey) {
+                if (const auto *kp = event->getIf<sf::Event::KeyPressed>()) {
+                    // Ignorer Escape pour annuler
+                    if (kp->code == sf::Keyboard::Key::Escape) {
+                        _isWaitingForKey = false;
+                        rtp::log::info("Key binding cancelled");
+                        return;
+                    }
+
+                    // Assigner la nouvelle touche
+                    _settings.setKey(_keyActionToRebind, kp->code);
+                    _isWaitingForKey = false;
+
+                    rtp::log::info("Key {} bound to action {}", 
+                                  _settings.getKeyName(kp->code),
+                                  static_cast<int>(_keyActionToRebind));
+                    
+                    changeState(GameState::KeyBindings);
+                    return;
+                }
+            }
+
+            // Gestion normale des inputs
             if (const auto *kp = event->getIf<sf::Event::KeyPressed>()) {
-                if (kp->code == sf::Keyboard::Key::Escape)
+                if (kp->code == sf::Keyboard::Key::Escape && _currentState != GameState::KeyBindings)
                     _window.close();
             }
         }
@@ -443,7 +579,7 @@ namespace Client::Core
             menuSys.update(_lastDt);
         } else if (_currentState == GameState::Playing) {
             _systemManager.update(_lastDt);
-        } else if (_currentState == GameState::Settings) {
+        } else if (_currentState == GameState::Settings || _currentState == GameState::KeyBindings) {
             auto& menuSys = _systemManager.getSystem<Client::Systems::MenuSystem>();
             menuSys.update(_lastDt);
 
@@ -453,13 +589,12 @@ namespace Client::Core
     }
     
     void Application::setupSettingsCallbacks() {
-        // ✅ Volume Master - appliqué instantanément
         _settings.onMasterVolumeChanged([this](float volume) {
             rtp::log::info("Master volume changed to: {:.2f}", volume);
             // TODO: Appliquer au AudioManager quand il sera implémenté
         });
         
-        // ✅ Volume Musique - appliqué instantanément
+        // ✅ Volume Musique  appliqué instantanément
         _settings.onMusicVolumeChanged([this](float volume) {
             rtp::log::info("Music volume changed to: {:.2f}", volume);
             // TODO: Appliquer au AudioManager quand il sera implémenté
@@ -488,15 +623,12 @@ namespace Client::Core
     {
         _window.clear(sf::Color::Black);
         
-        if (_currentState == GameState::Menu) {
+        if (_currentState == GameState::Menu || _currentState == GameState::Settings || _currentState == GameState::KeyBindings) {  // ✅ Ajouter
             auto& uiSys = _systemManager.getSystem<Client::Systems::UIRenderSystem>();
             uiSys.update(0.0f);
         } else if (_currentState == GameState::Playing) {
             auto& renderSys = _systemManager.getSystem<rtp::client::RenderSystem>();
             renderSys.update(_lastDt);
-        } else if (_currentState == GameState::Settings) {
-            auto& uiSys = _systemManager.getSystem<Client::Systems::UIRenderSystem>();
-            uiSys.update(0.0f);
         }
         
         _window.display();

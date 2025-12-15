@@ -33,6 +33,7 @@ enum class GameState {
     Menu,
     Playing,
     Settings,
+    KeyBindings,
     Paused
 };
 
@@ -46,7 +47,8 @@ private:
     void initMenu();
     void initGame();
     void initSettingsMenu();
-    void setupSettingsCallbacks();  // ✅ Nouveau
+    void initKeyBindingMenu();
+    void setupSettingsCallbacks();
     
     void processInput();
     void update(sf::Time delta);
@@ -63,6 +65,9 @@ private:
     
     GameState _currentState{GameState::Menu};
     float _lastDt{0.0f};
+
+    bool _isWaitingForKey{false};
+    KeyAction _keyActionToRebind;
 };
 
 }  // namespace Client::Core
