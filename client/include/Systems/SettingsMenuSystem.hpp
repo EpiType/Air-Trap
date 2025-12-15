@@ -5,7 +5,8 @@
 ** SettingsMenuSystem - Handles settings menu interactions
 */
 
-#pragma once
+#ifndef SETTINGSMENUSYSTEM_HPP_
+#define SETTINGSMENUSYSTEM_HPP_
 
 #include <SFML/Graphics.hpp>
 #include "RType/ECS/Registry.hpp"
@@ -50,3 +51,5 @@ private:
 };
 
 }  // namespace Client::Systems
+
+#endif /* !SETTINGSMENUSYSTEM_HPP_ */

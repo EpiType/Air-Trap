@@ -14,6 +14,7 @@
 #include "Graphics/AssetManager.hpp"
 #include "Systems/InputSystem.hpp"
 #include "Systems/RenderSystem.hpp"
+#include "Systems/TranslationManager.hpp"
 #include "Core/Settings.hpp"
 
 #include "RType/ECS/Registry.hpp"
@@ -45,6 +46,7 @@ private:
     void initMenu();
     void initGame();
     void initSettingsMenu();
+    void setupSettingsCallbacks();  // ✅ Nouveau
     
     void processInput();
     void update(sf::Time delta);
@@ -57,6 +59,7 @@ private:
     rtp::ecs::SystemManager _systemManager;
     Graphics::AssetManager _assetManager;
     Settings _settings;
+    TranslationManager _translations;
     
     GameState _currentState{GameState::Menu};
     float _lastDt{0.0f};

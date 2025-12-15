@@ -49,6 +49,10 @@ namespace Client::Core
         _window.setFramerateLimit(60);
         _systemManager.setWindow(_window);
         _settings.load();
+        
+        // ✅ Setup des callbacks pour changements en temps réel
+        setupSettingsCallbacks();
+        
         initECS();
         initMenu();
     }
@@ -98,11 +102,11 @@ namespace Client::Core
             rtp::ecs::Entity title = titleResult.value();
             
             rtp::ecs::components::ui::Text titleText;
-            titleText.content = "AIR-TRAP";
+            titleText.content = _translations.get("menu.title");
             titleText.position = rtp::Vec2f{400.0f, 100.0f};
-            titleText.fontPath = "assets/fonts/main.ttf";
+            titleText.fontPath = "assets/fonts/title.otf";
             titleText.fontSize = 72;
-            titleText.red = 255;
+            titleText.red = 2;
             titleText.green = 100;
             titleText.blue = 100;
             titleText.zIndex = 10;
@@ -116,7 +120,7 @@ namespace Client::Core
             rtp::ecs::Entity playBtn = playBtnResult.value();
             
             rtp::ecs::components::ui::Button button;
-            button.text = "PLAY";
+            button.text = _translations.get("menu.play");
             button.position = rtp::Vec2f{490.0f, 300.0f};
             button.size = rtp::Vec2f{300.0f, 60.0f};
             button.onClick = [this]() {
@@ -133,7 +137,7 @@ namespace Client::Core
             rtp::ecs::Entity settingsBtn = settingsBtnResult.value();
             
             rtp::ecs::components::ui::Button button;
-            button.text = "SETTINGS";
+            button.text = _translations.get("menu.settings");
             button.position = rtp::Vec2f{490.0f, 380.0f};
             button.size = rtp::Vec2f{300.0f, 60.0f};
             button.onClick = [this]() {
@@ -150,7 +154,7 @@ namespace Client::Core
             rtp::ecs::Entity exitBtn = exitBtnResult.value();
             
             rtp::ecs::components::ui::Button button;
-            button.text = "EXIT";
+            button.text = _translations.get("menu.exit");
             button.position = rtp::Vec2f{490.0f, 460.0f};
             button.size = rtp::Vec2f{300.0f, 60.0f};
             button.onClick = [this]() {
@@ -216,7 +220,7 @@ namespace Client::Core
         if (titleResult) {
             rtp::ecs::Entity title = titleResult.value();
             rtp::ecs::components::ui::Text titleText;
-            titleText.content = "SETTINGS";
+            titleText.content = _translations.get("settings.title");
             titleText.position = rtp::Vec2f{500.0f, 50.0f};
             titleText.fontPath = "assets/fonts/main.ttf";
             titleText.fontSize = 60;
@@ -234,7 +238,7 @@ namespace Client::Core
         if (masterLabelRes) {
             rtp::ecs::Entity label = masterLabelRes.value();
             rtp::ecs::components::ui::Text text;
-            text.content = "Master Volume";
+            text.content = _translations.get("settings.master_volume");
             text.position = rtp::Vec2f{200.0f, yPos};
             text.fontPath = "assets/fonts/main.ttf";
             text.fontSize = 24;
@@ -264,7 +268,7 @@ namespace Client::Core
         if (musicLabelRes) {
             rtp::ecs::Entity label = musicLabelRes.value();
             rtp::ecs::components::ui::Text text;
-            text.content = "Music Volume";
+            text.content = _translations.get("settings.music_volume");
             text.position = rtp::Vec2f{200.0f, yPos};
             text.fontPath = "assets/fonts/main.ttf";
             text.fontSize = 24;
@@ -292,7 +296,7 @@ namespace Client::Core
         if (sfxLabelRes) {
             rtp::ecs::Entity label = sfxLabelRes.value();
             rtp::ecs::components::ui::Text text;
-            text.content = "SFX Volume";
+            text.content = _translations.get("settings.sfx_volume");
             text.position = rtp::Vec2f{200.0f, yPos};
             text.fontPath = "assets/fonts/main.ttf";
             text.fontSize = 24;
@@ -320,7 +324,7 @@ namespace Client::Core
         if (langLabelRes) {
             rtp::ecs::Entity label = langLabelRes.value();
             rtp::ecs::components::ui::Text text;
-            text.content = "Language";
+            text.content = _translations.get("settings.language");
             text.position = rtp::Vec2f{200.0f, yPos};
             text.fontPath = "assets/fonts/main.ttf";
             text.fontSize = 24;
@@ -338,6 +342,8 @@ namespace Client::Core
             dropdownComp.selectedIndex = static_cast<int>(_settings.getLanguage());
             dropdownComp.onSelect = [this](int index) {
                 _settings.setLanguage(static_cast<Core::Language>(index));
+                _translations.loadLanguage(_settings.getLanguage());
+                changeState(GameState::Settings);
             };
             _registry.addComponent<rtp::ecs::components::ui::Dropdown>(dropdown, dropdownComp);
         }
@@ -349,7 +355,7 @@ namespace Client::Core
         if (colorblindLabelRes) {
             rtp::ecs::Entity label = colorblindLabelRes.value();
             rtp::ecs::components::ui::Text text;
-            text.content = "Color Blind Mode";
+            text.content = _translations.get("settings.colorblind_mode");
             text.position = rtp::Vec2f{200.0f, yPos};
             text.fontPath = "assets/fonts/main.ttf";
             text.fontSize = 24;
@@ -363,7 +369,7 @@ namespace Client::Core
             rtp::ecs::components::ui::Dropdown dropdownComp;
             dropdownComp.position = rtp::Vec2f{450.0f, yPos - 5.0f};
             dropdownComp.size = rtp::Vec2f{300.0f, 35.0f};
-            dropdownComp.options = {"None", "Protanopia", "Deuteranopia", "Tritanopia"};
+            dropdownComp.options = {_translations.get("colorblind.none"), _translations.get("colorblind.protanopia"), _translations.get("colorblind.deuteranopia"), _translations.get("colorblind.tritanopia")};
             dropdownComp.selectedIndex = static_cast<int>(_settings.getColorBlindMode());
             dropdownComp.onSelect = [this](int index) {
                 _settings.setColorBlindMode(static_cast<Core::ColorBlindMode>(index));
@@ -377,7 +383,7 @@ namespace Client::Core
             rtp::ecs::Entity backBtn = backBtnRes.value();
 
             rtp::ecs::components::ui::Button button;
-            button.text = "BACK";
+            button.text = _translations.get("settings.back");
             button.position = rtp::Vec2f{490.0f, 650.0f};
             button.size = rtp::Vec2f{300.0f, 60.0f};
             button.onClick = [this]() {
@@ -444,6 +450,38 @@ namespace Client::Core
             auto& settingsSys = _systemManager.getSystem<Client::Systems::SettingsMenuSystem>();
             settingsSys.update(_lastDt);
         }
+    }
+    
+    void Application::setupSettingsCallbacks() {
+        // ✅ Volume Master - appliqué instantanément
+        _settings.onMasterVolumeChanged([this](float volume) {
+            rtp::log::info("Master volume changed to: {:.2f}", volume);
+            // TODO: Appliquer au AudioManager quand il sera implémenté
+        });
+        
+        // ✅ Volume Musique - appliqué instantanément
+        _settings.onMusicVolumeChanged([this](float volume) {
+            rtp::log::info("Music volume changed to: {:.2f}", volume);
+            // TODO: Appliquer au AudioManager quand il sera implémenté
+        });
+        
+        // ✅ Volume SFX - appliqué instantanément
+        _settings.onSfxVolumeChanged([this](float volume) {
+            rtp::log::info("SFX volume changed to: {:.2f}", volume);
+            // TODO: Appliquer au AudioManager quand il sera implémenté
+        });
+        
+        // ✅ Changement de langue - recharge l'UI
+        _settings.onLanguageChanged([this](Language lang) {
+            rtp::log::info("Language changed to: {}", static_cast<int>(lang));
+            
+            // Recréer le menu pour appliquer la nouvelle langue
+            if (_currentState == GameState::Settings) {
+                changeState(GameState::Settings);
+            } else if (_currentState == GameState::Menu) {
+                changeState(GameState::Menu);
+            }
+        });
     }
 
     void Application::render()

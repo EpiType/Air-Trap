@@ -52,7 +52,7 @@ void UIRenderSystem::renderButtons() {
         // Draw button text
         try {
             sf::Font& font = loadFont("assets/fonts/main.ttf");
-            sf::Text text(font, button.text, 24);
+            sf::Text text(font, sf::String::fromUtf8(button.text.begin(), button.text.end()), 24);
             
             // Center text on button
             sf::FloatRect textBounds = text.getLocalBounds();
@@ -80,7 +80,7 @@ void UIRenderSystem::renderTexts() {
         
         try {
             sf::Font& font = loadFont(textComp.fontPath);
-            sf::Text text(font, textComp.content, textComp.fontSize);
+            sf::Text text(font, sf::String::fromUtf8(textComp.content.begin(), textComp.content.end()), textComp.fontSize);
             text.setPosition(sf::Vector2f(textComp.position.x, textComp.position.y));
             text.setFillColor(sf::Color(
                 textComp.red, textComp.green, textComp.blue, textComp.alpha));
@@ -159,7 +159,8 @@ void UIRenderSystem::renderDropdowns() {
         // Draw selected text
         try {
             sf::Font& font = loadFont("assets/fonts/main.ttf");
-            sf::Text text(font, dropdown.getSelected(), 20);
+            std::string selectedText = dropdown.getSelected();
+            sf::Text text(font, sf::String::fromUtf8(selectedText.begin(), selectedText.end()), 20);
             text.setPosition(sf::Vector2f(dropdown.position.x + 10.0f, dropdown.position.y + 8.0f));
             text.setFillColor(sf::Color(dropdown.textColor[0], dropdown.textColor[1], dropdown.textColor[2]));
             _window.draw(text);
@@ -186,7 +187,7 @@ void UIRenderSystem::renderDropdowns() {
                     optionBg.setOutlineThickness(1.0f);
                     _window.draw(optionBg);
                     
-                    sf::Text optionText(font, dropdown.options[i], 20);
+                    sf::Text optionText(font, sf::String::fromUtf8(dropdown.options[i].begin(), dropdown.options[i].end()), 20);
                     optionText.setPosition(sf::Vector2f(dropdown.position.x + 10.0f, optionY + 8.0f));
                     optionText.setFillColor(sf::Color::White);
                     _window.draw(optionText);
