@@ -1,0 +1,30 @@
+# Italian translations
+
+# Menu
+menu.title=AIR-TRAP
+menu.play=GIOCA
+menu.settings=IMPOSTAZIONI
+menu.exit=ESCI
+
+# Settings
+settings.title=IMPOSTAZIONI
+settings.audio=Impostazioni Audio
+settings.master_volume=Volume Principale
+settings.music_volume=Volume Musica
+settings.sfx_volume=Volume Effetti Sonori
+settings.language=Lingua
+settings.colorblind_mode=Modalità Daltonismo
+settings.back=INDIETRO
+
+# Colorblind modes
+colorblind.none=Nessuno
+colorblind.protanopia=Protanopia (Daltonismo Rosso)
+colorblind.deuteranopia=Deuteranopia (Daltonismo Verde)
+colorblind.tritanopia=Tritanopia (Daltonismo Blu)
+
+# Game
+game.score=Punti: {0}
+game.lives=Vite: {0}
+game.level=Livello {0}
+game.paused=IN PAUSA
+game.game_over=FINE GIOCO
