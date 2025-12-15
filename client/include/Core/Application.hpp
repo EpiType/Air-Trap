@@ -10,11 +10,12 @@
 #include <SFML/Graphics.hpp>
 #include <memory>
 #include <string>
+#include <filesystem>
 
 #include "Graphics/AssetManager.hpp"
 #include "Systems/InputSystem.hpp"
 #include "Systems/RenderSystem.hpp"
-#include "Systems/TranslationManager.hpp"
+#include "Translation/TranslationManager.hpp"
 #include "Core/Settings.hpp"
 
 #include "RType/ECS/Registry.hpp"
