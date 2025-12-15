@@ -1,0 +1,30 @@
+# English translations
+
+# Menu
+menu.title=AIR-TRAP
+menu.play=PLAY
+menu.settings=SETTINGS
+menu.exit=EXIT
+
+# Settings
+settings.title=SETTINGS
+settings.audio=Audio Settings
+settings.master_volume=Master Volume
+settings.music_volume=Music Volume
+settings.sfx_volume=SFX Volume
+settings.language=Language
+settings.colorblind_mode=Color Blind Mode
+settings.back=BACK
+
+# Colorblind modes
+colorblind.none=None
+colorblind.protanopia=Protanopia (Red-blind)
+colorblind.deuteranopia=Deuteranopia (Green-blind)
+colorblind.tritanopia=Tritanopia (Blue-blind)
+
+# Game
+game.score=Score: {0}
+game.lives=Lives: {0}
+game.level=Level {0}
+game.paused=PAUSED
+game.game_over=GAME OVER

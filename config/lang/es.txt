@@ -1,0 +1,30 @@
+# Traducciones al Español
+
+# Menú
+menu.title=AIR-TRAP
+menu.play=JUGAR
+menu.settings=CONFIGURACIÓN
+menu.exit=SALIR
+
+# Configuración
+settings.title=CONFIGURACIÓN
+settings.audio=Configuración de Audio
+settings.master_volume=Volumen Principal
+settings.music_volume=Volumen de Música
+settings.sfx_volume=Volumen de Efectos
+settings.language=Idioma
+settings.colorblind_mode=Modo Daltonismo
+settings.back=ATRÁS
+
+# Modos daltonismo
+colorblind.none=Ninguno
+colorblind.protanopia=Protanopia (Ceguera al Rojo)
+colorblind.deuteranopia=Deuteranopia (Ceguera al Verde)
+colorblind.tritanopia=Tritanopia (Ceguera al Azul)
+
+# Juego
+game.score=Puntuación: {0}
+game.lives=Vidas: {0}
+game.level=Nivel {0}
+game.paused=PAUSADO
+game.game_over=FIN DEL JUEGO
