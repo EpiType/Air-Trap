@@ -5,7 +5,7 @@
  * Date   : 11/12/2025
  */
 
-#include "Network/Network.hpp"
+#include "ServerNetwork/ServerNetwork.hpp"
 
 namespace rtp::server {
 
@@ -13,7 +13,7 @@ namespace rtp::server {
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
-    Network::Network(uint16_t port)
+    ServerNetwork::ServerNetwork(uint16_t port)
         : 
     _tcpAcceptor(_ioContext),
     _udpSocket(_ioContext),
@@ -33,12 +33,12 @@ namespace rtp::server {
         _udpSocket.bind(udpEndpoint);  
     };
 
-    Network::~Network()
+    ServerNetwork::~ServerNetwork()
     {
         this->stop();
     }
 
-    void Network::start(void)
+    void ServerNetwork::start(void)
     {
         /* Run the TCP acceptor coroutine */
         try {
@@ -79,7 +79,7 @@ namespace rtp::server {
         });
     }
 
-    void Network::stop(void)
+    void ServerNetwork::stop(void)
     {
         _ioContext.stop();
         if (_ioThread.joinable()) {
@@ -102,7 +102,7 @@ namespace rtp::server {
         log::info("Server network successfully stopped.");
     }
 
-    void Network::sendPacket(uint32_t sessionId, const Packet &packet, NetworkMode mode)
+    void ServerNetwork::sendPacket(uint32_t sessionId, const Packet &packet, NetworkMode mode)
     {
         std::lock_guard<std::mutex> lock(_sessionsMutex);
 
@@ -123,7 +123,7 @@ namespace rtp::server {
         }
     }
 
-    void Network::broadcastPacket(const Packet &packet, NetworkMode mode)
+    void ServerNetwork::broadcastPacket(const Packet &packet, NetworkMode mode)
     {
         std::lock_guard<std::mutex> lock(_sessionsMutex);
 
@@ -138,7 +138,7 @@ namespace rtp::server {
         }
     }
 
-    std::optional<NetworkEvent> Network::pollEvent(void)
+    std::optional<NetworkEvent> ServerNetwork::pollEvent(void)
     {
         std::lock_guard<std::mutex> lock(_eventQueueMutex);
 
@@ -150,14 +150,14 @@ namespace rtp::server {
         return event;
     }
 
-    void Network::publishEvent(NetworkEvent event)
+    void ServerNetwork::publishEvent(NetworkEvent event)
     {
         std::lock_guard<std::mutex> lock(_eventQueueMutex);
         
         _eventQueue.push(std::move(event));
     }
 
-    uint32_t Network::getNextSessionId(void)
+    uint32_t ServerNetwork::getNextSessionId(void)
     {
         std::lock_guard<std::mutex> lock(_sessionsMutex);
         return _nextSessionId++;
@@ -167,7 +167,7 @@ namespace rtp::server {
     // Private Methods
     //////////////////////////////////////////////////////////////////////////
 
-    asio::awaitable<void> Network::runTcpAcceptor()
+    asio::awaitable<void> ServerNetwork::runTcpAcceptor()
     {
         for (;;)
         {
@@ -194,7 +194,7 @@ namespace rtp::server {
         }
     }
 
-    asio::awaitable<void> Network::runUdpReader()
+    asio::awaitable<void> ServerNetwork::runUdpReader()
     {
         char recvBuffer[65536];
         asio::ip::udp::endpoint remoteEndpoint;
@@ -245,7 +245,7 @@ namespace rtp::server {
         }
     }
 
-    void Network::sendUdpHelper(const asio::ip::udp::endpoint &endpoint, const Packet &packet)
+    void ServerNetwork::sendUdpHelper(const asio::ip::udp::endpoint &endpoint, const Packet &packet)
     {
         try {
             auto buffers = packet.getBufferSequence();

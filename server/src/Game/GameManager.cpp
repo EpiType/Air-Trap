@@ -18,7 +18,7 @@ namespace rtp::server
     // Public API
     ///////////////////////////////////////////////////////////////////////////
 
-    GameManager::GameManager(INetwork &networkManager)
+    GameManager::GameManager(ServerNetwork &networkManager)
         : _networkManager(networkManager)
     {
         log::info("GameManager created");

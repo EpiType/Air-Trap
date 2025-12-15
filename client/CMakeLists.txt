@@ -10,6 +10,7 @@
 set(SRC_CLIENT
     src/main.cpp
     src/Core/Application.cpp
+    src/Network/ClientNetwork.cpp
     # src/Systems/MovementSystem.cpp
     # src/Systems/RenderSystem.cpp
     # src/Systems/InputSystem.cpp

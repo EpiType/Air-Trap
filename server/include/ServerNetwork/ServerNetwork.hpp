@@ -38,20 +38,20 @@ namespace rtp::server {
      * communication. It manages sessions, handles incoming connections and
      * packets, and provides methods for sending and broadcasting packets.
      */
-    class Network : public INetwork, public IEventPublisher {
+    class ServerNetwork : public INetwork, public IEventPublisher {
         public:
             /**
              * @brief Constructor for ServerNetworkManager
              * @param port Port number to start the server on
              * @note Initializes ASIO components and prepares for accepting connections
              */
-            Network(uint16_t port);
+            ServerNetwork(uint16_t port);
 
             /**
              * @brief Destructor for ServerNetworkManager
              * @note Cleans up ASIO resources and stops the I/O context
              */
-            ~Network() override;
+            ~ServerNetwork() override;
 
             /**
              * @brief Start the network server
@@ -72,14 +72,14 @@ namespace rtp::server {
              * @param packet Packet to be sent
              * @param mode Network mode (TCP/UDP)
              */
-            void sendPacket(uint32_t sessionId, const Packet &packet, NetworkMode mode) override;
+            void sendPacket(uint32_t sessionId, const Packet &packet, NetworkMode mode);
 
             /**
              * @brief Broadcast a packet to all sessions
              * @param packet Packet to be broadcasted
              * @param mode Network mode (TCP/UDP)
              */
-            void broadcastPacket(const Packet &packet, NetworkMode mode) override;
+            void broadcastPacket(const Packet &packet, NetworkMode mode);
 
             /**
              * @brief Poll for a network event
