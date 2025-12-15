@@ -125,7 +125,6 @@ private:
     ColorBlindMode _colorBlindMode{ColorBlindMode::None};
     bool _highContrast{false};
     
-    // ✅ Callbacks pour changements dynamiques
     std::vector<VolumeCallback> _onMasterVolumeChanged;
     std::vector<VolumeCallback> _onMusicVolumeChanged;
     std::vector<VolumeCallback> _onSfxVolumeChanged;

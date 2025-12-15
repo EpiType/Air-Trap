@@ -12,16 +12,27 @@ namespace Client::Systems {
 
 void MenuSystem::update(float dt) {
     (void)dt;
+    
+    auto buttonsCheck = _registry.getComponents<rtp::ecs::components::ui::Button>();
+    if (!buttonsCheck) {
+        // Les entités ont été détruites, ne rien faire
+        return;
+    }
+    
     sf::Vector2i mousePos = sf::Mouse::getPosition(_window);
     
     handleMouseMove(mousePos);
     
-    // ✅ Gérer les clics sur tout (boutons, sliders, dropdowns)
+    buttonsCheck = _registry.getComponents<rtp::ecs::components::ui::Button>();
+    if (!buttonsCheck) {
+        return;
+    }
+    
+    // Gérer les clics sur tout (boutons, sliders, dropdowns)
     static bool wasPressed = false;
     bool isPressed = sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
     
     if (isPressed && !wasPressed) {
-        // Clic vient d'être pressé
         handleMouseClick(mousePos);
     }
     
@@ -30,7 +41,8 @@ void MenuSystem::update(float dt) {
 
 void MenuSystem::handleMouseMove(const sf::Vector2i& mousePos) {
     auto buttonsResult = _registry.getComponents<rtp::ecs::components::ui::Button>();
-    if (!buttonsResult) return;
+    if (!buttonsResult)
+        return;
     
     auto& buttons = buttonsResult.value().get();
     for (const auto& entity : buttons.getEntities()) {
@@ -45,27 +57,32 @@ void MenuSystem::handleMouseMove(const sf::Vector2i& mousePos) {
 }
 
 void MenuSystem::handleMouseClick(const sf::Vector2i& mousePos) {
-    // ✅ Gérer les boutons
     auto buttonsResult = _registry.getComponents<rtp::ecs::components::ui::Button>();
     if (buttonsResult) {
         auto& buttons = buttonsResult.value().get();
+        
+        std::vector<std::pair<rtp::ecs::Entity, std::function<void()>>> buttonCallbacks;
         for (const auto& entity : buttons.getEntities()) {
             auto& button = buttons[entity];
-            
             if (isMouseOverButton(button, mousePos)) {
                 button.state = rtp::ecs::components::ui::ButtonState::Pressed;
                 
                 if (button.onClick) {
-                    button.onClick();
+                    buttonCallbacks.emplace_back(entity, button.onClick);
                 }
                 
                 rtp::log::info("Button '{}' clicked", button.text);
-                return; // Un seul élément cliqué à la fois
+                break;  // On ne peut cliquer qu'un seul bouton
             }
+        }
+        
+        // Exécuter les callbacks APRÈS avoir fini d'accéder aux composants
+        for (auto& [entity, callback] : buttonCallbacks) {
+            callback();
+            return;  // Sortir après le premier callback
         }
     }
     
-    // ✅ Gérer les sliders
     auto slidersResult = _registry.getComponents<rtp::ecs::components::ui::Slider>();
     if (slidersResult) {
         auto& sliders = slidersResult.value().get();
@@ -81,7 +98,6 @@ void MenuSystem::handleMouseClick(const sf::Vector2i& mousePos) {
         }
     }
     
-    // ✅ Gérer les dropdowns
     auto dropdownsResult = _registry.getComponents<rtp::ecs::components::ui::Dropdown>();
     if (dropdownsResult) {
         auto& dropdowns = dropdownsResult.value().get();
