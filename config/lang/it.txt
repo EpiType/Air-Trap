@@ -15,12 +15,22 @@ settings.sfx_volume=Volume Effetti Sonori
 settings.language=Lingua
 settings.colorblind_mode=Modalità Daltonismo
 settings.back=INDIETRO
+settings.key_bindings=CONFIGURAZIONE TASTI
 
 # Colorblind modes
 colorblind.none=Nessuno
 colorblind.protanopia=Protanopia (Daltonismo Rosso)
 colorblind.deuteranopia=Deuteranopia (Daltonismo Verde)
 colorblind.tritanopia=Tritanopia (Daltonismo Blu)
+
+# Key Bindings
+keybindings.title=CONFIGURAZIONE TASTI
+keybindings.move_up=Muovi Su
+keybindings.move_down=Muovi Giù
+keybindings.move_left=Muovi Sinistra
+keybindings.move_right=Muovi Destra
+keybindings.shoot=Spara
+keybindings.pause=Pausa
 
 # Game
 game.score=Punti: {0}

@@ -15,12 +15,22 @@ settings.sfx_volume=SFX Volume
 settings.language=Language
 settings.colorblind_mode=Color Blind Mode
 settings.back=BACK
+settings.key_bindings=KEY BINDINGS
 
 # Colorblind modes
 colorblind.none=None
 colorblind.protanopia=Protanopia (Red-blind)
 colorblind.deuteranopia=Deuteranopia (Green-blind)
 colorblind.tritanopia=Tritanopia (Blue-blind)
+
+# Key Bindings
+keybindings.title=KEY BINDINGS
+keybindings.move_up=Move Up
+keybindings.move_down=Move Down
+keybindings.move_left=Move Left
+keybindings.move_right=Move Right
+keybindings.shoot=Shoot
+keybindings.pause=Pause
 
 # Game
 game.score=Score: {0}
