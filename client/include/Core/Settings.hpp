@@ -11,6 +11,8 @@
 #include <string>
 #include <unordered_map>
 #include <fstream>
+#include <functional>
+#include <vector>
 
 namespace Client::Core {
 
@@ -72,10 +74,27 @@ public:
     float getSfxVolume() const { return _sfxVolume; }
     void setSfxVolume(float volume);
     
+    // ✅ Callbacks pour changements dynamiques
+    using VolumeCallback = std::function<void(float)>;
+    void onMasterVolumeChanged(VolumeCallback callback) {
+        _onMasterVolumeChanged.push_back(callback);
+    }
+    void onMusicVolumeChanged(VolumeCallback callback) {
+        _onMusicVolumeChanged.push_back(callback);
+    }
+    void onSfxVolumeChanged(VolumeCallback callback) {
+        _onSfxVolumeChanged.push_back(callback);
+    }
+    
     // Language
     Language getLanguage() const { return _language; }
-    void setLanguage(Language lang) { _language = lang; }
+    void setLanguage(Language lang);
     std::string getLanguageName(Language lang) const;
+    
+    using LanguageCallback = std::function<void(Language)>;
+    void onLanguageChanged(LanguageCallback callback) {
+        _onLanguageChanged.push_back(callback);
+    }
     
     // Accessibility
     ColorBlindMode getColorBlindMode() const { return _colorBlindMode; }
@@ -105,6 +124,12 @@ private:
     // Accessibility
     ColorBlindMode _colorBlindMode{ColorBlindMode::None};
     bool _highContrast{false};
+    
+    // ✅ Callbacks pour changements dynamiques
+    std::vector<VolumeCallback> _onMasterVolumeChanged;
+    std::vector<VolumeCallback> _onMusicVolumeChanged;
+    std::vector<VolumeCallback> _onSfxVolumeChanged;
+    std::vector<LanguageCallback> _onLanguageChanged;
 };
 
 }  // namespace Client::Core

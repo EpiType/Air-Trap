@@ -68,14 +68,40 @@ std::string Settings::getKeyName(sf::Keyboard::Key key) const {
 
 void Settings::setMasterVolume(float volume) {
     _masterVolume = std::clamp(volume, 0.0f, 1.0f);
+    
+    // ✅ Notifier tous les listeners
+    for (auto& callback : _onMasterVolumeChanged) {
+        callback(_masterVolume);
+    }
 }
 
 void Settings::setMusicVolume(float volume) {
     _musicVolume = std::clamp(volume, 0.0f, 1.0f);
+    
+    // ✅ Notifier tous les listeners
+    for (auto& callback : _onMusicVolumeChanged) {
+        callback(_musicVolume);
+    }
 }
 
 void Settings::setSfxVolume(float volume) {
     _sfxVolume = std::clamp(volume, 0.0f, 1.0f);
+    
+    // ✅ Notifier tous les listeners
+    for (auto& callback : _onSfxVolumeChanged) {
+        callback(_sfxVolume);
+    }
+}
+
+void Settings::setLanguage(Language lang) {
+    if (_language != lang) {
+        _language = lang;
+        
+        // ✅ Notifier tous les listeners
+        for (auto& callback : _onLanguageChanged) {
+            callback(_language);
+        }
+    }
 }
 
 std::string Settings::getLanguageName(Language lang) const {

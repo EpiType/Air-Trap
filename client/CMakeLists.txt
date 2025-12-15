@@ -11,6 +11,7 @@ set(SRC_CLIENT
     src/main.cpp
     src/Core/Application.cpp
     src/Core/Settings.cpp
+    src/Systems/TranslationManager.cpp
     src/Systems/MenuSystem.cpp
     src/Systems/UIRenderSystem.cpp
     src/Systems/SettingsMenuSystem.cpp
