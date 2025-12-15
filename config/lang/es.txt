@@ -1,30 +1,40 @@
-# Traducciones al Español
+# Traducciones al Español / English Translations
 
-# Menú
+# Menú / Menu
 menu.title=AIR-TRAP
-menu.play=JUGAR
-menu.settings=CONFIGURACIÓN
-menu.exit=SALIR
+menu.play=JUGAR/PLAY
+menu.settings=CONFIGURACIÓN/SETTINGS
+menu.exit=SALIR/EXIT
 
-# Configuración
-settings.title=CONFIGURACIÓN
-settings.audio=Configuración de Audio
-settings.master_volume=Volumen Principal
-settings.music_volume=Volumen de Música
-settings.sfx_volume=Volumen de Efectos
-settings.language=Idioma
-settings.colorblind_mode=Modo Daltonismo
-settings.back=ATRÁS
+# Configuración / Settings
+settings.title=CONFIGURACIÓN/SETTINGS
+settings.audio=Configuración de Audio/Audio Settings
+settings.master_volume=Volumen Principal/Master Volume
+settings.music_volume=Volumen de Música/Music Volume
+settings.sfx_volume=Volumen de Efectos/SFX Volume
+settings.language=Idioma/Language
+settings.colorblind_mode=Modo Daltonismo/Color Blind Mode
+settings.back=ATRÁS/BACK
+settings.key_bindings=ASIGNACIÓN DE TECLAS/KEY BINDINGS
 
-# Modos daltonismo
-colorblind.none=Ninguno
-colorblind.protanopia=Protanopia (Ceguera al Rojo)
-colorblind.deuteranopia=Deuteranopia (Ceguera al Verde)
-colorblind.tritanopia=Tritanopia (Ceguera al Azul)
+# Modos daltonismo / Colorblind modes
+colorblind.none=Ninguno/None
+colorblind.protanopia=Protanopia (Ceguera al Rojo)/Protanopia (Red-blind)
+colorblind.deuteranopia=Deuteranopia (Ceguera al Verde)/Deuteranopia (Green-blind)
+colorblind.tritanopia=Tritanopia (Ceguera al Azul)/Tritanopia (Blue-blind)
 
-# Juego
-game.score=Puntuación: {0}
-game.lives=Vidas: {0}
-game.level=Nivel {0}
-game.paused=PAUSADO
-game.game_over=FIN DEL JUEGO
+# Asignación de Teclas / Key Bindings
+keybindings.title=ASIGNACIÓN DE TECLAS/KEY BINDINGS
+keybindings.move_up=Arriba/Move Up
+keybindings.move_down=Abajo/Move Down
+keybindings.move_left=Izquierda/Move Left
+keybindings.move_right=Derecha/Move Right
+keybindings.shoot=Disparar/Shoot
+keybindings.pause=Pausa/Pause
+
+# Juego / Game
+game.score=Puntuación/Score: {0}
+game.lives=Vidas/Lives: {0}
+game.level=Nivel/Level {0}
+game.paused=PAUSADO/PAUSED
+game.game_over=FIN DEL JUEGO/GAME OVER

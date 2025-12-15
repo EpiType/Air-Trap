@@ -15,12 +15,22 @@ settings.sfx_volume=Volume Effets Sonores
 settings.language=Langue
 settings.colorblind_mode=Mode Daltonien
 settings.back=RETOUR
+settings.key_bindings=CONTRÔLES
 
 # Colorblind modes
 colorblind.none=Aucun
 colorblind.protanopia=Protanopie (Daltonisme rouge)
 colorblind.deuteranopia=Deutéranopie (Daltonisme vert)
 colorblind.tritanopia=Tritanopie (Daltonisme bleu)
+
+# Key Bindings
+keybindings.title=CONTRÔLES
+keybindings.move_up=Haut
+keybindings.move_down=Bas
+keybindings.move_left=Gauche
+keybindings.move_right=Droite
+keybindings.shoot=Tirer
+keybindings.pause=Pause
 
 # Game
 game.score=Score: {0}
