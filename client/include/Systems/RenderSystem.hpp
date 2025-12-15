@@ -53,11 +53,8 @@ namespace rtp::client {
                         rtp::log::error("TEXTURE ERROR: Impossible de charger '{}'. Vérifie le dossier assets !", path);
                         _textureCache[path] = sf::Texture(); 
                     } else {
-                        rtp::log::info("Texture chargée: {}", path);
                         _textureCache[path] = std::move(tex);
                     }
-                } else {
-                    rtp::log::info("Texture déjà en cache: {}", path);
                 }
 
                 sf::Sprite s(_textureCache[path]);
@@ -74,9 +71,6 @@ namespace rtp::client {
                             {spriteComp.rectWidth, spriteComp.rectHeight}
                         ));
                     }
-                    rtp::log::info("Applied texture rect: left={}, top={}, width={}, height={}",
-                        spriteComp.rectLeft, spriteComp.rectTop,
-                        spriteComp.rectWidth, spriteComp.rectHeight);
                     s.setColor(sf::Color(spriteComp.red, spriteComp.green, spriteComp.blue, spriteComp.opacity));
                 }
 
@@ -89,12 +83,7 @@ namespace rtp::client {
                 } else {
                    s.setOrigin({16.f, 16.f});
                 }
-                rtp::log::info("Drawing entity at position ({}, {}) with zIndex {}", trans.position.x, trans.position.y, spriteComp.zIndex);
                 itemsToDraw.push_back({spriteComp.zIndex, s});
-            }
-
-            if (entityCount == 0) {
-                rtp::log::warning("RenderSystem: Aucune entité à afficher (ZipView vide)");
             }
 
             std::sort(itemsToDraw.begin(), itemsToDraw.end(), 

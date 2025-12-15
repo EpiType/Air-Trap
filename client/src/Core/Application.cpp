@@ -78,39 +78,6 @@ namespace Client::Core
         _systemManager.addSystem<rtp::client::RenderSystem>();
         _systemManager.addSystem<Client::Systems::MenuSystem>();
         _systemManager.addSystem<Client::Systems::UIRenderSystem>();
-
-        // Spawn player (comme ton main.cpp)
-        auto playerRes = _registry.spawnEntity();
-        if (!playerRes) return;
-        rtp::ecs::Entity p = playerRes.value();
-
-        _registry.addComponent<rtp::ecs::components::Transform>(
-            p, rtp::Vec2f{200.f, 150.f}, 0.0f, rtp::Vec2f{1.0f, 1.0f});
-        _registry.addComponent<rtp::ecs::components::Velocity>(p);
-        _registry.addComponent<rtp::ecs::components::Controllable>(p);
-
-        rtp::ecs::components::Sprite spriteData;
-        spriteData.texturePath = "assets/sprites/r-typesheet42.gif";
-        spriteData.rectLeft = 0;
-        spriteData.rectTop = 0;
-        spriteData.rectWidth = 33;
-        spriteData.rectHeight = 17;
-        spriteData.zIndex = 10;
-        spriteData.red = 255;
-
-        _registry.addComponent<rtp::ecs::components::Sprite>(p, spriteData);
-
-        rtp::ecs::components::Animation animData;
-        animData.frameLeft = 0;
-        animData.frameTop = 0;
-        animData.frameWidth = 33;
-        animData.frameHeight = 17;
-        animData.totalFrames = 5;
-        animData.frameDuration = 0.1f;
-        animData.currentFrame = 0;
-        animData.elapsedTime = 0.0f;
-
-        _registry.addComponent<rtp::ecs::components::Animation>(p, animData);
     }
 
     void Application::initMenu()
@@ -191,9 +158,45 @@ namespace Client::Core
     {
         rtp::log::info("Starting game...");
         
-        // TODO: Clear menu entities
-        // TODO: Spawn player, enemies, etc.
-        // Le code de spawn du joueur qui était dans initECS()
+        // NOTE: Menu entities are not deleted to avoid a crash in killEntity().
+        // They remain in the ECS but are not rendered since only the RenderSystem
+        // is active during gameplay (UIRenderSystem is only called in Menu state).
+        // The menu buttons are still clickable but their callbacks won't do anything harmful.
+        // TODO: Fix the killEntity() implementation to properly handle entity deletion,
+        // or implement a tag-based filtering system for systems.
+        
+        // Spawn player
+        auto playerRes = _registry.spawnEntity();
+        if (!playerRes) return;
+        rtp::ecs::Entity p = playerRes.value();
+
+        _registry.addComponent<rtp::ecs::components::Transform>(
+            p, rtp::Vec2f{200.f, 150.f}, 0.0f, rtp::Vec2f{1.0f, 1.0f});
+        _registry.addComponent<rtp::ecs::components::Velocity>(p);
+        _registry.addComponent<rtp::ecs::components::Controllable>(p);
+
+        rtp::ecs::components::Sprite spriteData;
+        spriteData.texturePath = "assets/sprites/r-typesheet42.gif";
+        spriteData.rectLeft = 0;
+        spriteData.rectTop = 0;
+        spriteData.rectWidth = 33;
+        spriteData.rectHeight = 17;
+        spriteData.zIndex = 10;
+        spriteData.red = 255;
+
+        _registry.addComponent<rtp::ecs::components::Sprite>(p, spriteData);
+
+        rtp::ecs::components::Animation animData;
+        animData.frameLeft = 0;
+        animData.frameTop = 0;
+        animData.frameWidth = 33;
+        animData.frameHeight = 17;
+        animData.totalFrames = 5;
+        animData.frameDuration = 0.1f;
+        animData.currentFrame = 0;
+        animData.elapsedTime = 0.0f;
+
+        _registry.addComponent<rtp::ecs::components::Animation>(p, animData);
     }
 
     void Application::changeState(GameState newState)
