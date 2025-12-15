@@ -12,8 +12,10 @@
 #include <SFML/System/Clock.hpp>
 
 #include "Core/Application.hpp"
+#include "Core/Settings.hpp"
 #include "Systems/MenuSystem.hpp"
 #include "Systems/UIRenderSystem.hpp"
+#include "Systems/SettingsMenuSystem.hpp"
 #include "RType/Logger.hpp"
 // ECS
 #include "RType/ECS/Registry.hpp"
@@ -27,6 +29,8 @@
 #include "RType/ECS/Components/Animation.hpp"
 #include "RType/ECS/Components/UI/Button.hpp"
 #include "RType/ECS/Components/UI/Text.hpp"
+#include "RType/ECS/Components/UI/Slider.hpp"
+#include "RType/ECS/Components/UI/Dropdown.hpp"
 
 // Systems
 #include "Systems/InputSystem.hpp"
@@ -44,6 +48,7 @@ namespace Client::Core
     {
         _window.setFramerateLimit(60);
         _systemManager.setWindow(_window);
+        _settings.load();
         initECS();
         initMenu();
     }
@@ -64,6 +69,8 @@ namespace Client::Core
         // Register UI components
         _registry.registerComponent<rtp::ecs::components::ui::Button>();
         _registry.registerComponent<rtp::ecs::components::ui::Text>();
+        _registry.registerComponent<rtp::ecs::components::ui::Slider>();
+        _registry.registerComponent<rtp::ecs::components::ui::Dropdown>();
         
         _registry.registerComponent<rtp::ecs::components::Transform>();
         _registry.registerComponent<rtp::ecs::components::Velocity>();
@@ -78,6 +85,7 @@ namespace Client::Core
         _systemManager.addSystem<rtp::client::RenderSystem>();
         _systemManager.addSystem<Client::Systems::MenuSystem>();
         _systemManager.addSystem<Client::Systems::UIRenderSystem>();
+        _systemManager.addSystem<Client::Systems::SettingsMenuSystem>(_settings);
     }
 
     void Application::initMenu()
@@ -199,20 +207,208 @@ namespace Client::Core
         _registry.addComponent<rtp::ecs::components::Animation>(p, animData);
     }
 
+    void Application::initSettingsMenu()
+    {
+        rtp::log::info("Initializing settings menu...");
+        
+        // Title
+        auto titleResult = _registry.spawnEntity();
+        if (titleResult) {
+            rtp::ecs::Entity title = titleResult.value();
+            rtp::ecs::components::ui::Text titleText;
+            titleText.content = "SETTINGS";
+            titleText.position = rtp::Vec2f{500.0f, 50.0f};
+            titleText.fontPath = "assets/fonts/main.ttf";
+            titleText.fontSize = 60;
+            titleText.red = 255;
+            titleText.green = 200;
+            titleText.blue = 100;
+            _registry.addComponent<rtp::ecs::components::ui::Text>(title, titleText);
+        }
+        
+        // === AUDIO SECTION ===
+        float yPos = 150.0f;
+        
+        // Master Volume Label
+        auto masterLabelRes = _registry.spawnEntity();
+        if (masterLabelRes) {
+            rtp::ecs::Entity label = masterLabelRes.value();
+            rtp::ecs::components::ui::Text text;
+            text.content = "Master Volume";
+            text.position = rtp::Vec2f{200.0f, yPos};
+            text.fontPath = "assets/fonts/main.ttf";
+            text.fontSize = 24;
+            _registry.addComponent<rtp::ecs::components::ui::Text>(label, text);
+        }
+        
+        // Master Volume Slider
+        auto masterSliderRes = _registry.spawnEntity();
+        if (masterSliderRes) {
+            rtp::ecs::Entity slider = masterSliderRes.value();
+            rtp::ecs::components::ui::Slider sliderComp;
+            sliderComp.position = rtp::Vec2f{450.0f, yPos + 5.0f};
+            sliderComp.size = rtp::Vec2f{300.0f, 15.0f};
+            sliderComp.minValue = 0.0f;
+            sliderComp.maxValue = 1.0f;
+            sliderComp.currentValue = _settings.getMasterVolume();
+            sliderComp.onChange = [this](float value) {
+                _settings.setMasterVolume(value);
+            };
+            _registry.addComponent<rtp::ecs::components::ui::Slider>(slider, sliderComp);
+        }
+        
+        yPos += 50.0f;
+        
+        // Music Volume Label
+        auto musicLabelRes = _registry.spawnEntity();
+        if (musicLabelRes) {
+            rtp::ecs::Entity label = musicLabelRes.value();
+            rtp::ecs::components::ui::Text text;
+            text.content = "Music Volume";
+            text.position = rtp::Vec2f{200.0f, yPos};
+            text.fontPath = "assets/fonts/main.ttf";
+            text.fontSize = 24;
+            _registry.addComponent<rtp::ecs::components::ui::Text>(label, text);
+        }
+        
+        // Music Volume Slider
+        auto musicSliderRes = _registry.spawnEntity();
+        if (musicSliderRes) {
+            rtp::ecs::Entity slider = musicSliderRes.value();
+            rtp::ecs::components::ui::Slider sliderComp;
+            sliderComp.position = rtp::Vec2f{450.0f, yPos + 5.0f};
+            sliderComp.size = rtp::Vec2f{300.0f, 15.0f};
+            sliderComp.currentValue = _settings.getMusicVolume();
+            sliderComp.onChange = [this](float value) {
+                _settings.setMusicVolume(value);
+            };
+            _registry.addComponent<rtp::ecs::components::ui::Slider>(slider, sliderComp);
+        }
+        
+        yPos += 50.0f;
+        
+        // SFX Volume Label
+        auto sfxLabelRes = _registry.spawnEntity();
+        if (sfxLabelRes) {
+            rtp::ecs::Entity label = sfxLabelRes.value();
+            rtp::ecs::components::ui::Text text;
+            text.content = "SFX Volume";
+            text.position = rtp::Vec2f{200.0f, yPos};
+            text.fontPath = "assets/fonts/main.ttf";
+            text.fontSize = 24;
+            _registry.addComponent<rtp::ecs::components::ui::Text>(label, text);
+        }
+        
+        // SFX Volume Slider
+        auto sfxSliderRes = _registry.spawnEntity();
+        if (sfxSliderRes) {
+            rtp::ecs::Entity slider = sfxSliderRes.value();
+            rtp::ecs::components::ui::Slider sliderComp;
+            sliderComp.position = rtp::Vec2f{450.0f, yPos + 5.0f};
+            sliderComp.size = rtp::Vec2f{300.0f, 15.0f};
+            sliderComp.currentValue = _settings.getSfxVolume();
+            sliderComp.onChange = [this](float value) {
+                _settings.setSfxVolume(value);
+            };
+            _registry.addComponent<rtp::ecs::components::ui::Slider>(slider, sliderComp);
+        }
+        
+        yPos += 80.0f;
+        
+        // === LANGUAGE SECTION ===
+        auto langLabelRes = _registry.spawnEntity();
+        if (langLabelRes) {
+            rtp::ecs::Entity label = langLabelRes.value();
+            rtp::ecs::components::ui::Text text;
+            text.content = "Language";
+            text.position = rtp::Vec2f{200.0f, yPos};
+            text.fontPath = "assets/fonts/main.ttf";
+            text.fontSize = 24;
+            _registry.addComponent<rtp::ecs::components::ui::Text>(label, text);
+        }
+        
+        // Language Dropdown
+        auto langDropdownRes = _registry.spawnEntity();
+        if (langDropdownRes) {
+            rtp::ecs::Entity dropdown = langDropdownRes.value();
+            rtp::ecs::components::ui::Dropdown dropdownComp;
+            dropdownComp.position = rtp::Vec2f{450.0f, yPos - 5.0f};
+            dropdownComp.size = rtp::Vec2f{300.0f, 35.0f};
+            dropdownComp.options = {"English", "Français", "Español", "Deutsch", "Italiano"};
+            dropdownComp.selectedIndex = static_cast<int>(_settings.getLanguage());
+            dropdownComp.onSelect = [this](int index) {
+                _settings.setLanguage(static_cast<Core::Language>(index));
+            };
+            _registry.addComponent<rtp::ecs::components::ui::Dropdown>(dropdown, dropdownComp);
+        }
+        
+        yPos += 80.0f;
+        
+        // === ACCESSIBILITY SECTION ===
+        auto colorblindLabelRes = _registry.spawnEntity();
+        if (colorblindLabelRes) {
+            rtp::ecs::Entity label = colorblindLabelRes.value();
+            rtp::ecs::components::ui::Text text;
+            text.content = "Color Blind Mode";
+            text.position = rtp::Vec2f{200.0f, yPos};
+            text.fontPath = "assets/fonts/main.ttf";
+            text.fontSize = 24;
+            _registry.addComponent<rtp::ecs::components::ui::Text>(label, text);
+        }
+        
+        // Colorblind Mode Dropdown
+        auto colorblindDropdownRes = _registry.spawnEntity();
+        if (colorblindDropdownRes) {
+            rtp::ecs::Entity dropdown = colorblindDropdownRes.value();
+            rtp::ecs::components::ui::Dropdown dropdownComp;
+            dropdownComp.position = rtp::Vec2f{450.0f, yPos - 5.0f};
+            dropdownComp.size = rtp::Vec2f{300.0f, 35.0f};
+            dropdownComp.options = {"None", "Protanopia", "Deuteranopia", "Tritanopia"};
+            dropdownComp.selectedIndex = static_cast<int>(_settings.getColorBlindMode());
+            dropdownComp.onSelect = [this](int index) {
+                _settings.setColorBlindMode(static_cast<Core::ColorBlindMode>(index));
+            };
+            _registry.addComponent<rtp::ecs::components::ui::Dropdown>(dropdown, dropdownComp);
+        }
+        
+        // Back Button
+        auto backBtnRes = _registry.spawnEntity();
+        if (backBtnRes) {
+            rtp::ecs::Entity backBtn = backBtnRes.value();
+
+            rtp::ecs::components::ui::Button button;
+            button.text = "BACK";
+            button.position = rtp::Vec2f{490.0f, 650.0f};
+            button.size = rtp::Vec2f{300.0f, 60.0f};
+            button.onClick = [this]() {
+                rtp::log::info("Back button clicked!");
+                _settings.save();
+                changeState(GameState::Menu);
+            };
+
+            _registry.addComponent<rtp::ecs::components::ui::Button>(backBtn, button);
+        }
+    }
+
     void Application::changeState(GameState newState)
     {
         rtp::log::info("Changing state from {} to {}", 
                       static_cast<int>(_currentState), 
                       static_cast<int>(newState));
+
+        _registry.clear();
         
         _currentState = newState;
         
         switch (newState) {
+            case GameState::Menu:
+                initMenu();
+                break;
             case GameState::Playing:
                 initGame();
                 break;
             case GameState::Settings:
-                // TODO: Init settings menu
+                initSettingsMenu();
                 break;
             default:
                 break;
@@ -235,13 +431,18 @@ namespace Client::Core
     void Application::update(sf::Time delta)
     {
         _lastDt = delta.asSeconds();
-        
+
         if (_currentState == GameState::Menu) {
-            // Menu systems handled by SystemManager
             auto& menuSys = _systemManager.getSystem<Client::Systems::MenuSystem>();
             menuSys.update(_lastDt);
         } else if (_currentState == GameState::Playing) {
             _systemManager.update(_lastDt);
+        } else if (_currentState == GameState::Settings) {
+            auto& menuSys = _systemManager.getSystem<Client::Systems::MenuSystem>();
+            menuSys.update(_lastDt);
+
+            auto& settingsSys = _systemManager.getSystem<Client::Systems::SettingsMenuSystem>();
+            settingsSys.update(_lastDt);
         }
     }
 
@@ -255,6 +456,9 @@ namespace Client::Core
         } else if (_currentState == GameState::Playing) {
             auto& renderSys = _systemManager.getSystem<rtp::client::RenderSystem>();
             renderSys.update(_lastDt);
+        } else if (_currentState == GameState::Settings) {
+            auto& uiSys = _systemManager.getSystem<Client::Systems::UIRenderSystem>();
+            uiSys.update(0.0f);
         }
         
         _window.display();
