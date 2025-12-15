@@ -7,6 +7,11 @@
 
 #pragma once
 
+#include "RType/Logger.hpp"
+#include <algorithm>
+#include <sstream>
+#include <filesystem>
+#include <iostream>
 #include <SFML/Window/Keyboard.hpp>
 #include <string>
 #include <unordered_map>
@@ -107,11 +112,14 @@ public:
     // Persistence
     bool save(const std::string& filename = "config/settings.cfg");
     bool load(const std::string& filename = "config/settings.cfg");
+
+    bool loadFromClientJson(const std::string &filename);
     
 private:
     // Key bindings
     std::unordered_map<KeyAction, sf::Keyboard::Key> _keyBindings;
     void initDefaultKeyBindings();
+    sf::Keyboard::Key stringToKey(const std::string &keyName) const;
     
     // Audio settings
     float _masterVolume{1.0f};

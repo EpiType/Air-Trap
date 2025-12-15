@@ -45,12 +45,18 @@ namespace Client::Core
     Application::Application()
         : _window(sf::VideoMode({1280, 720}), "Air-Trap - R-Type Clone")
         , _systemManager(_registry)
+        // , _audioManager()
     {
         _window.setFramerateLimit(60);
         _systemManager.setWindow(_window);
-        _settings.load();
+
+        _translations.loadLanguage(_settings.getLanguage());
         
         setupSettingsCallbacks();
+
+        // _audioManager.setMasterVolume(_settings.getMasterVolume());
+        // _audioManager.setMusicVolume(_settings.getMusicVolume());
+        // _audioManager.setSfxVolume(_settings.getSfxVolume());
         
         initECS();
         initMenu();
@@ -470,13 +476,12 @@ namespace Client::Core
         
         yPos += 80.0f;
     
-        // ✅ Bouton "Key Bindings"
         auto keyBindingsBtnRes = _registry.spawnEntity();
         if (keyBindingsBtnRes) {
             rtp::ecs::Entity btn = keyBindingsBtnRes.value();
 
             rtp::ecs::components::ui::Button button;
-            button.text = _translations.get("settings.key_bindings"); // "KEY BINDINGS"
+            button.text = _translations.get("settings.key_bindings");
             button.position = rtp::Vec2f{490.0f, yPos};
             button.size = rtp::Vec2f{300.0f, 60.0f};
             button.onClick = [this]() {
@@ -494,7 +499,7 @@ namespace Client::Core
 
             rtp::ecs::components::ui::Button button;
             button.text = _translations.get("settings.back");
-            button.position = rtp::Vec2f{490.0f, 700.0f};  // ✅ Descendre
+            button.position = rtp::Vec2f{490.0f, 600.0f};
             button.size = rtp::Vec2f{300.0f, 60.0f};
             button.onClick = [this]() {
                 rtp::log::info("Back button clicked!");
