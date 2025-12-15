@@ -14,6 +14,8 @@
 #include "RType/ECS/ISystem.hpp"
 #include "RType/ECS/Components/UI/Button.hpp"
 #include "RType/ECS/Components/UI/Text.hpp"
+#include "RType/ECS/Components/UI/Slider.hpp"
+#include "RType/ECS/Components/UI/Dropdown.hpp"
 
 namespace Client::Systems {
 
@@ -26,6 +28,8 @@ public:
 private:
     void renderButtons();
     void renderTexts();
+    void renderSliders();
+    void renderDropdowns();
     sf::Font& loadFont(const std::string& fontPath);
 
     rtp::ecs::Registry& _registry;

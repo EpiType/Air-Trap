@@ -130,6 +130,9 @@ Thumbs.db
 /docs/doxygen/latex/
 /docs/doxygen/xml/
 
+# IDE specific files
+config/*.cfg
+
 # Binary files
 r-type_client
 r-type_server
