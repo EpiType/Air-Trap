@@ -285,7 +285,7 @@ jobs:
     if: |
       github.repository == 'EpiType/Air-Trap' &&
       github.event_name == 'pull_request' && 
-      github.base_ref == 'main' &&
+      (github.event_name == 'push' || github.ref_name == 'main) &&
       needs.paths-filter.outputs.src == 'true'
     
     steps:
