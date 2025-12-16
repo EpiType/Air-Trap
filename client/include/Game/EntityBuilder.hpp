@@ -28,7 +28,7 @@ namespace Client::Game {
  * @brief Data-driven blueprint used to spawn an enemy entity on the client,
  * incluant une factory statique pour créer des modèles d'ennemis.
  */
-struct EnemyTemplate {
+struct EntityTemplate {
     std::string id;                                 /**< Enemy type identifier */
 
     rtp::Vec2f position{0.0f, 0.0f};                /**< Spawn position */
@@ -43,31 +43,59 @@ struct EnemyTemplate {
     bool withAnimation{false};                      /**< Whether to add Animation component */
     rtp::ecs::components::Animation animation{};    /**< Initial animation data */
 
-    static EnemyTemplate createBasicScout(const rtp::Vec2f& initialPos)
+    static EntityTemplate createBasicScout(const rtp::Vec2f& initialPos)
     {
-        EnemyTemplate t;
+        EntityTemplate t;
         t.id = "basic_scout";
+
+        t.position = initialPos;
+        t.rotation = 0.0f;
+        t.scale = {2.0f, 2.0f};
+
+        t.withVelocity = true;
+        t.velocity.speed = 2.0f;
+        t.velocity.direction = {-1.0f, 0.0f};
+        
+        t.sprite.texturePath = "assets/sprites/r-typesheet2.gif";
+        t.sprite.rectLeft = 300;
+        t.sprite.rectTop = 71;
+        t.sprite.rectWidth = 30;
+        t.sprite.rectHeight = 18;
+        t.sprite.zIndex = 5;
+        t.sprite.red = 255;
+
+        t.withAnimation = true;
+        t.animation.frameWidth = 30;
+        t.animation.frameHeight = 18;
+        t.animation.frameLeft = 300;
+        t.animation.frameTop = 71;
+        t.animation.totalFrames = 6;
+        return t;
+    }
+
+    static EntityTemplate createBulletEnemy(const rtp::Vec2f& initialPos)
+    {
+        EntityTemplate t;
+        t.id = "bullet_enemy";
 
         t.position = initialPos;
         t.rotation = 0.0f;
         t.scale = {1.0f, 1.0f};
 
         t.withVelocity = true;
-        t.velocity.speed = 1.0f;
+        t.velocity.speed = 50.0f;
         t.velocity.direction = {-1.0f, 0.0f};
 
-        t.sprite.texturePath = "assets/sprites/r-typesheet37.gif";
-        t.sprite.rectLeft = 0;
-        t.sprite.rectTop = 0;
+        t.sprite.texturePath = "assets/sprites/r-typesheet2.gif";
+        t.sprite.rectLeft = 300;
+        t.sprite.rectTop = 58;
+        t.sprite.rectWidth = 18;
+        t.sprite.rectHeight = 6;
         t.sprite.zIndex = 5;
         t.sprite.red = 255;
 
-        t.withAnimation = true;
-        t.animation.frameWidth = 48;
-        t.animation.frameHeight = 48;
-        t.animation.totalFrames = 4;
-        t.animation.frameDuration = 0.1f;
-        t.animation.loop = true;
+        t.withAnimation = false;
+
         return t;
     }
 };
@@ -77,17 +105,16 @@ struct EnemyTemplate {
  * @class EnemyBuilder
  * @brief Spawns enemy entities from an EnemyTemplate.
  */
-class EnemyBuilder {
+class EntityBuilder {
 public:
-    explicit EnemyBuilder(rtp::ecs::Registry &registry);
+    explicit EntityBuilder(rtp::ecs::Registry &registry);
 
     [[nodiscard]]
-    auto spawn(const EnemyTemplate &t) -> std::expected<rtp::ecs::Entity, rtp::Error>;
+    auto spawn(const EntityTemplate &t) -> std::expected<rtp::ecs::Entity, rtp::Error>;
 
     void kill(rtp::ecs::Entity entity);
 
-    void update(rtp::ecs::Entity entity, const EnemyTemplate &t);
-
+    void update(rtp::ecs::Entity entity, const EntityTemplate &t);
 private:
     rtp::ecs::Registry &_registry;
 };
