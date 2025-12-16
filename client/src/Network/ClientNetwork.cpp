@@ -18,7 +18,8 @@ namespace rtp::client {
         : _ioContext(),
           _tcpSocket(_ioContext),
           _udpSocket(_ioContext),
-          _serverEndpoint(asio::ip::make_address(serverIp), serverPort),
+          _serverPort(serverPort),
+          _serverIp(serverIp),
           _eventQueue(),
           _ioThread()
     {
@@ -40,6 +41,11 @@ namespace rtp::client {
                 asio::ip::make_address(_serverIp, ec),
                 _serverPort
             ), ec);
+            if (ec) {
+                log::error("Error connecting to server: {}", ec.message());
+                return this->stop();
+            }
+            this->sendPacket(net::Packet(net::OpCode::Hello), net::NetworkMode::TCP);
             log::info("Connected to server {}:{}", _serverIp, _serverPort);
         }
         catch (const asio::system_error& e) {
@@ -68,11 +74,15 @@ namespace rtp::client {
     {
         asio::error_code ec;
         if (mode == net::NetworkMode::TCP) {
-            asio::write(_tcpSocket, asio::buffer(packet.getBufferSequence()), ec);
+            asio::write(_tcpSocket, packet.getBufferSequence(), ec);
             if (ec) {
                 log::error("Error sending TCP packet: {}", ec.message());
             }
         } else if (mode == net::NetworkMode::UDP) {
+            if (_serverEndpoint.port() == 0) {
+                asio::ip::udp::resolver resolver(_ioContext);
+                _serverEndpoint = *resolver.resolve(asio::ip::udp::v4(), _serverIp, std::to_string(_serverPort)).begin();
+            }
             _udpSocket.send_to(asio::buffer(packet.getBufferSequence()), _serverEndpoint, 0, ec);
             if (ec) {
                 log::error("Error sending UDP packet: {}", ec.message());
@@ -97,6 +107,27 @@ namespace rtp::client {
     {
         std::lock_guard<std::mutex> lock(_eventQueueMutex);
         _eventQueue.push_back(std::move(event));
+    }
+
+    std::vector<net::Packet> ClientNetwork::hasPendingPackets(void)
+    {
+        std::lock_guard<std::mutex> lock(_eventQueueMutex);
+        std::vector<net::Packet> packets;
+        for (const auto& event : _eventQueue) {
+            packets.push_back(event.packet);
+        }
+        return packets;
+    }
+
+    net::Packet ClientNetwork::popPacket(void)
+    {
+        std::lock_guard<std::mutex> lock(_eventQueueMutex);
+        if (_eventQueue.empty()) {
+            throw std::runtime_error("No packets available to pop.");
+        }
+        net::Packet packet = std::move(_eventQueue.front().packet);
+        _eventQueue.pop_front();
+        return packet;
     }
 
 } // namespace rtp::client

@@ -62,6 +62,7 @@ namespace rtp::net
         Welcome = 0x02,        /**< Server welcome response */
         Disconnect = 0x03,     /**< Disconnect notification */
 
+        // Lobby Management
         ListRooms = 0x04,     /**< Request for room list */
         RoomList = 0x05,      /**< Response with room list */
         CreateRoom = 0x06,    /**< Request to create a room */
@@ -78,6 +79,7 @@ namespace rtp::net
         EntitySpawn = 0x21,    /**< Entity spawn notification */
         EntityDeath = 0x22,     /**< Entity death notification */
 
+        // Game Control
         StartGame = 0x30      /**< Notification to start the game */
     };
 
@@ -189,8 +191,10 @@ namespace rtp::net
              */
             template <typename T>
             static inline T to_network(T value) {
-                if constexpr (sizeof(T) > 1 && NATIVE_ENDIAN == std::endian::little) {
-                    return std::byteswap(value); 
+                if constexpr (std::is_arithmetic_v<T>) {
+                    if constexpr (sizeof(T) > 1 && NATIVE_ENDIAN == std::endian::little) {
+                        return std::byteswap(value); 
+                    }
                 }
                 return value;
             };
@@ -260,5 +264,7 @@ namespace rtp::net
             size_t _readPos = 0; /**< Current read position in body */
     };
 }
+
+#include "Packet.tpp"
 
 #endif /* !RTYPE_NETWORK_PACKET_HPP_ */

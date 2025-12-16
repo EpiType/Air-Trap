@@ -30,6 +30,7 @@
 #include "Systems/MovementSystem.hpp"
 #include "Systems/AnimationSystem.hpp"
 #include "Systems/RenderSystem.hpp"
+#include "Systems/NetworkSystem.hpp"
 
 #include "RType/Math/Vec2.hpp"
 
@@ -65,10 +66,10 @@ namespace Client::Core
         _systemManager.addSystem<rtp::client::InputSystem>(_registry);
         _systemManager.addSystem<rtp::client::MovementSystem>(_registry);
         _systemManager.addSystem<rtp::client::AnimationSystem>(_registry);
+        _systemManager.addSystem<rtp::client::NetworkSystem>(_registry, /*network*/ *(new rtp::client::ClientNetwork("127.0.0.1", 12345)));
 
         _renderSystem = std::make_unique<rtp::client::RenderSystem>(_registry, _window);
 
-        // Spawn player (comme ton main.cpp)
         auto playerRes = _registry.spawnEntity();
         if (!playerRes) return;
         rtp::ecs::Entity p = playerRes.value();
