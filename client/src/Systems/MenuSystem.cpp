@@ -57,6 +57,65 @@ void MenuSystem::handleMouseMove(const sf::Vector2i& mousePos) {
 }
 
 void MenuSystem::handleMouseClick(const sf::Vector2i& mousePos) {
+    // PRIORITÉ 1: Vérifier les dropdowns EN PREMIER (ils doivent bloquer les clics sur ce qui est en dessous)
+    auto dropdownsResult = _registry.getComponents<rtp::ecs::components::ui::Dropdown>();
+    if (dropdownsResult) {
+        auto& dropdowns = dropdownsResult.value().get();
+        
+        // PHASE 1: Vérifier d'abord si on clique sur les options d'un dropdown ouvert
+        for (const auto& entity : dropdowns.getEntities()) {
+            auto& dropdown = dropdowns[entity];
+            
+            if (dropdown.isOpen) {
+                int optionIndex = getDropdownOptionAtMouse(dropdown, mousePos);
+                if (optionIndex >= 0) {
+                    dropdown.selectedIndex = optionIndex;
+                    dropdown.isOpen = false;
+                    
+                    if (dropdown.onSelect) {
+                        dropdown.onSelect(optionIndex);
+                    }
+                    
+                    rtp::log::info("Dropdown option {} selected", optionIndex);
+                    return;  // Clic traité, bloquer le reste
+                }
+            }
+        }
+        
+        // PHASE 2: Vérifier si on clique sur le bouton principal d'un dropdown
+        for (const auto& entity : dropdowns.getEntities()) {
+            auto& dropdown = dropdowns[entity];
+            
+            if (isMouseOverDropdown(dropdown, mousePos)) {
+                dropdown.isOpen = !dropdown.isOpen;
+                rtp::log::info("Dropdown toggled: {}", dropdown.isOpen ? "open" : "closed");
+                
+                // Fermer les autres dropdowns
+                for (const auto& otherEntity : dropdowns.getEntities()) {
+                    if (otherEntity != entity) {
+                        dropdowns[otherEntity].isOpen = false;
+                    }
+                }
+                return;  // Clic traité, bloquer le reste
+            }
+        }
+        
+        // PHASE 3: Si on a cliqué ailleurs et qu'il y a des dropdowns ouverts, les fermer
+        bool hadOpenDropdown = false;
+        for (const auto& entity : dropdowns.getEntities()) {
+            if (dropdowns[entity].isOpen) {
+                dropdowns[entity].isOpen = false;
+                hadOpenDropdown = true;
+            }
+        }
+        
+        // Si on a fermé un dropdown, bloquer le clic sur les autres éléments
+        if (hadOpenDropdown) {
+            return;
+        }
+    }
+    
+    // PRIORITÉ 2: Boutons
     auto buttonsResult = _registry.getComponents<rtp::ecs::components::ui::Button>();
     if (buttonsResult) {
         auto& buttons = buttonsResult.value().get();
@@ -83,6 +142,7 @@ void MenuSystem::handleMouseClick(const sf::Vector2i& mousePos) {
         }
     }
     
+    // PRIORITÉ 3: Sliders
     auto slidersResult = _registry.getComponents<rtp::ecs::components::ui::Slider>();
     if (slidersResult) {
         auto& sliders = slidersResult.value().get();
@@ -94,36 +154,6 @@ void MenuSystem::handleMouseClick(const sf::Vector2i& mousePos) {
                 updateSliderValue(slider, mousePos);
                 rtp::log::info("Slider clicked at value: {}", slider.currentValue);
                 return;
-            }
-        }
-    }
-    
-    auto dropdownsResult = _registry.getComponents<rtp::ecs::components::ui::Dropdown>();
-    if (dropdownsResult) {
-        auto& dropdowns = dropdownsResult.value().get();
-        for (const auto& entity : dropdowns.getEntities()) {
-            auto& dropdown = dropdowns[entity];
-            
-            if (isMouseOverDropdown(dropdown, mousePos)) {
-                dropdown.isOpen = !dropdown.isOpen;
-                rtp::log::info("Dropdown toggled: {}", dropdown.isOpen ? "open" : "closed");
-                return;
-            }
-            
-            // Si ouvert, vérifier les options
-            if (dropdown.isOpen) {
-                int optionIndex = getDropdownOptionAtMouse(dropdown, mousePos);
-                if (optionIndex >= 0) {
-                    dropdown.selectedIndex = optionIndex;
-                    dropdown.isOpen = false;
-                    
-                    if (dropdown.onSelect) {
-                        dropdown.onSelect(optionIndex);
-                    }
-                    
-                    rtp::log::info("Dropdown option {} selected", optionIndex);
-                    return;
-                }
             }
         }
     }
