@@ -74,12 +74,24 @@ namespace rtp::client {
              * @return Optional NetworkEvent if available
              */
             std::optional<net::NetworkEvent> pollEvent(void) override;
-
+ 
             /**
              * @brief Publish a network event
              * @param event Network event to be published
              */
             void publishEvent(net::NetworkEvent event);
+
+            /**
+             * @brief Check if there are pending packets in the event queue
+             * @return Vector of pending packets
+             */
+            std::vector<net::Packet> hasPendingPackets(void);
+
+            /**
+             * @brief Pop a packet from the event queue
+             * @return Packet popped from the queue
+             */
+            net::Packet popPacket(void);
 
         private:
             uint16_t _serverPort;                      /**< Server port number */
