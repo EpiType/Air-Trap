@@ -19,7 +19,7 @@ namespace rtp::net
 
     Session::Session(asio::ip::tcp::socket socket,
                      IEventPublisher &publisher)
-        : _socket(std::move(socket)), _publisher(publisher), _timer(_socket.get_executor())
+        : _publisher(publisher), _socket(std::move(socket)), _timer(_socket.get_executor())
     {
         log::info("Session created with remote endpoint: {}",
                   this->_socket.remote_endpoint().address().to_string());

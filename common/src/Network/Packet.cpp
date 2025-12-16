@@ -11,6 +11,7 @@
 #include "RType/Network/Packet.hpp"
 #include <bit>
 #include <cstring>
+#include <iomanip>
 
 using BufferSequence = std::array<asio::const_buffer, 2>;
 
@@ -39,33 +40,31 @@ namespace rtp::net
 
     BufferSequence Packet::getBufferSequence(void) const
     {
-        Header tempHeader = header;
+        _cacheHeader = header;
 
-        tempHeader.magic = to_network(header.magic);
-        tempHeader.sequenceId = to_network(header.sequenceId);
-        tempHeader.bodySize = to_network(static_cast<uint32_t>(body.size()));
-        tempHeader.ackId = to_network(header.ackId);
+        _cacheHeader.magic = to_network(header.magic);
+        _cacheHeader.sequenceId = to_network(header.sequenceId);
+        _cacheHeader.bodySize = to_network(static_cast<uint32_t>(body.size()));
+        _cacheHeader.ackId = to_network(header.ackId);
 
         // ==== what ?? it only work when the logs are enabled ??? ====
         std::stringstream ss;
         ss << "Sending Header (BE Hex): ";
-        const uint8_t* byte_ptr = reinterpret_cast<const uint8_t*>(&tempHeader);
+        const uint8_t* byte_ptr = reinterpret_cast<const uint8_t*>(&_cacheHeader);
         
         for (size_t i = 0; i < sizeof(Header); ++i) {
             ss << std::hex << std::setw(2) << std::setfill('0') << (int)byte_ptr[i] << " ";
         }
         rtp::log::debug("Sending packet: OpCode={} (0x{:02x}), BodySize={}",
-            (int)tempHeader.opCode,
-            (int)tempHeader.opCode,
-            rtp::net::Packet::from_network(tempHeader.bodySize)
+            (int)_cacheHeader.opCode,
+            (int)_cacheHeader.opCode,
+            rtp::net::Packet::from_network(_cacheHeader.bodySize)
         );
         // ============================================================
         
-        std::array<asio::const_buffer, 2> buffers = {
-            asio::const_buffer(&tempHeader, sizeof(Header)),
+        return {
+            asio::const_buffer(&_cacheHeader, sizeof(Header)),
             asio::const_buffer(body.data(), body.size())
         };
-        
-        return buffers;
-    }
+    };
 }

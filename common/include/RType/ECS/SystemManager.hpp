@@ -47,6 +47,8 @@
     #include <memory>
     #include <map>
     #include <typeindex>
+    #include <optional>
+    #include <functional>
 
 namespace rtp::ecs
 {

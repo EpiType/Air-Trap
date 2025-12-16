@@ -11,8 +11,14 @@ set(SRC_CLIENT
     src/main.cpp
     src/Core/Application.cpp
     src/Network/ClientNetwork.cpp
+    src/Core/Settings.cpp
+    src/Translation/TranslationManager.cpp
+    src/Systems/MenuSystem.cpp
+    src/Systems/UIRenderSystem.cpp
+    src/Systems/RenderSystem.cpp
+    src/Game/EntityBuilder.cpp
+    src/Systems/SettingsMenuSystem.cpp
     # src/Systems/MovementSystem.cpp
-    # src/Systems/RenderSystem.cpp
     # src/Systems/InputSystem.cpp
 )
 
@@ -32,6 +38,13 @@ target_include_directories(r-type_client
 
 if(NOT MSVC)
     target_compile_options(r-type_client PRIVATE -Wall -Wextra)
+endif()
+
+# --- DEBUG MODE ---
+# Enable DEBUG flag in Debug and RelWithDebInfo builds
+if(CMAKE_BUILD_TYPE MATCHES "Debug|RelWithDebInfo")
+    target_compile_definitions(r-type_client PRIVATE DEBUG)
+    message(STATUS "Client: DEBUG mode enabled (debug keys J/K/L/M available)")
 endif()
 
 # --- DEPENDENCIES ---

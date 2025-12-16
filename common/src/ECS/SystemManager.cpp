@@ -8,8 +8,6 @@
 #include "RType/ECS/SystemManager.hpp"
 #include "RType/Logger.hpp"
 
-#include "RType/ECS/SystemManager.hpp"
-
 namespace rtp::ecs {
 
     //////////////////////////////////////////////////
@@ -25,4 +23,5 @@ namespace rtp::ecs {
             system->update(dt);
         }
     }
-}
+
+} // namespace rtp::ecs

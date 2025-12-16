@@ -7,12 +7,21 @@
 
 #include "SystemManager.hpp"
 #include "RType/Logger.hpp"
+#include <type_traits>
 
 namespace rtp::ecs
 {
     template <typename T, typename... Args>
     T& SystemManager::addSystem(Args&&... args) {
-        auto system = std::make_unique<T>(std::forward<Args>(args)...);
+        std::unique_ptr<T> system;
+        
+        if constexpr (std::is_constructible_v<T, Registry&, Args...>) {
+            system = std::make_unique<T>(_registry, std::forward<Args>(args)...);
+        }
+        else {
+            system = std::make_unique<T>(_registry);
+        }
+        
         auto& ref = *system;
         _systems[std::type_index(typeid(T))] = std::move(system);
         return ref;
