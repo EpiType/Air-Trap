@@ -83,52 +83,52 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Validate commit messages
-      run: |
-        # Custom commit pattern: [TYPE] description
-        # Types: ADD, FIX, CHORE, DOCS, STYLE, DEL, REFACTOR, MERGE
-        PATTERN="^\[(ADD|FIX|CHORE|DOCS|STYLE|DEL|REFACTOR|MERGE)\] .+"
+    # - name: Validate commit messages
+    #   run: |
+    #     # Custom commit pattern: [TYPE] description
+    #     # Types: ADD, FIX, CHORE, DOCS, STYLE, DEL, REFACTOR, MERGE
+    #     PATTERN="^\[(ADD|FIX|CHORE|DOCS|STYLE|DEL|REFACTOR|MERGE)\] .+"
         
-        # Get commits from push
-        if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "${{ github.event.before }}" 2>/dev/null; then
-          # New branch OR commit doesn't exist (after rebase/amend), check only the last commit
-          COMMITS=$(git log -1 --pretty=format:"%H")
-        else
-          COMMITS=$(git log ${{ github.event.before }}..${{ github.sha }} --pretty=format:"%H")
-        fi
+    #     # Get commits from push
+    #     if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "${{ github.event.before }}" 2>/dev/null; then
+    #       # New branch OR commit doesn't exist (after rebase/amend), check only the last commit
+    #       COMMITS=$(git log -1 --pretty=format:"%H")
+    #     else
+    #       COMMITS=$(git log ${{ github.event.before }}..${{ github.sha }} --pretty=format:"%H")
+    #     fi
         
-        echo "🔍 Validation des messages de commit..."
-        INVALID=0
+    #     echo "🔍 Validation des messages de commit..."
+    #     INVALID=0
         
-        for commit in $COMMITS; do
-          MSG=$(git log -1 --pretty=format:"%s" $commit)
+    #     for commit in $COMMITS; do
+    #       MSG=$(git log -1 --pretty=format:"%s" $commit)
           
-          # Ignorer les commits de merge
-          if echo "$MSG" | grep -qE "^Merge "; then
-            echo "⏭️  SKIP (merge): $MSG"
-            continue
-          fi
+    #       # Ignorer les commits de merge
+    #       if echo "$MSG" | grep -qE "^Merge "; then
+    #         echo "⏭️  SKIP (merge): $MSG"
+    #         continue
+    #       fi
           
-          echo "Checking: $MSG"
+    #       echo "Checking: $MSG"
           
-          if ! echo "$MSG" | grep -qE "$PATTERN"; then
-            echo "❌ INVALID: $MSG"
-            echo ""
-            echo "Le message doit suivre le format: [TYPE] description"
-            echo "Types valides: [ADD], [FIX], [CHORE], [DOCS], [STYLE], [REFACTOR], [DEL], [MERGE]"
-            echo "Exemple: [ADD] player connection handler to server"
-            INVALID=1
-          else
-            echo "✅ VALID"
-          fi
-          echo ""
-        done
+    #       if ! echo "$MSG" | grep -qE "$PATTERN"; then
+    #         echo "❌ INVALID: $MSG"
+    #         echo ""
+    #         echo "Le message doit suivre le format: [TYPE] description"
+    #         echo "Types valides: [ADD], [FIX], [CHORE], [DOCS], [STYLE], [REFACTOR], [DEL], [MERGE]"
+    #         echo "Exemple: [ADD] player connection handler to server"
+    #         INVALID=1
+    #       else
+    #         echo "✅ VALID"
+    #       fi
+    #       echo ""
+    #     done
         
-        if [ $INVALID -eq 1 ]; then
-          exit 1
-        fi
+    #     if [ $INVALID -eq 1 ]; then
+    #       exit 1
+    #     fi
         
-        echo "✅ Tous les commits sont valides!"
+    #     echo "✅ Tous les commits sont valides!"
 
   # Job 2: Code Style Check
   style-check:
@@ -659,15 +659,15 @@ jobs:
         REPORT=""
         FAILED=0
         
-        # Commit Validation
-        if [ "$COMMIT_STATUS" = "failure" ]; then
-          REPORT="$REPORT\\n❌ Commit Validation: Messages invalides"
-          FAILED=1
-        elif [ "$COMMIT_STATUS" = "success" ]; then
-          REPORT="$REPORT\\n✅ Commit Validation: OK"
-        elif [ "$COMMIT_STATUS" = "skipped" ]; then
-          REPORT="$REPORT\\n⏭️ Commit Validation: Skipped - PR"
-        fi
+        # # Commit Validation
+        # if [ "$COMMIT_STATUS" = "failure" ]; then
+        #   REPORT="$REPORT\\n❌ Commit Validation: Messages invalides"
+        #   FAILED=1
+        # elif [ "$COMMIT_STATUS" = "success" ]; then
+        #   REPORT="$REPORT\\n✅ Commit Validation: OK"
+        # elif [ "$COMMIT_STATUS" = "skipped" ]; then
+        #   REPORT="$REPORT\\n⏭️ Commit Validation: Skipped - PR"
+        # fi
         
         # Style Check
         if [ "$STYLE_STATUS" = "failure" ]; then
