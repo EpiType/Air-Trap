@@ -20,6 +20,7 @@ void UIRenderSystem::update(float dt) {
     renderButtons();
     renderTexts();
     renderSliders();
+    // Rendre les dropdowns en dernier pour qu'ils soient au-dessus
     renderDropdowns();
 }
 
@@ -145,6 +146,8 @@ void UIRenderSystem::renderDropdowns() {
     if (!dropdownsResult) return;
     
     auto& dropdowns = dropdownsResult.value().get();
+    
+    // PHASE 1: Rendre d'abord tous les boutons principaux (fermés et ouverts)
     for (const auto& entity : dropdowns.getEntities()) {
         auto& dropdown = dropdowns[entity];
         
@@ -170,10 +173,20 @@ void UIRenderSystem::renderDropdowns() {
             arrow.setPosition(sf::Vector2f(dropdown.position.x + dropdown.size.x - 30.0f, dropdown.position.y + 10.0f));
             arrow.setFillColor(sf::Color::White);
             _window.draw(arrow);
-            
-            // Draw options if open
-            if (dropdown.isOpen) {
+        } catch (const std::exception& e) {
+            rtp::log::error("Failed to render dropdown: {}", e.what());
+        }
+    }
+    
+    // PHASE 2: Rendre ensuite les options des dropdowns ouverts (au-dessus de tout)
+    for (const auto& entity : dropdowns.getEntities()) {
+        auto& dropdown = dropdowns[entity];
+        
+        if (dropdown.isOpen) {
+            try {
+                sf::Font& font = loadFont("assets/fonts/main.ttf");
                 float optionY = dropdown.position.y + dropdown.size.y;
+                
                 for (size_t i = 0; i < dropdown.options.size(); ++i) {
                     sf::RectangleShape optionBg(sf::Vector2f(dropdown.size.x, dropdown.size.y));
                     optionBg.setPosition(sf::Vector2f(dropdown.position.x, optionY));
@@ -194,9 +207,9 @@ void UIRenderSystem::renderDropdowns() {
                     
                     optionY += dropdown.size.y;
                 }
+            } catch (const std::exception& e) {
+                rtp::log::error("Failed to render dropdown options: {}", e.what());
             }
-        } catch (const std::exception& e) {
-            rtp::log::error("Failed to render dropdown: {}", e.what());
         }
     }
 }
