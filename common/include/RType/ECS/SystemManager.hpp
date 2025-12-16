@@ -50,19 +50,11 @@
     #include <optional>
     #include <functional>
 
-// Forward declaration pour éviter la dépendance circulaire
-namespace sf {
-    class RenderWindow;
-}
-
 namespace rtp::ecs
 {
     class SystemManager {
         public:
             explicit SystemManager(Registry &registry);
-
-            // Set optional window context
-            void setWindow(sf::RenderWindow& window);
 
             template <typename T, typename... Args>
             T& addSystem(Args&&... args);
@@ -76,7 +68,6 @@ namespace rtp::ecs
             Registry &_registry;                            /**< Reference to the entity registry */
             std::unordered_map<std::type_index,
                 std::unique_ptr<ISystem>> _systems;         /**< Registered systems */
-            std::optional<std::reference_wrapper<sf::RenderWindow>> _window; /**< Optional window reference */
     };
 }
 

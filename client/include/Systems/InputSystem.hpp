@@ -14,32 +14,41 @@
 #include "RType/ECS/Components/Velocity.hpp"
 #include "RType/ECS/Components/Controllable.hpp"
 #include "RType/ECS/Components/Transform.hpp"
+#include "Core/Settings.hpp"
 
 #include <SFML/Window/Event.hpp>
 
 namespace rtp::client {
     class InputSystem : public rtp::ecs::ISystem {
     public:
-        explicit InputSystem(rtp::ecs::Registry& r) : _r(r) {}
+        explicit InputSystem(rtp::ecs::Registry& r, Client::Core::Settings& settings) 
+            : _r(r), _settings(settings) {}
 
         void update(float dt) override {
+            (void)dt;
+            
             auto view = _r.zipView<rtp::ecs::components::Transform, rtp::ecs::components::Controllable>();
 
             for (auto&& [transform, _] : view) {
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Z) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up)) {
-                    transform.position.y -= 1.0f;
-                    rtp::log::info("Up key pressed");
+                if (sf::Keyboard::isKeyPressed(_settings.getKey(Client::Core::KeyAction::MoveUp))) {
+                    transform.position.y -= 5.0f;
                 }
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down))
-                    transform.position.y += 1.0f;
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Q) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
-                    transform.position.x -= 1.0f;
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right))
-                    transform.position.x += 1.0f;
+                if (sf::Keyboard::isKeyPressed(_settings.getKey(Client::Core::KeyAction::MoveDown))) {
+                    transform.position.y += 5.0f;
+                }
+                if (sf::Keyboard::isKeyPressed(_settings.getKey(Client::Core::KeyAction::MoveLeft))) {
+                    transform.position.x -= 5.0f;
+                }
+                if (sf::Keyboard::isKeyPressed(_settings.getKey(Client::Core::KeyAction::MoveRight))) {
+                    transform.position.x += 5.0f;
+                }
             }
         }
+
     private:
         rtp::ecs::Registry& _r;
+        Client::Core::Settings& _settings;
     };
 }
+
 #endif // INPUT_SYSTEM_HPP

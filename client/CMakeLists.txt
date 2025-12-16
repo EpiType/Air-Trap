@@ -14,10 +14,10 @@ set(SRC_CLIENT
     src/Translation/TranslationManager.cpp
     src/Systems/MenuSystem.cpp
     src/Systems/UIRenderSystem.cpp
+    src/Systems/RenderSystem.cpp
     src/Game/EnemyBuilder.cpp
     src/Systems/SettingsMenuSystem.cpp
     # src/Systems/MovementSystem.cpp
-    # src/Systems/RenderSystem.cpp
     # src/Systems/InputSystem.cpp
 )
 

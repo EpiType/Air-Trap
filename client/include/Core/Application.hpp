@@ -46,7 +46,7 @@ public:
     Application();
     void run();
     
-    private:
+private:
     void initECS();
     void initMenu();
     void initGame();
@@ -58,7 +58,15 @@ public:
     void update(sf::Time delta);
     void render();
     
+    void processMenuInput(const sf::Event& event);
+    void processGameInput(const sf::Event& event);
+    void processSettingsInput(const sf::Event& event);
+    void processKeyBindingInput(const sf::Event& event);
+    void handleGlobalEscape();
+    
     void changeState(GameState newState);
+    
+    // ✅ Debug functions (dev only)
     void spawnEnemy();
     void killEnemy(std::size_t index);
     
