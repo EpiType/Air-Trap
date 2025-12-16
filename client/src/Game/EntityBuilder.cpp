@@ -33,6 +33,10 @@ auto EntityBuilder::spawn(const EntityTemplate &t)
         _registry.addComponent<rtp::ecs::components::Animation>(entity, t.animation);
     }
 
+    if (t.withParallax) {
+        _registry.addComponent<rtp::ecs::components::ParallaxLayer>(entity, t.parallax);
+    }
+
     return entity;
 }
 
