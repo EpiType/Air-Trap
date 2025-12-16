@@ -28,6 +28,7 @@
     #include <vector>
     #include <asio/buffer.hpp>
     #include <array>
+    #include <type_traits>
 
 /**
  * @namespace rtp::net
@@ -75,7 +76,7 @@ namespace rtp::net
         InputTick = 0x10,      /**< Client input state */
 
         // Game State (S -> C)
-        EntitySnapshot = 0x20, /**< Entity state snapshot */
+        WorldUpdate = 0x20, /**< Entity state snapshot */
         EntitySpawn = 0x21,    /**< Entity spawn notification */
         EntityDeath = 0x22,     /**< Entity death notification */
 
@@ -105,8 +106,17 @@ namespace rtp::net
     struct EntitySnapshotPayload {
         uint32_t netId;         /**< Network entity identifier */
         Vec2f position;         /**< Entity position */
-        int16_t angle;          /**< Entity rotation angle */
-        uint8_t hp;             /**< Entity health points */
+        Vec2f velocity;         /**< Entity velocity */
+        float rotation;         /**< Entity rotation */
+    };
+
+    /**
+     * @struct WorldSnapshotPayload
+     * @brief World state snapshot data
+     */
+    struct WorldSnapshotPayload {
+        uint32_t serverTick;    /**< Network entity identifier */
+        uint16_t entityCount;   /**< Entity position */
     };
 
     /**
@@ -191,7 +201,7 @@ namespace rtp::net
              */
             template <typename T>
             static inline T to_network(T value) {
-                if constexpr (std::is_arithmetic_v<T>) {
+                if constexpr (std::is_integral_v<T>) {
                     if constexpr (sizeof(T) > 1 && NATIVE_ENDIAN == std::endian::little) {
                         return std::byteswap(value); 
                     }

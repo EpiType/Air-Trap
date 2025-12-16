@@ -8,11 +8,14 @@
 #pragma once
 #include <cstring>
 #include <stdexcept>
+#include <vector>
+#include <string>
+#include <type_traits>
 
 namespace rtp::net
 {
     ///////////////////////////////////////////////////////////////////////////
-    // Template Implementations
+    // Simple Template Implementations
     ///////////////////////////////////////////////////////////////////////////
 
     template <typename T>
@@ -25,32 +28,9 @@ namespace rtp::net
         body.resize(currentSize + dataSize);
 
         std::memcpy(body.data() + currentSize, &network_data, dataSize);
+
+        header.bodySize = static_cast<uint32_t>(body.size());
     
-        return *this;
-    }
-
-    template <typename T>
-    auto Packet::operator<<(const std::vector<T> &vec) -> Packet &
-    {
-        uint32_t vecSize = static_cast<uint32_t>(vec.size());
-        *this << vecSize;
-        for (const auto &item : vec) {
-            *this << item;
-        }
-        return *this;
-    }
-
-    inline auto Packet::operator<<(std::string_view str) -> Packet &
-    {
-        uint32_t strSize = static_cast<uint32_t>(str.size());
-
-        *this << strSize;
-
-        size_t currentSize = body.size();
-        body.resize(currentSize + strSize);
-
-        std::memcpy(body.data() + currentSize, str.data(), strSize);
-
         return *this;
     }
 
@@ -70,8 +50,23 @@ namespace rtp::net
         return *this;
     }
 
+    //////////////////////////////////////////////////////////////////////////
+    // Specialized Template Implementations
+    //////////////////////////////////////////////////////////////////////////
+
     template <typename T>
-    auto Packet::operator>>(std::vector<T> &vec) -> Packet &
+    inline auto Packet::operator<<(const std::vector<T> &vec) -> Packet &
+    {
+        uint32_t vecSize = static_cast<uint32_t>(vec.size());
+        *this << vecSize;
+        for (const auto &item : vec) {
+            *this << item;
+        }
+        return *this;
+    }
+
+    template <typename T>
+    inline auto Packet::operator>>(std::vector<T> &vec) -> Packet &
     {
         uint32_t vecSize;
         *this >> vecSize;
@@ -87,6 +82,20 @@ namespace rtp::net
         return *this;
     }
 
+    inline auto Packet::operator<<(std::string_view str) -> Packet &
+    {
+        uint32_t strSize = static_cast<uint32_t>(str.size());
+
+        *this << strSize;
+
+        size_t currentSize = body.size();
+        body.resize(currentSize + strSize);
+
+        std::memcpy(body.data() + currentSize, str.data(), strSize);
+
+        return *this;
+    }
+
     inline auto Packet::operator>>(std::string &str) -> Packet &
     {
         uint32_t strSize;
@@ -99,11 +108,47 @@ namespace rtp::net
         return *this;
     }
     
-     /**
-     * @brief Converts a primitive type (integer, float) from Big-Endian (network) to machine endianness.
-     * @note Uses std::byteswap for endianness conversion if necessary.
-     * @param value The value to convert.
-     * @return The value in machine endianness format.
-     */
-    template rtp::net::Packet& rtp::net::Packet::operator<<<uint32_t>(uint32_t data);
+    //////////////////////////////////////////////////////////////////////////
+    // Batching Operations
+    //////////////////////////////////////////////////////////////////////////
+
+    template <>
+    inline auto Packet::operator<<(WorldSnapshotPayload data) -> Packet &
+    {
+        *this << data.serverTick;
+        *this << data.entityCount;
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator>>(WorldSnapshotPayload &data) -> Packet &
+    {
+        *this >> data.serverTick;
+        *this >> data.entityCount;
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator<<(EntitySnapshotPayload data) -> Packet &
+    {
+        *this << data.netId;
+        *this << data.position.x;
+        *this << data.position.y;
+        *this << data.velocity.x;
+        *this << data.velocity.y;
+        *this << data.rotation;
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator>>(EntitySnapshotPayload &data) -> Packet &
+    {
+        *this >> data.netId;
+        *this >> data.position.x;
+        *this >> data.position.y;
+        *this >> data.velocity.x;
+        *this >> data.velocity.y;
+        *this >> data.rotation;
+        return *this;
+    }
 } // namespace rtp::net
