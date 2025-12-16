@@ -89,11 +89,13 @@ private:
     
     void changeState(GameState newState);
     
+    void createParallaxBackground();
     void spawnEnemy(const rtp::Vec2f& position);
     void spawnProjectile(const rtp::Vec2f& position);
     void killEnemy(std::size_t index);
     void killProjectile(std::size_t index);
     
+    std::vector<rtp::ecs::Entity> _parallaxLayers;
     std::vector<rtp::ecs::Entity> _spawnedEnemy;
     std::vector<rtp::ecs::Entity> _projectiles;
     sf::RenderWindow _window;

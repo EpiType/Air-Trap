@@ -37,6 +37,7 @@
 #include "Systems/MovementSystem.hpp"
 #include "Systems/AnimationSystem.hpp"
 #include "Systems/RenderSystem.hpp"
+#include "Systems/ParallaxSystem.hpp"
 
 #include "RType/Math/Vec2.hpp"
 
@@ -85,6 +86,7 @@ namespace Client::Core
         _registry.registerComponent<rtp::ecs::components::Controllable>();
         _registry.registerComponent<rtp::ecs::components::Sprite>();
         _registry.registerComponent<rtp::ecs::components::Animation>();
+        _registry.registerComponent<rtp::ecs::components::ParallaxLayer>();
 
         _systemManager.addSystem<rtp::client::InputSystem>(_settings);
         _systemManager.addSystem<rtp::client::MovementSystem>();
@@ -93,6 +95,7 @@ namespace Client::Core
         _systemManager.addSystem<Client::Systems::MenuSystem>(_window);
         _systemManager.addSystem<Client::Systems::UIRenderSystem>(_window);
         _systemManager.addSystem<Client::Systems::SettingsMenuSystem>(_window, _settings);
+        _systemManager.addSystem<rtp::client::ParallaxSystem>(_registry);
     }
 
     void Application::initMenu()
@@ -165,9 +168,48 @@ namespace Client::Core
         }
     }
 
+    void Application::createParallaxBackground()
+    {
+        const float textureWidth = 1280.0f; 
+
+        Game::EntityTemplate t1 = Game::EntityTemplate::createParrallaxLayer1();
+        float scale1X = t1.scale.x;
+        auto result1A = _entityBuilder.spawn(t1);
+        if (result1A.has_value()) {
+            _parallaxLayers.push_back(result1A.value());
+        } else {
+            rtp::log::error("Failed to spawn Layer 1A: {}", result1A.error().message());
+        }
+        t1.position.x = textureWidth * scale1X;
+        auto result1B = _entityBuilder.spawn(t1);
+        if (result1B.has_value()) {
+            _parallaxLayers.push_back(result1B.value());
+        } else {
+            rtp::log::error("Failed to spawn Layer 1B: {}", result1B.error().message());
+        }
+        Game::EntityTemplate t2 = Game::EntityTemplate::createParrallaxLayer2();
+        float scale2X = t2.scale.x;
+        auto result2A = _entityBuilder.spawn(t2);
+        if (result2A.has_value()) {
+            _parallaxLayers.push_back(result2A.value());
+        } else {
+            rtp::log::error("Failed to spawn Layer 2A: {}", result2A.error().message());
+        }
+        t2.position.x = textureWidth * scale2X;
+        auto result2B = _entityBuilder.spawn(t2);
+        if (result2B.has_value()) {
+            _parallaxLayers.push_back(result2B.value());
+        } else {
+            rtp::log::error("Failed to spawn Layer 2B: {}", result2B.error().message());
+        }
+
+        rtp::log::info("Parallax background initialized with {} layers.", _parallaxLayers.size());
+    }
+
     void Application::initGame()
     {
         rtp::log::info("Starting game...");
+        createParallaxBackground();
         
         // NOTE: Menu entities are not deleted to avoid a crash in killEntity().
         // They remain in the ECS but are not rendered since only the RenderSystem
