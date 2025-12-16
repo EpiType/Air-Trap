@@ -261,9 +261,11 @@ namespace rtp::net
             auto operator>>(std::string &str) -> Packet &;
 
         private:
-            size_t _readPos = 0; /**< Current read position in body */
+            size_t _readPos = 0;         /**< Current read position in body */
+
+            mutable Header _cacheHeader; /**< Cached header with network endianness */
     };
-}
+}   
 
 #include "Packet.tpp"
 

@@ -3,8 +3,59 @@
 
 set -e
 
+# Detect GCC version FIRST (needed for all build types)
+if command -v g++-15 &> /dev/null; then
+    GCC_VERSION=15
+    CMAKE_C_COMPILER=gcc-15
+    CMAKE_CXX_COMPILER=g++-15
+elif command -v g++-14 &> /dev/null; then
+    GCC_VERSION=14
+    CMAKE_C_COMPILER=gcc-14
+    CMAKE_CXX_COMPILER=g++-14
+elif command -v g++-13 &> /dev/null; then
+    GCC_VERSION=13
+    CMAKE_C_COMPILER=gcc-13
+    CMAKE_CXX_COMPILER=g++-13
+else
+    GCC_VERSION=$(gcc -dumpversion | cut -d. -f1)
+    CMAKE_C_COMPILER=gcc
+    CMAKE_CXX_COMPILER=g++
+fi
+
 # Parse arguments
 case "${1:-}" in
+    debug)
+        echo "Building Air-Trap in Debug mode..."
+        echo "✓ Using GCC $GCC_VERSION"
+        mkdir -p build
+        cd build
+        conan install .. --build=missing -s build_type=Debug -s compiler.cppstd=23 -s compiler.version=$GCC_VERSION
+        cmake .. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=$CMAKE_C_COMPILER -DCMAKE_CXX_COMPILER=$CMAKE_CXX_COMPILER
+        cmake --build . --config Debug -j$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
+        
+        # Copy debug binaries to root with _debug suffix
+        cp bin/r-type_client ../r-type_client_debug
+        cp bin/r-type_server ../r-type_server_debug
+        
+        cd ..
+        echo ""
+        echo "✅ Debug build complete!"
+        echo ""
+        echo "🐛 Debug binaries created:"
+        echo "   Server: ./r-type_server_debug"
+        echo "   Client: ./r-type_client_debug"
+        echo ""
+        echo "⚠️  WARNING: Use the _debug binaries for debug keys!"
+        echo "   ./r-type_client        ← Release (NO debug keys)"
+        echo "   ./r-type_client_debug  ← Debug (debug keys J/K/L/M enabled)"
+        echo ""
+        echo "🎮 Debug Keys Available:"
+        echo "   J - Spawn enemy at mouse position"
+        echo "   K - Kill enemy at index 0"
+        echo "   L - Spawn projectile at mouse position"
+        echo "   M - Kill projectile at index 0"
+        exit 0
+        ;;
     test)
         echo "Running tests..."
         if [ ! -d build ]; then
@@ -75,30 +126,8 @@ case "${1:-}" in
         ;;
 esac
 
-echo "Building Air-Trap..."
-
-# Detect GCC version (prefer newer versions)
-if command -v g++-15 &> /dev/null; then
-    echo "✓ Using GCC 15 for C++23 support"
-    GCC_VERSION=15
-    CMAKE_C_COMPILER=gcc-15
-    CMAKE_CXX_COMPILER=g++-15
-elif command -v g++-14 &> /dev/null; then
-    echo "✓ Using GCC 14 for C++23 support"
-    GCC_VERSION=14
-    CMAKE_C_COMPILER=gcc-14
-    CMAKE_CXX_COMPILER=g++-14
-elif command -v g++-13 &> /dev/null; then
-    echo "⚠ Using GCC 13 (C++23 features may be limited)"
-    GCC_VERSION=13
-    CMAKE_C_COMPILER=gcc-13
-    CMAKE_CXX_COMPILER=g++-13
-else
-    echo "⚠ Using system default GCC"
-    GCC_VERSION=$(gcc -dumpversion | cut -d. -f1)
-    CMAKE_C_COMPILER=gcc
-    CMAKE_CXX_COMPILER=g++
-fi
+echo "Building Air-Trap in Release mode..."
+echo "✓ Using GCC $GCC_VERSION"
 
 mkdir -p build
 cd build
