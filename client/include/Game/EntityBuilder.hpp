@@ -20,6 +20,7 @@
 #include "RType/ECS/Components/Velocity.hpp"
 #include "RType/ECS/Components/Sprite.hpp"
 #include "RType/ECS/Components/Animation.hpp"
+#include "RType/ECS/Components/ParallaxLayer.hpp"
 
 namespace Client::Game {
 
@@ -43,6 +44,63 @@ struct EntityTemplate {
     bool withAnimation{false};                      /**< Whether to add Animation component */
     rtp::ecs::components::Animation animation{};    /**< Initial animation data */
 
+    bool withParallax{false};                       /**< Whether to add ParallaxLayer component */
+    rtp::ecs::components::ParallaxLayer parallax{};/**< Parallax layer data */
+
+    static EntityTemplate createParrallaxLayer1()
+    {
+        EntityTemplate t;
+        t.id = "parallax_layer";
+
+        t.position = {0.0f, 0.0f};
+        t.rotation = 0.0f;
+        t.scale = {2.0f, 2.0f};
+
+        t.withVelocity = true;
+        t.velocity.speed = 10.0f;
+        t.velocity.direction = {-50.0f, 0.0f};
+
+        t.sprite.texturePath = "assets/backgrounds/stars_far.png";
+        t.sprite.rectLeft = 0;
+        t.sprite.rectTop = 0;
+        t.sprite.rectWidth = 1280;
+        t.sprite.rectHeight = 720;
+        t.sprite.zIndex = 5;
+        t.sprite.red = 255;
+        t.sprite.opacity = 200;
+
+        t.withParallax = true;
+        t.parallax.textureWidth = 1280.0f;
+        return t;
+    }
+
+    static EntityTemplate createParrallaxLayer2()
+    {
+        EntityTemplate t;
+        t.id = "parallax_layer";
+
+        t.position = {0.0f, 0.0f};
+        t.rotation = 0.0f;
+        t.scale = {2.0f, 2.0f};
+
+        t.withVelocity = true;
+        t.velocity.speed = 20.0f;
+        t.velocity.direction = {-50.0f, 0.0f};
+
+        t.sprite.texturePath = "assets/backgrounds/stars_near.png";
+        t.sprite.rectLeft = 0;
+        t.sprite.rectTop = 0;
+        t.sprite.rectWidth = 1280;
+        t.sprite.rectHeight = 720;
+        t.sprite.zIndex = 5;
+        t.sprite.red = 255;
+        t.sprite.opacity = 255;
+
+        t.withParallax = true;
+        t.parallax.textureWidth = 1280.0f;
+        return t;
+    }
+
     static EntityTemplate createBasicScout(const rtp::Vec2f& initialPos)
     {
         EntityTemplate t;
@@ -50,7 +108,7 @@ struct EntityTemplate {
 
         t.position = initialPos;
         t.rotation = 0.0f;
-        t.scale = {2.0f, 2.0f};
+        t.scale = {1.0f, 1.0f};
 
         t.withVelocity = true;
         t.velocity.speed = 2.0f;
