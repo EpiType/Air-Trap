@@ -48,7 +48,6 @@ namespace Client::Core
         // , _audioManager()
     {
         _window.setFramerateLimit(60);
-        _systemManager.setWindow(_window);
 
         _translations.loadLanguage(_settings.getLanguage());
         
@@ -75,26 +74,24 @@ namespace Client::Core
 
     void Application::initECS()
     {
-        // Register UI components
         _registry.registerComponent<rtp::ecs::components::ui::Button>();
         _registry.registerComponent<rtp::ecs::components::ui::Text>();
         _registry.registerComponent<rtp::ecs::components::ui::Slider>();
         _registry.registerComponent<rtp::ecs::components::ui::Dropdown>();
-        
+
         _registry.registerComponent<rtp::ecs::components::Transform>();
         _registry.registerComponent<rtp::ecs::components::Velocity>();
         _registry.registerComponent<rtp::ecs::components::Controllable>();
         _registry.registerComponent<rtp::ecs::components::Sprite>();
         _registry.registerComponent<rtp::ecs::components::Animation>();
 
-        // Add systems to SystemManager - window injected automatically!
-        _systemManager.addSystem<rtp::client::InputSystem>();
+        _systemManager.addSystem<rtp::client::InputSystem>(_settings);
         _systemManager.addSystem<rtp::client::MovementSystem>();
         _systemManager.addSystem<rtp::client::AnimationSystem>();
-        _systemManager.addSystem<rtp::client::RenderSystem>();
-        _systemManager.addSystem<Client::Systems::MenuSystem>();
-        _systemManager.addSystem<Client::Systems::UIRenderSystem>();
-        _systemManager.addSystem<Client::Systems::SettingsMenuSystem>(_settings);
+        _systemManager.addSystem<rtp::client::RenderSystem>(_window);
+        _systemManager.addSystem<Client::Systems::MenuSystem>(_window);
+        _systemManager.addSystem<Client::Systems::UIRenderSystem>(_window);
+        _systemManager.addSystem<Client::Systems::SettingsMenuSystem>(_window, _settings);
     }
 
     void Application::initMenu()
@@ -470,6 +467,7 @@ namespace Client::Core
             dropdownComp.selectedIndex = static_cast<int>(_settings.getColorBlindMode());
             dropdownComp.onSelect = [this](int index) {
                 _settings.setColorBlindMode(static_cast<Core::ColorBlindMode>(index));
+                rtp::log::info("Colorblind mode changed to: {}", index);
             };
             _registry.addComponent<rtp::ecs::components::ui::Dropdown>(dropdown, dropdownComp);
         }
@@ -545,39 +543,113 @@ namespace Client::Core
             if (event->is<sf::Event::Closed>())
                 _window.close();
 
-            if (_isWaitingForKey) {
-                if (const auto *kp = event->getIf<sf::Event::KeyPressed>()) {
-                    // Ignorer Escape pour annuler
-                    if (kp->code == sf::Keyboard::Key::Escape) {
-                        _isWaitingForKey = false;
-                        rtp::log::info("Key binding cancelled");
-                        return;
-                    }
-
-                    // Assigner la nouvelle touche
-                    _settings.setKey(_keyActionToRebind, kp->code);
-                    _isWaitingForKey = false;
-
-                    rtp::log::info("Key {} bound to action {}", 
-                                  _settings.getKeyName(kp->code),
-                                  static_cast<int>(_keyActionToRebind));
-                    
-                    changeState(GameState::KeyBindings);
+            if (const auto *kp = event->getIf<sf::Event::KeyPressed>()) {
+                // Escape global (sauf en key binding)
+                if (kp->code == sf::Keyboard::Key::Escape && _currentState != GameState::KeyBindings) {
+                    handleGlobalEscape();
                     return;
                 }
             }
 
-            // Gestion normale des inputs
-            if (const auto *kp = event->getIf<sf::Event::KeyPressed>()) {
-                if (kp->code == sf::Keyboard::Key::Escape && _currentState != GameState::KeyBindings)
-                    _window.close();
-                if (kp->code == sf::Keyboard::Key::J) {
-                    spawnEnemy();
-                }
-                if (kp->code == sf::Keyboard::Key::K) {
-                    killEnemy(0);
-                }
+            switch (_currentState) {
+                case GameState::Menu:
+                    processMenuInput(event.value());
+                    break;
+
+                case GameState::Playing:
+                    processGameInput(event.value());
+                    break;
+
+                case GameState::Settings:
+                    processSettingsInput(event.value());
+                    break;
+
+                case GameState::KeyBindings:
+                    processKeyBindingInput(event.value());
+                    break;
+
+                default:
+                    break;
             }
+        }
+    }
+
+    void Application::processMenuInput(const sf::Event& event) {
+        // Le MenuSystem gère déjà les clics sur les boutons
+        // Rien de plus à faire ici pour l'instant
+        (void)event;
+    }
+
+    void Application::processGameInput(const sf::Event& event) {
+        if (const auto *kp = event.getIf<sf::Event::KeyPressed>()) {
+            if (kp->code == sf::Keyboard::Key::J) {
+                spawnEnemy();
+                rtp::log::debug("DEBUG: Enemy spawned with J key");
+            }
+            if (kp->code == sf::Keyboard::Key::K) {
+                killEnemy(0);
+                rtp::log::debug("DEBUG: Enemy killed with K key");
+            }
+
+            if (kp->code == sf::Keyboard::Key::Escape) {
+                rtp::log::info("Game paused");
+                changeState(GameState::Paused);  // TODO: Implémenter l'état Pause
+            }
+
+            // Les touches de mouvement/tir sont gérées par InputSystem
+        }
+    }
+
+    void Application::processSettingsInput(const sf::Event& event) {
+        // Le MenuSystem gère déjà les sliders/dropdowns
+        (void)event;
+    }
+
+    void Application::processKeyBindingInput(const sf::Event& event) {
+        if (!_isWaitingForKey) return;
+
+        if (const auto *kp = event.getIf<sf::Event::KeyPressed>()) {
+            // Escape pour annuler
+            if (kp->code == sf::Keyboard::Key::Escape) {
+                _isWaitingForKey = false;
+                rtp::log::info("Key binding cancelled");
+                return;
+            }
+
+            // Assigner la nouvelle touche
+            _settings.setKey(_keyActionToRebind, kp->code);
+            _isWaitingForKey = false;
+
+            rtp::log::info("Key {} bound to action {}", 
+                          _settings.getKeyName(kp->code),
+                          static_cast<int>(_keyActionToRebind));
+            
+            changeState(GameState::KeyBindings);
+        }
+    }
+
+    void Application::handleGlobalEscape() {
+        switch (_currentState) {
+            case GameState::Menu:
+                _window.close();  // Quitter le jeu
+                break;
+
+            case GameState::Playing:
+                changeState(GameState::Paused);  // Pause (ou Menu)
+                break;
+
+            case GameState::Settings:
+            case GameState::KeyBindings:
+                _settings.save();
+                changeState(GameState::Menu);  // Retour au menu
+                break;
+
+            case GameState::Paused:
+                changeState(GameState::Playing);  // Reprendre le jeu
+                break;
+
+            default:
+                break;
         }
     }
 
@@ -605,19 +677,16 @@ namespace Client::Core
             // TODO: Appliquer au AudioManager quand il sera implémenté
         });
         
-        // ✅ Volume Musique  appliqué instantanément
         _settings.onMusicVolumeChanged([this](float volume) {
             rtp::log::info("Music volume changed to: {:.2f}", volume);
             // TODO: Appliquer au AudioManager quand il sera implémenté
         });
         
-        // ✅ Volume SFX - appliqué instantanément
         _settings.onSfxVolumeChanged([this](float volume) {
             rtp::log::info("SFX volume changed to: {:.2f}", volume);
             // TODO: Appliquer au AudioManager quand il sera implémenté
         });
         
-        // ✅ Changement de langue - recharge l'UI
         _settings.onLanguageChanged([this](Language lang) {
             rtp::log::info("Language changed to: {}", static_cast<int>(lang));
             
@@ -684,6 +753,7 @@ namespace Client::Core
             renderSys.update(_lastDt);
         }
         
+        // Display window (hors ECS)
         _window.display();
     }
 }
