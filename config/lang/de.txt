@@ -1,0 +1,40 @@
+# Deutsche Übersetzungen
+
+# Menü
+menu.title=AIR-TRAP
+menu.play=SPIELEN
+menu.settings=EINSTELLUNGEN
+menu.exit=BEENDEN
+
+# Einstellungen
+settings.title=EINSTELLUNGEN
+settings.audio=Audioeinstellungen
+settings.master_volume=Hauptlautstärke
+settings.music_volume=Musiklautstärke
+settings.sfx_volume=Effektlautstärke
+settings.language=Sprache
+settings.colorblind_mode=Farbenblindheitsmodus
+settings.back=ZURÜCK
+settings.key_bindings=TASTENBELEGUNG
+
+# Farbenblindheitsmodi
+colorblind.none=Keine
+colorblind.protanopia=Protanopie (Rotblindheit)
+colorblind.deuteranopia=Deuteranopie (Grünblindheit)
+colorblind.tritanopia=Tritanopie (Blaublindheit)
+
+# Tastenbelegung
+keybindings.title=TASTENBELEGUNG
+keybindings.move_up=Nach oben bewegen
+keybindings.move_down=Nach unten bewegen
+keybindings.move_left=Nach links bewegen
+keybindings.move_right=Nach rechts bewegen
+keybindings.shoot=Schießen
+keybindings.pause=Pause
+
+# Spiel
+game.score=Punktzahl: {0}
+game.lives=Leben: {0}
+game.level=Ebene {0}
+game.paused=PAUSIERT
+game.game_over=SPIEL VORBEI

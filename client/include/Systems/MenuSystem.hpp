@@ -12,6 +12,8 @@
 #include <SFML/Window.hpp>
 #include "RType/ECS/Registry.hpp"
 #include "RType/ECS/ISystem.hpp"
+#include "RType/ECS/Components/UI/Slider.hpp"
+#include "RType/ECS/Components/UI/Dropdown.hpp"
 #include "RType/ECS/Components/UI/Button.hpp"
 #include "RType/ECS/Components/UI/Text.hpp"
 #include "RType/Logger.hpp"
@@ -32,8 +34,21 @@ public:
 private:
     void handleMouseMove(const sf::Vector2i& mousePos);
     void handleMouseClick(const sf::Vector2i& mousePos);
+    
     bool isMouseOverButton(const rtp::ecs::components::ui::Button& button, 
                           const sf::Vector2i& mousePos);
+    
+    bool isMouseOverSlider(const rtp::ecs::components::ui::Slider& slider,
+                          const sf::Vector2i& mousePos);
+    
+    bool isMouseOverDropdown(const rtp::ecs::components::ui::Dropdown& dropdown,
+                            const sf::Vector2i& mousePos);
+    
+    void updateSliderValue(rtp::ecs::components::ui::Slider& slider,
+                          const sf::Vector2i& mousePos);
+    
+    int getDropdownOptionAtMouse(const rtp::ecs::components::ui::Dropdown& dropdown,
+                                const sf::Vector2i& mousePos);
 
     rtp::ecs::Registry& _registry;
     sf::RenderWindow& _window;

@@ -47,6 +47,15 @@ namespace rtp::ecs
 
             void killEntity(Entity entity);
 
+            void clear() {
+                std::lock_guard lock(_mutex);
+                for (auto& [type, array] : _arrays) {
+                    array->clear();
+                }
+                _generations.clear();
+                _freeIndices.clear();
+            }
+
             template <Component T>
             [[nodiscard]]
             auto registerComponent(void) -> SparseArray<T> &;
