@@ -40,7 +40,7 @@ namespace Client::Core
 {
     Application::Application()
         : _window(sf::VideoMode({1280, 720}), "Air-Trap - R-Type Clone")
-        , _systemManager(_registry), _enemyBuilder(_registry)
+        , _systemManager(_registry), _entityBuilder(_registry)
     {
         _window.setFramerateLimit(60);
         _systemManager.setWindow(_window);
@@ -226,10 +226,20 @@ namespace Client::Core
                 if (kp->code == sf::Keyboard::Key::Escape)
                     _window.close();
                 if (kp->code == sf::Keyboard::Key::J) {
-                    spawnEnemy();
+                    rtp::Vec2f mousePos{sf::Mouse::getPosition(_window).x, 
+                                        sf::Mouse::getPosition(_window).y};
+                    spawnEnemy(mousePos);
                 }
                 if (kp->code == sf::Keyboard::Key::K) {
                     killEnemy(0);
+                }
+                if (kp->code == sf::Keyboard::Key::L) {
+                    rtp::Vec2f mousePos{sf::Mouse::getPosition(_window).x, 
+                                        sf::Mouse::getPosition(_window).y};
+                    spawnProjectile(mousePos);
+                }
+                if (kp->code == sf::Keyboard::Key::M) {
+                    killProjectile(0);
                 }
             }
         }
@@ -248,16 +258,32 @@ namespace Client::Core
         }
     }
 
-    void Application::spawnEnemy() {
+    void Application::spawnProjectile(const rtp::Vec2f& position) {
+        std::size_t newIndex = _projectiles.size();
+        
+        Game::EntityTemplate createBulletEnemy = 
+            Game::EntityTemplate::createBulletEnemy(position);
+
+        auto result = _entityBuilder.spawn(createBulletEnemy);
+
+        if (result.has_value()) {
+            rtp::ecs::Entity newEnemy = result.value();
+            _projectiles.push_back(newEnemy);
+            std::cout << "projectile spawn (ID: " << newEnemy 
+                      << ") à l'INDEX: " << newIndex << ". Total: " 
+                      << _projectiles.size() << " projectiles." << std::endl;
+        } else {
+            std::cerr << "Erreur de spawn : " << result.error().message() << std::endl;
+        }
+    }
+
+    void Application::spawnEnemy(const rtp::Vec2f& position) {
         std::size_t newIndex = _spawnedEnemy.size();
         
-        Game::EnemyTemplate scoutTemplate = 
-            Game::EnemyTemplate::createBasicScout({
-                600.0f, 
-                100.0f + (newIndex * 50.0f) 
-            });
+        Game::EntityTemplate scoutTemplate = 
+            Game::EntityTemplate::createBasicScout(position);
 
-        auto result = _enemyBuilder.spawn(scoutTemplate);
+        auto result = _entityBuilder.spawn(scoutTemplate);
 
         if (result.has_value()) {
             rtp::ecs::Entity newEnemy = result.value();
@@ -282,12 +308,31 @@ namespace Client::Core
 
         rtp::ecs::Entity entityToKill = _spawnedEnemy.at(index);
 
-        _enemyBuilder.kill(entityToKill);
+        _entityBuilder.kill(entityToKill);
         _spawnedEnemy.erase(_spawnedEnemy.begin() + index);
 
         std::cout << "Ennemi ID: " << entityToKill 
                   << " à l'INDEX: " << index << " tué." << std::endl;
         std::cout << "Total restant : " << _spawnedEnemy.size() << " ennemis." << std::endl;
+    }
+
+    void Application::killProjectile(std::size_t index) {
+        if (index >= _projectiles.size()) {
+            std::cout << _projectiles.size() << std::endl;
+            std::cout << "Erreur : Index " << index << " hors limites. Seuls les index 0 à " 
+                      << (_projectiles.empty() ? 0 : _projectiles.size() - 1) 
+                      << " sont valides." << std::endl;
+            return;
+        }
+
+        rtp::ecs::Entity entityToKill = _projectiles.at(index);
+
+        _entityBuilder.kill(entityToKill);
+        _projectiles.erase(_projectiles.begin() + index);
+
+        std::cout << "Projectile ID: " << entityToKill 
+                  << " à l'INDEX: " << index << " tué." << std::endl;
+        std::cout << "Total restant : " << _projectiles.size() << " projectiles." << std::endl;
     }
 
     void Application::render()
