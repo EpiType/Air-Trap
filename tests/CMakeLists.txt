@@ -1,44 +1,53 @@
-cmake_minimum_required(VERSION 3.20)
+##
+## EPITECH PROJECT, 2025
+## R-Type
+## File description:
+## CMakeLists.txt, CMake configuration for Test environment
+##
 
-# Configuration des tests
+# Find dependencies
 find_package(GTest REQUIRED)
+find_package(asio REQUIRED)
 
-# Tests ECS
-add_executable(test_ecs
-    ecs/test_registry.cpp
-    ecs/test_components.cpp
-)
-
-target_link_libraries(test_ecs
-    PRIVATE
-        air-trap-common
-        GTest::gtest
-        GTest::gtest_main
-)
-
-target_include_directories(test_ecs
-    PRIVATE
-        ${CMAKE_SOURCE_DIR}/common/include
-)
-
-# Tests Network
-add_executable(test_network
+set(TEST_SOURCES
     network/test_protocol.cpp
+    ecs/test_registry.cpp
+    logger/test_logger.cpp
 )
 
-target_link_libraries(test_network
+# target_include_directories(air-trap-tests INTERFACE 
+#     ${CMAKE_CURRENT_SOURCE_DIR}/include
+# )
+
+# add_executable(test_network network/test_protocol.cpp)
+# 
+# target_link_libraries(test_network 
+#     PUBLIC 
+#         RTypeCommon
+#     PRIVATE
+#         asio::asio
+#         gtest::gtest 
+# )
+
+# add_executable(test_ecs ecs/test_registry.cpp)
+# 
+# target_link_libraries(test_ecs 
+#     PUBLIC 
+#         RTypeCommon
+#     PRIVATE
+#         gtest::gtest
+# )
+
+add_executable(test_logger logger/test_logger.cpp)
+
+target_link_libraries(test_logger 
+    PUBLIC 
+        RTypeCommon
     PRIVATE
-        air-trap-common
-        GTest::gtest
-        GTest::gtest_main
+        gtest::gtest
 )
 
-target_include_directories(test_network
-    PRIVATE
-        ${CMAKE_SOURCE_DIR}/common/include
-)
-
-# Activer les tests
-enable_testing()
-add_test(NAME ECS_Tests COMMAND test_ecs)
-add_test(NAME Network_Tests COMMAND test_network)
+include(GoogleTest)
+# gtest_discover_tests(test_network)
+# gtest_discover_tests(test_ecs)
+gtest_discover_tests(test_logger)

@@ -15,8 +15,8 @@ namespace rtp::ecs::components {
  * @brief Component representing an animation.
  */
 struct Animation {
-    int frameCount{1};         /**< Total number of frames in the animation */
     int totalFrames{1};        /**< Total frames including all animations */
+    int currentFrame{0};       /**< Index of the currently displayed frame (0 to totalFrames - 1) */
     float frameDuration{0.1f}; /**< Duration of each frame in seconds */
     bool loop{true};           /**< Whether the animation should loop */
     float elapsedTime{0.0f};   /**< Time elapsed since the animation started */

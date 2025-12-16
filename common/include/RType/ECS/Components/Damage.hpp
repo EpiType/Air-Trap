@@ -6,6 +6,7 @@
 */
 
 #pragma once
+#include "ECS/Entity.hpp"
 
 namespace rtp::ecs::components {
 /**
@@ -14,5 +15,6 @@ namespace rtp::ecs::components {
  */
 struct Damage {
     int amount{0}; /**< Amount of damage */
+    Entity sourceEntity{NullEntity}; /**< ID of the entity that caused the damage */
 };
 }  // namespace rtp::ecs::components
