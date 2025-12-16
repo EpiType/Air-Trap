@@ -62,7 +62,6 @@ void MenuSystem::handleMouseClick(const sf::Vector2i& mousePos) {
     if (dropdownsResult) {
         auto& dropdowns = dropdownsResult.value().get();
         
-        // PHASE 1: Vérifier d'abord si on clique sur les options d'un dropdown ouvert
         for (const auto& entity : dropdowns.getEntities()) {
             auto& dropdown = dropdowns[entity];
             
@@ -77,7 +76,7 @@ void MenuSystem::handleMouseClick(const sf::Vector2i& mousePos) {
                     }
                     
                     rtp::log::info("Dropdown option {} selected", optionIndex);
-                    return;  // Clic traité, bloquer le reste
+                    return;
                 }
             }
         }
@@ -109,7 +108,6 @@ void MenuSystem::handleMouseClick(const sf::Vector2i& mousePos) {
             }
         }
         
-        // Si on a fermé un dropdown, bloquer le clic sur les autres éléments
         if (hadOpenDropdown) {
             return;
         }
@@ -131,14 +129,14 @@ void MenuSystem::handleMouseClick(const sf::Vector2i& mousePos) {
                 }
                 
                 rtp::log::info("Button '{}' clicked", button.text);
-                break;  // On ne peut cliquer qu'un seul bouton
+                break;
             }
         }
         
         // Exécuter les callbacks APRÈS avoir fini d'accéder aux composants
         for (auto& [entity, callback] : buttonCallbacks) {
             callback();
-            return;  // Sortir après le premier callback
+            return;
         }
     }
     
