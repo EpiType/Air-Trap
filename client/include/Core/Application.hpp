@@ -66,7 +66,6 @@ private:
     
     void changeState(GameState newState);
     
-    // ✅ Debug functions (dev only)
     void spawnEnemy();
     void killEnemy(std::size_t index);
     

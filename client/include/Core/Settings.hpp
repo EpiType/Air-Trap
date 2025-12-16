@@ -79,7 +79,6 @@ public:
     float getSfxVolume() const { return _sfxVolume; }
     void setSfxVolume(float volume);
     
-    // ✅ Callbacks pour changements dynamiques
     using VolumeCallback = std::function<void(float)>;
     void onMasterVolumeChanged(VolumeCallback callback) {
         _onMasterVolumeChanged.push_back(callback);

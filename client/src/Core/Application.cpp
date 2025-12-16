@@ -131,7 +131,6 @@ namespace Client::Core
             _registry.addComponent<rtp::ecs::components::ui::Button>(playBtn, button);
         }
         
-        // ✅ Create Settings button
         auto settingsBtnResult = _registry.spawnEntity();
         if (settingsBtnResult) {
             rtp::ecs::Entity settingsBtn = settingsBtnResult.value();
@@ -148,7 +147,6 @@ namespace Client::Core
             _registry.addComponent<rtp::ecs::components::ui::Button>(settingsBtn, button);
         }
         
-        // ✅ Create Exit button
         auto exitBtnResult = _registry.spawnEntity();
         if (exitBtnResult) {
             rtp::ecs::Entity exitBtn = exitBtnResult.value();
@@ -271,9 +269,8 @@ namespace Client::Core
                 button.position = rtp::Vec2f{500.0f, yPos};
                 button.size = rtp::Vec2f{250.0f, 50.0f};
 
-                // ✅ Capturer action par valeur, pas par référence !
-                KeyAction actionToBind = binding.action;  // Copie locale
-                button.onClick = [this, actionToBind]() {  // ✅ Capture par valeur
+                KeyAction actionToBind = binding.action;
+                button.onClick = [this, actionToBind]() {
                     rtp::log::info("Waiting for key input for action: {}", 
                                   static_cast<int>(actionToBind));
                     _isWaitingForKey = true;
