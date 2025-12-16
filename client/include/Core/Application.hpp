@@ -16,7 +16,7 @@
 #include "Graphics/AssetManager.hpp"
 #include "Systems/InputSystem.hpp"
 #include "Systems/RenderSystem.hpp"
-#include "Game/EnemyBuilder.hpp"
+#include "Game/EntityBuilder.hpp"
 
 #include "RType/ECS/Registry.hpp"
 #include "RType/ECS/SystemManager.hpp"
@@ -52,15 +52,18 @@ public:
     void render();
     
     void changeState(GameState newState);
-    void spawnEnemy();
+    void spawnEnemy(const rtp::Vec2f& position);
+    void spawnProjectile(const rtp::Vec2f& position);
     void killEnemy(std::size_t index);
+    void killProjectile(std::size_t index);
     
     std::vector<rtp::ecs::Entity> _spawnedEnemy;
+    std::vector<rtp::ecs::Entity> _projectiles;
     sf::RenderWindow _window;
     rtp::ecs::Registry _registry;
     rtp::ecs::SystemManager _systemManager;
     Graphics::AssetManager _assetManager;
-    Game::EnemyBuilder _enemyBuilder;
+    Game::EntityBuilder _entityBuilder;
     
     GameState _currentState{GameState::Menu};
     float _lastDt{0.0f};
