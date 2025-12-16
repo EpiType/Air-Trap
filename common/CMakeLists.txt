@@ -7,30 +7,61 @@
 
 cmake_minimum_required(VERSION 3.20)
 
-set(SRC_DYNLIB
-    src/Core/DynamicLibraries/LibraryManager.cpp
-    src/Core/DynamicLibraries/DynamicLibrary.cpp
-)
+# --- SOURCES ---
 
+# NOTE: DON'T USE GLOB_RECURSE,
+# If you need to add a file, add it MANUALLY here
+# If your file doesn't belong to any category, create a new variable for it.
+
+set(SRC_DYNLIB
+    src/System/LibraryManager.cpp
+    src/System/DynamicLibrary.cpp
+)
 if(WIN32)
-    list(APPEND SRC_DYNLIB src/Core/DynamicLibraries/impl/PlatformBackend_Win.cpp)
+    list(APPEND SRC_DYNLIB src/System/LibraryBackend_Win.cpp)
 elseif(UNIX)
-    list(APPEND SRC_DYNLIB src/Core/DynamicLibraries/impl/PlatformBackend_Unix.cpp)
+    list(APPEND SRC_DYNLIB src/System/LibraryBackend_Unix.cpp)
 endif()
 
 set(SRC_LOGGER
-    src/Core/Logger/Logger.cpp
+    src/Logger.cpp
 )
 
-# set(SRC_ECS
-#     src/RType/ECS/Registry.cpp
-# )
+set(SRC_THREADPOOL
+    src/Thread/ThreadPool.cpp
+)
+
+set(SRC_ERROR
+    src/Error.cpp
+)
+
+set(SRC_ECS
+    src/ECS/Registry.cpp
+    src/ECS/SystemManager.cpp
+)
+
+set(SRC_NETWORK
+    src/Network/Core/Session.cpp
+    src/Network/Packet.cpp
+)
+
+# USE OF GLOBAL RECURSE JUST TO COLLECT HEADERS FOR INSTALLATION PURPOSES
+file(GLOB_RECURSE PUBLIC_HEADERS "include/*.hpp")
+
+# --- TARGET ---
 
 add_library(RTypeCommon STATIC
     ${SRC_LOGGER}
     ${SRC_DYNLIB}
-    # ${SRC_ECS}
+    ${SRC_ECS}
+    ${SRC_THREADPOOL}
+    ${SRC_ERROR}
+    ${SRC_NETWORK}
+
+    ${PUBLIC_HEADERS}
 )
+
+# --- INCLUDES ---
 
 target_include_directories(RTypeCommon
     PUBLIC
@@ -41,7 +72,16 @@ target_include_directories(RTypeCommon
         ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_compile_features(RTypeCommon PUBLIC cxx_std_23)
+if(MSVC)
+    target_compile_options(RTypeCommon PRIVATE /W4)
+else()
+    target_compile_options(RTypeCommon PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+# --- DEPENDENCIES ---
+
+# ASIO WITHOUT BOOST
+target_compile_definitions(RTypeCommon PUBLIC ASIO_STANDALONE)
 
 find_package(asio REQUIRED)
 
@@ -50,6 +90,7 @@ target_link_libraries(RTypeCommon
         asio::asio
 )
 
+# LINK DL ON UNIX SYSTEMS
 if(UNIX)
     target_link_libraries(RTypeCommon PRIVATE ${CMAKE_DL_LIBS})
 endif()

@@ -1,0 +1,92 @@
+#!/bin/bash
+# Git hook pour vérifier la compilation avant le commit
+
+echo "🏗️  [PRE-COMMIT] Vérification de la compilation..."
+
+# Définition d'un dossier de build temporaire
+BUILD_DIR="build_check_pre_commit"
+
+# Nettoyage d'une éventuelle exécution précédente
+if [ -d "$BUILD_DIR" ]; then
+    rm -rf "$BUILD_DIR"
+fi
+
+mkdir "$BUILD_DIR"
+cd "$BUILD_DIR" || exit 1
+
+# Détection du nombre de cœurs
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    CORES=$(sysctl -n hw.ncpu)
+elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "win32" ]]; then
+    CORES=${NUMBER_OF_PROCESSORS:-1}
+else
+    CORES=$(nproc)
+fi
+
+# Detect GCC version
+if command -v g++-15 &> /dev/null; then
+    GCC_VERSION=15
+    CMAKE_C_COMPILER=gcc-15
+    CMAKE_CXX_COMPILER=g++-15
+elif command -v g++-14 &> /dev/null; then
+    GCC_VERSION=14
+    CMAKE_C_COMPILER=gcc-14
+    CMAKE_CXX_COMPILER=g++-14
+elif command -v g++-13 &> /dev/null; then
+    GCC_VERSION=13
+    CMAKE_C_COMPILER=gcc-13
+    CMAKE_CXX_COMPILER=g++-13
+else
+    GCC_VERSION=$(gcc -dumpversion | cut -d. -f1)
+    CMAKE_C_COMPILER=gcc
+    CMAKE_CXX_COMPILER=g++
+fi
+
+LOG_FILE="../pre_commit_build.log"
+
+echo "⚙️  [PRE-COMMIT] Installation Conan..."
+conan install .. --output-folder=. --build=missing -s build_type=Release -s compiler.cppstd=23 -s compiler.version=$GCC_VERSION > "$LOG_FILE" 2>&1
+
+if [ $? -ne 0 ]; then
+    echo "❌ [PRE-COMMIT] Échec de l'installation Conan !"
+    echo "📜 Voir: cat pre_commit_build.log"
+    cd ..
+    rm -rf "$BUILD_DIR"
+    rm -f "$LOG_FILE"
+    echo "💡 Utilisez 'git commit --no-verify' pour bypasser ce hook."
+    exit 1
+fi
+
+echo "⚙️  [PRE-COMMIT] Configuration CMake..."
+cmake .. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=$CMAKE_C_COMPILER -DCMAKE_CXX_COMPILER=$CMAKE_CXX_COMPILER >> "$LOG_FILE" 2>&1
+
+if [ $? -ne 0 ]; then
+    echo "❌ [PRE-COMMIT] Échec de la configuration CMake !"
+    echo "📜 Voir: cat pre_commit_build.log"
+    cd ..
+    rm -rf "$BUILD_DIR"
+    rm -f "$LOG_FILE"
+    echo "💡 Utilisez 'git commit --no-verify' pour bypasser ce hook."
+    exit 1
+fi
+
+echo "🔨 [PRE-COMMIT] Compilation..."
+cmake --build . -- -j"$CORES" >> "$LOG_FILE" 2>&1
+
+if [ $? -ne 0 ]; then
+    echo "❌ [PRE-COMMIT] Échec de la compilation !"
+    echo "📋 Voir les dernières erreurs:"
+    tail -n 30 "$LOG_FILE"
+    cd ..
+    rm -rf "$BUILD_DIR"
+    rm -f "$LOG_FILE"
+    echo "💡 Utilisez 'git commit --no-verify' pour bypasser ce hook."
+    exit 1
+fi
+
+cd ..
+rm -rf "$BUILD_DIR"
+rm -f "$LOG_FILE"
+
+echo "✅ [PRE-COMMIT] Compilation réussie. Commit autorisé."
+exit 0

@@ -29,6 +29,27 @@ cmake_install.cmake
 CTestTestfile.cmake
 Makefile
 install_manifest.txt
+CMakePresets.json
+CMakeUserPresets.json
+
+# Conan generated files
+conan_toolchain.cmake
+conan*.cmake
+conanbuild*.sh
+conanrun*.sh
+deactivate_*.sh
+cmakedeps_macros.cmake
+*Targets.cmake
+*-release-*.cmake
+*-debug-*.cmake
+*-Target-*.cmake
+*Config.cmake
+*ConfigVersion.cmake
+*Config*.cmake
+*-config*.cmake
+Find*.cmake
+!FindDependencies.cmake
+module-*.cmake
 
 # VS/Visual Studio
 .vs/
@@ -76,6 +97,7 @@ vcpkg_installed/
 
 # Coverage and profiling
 coverage/
+coverage.xml
 *.gcda
 *.gcno
 *.gcov
@@ -88,6 +110,7 @@ cscope.files
 *.d
 
 # Logs, temp files, editor backups
+logs/
 *.log
 *.tmp
 *.swp
@@ -106,3 +129,12 @@ Thumbs.db
 /docs/doxygen/html/
 /docs/doxygen/latex/
 /docs/doxygen/xml/
+
+# IDE specific files
+config/*.cfg
+
+# Binary files
+r-type_client
+r-type_server
+r-type_client_debug
+r-type_server_debug

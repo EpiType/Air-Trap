@@ -5,20 +5,49 @@
 ** ThreadPool.cpp, ThreadPool class implementation
 */
 
+/*
+** MIT License
+**
+** Copyright (c) 2025 Robin Toillon
+**
+** Permission is hereby granted, free of charge, to any person obtaining
+** a copy of this software and associated documentation files (the
+** "Software"), to deal in the Software without restriction, including
+** without limitation the rights to use, copy, modify, merge, publish,
+** distribute, sublicense, and/or sell copies of the Software, and to
+** permit persons to whom the Software is furnished to do so, subject to
+** the following conditions:
+**
+** The above copyright notice and this permission notice shall be
+** included in all copies or substantial portions of the Software.
+**
+** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+** EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+** MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+** IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+** CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+** TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+** SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 /**
  * @file ThreadPool.cpp
  * @brief ThreadPool class implementation
- * @details This file contains the implementation of the ThreadPool class.
- * The ThreadPool class manages a pool of worker threads that can execute
- * tasks asynchronously. Tasks can be enqueued to the pool, and the worker threads
- * will process them concurrently. The class ensures thread-safe access to
- * the task queue using mutexes and condition variables.
+ * @author Robin Toillon
+ * @details This file contains the implementation of the ThreadPool
+ * class. The ThreadPool class manages a pool of worker threads that
+ * can execute tasks asynchronously. Tasks can be enqueued to the pool,
+ * and the worker threads will process them concurrently. The class
+ * ensures thread-safe access to the task queue using mutexes and
+ * condition variables.
  */
 
-#include "ThreadPool.hpp"
-#include "RType/Core/Logger/Logger.hpp"
+#include "RType/Assert.hpp"
+#include "RType/Logger.hpp"
+#include "RType/Thread/ThreadPool.hpp"
 
 #include <format>
+#include <exception>
 
 namespace rtp::thread
 {
@@ -27,32 +56,33 @@ namespace rtp::thread
     // Public API
     ///////////////////////////////////////////////////////////////////////////
 
-    auto ThreadPool::create(size_t numThreads) noexcept
-        -> std::expected<std::unique_ptr<ThreadPool>, std::string>
+    auto ThreadPool::create(size_t numThreads)
+        -> std::expected<std::unique_ptr<ThreadPool>, rtp::Error>
     {
+        constexpr std::string_view fmt{"ThreadPool init failed: {}"};
+
         if (numThreads == 0)
             return std::unexpected{
-                "ThreadPool must have at least one thread."};
+                Error::failure(ErrorCode::InvalidParameter,
+                               fmt, "number of threads must be at least 1")};
 
-        std::unique_ptr<ThreadPool> pool{new (std::nothrow) ThreadPool{}};
-        if (!pool)
-            return std::unexpected{
-                "ThreadPool init failed: memory allocation error"};
         try {
+            std::unique_ptr<ThreadPool> pool{new ThreadPool{}};
+
+            pool->start(numThreads);
             log::info("ThreadPool initialized successfully with {} workers.",
                       numThreads);
-            pool->start(numThreads);
-        } catch (const std::exception &e) {
-            const char *fmt{"ThreadPool init failed: {}"};
-            log::error(fmt, e.what());
-            return std::unexpected{std::format(fmt, e.what())};
-        } catch (...) {
-            std::string err{"ThreadPool init failed: unknown error"};
-            log::error("{}", err);
-            return std::unexpected{err};
-        }
 
-        return pool;
+            return pool;
+
+        } catch (const std::system_error &e) {
+            return std::unexpected{
+                Error::failure(ErrorCode::InternalRuntimeError,
+                               fmt, e.what())};
+        } catch (...) {
+            return std::unexpected{Error::failure(ErrorCode::Unknown,
+                                   fmt, "unknown error")};
+        }
     }
 
     ThreadPool::~ThreadPool() noexcept
@@ -60,6 +90,10 @@ namespace rtp::thread
         {
             std::unique_lock<std::mutex> lock(this->_queueMutex);
             this->_stop = true;
+
+            RTP_VERIFY(this->_tasks.empty(), 
+                       "ThreadPool destroyed with {} pending tasks discarded!", 
+                       this->_tasks.size());
         }
         this->_condition.notify_all();
     }
@@ -84,18 +118,24 @@ namespace rtp::thread
             {
                 std::unique_lock<std::mutex> lock(this->_queueMutex);
 
-                this->_condition.wait(lock, [this, &stopToken](void) {
-                    return this->_stop || !this->_tasks.empty();
+                this->_condition.wait(lock, [this, st = stopToken](void) {
+                    return this->_stop || st.stop_requested()
+                        || !this->_tasks.empty();
                 });
                 if ((stopToken.stop_requested() || this->_stop) &&
                     this->_tasks.empty()) [[unlikely]]
                     break;
                 if (this->_tasks.empty()) [[unlikely]]
                     continue;
+                RTP_ASSERT(!this->_tasks.empty(), 
+                           "Worker: Try to pop from empty queue (Logic Error)");
 
                 task = std::move(this->_tasks.front());
                 this->_tasks.pop();
             }
+
+            RTP_ASSERT(task, "Worker: Popped an invalid/null task function!");
+
             try {
                 task();
             } catch (const std::exception &e) {

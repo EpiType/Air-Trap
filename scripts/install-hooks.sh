@@ -26,6 +26,7 @@ for hook in "$HOOKS_DIR"/*; do
         target="$GIT_HOOKS_DIR/$hook_name"
         
         # Créer un lien symbolique
+        # L'option -f force l'écrasement si le lien existe déjà
         ln -sf "$hook" "$target"
         chmod +x "$target"
         
@@ -36,19 +37,19 @@ done
 echo ""
 echo "✅ Installation terminée!"
 echo ""
-echo "Hooks installés:"
-echo "  - commit-msg : Valide le format des messages de commit"
+echo "Hooks actifs :"
+echo "---------------------------------------------------"
+if [ -f "$GIT_HOOKS_DIR/commit-msg" ]; then
+    echo "📝 commit-msg :"
+    echo "   Valide que le message respecte : [TYPE] description"
+fi
+if [ -f "$GIT_HOOKS_DIR/pre-commit" ]; then
+    echo "🏗️  pre-commit :"
+    echo "   Compile le projet avant chaque commit."
+    echo "   Si la compilation échoue, le commit est bloqué."
+fi
+echo "---------------------------------------------------"
 echo ""
-echo "Format requis pour les commits:"
-echo "  [TYPE] description"
-echo ""
-echo "Types valides:"
+echo "Rappel des types de commits valides:"
 echo "  [ADD], [FIX], [CHORE], [DOCS], [STYLE], [DEL], [REFACTOR], [MERGE]"
-echo ""
-echo "Exemples:"
-echo "  [ADD] player connection handler to server"
-echo "  [FIX] rendering bug on client startup"
-echo "  [DOCS] build instructions in README"
-echo "  [DEL] remove obsolete configuration files"
-echo "  [MERGE] merge feature/login into main"
 echo ""

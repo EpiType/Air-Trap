@@ -24,13 +24,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        fetch-depth: 10
+        fetch-depth: 0
     - name: Detect changes manually
       id: changes
       run: |
         # Get list of changed files
-        if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
-          # New branch, check current commit only
+        if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "${{ github.event.before }}" 2>/dev/null; then
+          # New branch OR commit doesn't exist (after rebase/amend), check current commit only
           FILES=$(git diff-tree --no-commit-id --name-only -r HEAD)
         else
           # Compare with previous commit
@@ -90,8 +90,8 @@ jobs:
         PATTERN="^\[(ADD|FIX|CHORE|DOCS|STYLE|DEL|REFACTOR|MERGE)\] .+"
         
         # Get commits from push
-        if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
-          # New branch, check only the last commit
+        if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "${{ github.event.before }}" 2>/dev/null; then
+          # New branch OR commit doesn't exist (after rebase/amend), check only the last commit
           COMMITS=$(git log -1 --pretty=format:"%H")
         else
           COMMITS=$(git log ${{ github.event.before }}..${{ github.sha }} --pretty=format:"%H")
@@ -216,7 +216,24 @@ jobs:
     - name: Install system dependencies
       run: |
         sudo apt-get update
+        
+        # Install GCC 14 for C++23 <print> support
+        sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+        sudo apt-get update
+        sudo apt-get install -y gcc-14 g++-14
+        
+        # Make GCC 14 default
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 100
+        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 100
+        sudo update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-14 100
+        sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-14 100
+        
+        # Install other dependencies
         sudo apt-get install -y cmake build-essential libudev-dev libgl1-mesa-dev libx11-dev libxrandr-dev libfreetype6-dev libopenal-dev libflac-dev libvorbis-dev
+        
+        # Verify GCC version
+        gcc --version
+        g++ --version
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -257,15 +274,14 @@ jobs:
       with:
         name: air-trap-linux
         path: |
-          build/r-type_server
-          build/r-type_client
+          build/bin/r-type_server
+          build/bin/r-type_client
 
-  # Job 4: Build on Windows
+    # Job 4: Build on Windows
   build-windows:
     name: Build on Windows
     runs-on: windows-latest
     needs: [paths-filter, style-check]
-    # Only on PRs to main (dev → main validation), only on main repository, and if source files changed
     if: |
       github.repository == 'EpiType/Air-Trap' &&
       github.event_name == 'pull_request' && 
@@ -294,45 +310,185 @@ jobs:
         restore-keys: |
           conan-windows-
 
-    - name: Install dependencies
+    - name: Install dependencies and configure CMake
       run: |
-        mkdir build
+        if not exist build mkdir build
         cd build
-        conan install .. --build=missing -s build_type=Release -c tools.system.package_manager:mode=install
-
-    - name: Configure CMake
-      run: |
-        cd build
+        conan install .. --build=missing -s build_type=Release -s compiler.cppstd=23 -c tools.system.package_manager:mode=install
         cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake
+        cd ..
+      shell: cmd
 
     - name: Build
       run: |
-        cd build
-        cmake --build . --config Release
+        cmake --build build --config Release
+
+    - name: Copy SFML DLLs to executables
+      run: |
+        # Find and copy all SFML DLLs from Conan cache to executable directories
+        $conanPath = "$env:USERPROFILE\.conan2"
+        $dllFiles = Get-ChildItem -Path $conanPath -Filter "*.dll" -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.Directory.Name -eq "bin" }
+        
+        foreach ($dll in $dllFiles) {
+          Write-Host "Copying $($dll.Name)..."
+          Copy-Item -Path $dll.FullName -Destination "build\bin\Release\" -Force -ErrorAction SilentlyContinue
+        }
+        
+        Write-Host "`nDLLs in bin/Release:"
+        Get-ChildItem "build\bin\Release\*.dll" | ForEach-Object { Write-Host "  - $($_.Name)" }
+      shell: pwsh
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: air-trap-windows
         path: |
-          build/Release/r-type_server.exe
-          build/Release/r-type_client.exe
+          build/bin/Release/r-type_client.exe
+          build/bin/Release/r-type_server.exe
+          build/bin/Release/*.dll
 
   # Job 5: Build on macOS
-  build-macos:
-    name: Build on macOS
-    runs-on: macos-latest
-    needs: [paths-filter, style-check]
-    # Only on PRs to main (dev → main validation), only on main repository, and if source files changed
+  # DISABLED: GCC does not support Objective-C blocks required by macOS frameworks
+  # SFML on macOS needs CoreAudio/IOKit which use Objective-C closures (^)
+  # Only Clang supports these, but Clang lacks full C++23 support
+  # Solution needed: Either use C++20 on macOS with preprocessor conditionals,
+  # or find alternative graphics library that doesn't require Objective-C
+  # build-macos:
+  #   name: Build on macOS (DISABLED - GCC incompatibility)
+  #   runs-on: macos-latest
+  #   if: |
+  #     github.repository == 'EpiType/Air-Trap' &&
+  #     github.event_name == 'pull_request' &&
+  #     github.base_ref == 'main' &&
+  #     needs.paths-filter.outputs.src == 'true'
+    
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v4
+
+    # - name: Set up Python
+    #   uses: actions/setup-python@v5
+    #   with:
+    #     python-version: '3.11'
+
+    # - name: Install Conan
+    #   run: |
+    #     pip install conan
+    #     conan profile detect --force
+
+    # - name: Install GCC 14
+    #   run: |
+    #     brew install gcc@14
+
+    # - name: Install SFML dependencies
+    #   run: |
+    #     brew install cmake freetype flac libvorbis libogg
+
+    # - name: Build SFML from source with GCC 14
+    #   run: |
+    #     git clone --depth 1 --branch 3.0.0 https://github.com/SFML/SFML.git /tmp/sfml
+    #     cd /tmp/sfml
+    #     # Patch CMakeLists.txt to allow GCC on macOS
+    #     sed -i '' '175s/.*/# Clang check disabled for GCC support/' CMakeLists.txt
+    #     mkdir build && cd build
+    #     cmake .. \
+    #       -DCMAKE_BUILD_TYPE=Release \
+    #       -DCMAKE_CXX_COMPILER=g++-14 \
+    #       -DCMAKE_C_COMPILER=gcc-14 \
+    #       -DCMAKE_CXX_STANDARD=23 \
+    #       -DCMAKE_INSTALL_PREFIX=/usr/local \
+    #       -DBUILD_SHARED_LIBS=ON \
+    #       -DSFML_USE_SYSTEM_DEPS=ON
+    #     cmake --build . --config Release -j$(sysctl -n hw.ncpu)
+    #     sudo cmake --install .
+
+    # - name: Create GCC 14 Conan profile
+    #   run: |
+    #     cat > ~/.conan2/profiles/gcc14 << EOF
+    #     [settings]
+    #     arch=armv8
+    #     build_type=Release
+    #     compiler=gcc
+    #     compiler.cppstd=23
+    #     compiler.libcxx=libstdc++11
+    #     compiler.version=14
+    #     os=Macos
+    #     
+    #     [conf]
+    #     tools.cmake.cmaketoolchain:generator=Unix Makefiles
+    #     tools.system.package_manager:mode=install
+    #     EOF
+    #     echo "GCC 14 profile created:"
+    #     cat ~/.conan2/profiles/gcc14
+
+    # - name: Cache Conan packages
+    #   uses: actions/cache@v3
+    #   with:
+    #     path: ~/.conan2
+    #     key: conan-macos-gcc14-sfml-custom-${{ hashFiles('**/conanfile.txt') }}
+    #     restore-keys: |
+    #       conan-macos-gcc14-sfml-custom-
+
+    # - name: Install dependencies (without SFML from Conan)
+    #   run: |
+    #     mkdir -p build
+    #     cd build
+    #     # Install only non-SFML dependencies via Conan
+    #     conan install .. --profile:host=gcc14 --profile:build=default --build=missing -c tools.system.package_manager:mode=install || true
+
+    # - name: Configure CMake
+    #   run: |
+    #     cd build
+    #     cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_CXX_COMPILER=g++-14
+
+    # - name: Build
+    #   run: |
+    #     cd build
+    #     cmake --build . --config Release -j$(sysctl -n hw.ncpu)
+
+    # - name: Upload artifacts
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: air-trap-macos
+    #     path: |
+    #       build/bin/r-type_server
+    #       build/bin/r-type_client
+          # build/bin/r-type_client
+
+  # Job 6: Unit Tests with Coverage
+  tests:
+    name: Run Unit Tests with Coverage
+    runs-on: ubuntu-latest
+    needs: [paths-filter, build-linux]
+    # Run tests when source files changed
     if: |
       github.repository == 'EpiType/Air-Trap' &&
-      github.event_name == 'pull_request' && 
-      github.base_ref == 'main' &&
-      needs.paths-filter.outputs.src == 'true'
+      needs.paths-filter.outputs.src == 'true' &&
+      (needs.build-linux.result == 'success' || needs.build-linux.result == 'skipped')
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        
+        # Install GCC 14 for C++23 <print> support
+        sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+        sudo apt-get update
+        sudo apt-get install -y gcc-14 g++-14 gcovr
+        
+        # Make GCC 14 default
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 100
+        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 100
+        sudo update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-14 100
+        sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-14 100
+        
+        # Install other dependencies
+        sudo apt-get install -y cmake build-essential libudev-dev libgl1-mesa-dev libx11-dev libxrandr-dev libfreetype6-dev libopenal-dev libflac-dev libvorbis-dev
+        
+        gcc --version
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -348,54 +504,47 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ~/.conan2
-        key: conan-macos-${{ hashFiles('**/conanfile.txt') }}
+        key: conan-linux-${{ hashFiles('**/conanfile.txt') }}
         restore-keys: |
-          conan-macos-
+          conan-linux-
 
     - name: Install dependencies
       run: |
         mkdir -p build
         cd build
-        conan install .. --build=missing -s build_type=Release -c tools.system.package_manager:mode=install
+        conan install .. --build=missing -s build_type=Release -c tools.system.package_manager:mode=install -c tools.system.package_manager:sudo=True
 
-    - name: Configure CMake
+    - name: Configure CMake with Coverage
       run: |
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake
+        cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DENABLE_COVERAGE=ON
 
-    - name: Build
+    - name: Build Tests
       run: |
         cd build
-        cmake --build . --config Release -j$(sysctl -n hw.ncpu)
+        cmake --build . --config Debug -j$(nproc)
 
-    - name: Upload artifacts
+    - name: Run Tests
+      run: |
+        cd build
+        ctest --output-on-failure --verbose
+
+    - name: Generate Coverage Report
+      run: |
+        cd build
+        gcovr --root .. --exclude '../tests/*' --exclude '../build/*' --print-summary --xml coverage.xml
+
+    - name: Upload Coverage Report
       uses: actions/upload-artifact@v4
       with:
-        name: air-trap-macos
-        path: |
-          build/r-type_server
-          build/r-type_client
+        name: coverage-report
+        path: build/coverage.xml
 
-  # Job 6: Unit Tests (Optional - requires test implementation)
-  tests:
-    name: Run Unit Tests
-    runs-on: ubuntu-latest
-    needs: build-linux
-    if: false  # Disabled until tests are implemented
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Download Linux artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: air-trap-linux
-
-    - name: Run tests
+    - name: Display Coverage Summary
       run: |
-        # Execute test binaries
-        ./r-type_tests
+        cd build
+        echo "=== Code Coverage Summary ==="
+        gcovr --root .. --exclude '../tests/*' --exclude '../build/*' --print-summary
 
   # Job 7: Mirror Repository
   mirror:
@@ -448,7 +597,7 @@ jobs:
   notify:
     name: Send Discord Notification
     runs-on: ubuntu-latest
-    needs: [paths-filter, commit-validation, style-check, build-linux, build-windows, build-macos, mirror]
+    needs: [paths-filter, commit-validation, style-check, build-linux, build-windows, tests, mirror]
     # Always notify from main repository (push and PR), même en cas d'échec
     if: |
       github.repository == 'EpiType/Air-Trap' &&
@@ -467,7 +616,7 @@ jobs:
         STYLE_STATUS="${{ needs.style-check.result || 'skipped' }}"
         BUILD_LINUX_STATUS="${{ needs.build-linux.result || 'skipped' }}"
         BUILD_WINDOWS_STATUS="${{ needs.build-windows.result || 'skipped' }}"
-        BUILD_MACOS_STATUS="${{ needs.build-macos.result || 'skipped' }}"
+        TESTS_STATUS="${{ needs.tests.result || 'skipped' }}"
         MIRROR_STATUS="${{ needs.mirror.result || 'skipped' }}"
         
         BRANCH_NAME="${{ github.ref_name }}"
@@ -548,6 +697,16 @@ jobs:
           REPORT="$REPORT\\n✅ Build Windows: OK"
         elif [ "$BUILD_WINDOWS_STATUS" = "skipped" ]; then
           REPORT="$REPORT\\n⏭️ Build Windows: Skipped - pas de PR vers main"
+        fi
+        
+        # Tests
+        if [ "$TESTS_STATUS" = "failure" ]; then
+          REPORT="$REPORT\\n❌ Tests: Échec des tests unitaires"
+          FAILED=1
+        elif [ "$TESTS_STATUS" = "success" ]; then
+          REPORT="$REPORT\\n✅ Tests: Tous les tests passent"
+        elif [ "$TESTS_STATUS" = "skipped" ]; then
+          REPORT="$REPORT\\n⏭️ Tests: Skipped"
         fi
         
         # Build macOS
