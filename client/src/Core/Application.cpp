@@ -44,7 +44,7 @@ namespace Client::Core
 {
     Application::Application()
         : _window(sf::VideoMode({1280, 720}), "Air-Trap - R-Type Clone")
-        , _systemManager(_registry)
+        , _systemManager(_registry), _enemyBuilder(_registry)
         // , _audioManager()
     {
         _window.setFramerateLimit(60);
@@ -571,6 +571,12 @@ namespace Client::Core
             if (const auto *kp = event->getIf<sf::Event::KeyPressed>()) {
                 if (kp->code == sf::Keyboard::Key::Escape && _currentState != GameState::KeyBindings)
                     _window.close();
+                if (kp->code == sf::Keyboard::Key::J) {
+                    spawnEnemy();
+                }
+                if (kp->code == sf::Keyboard::Key::K) {
+                    killEnemy(0);
+                }
             }
         }
     }
@@ -622,6 +628,48 @@ namespace Client::Core
                 changeState(GameState::Menu);
             }
         });
+    }
+
+    void Application::spawnEnemy() {
+        std::size_t newIndex = _spawnedEnemy.size();
+        
+        Game::EnemyTemplate scoutTemplate = 
+            Game::EnemyTemplate::createBasicScout({
+                600.0f, 
+                100.0f + (newIndex * 50.0f) 
+            });
+
+        auto result = _enemyBuilder.spawn(scoutTemplate);
+
+        if (result.has_value()) {
+            rtp::ecs::Entity newEnemy = result.value();
+            _spawnedEnemy.push_back(newEnemy);
+
+            std::cout << "Ennemi spawn (ID: " << newEnemy 
+                      << ") à l'INDEX: " << newIndex << ". Total: " 
+                      << _spawnedEnemy.size() << " ennemis." << std::endl;
+        } else {
+            std::cerr << "Erreur de spawn : " << result.error().message() << std::endl;
+        }
+    }
+
+    void Application::killEnemy(std::size_t index) {
+        if (index >= _spawnedEnemy.size()) {
+            std::cout << _spawnedEnemy.size() << std::endl;
+            std::cout << "Erreur : Index " << index << " hors limites. Seuls les index 0 à " 
+                      << (_spawnedEnemy.empty() ? 0 : _spawnedEnemy.size() - 1) 
+                      << " sont valides." << std::endl;
+            return;
+        }
+
+        rtp::ecs::Entity entityToKill = _spawnedEnemy.at(index);
+
+        _enemyBuilder.kill(entityToKill);
+        _spawnedEnemy.erase(_spawnedEnemy.begin() + index);
+
+        std::cout << "Ennemi ID: " << entityToKill 
+                  << " à l'INDEX: " << index << " tué." << std::endl;
+        std::cout << "Total restant : " << _spawnedEnemy.size() << " ennemis." << std::endl;
     }
 
     void Application::render()
