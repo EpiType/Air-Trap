@@ -252,6 +252,53 @@ namespace Client::Core
         _registry.addComponent<rtp::ecs::components::Animation>(p, animData);
     }
 
+    void Application::initPauseMenu() {
+        rtp::log::info("Initializing pause menu...");
+        
+        // Title "PAUSED"
+        auto titleResult = _registry.spawnEntity();
+        if (titleResult) {
+            rtp::ecs::Entity title = titleResult.value();
+            rtp::ecs::components::ui::Text titleText;
+            titleText.content = _translations.get("game.paused");
+            titleText.position = rtp::Vec2f{500.0f, 200.0f};
+            titleText.fontPath = "assets/fonts/main.ttf";
+            titleText.fontSize = 60;
+            titleText.red = 255;
+            titleText.green = 100;
+            titleText.blue = 100;
+            _registry.addComponent<rtp::ecs::components::ui::Text>(title, titleText);
+        }
+
+        // Resume button
+        auto resumeBtnRes = _registry.spawnEntity();
+        if (resumeBtnRes) {
+            rtp::ecs::Entity btn = resumeBtnRes.value();
+            rtp::ecs::components::ui::Button button;
+            button.text = _translations.get("game.resume");
+            button.position = rtp::Vec2f{490.0f, 350.0f};
+            button.size = rtp::Vec2f{300.0f, 60.0f};
+            button.onClick = [this]() {
+                changeState(GameState::Playing);
+            };
+            _registry.addComponent<rtp::ecs::components::ui::Button>(btn, button);
+        }
+
+        // Quit to menu button
+        auto quitBtnRes = _registry.spawnEntity();
+        if (quitBtnRes) {
+            rtp::ecs::Entity btn = quitBtnRes.value();
+            rtp::ecs::components::ui::Button button;
+            button.text = _translations.get("game.quit_to_menu");
+            button.position = rtp::Vec2f{490.0f, 430.0f};
+            button.size = rtp::Vec2f{300.0f, 60.0f};
+            button.onClick = [this]() {
+                changeState(GameState::Menu);
+            };
+            _registry.addComponent<rtp::ecs::components::ui::Button>(btn, button);
+        }
+    }
+
     void Application::initKeyBindingMenu()
     {
         rtp::log::info("Initializing key bindings menu...");
@@ -549,28 +596,41 @@ namespace Client::Core
         }
     }
 
-    void Application::changeState(GameState newState)
-    {
+    void Application::changeState(GameState newState) {
         rtp::log::info("Changing state from {} to {}", 
                       static_cast<int>(_currentState), 
                       static_cast<int>(newState));
 
-        _registry.clear();
+        // Ne pas clear le registry si on passe de Playing <-> Paused
+        // pour garder l'état du jeu intact
+        bool keepGameState = (_currentState == GameState::Playing && newState == GameState::Paused) ||
+                             (_currentState == GameState::Paused && newState == GameState::Playing);
         
+        GameState previousState = _currentState;
         _currentState = newState;
+        
+        if (!keepGameState) {
+            _registry.clear();
+        }
         
         switch (newState) {
             case GameState::Menu:
                 initMenu();
                 break;
             case GameState::Playing:
-                initGame();
+                // Ne réinitialiser le jeu que si on ne vient pas de Paused
+                if (previousState != GameState::Paused) {
+                    initGame();
+                }
                 break;
             case GameState::Settings:
                 initSettingsMenu();
                 break;
             case GameState::KeyBindings:
                 initKeyBindingMenu();
+                break;
+            case GameState::Paused:
+                initPauseMenu();
                 break;
             default:
                 break;
@@ -584,8 +644,7 @@ namespace Client::Core
                 _window.close();
 
             if (const auto *kp = event->getIf<sf::Event::KeyPressed>()) {
-                // Escape global (sauf en key binding)
-                if (kp->code == sf::Keyboard::Key::Escape && _currentState != GameState::KeyBindings) {
+                if (kp->code == _settings.getKey(KeyAction::Pause) && _currentState != GameState::KeyBindings) {
                     handleGlobalEscape();
                     return;
                 }
@@ -703,8 +762,7 @@ namespace Client::Core
         }
     }
 
-    void Application::update(sf::Time delta)
-    {
+    void Application::update(sf::Time delta) {
         _lastDt = delta.asSeconds();
 
         if (_currentState == GameState::Menu) {
@@ -715,9 +773,11 @@ namespace Client::Core
         } else if (_currentState == GameState::Settings || _currentState == GameState::KeyBindings) {
             auto& menuSys = _systemManager.getSystem<Client::Systems::MenuSystem>();
             menuSys.update(_lastDt);
-
             auto& settingsSys = _systemManager.getSystem<Client::Systems::SettingsMenuSystem>();
             settingsSys.update(_lastDt);
+        } else if (_currentState == GameState::Paused) {
+            auto& menuSys = _systemManager.getSystem<Client::Systems::MenuSystem>();
+            menuSys.update(_lastDt);
         }
     }
     
@@ -821,7 +881,10 @@ namespace Client::Core
     {
         _window.clear(sf::Color::Black);
         
-        if (_currentState == GameState::Menu || _currentState == GameState::Settings || _currentState == GameState::KeyBindings) {  // ✅ Ajouter
+        if (_currentState == GameState::Menu || 
+            _currentState == GameState::Settings || 
+            _currentState == GameState::KeyBindings ||
+            _currentState == GameState::Paused) {
             auto& uiSys = _systemManager.getSystem<Client::Systems::UIRenderSystem>();
             uiSys.update(0.0f);
         } else if (_currentState == GameState::Playing) {

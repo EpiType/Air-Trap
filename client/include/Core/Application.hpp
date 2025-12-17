@@ -75,6 +75,7 @@ private:
     void initGame();
     void initSettingsMenu();
     void initKeyBindingMenu();
+    void initPauseMenu();
     void setupSettingsCallbacks();
     
     void processInput();
