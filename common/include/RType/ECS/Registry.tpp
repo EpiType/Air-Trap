@@ -57,7 +57,6 @@ namespace rtp::ecs
     template <Component T, typename Self>
     auto Registry::view(this Self &self) -> std::span<ConstLike<Self, T>>
     {
-        std::lock_guard lock(self._mutex);
         auto result = self.template getComponents<T>();
 
         using ComponentType = ConstLike<Self, T>;
