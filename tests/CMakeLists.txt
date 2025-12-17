@@ -12,6 +12,7 @@ find_package(asio REQUIRED)
 set(TEST_SOURCES
     network/test_protocol.cpp
     ecs/test_registry.cpp
+    ecs/test_components.cpp
     logger/test_logger.cpp
 )
 
@@ -29,14 +30,19 @@ set(TEST_SOURCES
 #         gtest::gtest 
 # )
 
-# add_executable(test_ecs ecs/test_registry.cpp)
-# 
-# target_link_libraries(test_ecs 
-#     PUBLIC 
-#         RTypeCommon
-#     PRIVATE
-#         gtest::gtest
-# )
+add_executable(test_ecs
+    ecs/test_registry.cpp
+    ecs/test_components.cpp
+    ecs/test_sparsearray.cpp
+    ecs/test_zipview.cpp
+)
+
+target_link_libraries(test_ecs 
+    PUBLIC 
+        RTypeCommon
+    PRIVATE
+        gtest::gtest
+)
 
 add_executable(test_logger logger/test_logger.cpp)
 
@@ -49,5 +55,5 @@ target_link_libraries(test_logger
 
 include(GoogleTest)
 # gtest_discover_tests(test_network)
-# gtest_discover_tests(test_ecs)
+gtest_discover_tests(test_ecs)
 gtest_discover_tests(test_logger)

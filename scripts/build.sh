@@ -64,7 +64,7 @@ case "${1:-}" in
             exit 1
         fi
         cd build
-        ./bin/test_logger
+        ctest --output-on-failure
         echo "✅ Tests complete!"
         exit 0
         ;;
@@ -83,7 +83,7 @@ case "${1:-}" in
         cmake --build . -j$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
         
         # Run tests
-        ./bin/test_logger
+        ctest --output-on-failure
         
         # Generate coverage report
         if command -v gcovr &> /dev/null; then
