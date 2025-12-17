@@ -55,6 +55,21 @@ namespace Client::Core
         
         setupSettingsCallbacks();
 
+        // Load colorblind shader
+        if (!_colorblindShader.loadFromFile("assets/shaders/colorblind.frag", sf::Shader::Type::Fragment)) {
+            rtp::log::warning("Failed to load colorblind shader, running without colorblind support");
+            _shaderLoaded = false;
+        } else {
+            _shaderLoaded = true;
+            rtp::log::info("Colorblind shader loaded successfully");
+        }
+        
+        // Create render texture for post-processing
+        if (!_renderTexture.resize({static_cast<unsigned int>(UIConstants::WINDOW_WIDTH), 
+                                     static_cast<unsigned int>(UIConstants::WINDOW_HEIGHT)})) {
+            rtp::log::error("Failed to create render texture");
+        }
+
         // _audioManager.setMasterVolume(_settings.getMasterVolume());
         // _audioManager.setMusicVolume(_settings.getMusicVolume());
         // _audioManager.setSfxVolume(_settings.getSfxVolume());
@@ -879,20 +894,60 @@ namespace Client::Core
 
     void Application::render()
     {
-        _window.clear(sf::Color::Black);
+        // Déterminer si on applique le shader colorblind
+        bool applyShader = _shaderLoaded && 
+                           _currentState == GameState::Playing && 
+                           _settings.getColorBlindMode() != ColorBlindMode::None;
         
-        if (_currentState == GameState::Menu || 
-            _currentState == GameState::Settings || 
-            _currentState == GameState::KeyBindings ||
-            _currentState == GameState::Paused) {
-            auto& uiSys = _systemManager.getSystem<Client::Systems::UIRenderSystem>();
-            uiSys.update(0.0f);
-        } else if (_currentState == GameState::Playing) {
+        if (applyShader) {
+            // Render to texture first
+            _renderTexture.clear(sf::Color::Black);
+
+            _window.clear(sf::Color::Black);
             auto& renderSys = _systemManager.getSystem<rtp::client::RenderSystem>();
             renderSys.update(_lastDt);
+            
+
+            sf::RectangleShape overlay(sf::Vector2f(UIConstants::WINDOW_WIDTH, UIConstants::WINDOW_HEIGHT));
+            overlay.setPosition(sf::Vector2f(0.0f, 0.0f));
+            
+            // Appliquer une teinte selon le mode
+            switch (_settings.getColorBlindMode()) {
+                case ColorBlindMode::Protanopia:
+                    // Filtre rouge-orangé semi-transparent
+                    overlay.setFillColor(sf::Color(255, 150, 100, 30));
+                    break;
+                case ColorBlindMode::Deuteranopia:
+                    // Filtre jaune-vert semi-transparent
+                    overlay.setFillColor(sf::Color(200, 255, 100, 30));
+                    break;
+                case ColorBlindMode::Tritanopia:
+                    // Filtre rose-magenta semi-transparent
+                    overlay.setFillColor(sf::Color(255, 100, 200, 30));
+                    break;
+                default:
+                    break;
+            }
+            
+            _window.draw(overlay);
+            
+        } else {
+            // Rendu normal sans filtre
+            _window.clear(sf::Color::Black);
+            
+            if (_currentState == GameState::Menu || 
+                _currentState == GameState::Settings || 
+                _currentState == GameState::KeyBindings ||
+                _currentState == GameState::Paused) {
+                auto& uiSys = _systemManager.getSystem<Client::Systems::UIRenderSystem>();
+                uiSys.update(0.0f);
+            } else if (_currentState == GameState::Playing) {
+                auto& renderSys = _systemManager.getSystem<rtp::client::RenderSystem>();
+                renderSys.update(_lastDt);
+            }
         }
         
-        // Display window (hors ECS)
+        // Display window
         _window.display();
     }
 }
