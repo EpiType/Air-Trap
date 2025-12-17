@@ -12,6 +12,8 @@ add_executable(r-type_server
     src/Game/GameManager.cpp
     src/Game/Player.cpp
     src/Game/Room.cpp
+    src/Systems/MovementSystem.cpp
+    src/Systems/ServerNetworkSystem.cpp
 )
 
 target_include_directories(r-type_server PRIVATE

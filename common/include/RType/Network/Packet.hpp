@@ -97,6 +97,7 @@ namespace rtp::net
         uint16_t ackId = 0;             /**< Last acknowledged packet */
         OpCode opCode = OpCode::None;   /**< Operation code */
         uint8_t reserved = 0;           /**< Reserved for future use */
+        uint32_t sessionId;             /**< Session identifier */
     };
 
     /**
@@ -138,6 +139,8 @@ namespace rtp::net
         uint8_t type;           /**< Entity type */
         Vec2f position;         /**< Death position */
     };
+
+    #pragma pack(pop)
 
     /**
      * @using BufferSequence

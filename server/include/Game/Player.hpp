@@ -104,10 +104,22 @@ namespace rtp::server
             bool isReady() const;
 
             /**
+             * @brief Set the entity ID associated with the player
+             * @param entityId New entity ID
+             */
+            void setEntityId(uint32_t entityId);
+
+            /**
              * @brief Get the unique identifier of the Session
              * @return Current Session ID
              */
             uint32_t getId() const;
+
+            /**
+             * @brief Get the associated entity ID
+             * @return Current entity ID
+             */
+            uint32_t getEntityId() const;
 
         private:
             uint32_t _sessionId;         /**< Unique player identifier */
@@ -116,6 +128,7 @@ namespace rtp::server
             PlayerState _state;          /**< Current state of the player */
             bool _isReady;               /**< Readiness status of the player */
 
+            uint32_t _entityId = 0;      /**< Associated entity ID in the ECS */
             mutable std::mutex _mutex;   /**< Mutex to protect access to player state */
     };
 
