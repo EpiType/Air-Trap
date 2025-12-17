@@ -106,13 +106,6 @@ namespace Client::Core
         _registry.registerComponent<rtp::ecs::components::Animation>();
         _registry.registerComponent<rtp::ecs::components::ParallaxLayer>();
 
-        _systemManager.addSystem<rtp::client::InputSystem>(_settings);
-        _systemManager.addSystem<rtp::client::MovementSystem>();
-        _systemManager.addSystem<rtp::client::AnimationSystem>();
-        _systemManager.addSystem<rtp::client::RenderSystem>(_window);
-        _systemManager.addSystem<Client::Systems::MenuSystem>(_window);
-        _systemManager.addSystem<Client::Systems::UIRenderSystem>(_window);
-        _systemManager.addSystem<Client::Systems::SettingsMenuSystem>(_window, _settings);
         _systemManager.addSystem<rtp::client::ParallaxSystem>(_registry);
         _registry.registerComponent<rtp::ecs::components::NetworkId>();
 
