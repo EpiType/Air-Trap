@@ -50,9 +50,9 @@ namespace rtp::server
             processNetworkEvents();
 
             if (_serverTick % 600 == 0) {
-                spawnEnemyEntity({1200.f, 100.f});
+                spawnEnemyEntity({static_cast<float>(rand() % 1280), static_cast<float>(rand() % 720)});
             }
-                        
+
             _serverTick++;
             _movementSystem->update(dt);
             _serverNetworkSystem->broadcastWorldState(_serverTick);
