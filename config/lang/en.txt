@@ -37,4 +37,6 @@ game.score=Score: {0}
 game.lives=Lives: {0}
 game.level=Level {0}
 game.paused=PAUSED
+game.resume=RESUME
+game.quit_to_menu=QUIT TO MENU
 game.game_over=GAME OVER

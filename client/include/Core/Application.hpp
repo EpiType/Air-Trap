@@ -75,6 +75,7 @@ private:
     void initGame();
     void initSettingsMenu();
     void initKeyBindingMenu();
+    void initPauseMenu();
     void setupSettingsCallbacks();
     
     void processInput();
@@ -106,6 +107,10 @@ private:
     Game::EntityBuilder _entityBuilder;
     Settings _settings;
     TranslationManager _translations;
+    
+    sf::Shader _colorblindShader;
+    sf::RenderTexture _renderTexture;
+    bool _shaderLoaded{false};
     
     GameState _currentState{GameState::Menu};
     float _lastDt{0.0f};
