@@ -31,7 +31,7 @@ void signal_handler(int signum) {
 }
 
 int main(void) {
-    const uint16_t SERVER_PORT = 12345;
+    const uint16_t SERVER_PORT = 5000;
     
     std::signal(SIGINT, signal_handler);
     
@@ -44,8 +44,8 @@ int main(void) {
         g_networkManager = &networkManager;
         g_gameManager = &gameManager;
 
-        networkManager.start(); 
-        
+        networkManager.start();
+         
         gameManager.gameLoop(); 
         
     } catch (const std::exception& e) {
