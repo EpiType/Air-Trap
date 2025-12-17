@@ -45,7 +45,7 @@ int main(void) {
         g_gameManager = &gameManager;
 
         networkManager.start();
-        
+         
         gameManager.gameLoop(); 
         
     } catch (const std::exception& e) {
