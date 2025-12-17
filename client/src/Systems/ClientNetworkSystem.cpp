@@ -86,6 +86,8 @@ namespace rtp::client {
         case rtp::net::EntityType::Scout:
             addScoutSprite(e);
             break;
+        default: 
+            break;
         }
 
         _netIdToEntity[payload.netId] = e;
