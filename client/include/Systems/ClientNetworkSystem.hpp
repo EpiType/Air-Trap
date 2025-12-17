@@ -76,6 +76,14 @@ namespace rtp::client {
              * @param snap Reference to the entity snapshot payload
              */
             void spawnEntity(const rtp::net::EntitySnapshotPayload& snap);
+
+            /**
+             * @brief Spawn an entity based on server spawn payload
+             * @param payload Reference to the entity spawn payload
+             */
+            void spawnEntityFromServer(const rtp::net::EntitySpawnPayload& payload);
+
+            void addScoutSprite(rtp::ecs::Entity entity);
     };
 }
 

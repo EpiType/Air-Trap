@@ -8,6 +8,12 @@
 #include "Systems/ClientNetworkSystem.hpp"
 #include "RType/Logger.hpp"
 #include "RType/ECS/Components/NetworkId.hpp"
+#include "RType/ECS/Components/Transform.hpp"
+#include "RType/ECS/Components/Sprite.hpp"
+#include "RType/ECS/Components/Animation.hpp"
+#include "RType/ECS/Components/EntityType.hpp"
+#include "RType/Network/Packet.hpp"
+#include "Game/EntityBuilder.hpp"
 
 namespace rtp::client {
     //////////////////////////////////////////////////////////////////////////
@@ -34,9 +40,12 @@ namespace rtp::client {
         uint8_t opCodeValue = static_cast<uint8_t>(event.packet.header.opCode);
         switch (opCodeValue)
         {
-            case 0x21: /* EntitySpawn */
-                /* code */
+            case 0x21: { /* EntitySpawn */
+                rtp::net::EntitySpawnPayload payload;
+                event.packet >> payload;
+                spawnEntityFromServer(payload);
                 break;
+            }
             case 0x22: /* EntityDeath */
                 /* code */
                 break;
@@ -50,6 +59,65 @@ namespace rtp::client {
                 break;
             }
         }
+    }
+
+    void ClientNetworkSystem::spawnEntityFromServer(const rtp::net::EntitySpawnPayload& payload)
+    {
+        auto res = _registry.spawnEntity();
+        if (!res) return;
+
+        auto e = res.value();
+
+        _registry.addComponent<rtp::ecs::components::NetworkId>(
+            e, 
+            rtp::ecs::components::NetworkId{payload.netId}
+        );
+        _registry.addComponent<rtp::ecs::components::Transform>(
+            e, 
+            rtp::ecs::components::Transform{payload.position, 0.f, {1.f, 1.f}}
+        );
+
+        _registry.addComponent<rtp::ecs::components::EntityType>(
+            e, 
+            rtp::ecs::components::EntityType{static_cast<rtp::net::EntityType>(payload.type)}
+        );
+
+        switch (static_cast<rtp::net::EntityType>(payload.type)) {
+        case rtp::net::EntityType::Scout:
+            addScoutSprite(e);
+            break;
+        }
+
+        _netIdToEntity[payload.netId] = e;
+    }
+
+    void ClientNetworkSystem::addScoutSprite(rtp::ecs::Entity entity)
+    {
+        rtp::ecs::components::Sprite spriteData;
+        spriteData.texturePath = "assets/sprites/r-typesheet42.gif";
+        spriteData.rectLeft = 0;
+        spriteData.rectTop = 34;
+        spriteData.rectWidth = 33;
+        spriteData.rectHeight = 17;
+        spriteData.zIndex = 10;
+        spriteData.red = 255;
+
+        _registry.addComponent<rtp::ecs::components::Sprite>(
+            entity, 
+            spriteData
+        );
+
+        rtp::ecs::components::Animation animData;
+        animData.frameLeft = 0;
+        animData.frameTop = 34;
+        animData.frameWidth = 33;
+        animData.frameHeight = 17;
+        animData.totalFrames = 5;
+        animData.frameDuration = 0.1f;
+        animData.currentFrame = 0;
+        animData.elapsedTime = 0.0f;
+
+        _registry.addComponent<rtp::ecs::components::Animation>(entity, animData);
     }
 
     void ClientNetworkSystem::disconnectPlayer(uint32_t entityNetId)
