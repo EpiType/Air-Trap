@@ -26,9 +26,9 @@
 namespace rtp::client {
 
     class RenderSystem : public rtp::ecs::ISystem {
-    public:
-        RenderSystem(rtp::ecs::Registry& r, sf::RenderWindow& window) 
-            : _r(r), _window(window) {}
+        public:
+            RenderSystem(rtp::ecs::Registry& r, sf::RenderWindow& window) 
+                : _r(r), _window(window) {}
 
         void update(float dt) override;
 

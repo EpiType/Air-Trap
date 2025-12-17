@@ -62,21 +62,6 @@ namespace rtp::net {
             virtual void stop(void) = 0;
 
             /**
-             * @brief Send a packet to a specific session
-             * @param sessionId ID of the session to send the packet to - Only for the server
-             * @param packet Packet to be sent
-             * @param mode Network mode (TCP/UDP)
-             */
-            virtual void sendPacket(uint32_t sessionId, const Packet &packet, NetworkMode mode) = 0;
-            
-            /**
-             * @brief Broadcast a packet to all sessions
-             * @param packet Packet to be broadcasted
-             * @param mode Network mode (TCP/UDP)
-             */
-            virtual void broadcastPacket(const Packet &packet, NetworkMode mode) = 0;
-
-            /**
              * @brief Poll for a network event
              * @param event Reference to store the polled network event
              * @return True if an event was polled, false otherwise
