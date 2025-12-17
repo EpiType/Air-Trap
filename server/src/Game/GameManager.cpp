@@ -25,6 +25,7 @@ namespace rtp::server
         _registry.registerComponent<rtp::ecs::components::Velocity>();
         _registry.registerComponent<rtp::ecs::components::NetworkId>();
         _registry.registerComponent<rtp::ecs::components::server::InputComponent>();
+        _registry.registerComponent<rtp::ecs::components::EntityType>();
 
         _serverNetworkSystem = std::make_unique<ServerNetworkSystem>(_networkManager, _registry);
         _movementSystem = std::make_unique<MovementSystem>(_registry);
@@ -47,6 +48,10 @@ namespace rtp::server
             auto start = std::chrono::high_resolution_clock::now();
 
             processNetworkEvents();
+
+            if (_serverTick % 600 == 0) {
+                spawnEnemyEntity({1200.f, 100.f});
+            }
                         
             _serverTick++;
             _movementSystem->update(dt);
@@ -168,11 +173,61 @@ namespace rtp::server
             entity, 
             rtp::ecs::components::server::InputComponent{}
         );
+
+        _registry.addComponent<rtp::ecs::components::EntityType>(
+            entity,
+            rtp::ecs::components::EntityType{ rtp::net::EntityType::Player }
+        );
         
         player->setEntityId((uint32_t)entity);
         _serverNetworkSystem->bindSessionToEntity(player->getId(), (uint32_t)entity);
 
         log::info("Spawned Entity {} for Player {}", (uint32_t)entity, player->getId());
+    }
+
+    void GameManager::spawnEnemyEntity(const Vec2f& position)
+    {
+        auto entityRes = _registry.spawnEntity();
+        if (!entityRes) {
+            log::error("Failed to spawn enemy entity");
+            return;
+        }
+        log::info("Spawning enemy entity");
+        auto entity = entityRes.value();
+
+        _registry.addComponent<rtp::ecs::components::Transform>(
+            entity, 
+            rtp::ecs::components::Transform{ position, 0.f, {1.f, 1.f} }
+        );
+
+        _registry.addComponent<rtp::ecs::components::NetworkId>(
+            entity, 
+            rtp::ecs::components::NetworkId{ (uint32_t)entity }
+        );
+
+        _registry.addComponent<rtp::ecs::components::Velocity>(
+            entity, 
+            rtp::ecs::components::Velocity{ {-100.f, 0.f} }
+        );
+
+        _registry.addComponent<rtp::ecs::components::EntityType>(
+            entity,
+            rtp::ecs::components::EntityType{ rtp::net::EntityType::Scout }
+        );
+
+        rtp::net::Packet spawnEnemyPacket(rtp::net::OpCode::EntitySpawn);
+
+        rtp::net::EntitySpawnPayload payload{
+            .netId    = (uint32_t)entity,
+            .type     = static_cast<uint8_t>(rtp::net::EntityType::Scout),
+            .position = position
+        };
+
+        spawnEnemyPacket << payload;
+
+        _networkManager.broadcastPacket(spawnEnemyPacket, rtp::net::NetworkMode::UDP);
+
+        log::info("Spawned Enemy Entity {}", (uint32_t)entity);
     }
 
     void GameManager::tryJoinLobby(PlayerPtr player, uint32_t roomId)

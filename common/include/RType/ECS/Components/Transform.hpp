@@ -25,7 +25,6 @@ namespace rtp::ecs::components {
         float rotation{0.0f};          /**< Rotation in degrees */
         Vec2f scale{1.0f, 1.0f};       /**< Scale factors for X and Y axes */
     };
-
 } // namespace rtp::ecs::components
 
 #endif /* !RTYPE_ECS_COMPONENTS_TRANSFORM_HPP_ */
