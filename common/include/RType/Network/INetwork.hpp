@@ -8,6 +8,7 @@
 #ifndef RTYPE_NETWORK_INETWORK_HPP_
     #define RTYPE_NETWORK_INETWORK_HPP_
 
+    #include <optional>
     #include "RType/Network/Packet.hpp"
 
 /**
