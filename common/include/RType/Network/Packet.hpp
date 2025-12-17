@@ -160,8 +160,6 @@ namespace rtp::net
         uint8_t inputMask;      /**< Bitmask of input states */
     };
 
-    #pragma pack(pop)
-
     /**
      * @class Packet
      * @brief Network packet with header and serializable body

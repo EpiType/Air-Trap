@@ -35,7 +35,6 @@
 
 // Systems
 #include "Systems/InputSystem.hpp"
-#include "Systems/MovementSystem.hpp"
 #include "Systems/AnimationSystem.hpp"
 #include "Systems/RenderSystem.hpp"
 #include "Systems/ClientNetworkSystem.hpp"
@@ -155,21 +154,21 @@ namespace Client::Core
             _registry.addComponent<rtp::ecs::components::ui::Button>(settingsBtn, button);
         }
         
-        // auto exitBtnResult = _registry.spawnEntity();
-        // if (exitBtnResult) {
-        //     rtp::ecs::Entity exitBtn = exitBtnResult.value();
+        auto exitBtnResult = _registry.spawnEntity();
+        if (exitBtnResult) {
+            rtp::ecs::Entity exitBtn = exitBtnResult.value();
             
-        //     rtp::ecs::components::ui::Button button;
-        //     button.text = _translations.get("menu.exit");
-        //     button.position = rtp::Vec2f{UIConstants::BUTTON_X, UIConstants::BUTTON_START_Y + UIConstants::BUTTON_SPACING * 2};
-        //     button.size = rtp::Vec2f{UIConstants::BUTTON_WIDTH, UIConstants::BUTTON_HEIGHT};
-        //     button.onClick = [this]() {
-        //         rtp::log::info("Exit button clicked!");
-        //         _window.close();
-        //     };
+            rtp::ecs::components::ui::Button button;
+            button.text = _translations.get("menu.exit");
+            button.position = rtp::Vec2f{UIConstants::BUTTON_X, UIConstants::BUTTON_START_Y + UIConstants::BUTTON_SPACING * 2};
+            button.size = rtp::Vec2f{UIConstants::BUTTON_WIDTH, UIConstants::BUTTON_HEIGHT};
+            button.onClick = [this]() {
+                rtp::log::info("Exit button clicked!");
+                _window.close();
+            };
             
-        //     _registry.addComponent<rtp::ecs::components::ui::Button>(exitBtn, button);
-        // }
+            _registry.addComponent<rtp::ecs::components::ui::Button>(exitBtn, button);
+        }
     }
 
     void Application::initGame()

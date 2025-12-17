@@ -19,7 +19,8 @@ set(SRC_CLIENT
     src/Game/EntityBuilder.cpp
     src/Systems/SettingsMenuSystem.cpp
     # src/Systems/MovementSystem.cpp
-    # src/Systems/InputSystem.cpp
+    src/Systems/InputSystem.cpp
+    src/Systems/ClientNetworkSystem.cpp
 )
 
 # --- TARGET ---
