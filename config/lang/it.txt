@@ -37,4 +37,6 @@ game.score=Punti: {0}
 game.lives=Vite: {0}
 game.level=Livello {0}
 game.paused=IN PAUSA
+game.resume=RIPRENDI
+game.quit_to_menu=ESCI AL MENU
 game.game_over=FINE GIOCO

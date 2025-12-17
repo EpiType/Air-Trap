@@ -70,77 +70,76 @@ jobs:
         echo "ci=$CI_CHANGED"
 
   # Job 1: Commit Message Validation
-  commit-validation:
-    name: Validate Commit Messages
-    runs-on: ubuntu-latest
-    needs: paths-filter
-    # Only run on main repository, not on mirrors
-    if: github.event_name == 'push' && github.repository == 'EpiType/Air-Trap'
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-
-    - name: Validate commit messages
-      run: |
-        # Custom commit pattern: [TYPE] description
-        # Types: ADD, FIX, CHORE, DOCS, STYLE, DEL, REFACTOR, MERGE
-        PATTERN="^\[(ADD|FIX|CHORE|DOCS|STYLE|DEL|REFACTOR|MERGE)\] .+"
-        
-        # Get commits from push
-        if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "${{ github.event.before }}" 2>/dev/null; then
-          # New branch OR commit doesn't exist (after rebase/amend), check only the last commit
-          COMMITS=$(git log -1 --pretty=format:"%H")
-        else
-          COMMITS=$(git log ${{ github.event.before }}..${{ github.sha }} --pretty=format:"%H")
-        fi
-        
-        echo "🔍 Validation des messages de commit..."
-        INVALID=0
-        
-        for commit in $COMMITS; do
-          MSG=$(git log -1 --pretty=format:"%s" $commit)
-          
-          # Ignorer les commits de merge
-          if echo "$MSG" | grep -qE "^Merge "; then
-            echo "⏭️  SKIP (merge): $MSG"
-            continue
-          fi
-          
-          echo "Checking: $MSG"
-          
-          if ! echo "$MSG" | grep -qE "$PATTERN"; then
-            echo "❌ INVALID: $MSG"
-            echo ""
-            echo "Le message doit suivre le format: [TYPE] description"
-            echo "Types valides: [ADD], [FIX], [CHORE], [DOCS], [STYLE], [REFACTOR], [DEL], [MERGE]"
-            echo "Exemple: [ADD] player connection handler to server"
-            INVALID=1
-          else
-            echo "✅ VALID"
-          fi
-          echo ""
-        done
-        
-        if [ $INVALID -eq 1 ]; then
-          exit 1
-        fi
-        
-        echo "✅ Tous les commits sont valides!"
+  # DISABLED: Use git hooks instead (.githooks/commit-msg)
+  # commit-validation:
+  #   name: Validate Commit Messages
+  #   runs-on: ubuntu-latest
+  #   needs: paths-filter
+  #   # Only run on main repository, not on mirrors
+  #   if: github.event_name == 'push' && github.repository == 'EpiType/Air-Trap'
+  #   
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v4
+  #     with:
+  #       fetch-depth: 0
+  # 
+  #   - name: Validate commit messages
+  #     run: |
+  #       # Custom commit pattern: [TYPE] description
+  #       # Types: ADD, FIX, CHORE, DOCS, STYLE, DEL, REFACTOR, MERGE
+  #       PATTERN="^\[(ADD|FIX|CHORE|DOCS|STYLE|DEL|REFACTOR|MERGE)\] .+"
+  #       
+  #       # Get commits from push
+  #       if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "${{ github.event.before }}" 2>/dev/null; then
+  #         # New branch OR commit doesn't exist (after rebase/amend), check only the last commit
+  #         COMMITS=$(git log -1 --pretty=format:"%H")
+  #       else
+  #         COMMITS=$(git log ${{ github.event.before }}..${{ github.sha }} --pretty=format:"%H")
+  #       fi
+  #       
+  #       echo "🔍 Validation des messages de commit..."
+  #       INVALID=0
+  #       
+  #       for commit in $COMMITS; do
+  #         MSG=$(git log -1 --pretty=format:"%s" $commit)
+  #         
+  #         # Ignorer les commits de merge
+  #         if echo "$MSG" | grep -qE "^Merge "; then
+  #           echo "⏭️  SKIP (merge): $MSG"
+  #           continue
+  #         fi
+  #         
+  #         echo "Checking: $MSG"
+  #         
+  #         if ! echo "$MSG" | grep -qE "$PATTERN"; then
+  #           echo "❌ INVALID: $MSG"
+  #           echo ""
+  #           echo "Le message doit suivre le format: [TYPE] description"
+  #           echo "Types valides: [ADD], [FIX], [CHORE], [DOCS], [STYLE], [REFACTOR], [DEL], [MERGE]"
+  #           echo "Exemple: [ADD] player connection handler to server"
+  #           INVALID=1
+  #         else
+  #           echo "✅ VALID"
+  #         fi
+  #         echo ""
+  #       done
+  #       
+  #       if [ $INVALID -eq 1 ]; then
+  #         exit 1
+  #       fi
+  #       
+  #       echo "✅ Tous les commits sont valides!"
 
   # Job 2: Code Style Check
   style-check:
     name: Code Style Check (clang-format & clang-tidy)
     runs-on: ubuntu-latest
-    needs: [paths-filter, commit-validation]
+    needs: [paths-filter]
     # Only run on main repository and if source files changed
     if: |
       github.repository == 'EpiType/Air-Trap' &&
-      needs.paths-filter.outputs.src == 'true' &&
-      always() && 
-      (needs.commit-validation.result == 'success' || needs.commit-validation.result == 'skipped')
+      needs.paths-filter.outputs.src == 'true'
     
     steps:
     - name: Checkout code
@@ -284,8 +283,8 @@ jobs:
     needs: [paths-filter, style-check]
     if: |
       github.repository == 'EpiType/Air-Trap' &&
-      github.event_name == 'pull_request' && 
-      github.base_ref == 'main' &&
+      ((github.event_name == 'pull_request' && github.base_ref == 'main') ||
+       (github.event_name == 'push' && github.ref_name == 'main')) &&
       needs.paths-filter.outputs.src == 'true'
     
     steps:
@@ -550,14 +549,13 @@ jobs:
   mirror:
     name: Mirror to External Repository
     runs-on: ubuntu-latest
-    needs: [paths-filter, commit-validation, style-check, build-linux]
+    needs: [paths-filter, style-check, build-linux]
     # Mirror after builds (if they ran), only from main repository
     if: |
       github.repository == 'EpiType/Air-Trap' &&
       github.event_name == 'push' &&
       always() &&
-      (needs.build-linux.result == 'success' || needs.build-linux.result == 'skipped') &&
-      (needs.commit-validation.result == 'success' || needs.commit-validation.result == 'skipped')
+      (needs.build-linux.result == 'success' || needs.build-linux.result == 'skipped')
     
     steps:
     - name: Checkout code
@@ -597,7 +595,7 @@ jobs:
   notify:
     name: Send Discord Notification
     runs-on: ubuntu-latest
-    needs: [paths-filter, commit-validation, style-check, build-linux, build-windows, tests, mirror]
+    needs: [paths-filter, style-check, build-linux, build-windows, tests, mirror]
     # Always notify from main repository (push and PR), même en cas d'échec
     if: |
       github.repository == 'EpiType/Air-Trap' &&
@@ -612,7 +610,7 @@ jobs:
     - name: Send Discord notification
       run: |
         # Récupérer TOUS les statuts (avec fallback sur 'skipped')
-        COMMIT_STATUS="${{ needs.commit-validation.result || 'skipped' }}"
+        # COMMIT_STATUS="${{ needs.commit-validation.result || 'skipped' }}"
         STYLE_STATUS="${{ needs.style-check.result || 'skipped' }}"
         BUILD_LINUX_STATUS="${{ needs.build-linux.result || 'skipped' }}"
         BUILD_WINDOWS_STATUS="${{ needs.build-windows.result || 'skipped' }}"
@@ -659,15 +657,15 @@ jobs:
         REPORT=""
         FAILED=0
         
-        # Commit Validation
-        if [ "$COMMIT_STATUS" = "failure" ]; then
-          REPORT="$REPORT\\n❌ Commit Validation: Messages invalides"
-          FAILED=1
-        elif [ "$COMMIT_STATUS" = "success" ]; then
-          REPORT="$REPORT\\n✅ Commit Validation: OK"
-        elif [ "$COMMIT_STATUS" = "skipped" ]; then
-          REPORT="$REPORT\\n⏭️ Commit Validation: Skipped - PR"
-        fi
+        # Commit Validation - DISABLED
+        # if [ "$COMMIT_STATUS" = "failure" ]; then
+        #   REPORT="$REPORT\\n❌ Commit Validation: Messages invalides"
+        #   FAILED=1
+        # elif [ "$COMMIT_STATUS" = "success" ]; then
+        #   REPORT="$REPORT\\n✅ Commit Validation: OK"
+        # elif [ "$COMMIT_STATUS" = "skipped" ]; then
+        #   REPORT="$REPORT\\n⏭️ Commit Validation: Skipped - PR"
+        # fi
         
         # Style Check
         if [ "$STYLE_STATUS" = "failure" ]; then

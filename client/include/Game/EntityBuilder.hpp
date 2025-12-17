@@ -20,6 +20,7 @@
 #include "RType/ECS/Components/Velocity.hpp"
 #include "RType/ECS/Components/Sprite.hpp"
 #include "RType/ECS/Components/Animation.hpp"
+#include "RType/ECS/Components/ParallaxLayer.hpp"
 
 namespace Client::Game {
 
@@ -43,6 +44,63 @@ struct EntityTemplate {
     bool withAnimation{false};                      /**< Whether to add Animation component */
     rtp::ecs::components::Animation animation{};    /**< Initial animation data */
 
+    bool withParallax{false};                       /**< Whether to add ParallaxLayer component */
+    rtp::ecs::components::ParallaxLayer parallax{};/**< Parallax layer data */
+
+    static EntityTemplate createParrallaxLayer1()
+    {
+        EntityTemplate t;
+        t.id = "parallax_layer";
+
+        t.position = {0.0f, 0.0f};
+        t.rotation = 0.0f;
+        t.scale = {2.0f, 2.0f};
+
+        t.withVelocity = true;
+        t.velocity.speed = 10.0f;
+        t.velocity.direction = {-50.0f, 0.0f};
+
+        t.sprite.texturePath = "assets/backgrounds/stars_far.png";
+        t.sprite.rectLeft = 0;
+        t.sprite.rectTop = 0;
+        t.sprite.rectWidth = 1280;
+        t.sprite.rectHeight = 720;
+        t.sprite.zIndex = 5;
+        t.sprite.red = 255;
+        t.sprite.opacity = 200;
+
+        t.withParallax = true;
+        t.parallax.textureWidth = 1280.0f;
+        return t;
+    }
+
+    static EntityTemplate createParrallaxLayer2()
+    {
+        EntityTemplate t;
+        t.id = "parallax_layer";
+
+        t.position = {0.0f, 0.0f};
+        t.rotation = 0.0f;
+        t.scale = {2.0f, 2.0f};
+
+        t.withVelocity = true;
+        t.velocity.speed = 20.0f;
+        t.velocity.direction = {-50.0f, 0.0f};
+
+        t.sprite.texturePath = "assets/backgrounds/stars_near.png";
+        t.sprite.rectLeft = 0;
+        t.sprite.rectTop = 0;
+        t.sprite.rectWidth = 1280;
+        t.sprite.rectHeight = 720;
+        t.sprite.zIndex = 5;
+        t.sprite.red = 255;
+        t.sprite.opacity = 255;
+
+        t.withParallax = true;
+        t.parallax.textureWidth = 1280.0f;
+        return t;
+    }
+
     static EntityTemplate createBasicScout(const rtp::Vec2f& initialPos)
     {
         EntityTemplate t;
@@ -50,7 +108,7 @@ struct EntityTemplate {
 
         t.position = initialPos;
         t.rotation = 0.0f;
-        t.scale = {2.0f, 2.0f};
+        t.scale = {1.0f, 1.0f};
 
         t.withVelocity = true;
         t.velocity.speed = 2.0f;
@@ -70,6 +128,36 @@ struct EntityTemplate {
         t.animation.frameLeft = 300;
         t.animation.frameTop = 71;
         t.animation.totalFrames = 6;
+        return t;
+    }
+
+    static EntityTemplate createBasicScout2(const rtp::Vec2f& initialPos)
+    {
+        EntityTemplate t;
+        t.id = "basic_scout";
+
+        t.position = initialPos;
+        t.rotation = 0.0f;
+        t.scale = {1.0f, 1.0f};
+
+        t.withVelocity = true;
+        t.velocity.speed = 2.0f;
+        t.velocity.direction = {-1.0f, 0.0f};
+        
+        t.sprite.texturePath = "assets/sprites/r-typesheet2.gif";
+        t.sprite.rectLeft = 300;
+        t.sprite.rectTop = 341;
+        t.sprite.rectWidth = 32;
+        t.sprite.rectHeight = 34;
+        t.sprite.zIndex = 5;
+        t.sprite.red = 255;
+
+        t.withAnimation = true;
+        t.animation.frameWidth = 32;
+        t.animation.frameHeight = 34;
+        t.animation.frameLeft = 300;
+        t.animation.frameTop = 341;
+        t.animation.totalFrames = 4;
         return t;
     }
 

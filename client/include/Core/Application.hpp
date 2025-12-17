@@ -76,6 +76,7 @@ private:
     void initGame();
     void initSettingsMenu();
     void initKeyBindingMenu();
+    void initPauseMenu();
     void setupSettingsCallbacks();
     
     void processInput();
@@ -90,11 +91,14 @@ private:
     
     void changeState(GameState newState);
     
+    void createParallaxBackground();
     void spawnEnemy(const rtp::Vec2f& position);
+    void spawnEnemy2(const rtp::Vec2f& position);
     void spawnProjectile(const rtp::Vec2f& position);
     void killEnemy(std::size_t index);
     void killProjectile(std::size_t index);
     
+    std::vector<rtp::ecs::Entity> _parallaxLayers;
     std::vector<rtp::ecs::Entity> _spawnedEnemy;
     std::vector<rtp::ecs::Entity> _projectiles;
     sf::RenderWindow _window;
@@ -106,6 +110,10 @@ private:
     TranslationManager _translations;
 
     rtp::client::ClientNetwork _clientNetwork;
+    
+    sf::Shader _colorblindShader;
+    sf::RenderTexture _renderTexture;
+    bool _shaderLoaded{false};
     
     GameState _currentState{GameState::Menu};
     float _lastDt{0.0f};
