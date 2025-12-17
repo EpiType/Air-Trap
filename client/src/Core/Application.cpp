@@ -55,6 +55,21 @@ namespace Client::Core
         
         setupSettingsCallbacks();
 
+        // Load colorblind shader
+        if (!_colorblindShader.loadFromFile("assets/shaders/colorblind.frag", sf::Shader::Type::Fragment)) {
+            rtp::log::warning("Failed to load colorblind shader, running without colorblind support");
+            _shaderLoaded = false;
+        } else {
+            _shaderLoaded = true;
+            rtp::log::info("Colorblind shader loaded successfully");
+        }
+        
+        // Create render texture for post-processing
+        if (!_renderTexture.resize({static_cast<unsigned int>(UIConstants::WINDOW_WIDTH), 
+                                     static_cast<unsigned int>(UIConstants::WINDOW_HEIGHT)})) {
+            rtp::log::error("Failed to create render texture");
+        }
+
         // _audioManager.setMasterVolume(_settings.getMasterVolume());
         // _audioManager.setMusicVolume(_settings.getMusicVolume());
         // _audioManager.setSfxVolume(_settings.getSfxVolume());
@@ -250,6 +265,53 @@ namespace Client::Core
         animData.elapsedTime = 0.0f;
 
         _registry.addComponent<rtp::ecs::components::Animation>(p, animData);
+    }
+
+    void Application::initPauseMenu() {
+        rtp::log::info("Initializing pause menu...");
+        
+        // Title "PAUSED"
+        auto titleResult = _registry.spawnEntity();
+        if (titleResult) {
+            rtp::ecs::Entity title = titleResult.value();
+            rtp::ecs::components::ui::Text titleText;
+            titleText.content = _translations.get("game.paused");
+            titleText.position = rtp::Vec2f{500.0f, 200.0f};
+            titleText.fontPath = "assets/fonts/main.ttf";
+            titleText.fontSize = 60;
+            titleText.red = 255;
+            titleText.green = 100;
+            titleText.blue = 100;
+            _registry.addComponent<rtp::ecs::components::ui::Text>(title, titleText);
+        }
+
+        // Resume button
+        auto resumeBtnRes = _registry.spawnEntity();
+        if (resumeBtnRes) {
+            rtp::ecs::Entity btn = resumeBtnRes.value();
+            rtp::ecs::components::ui::Button button;
+            button.text = _translations.get("game.resume");
+            button.position = rtp::Vec2f{490.0f, 350.0f};
+            button.size = rtp::Vec2f{300.0f, 60.0f};
+            button.onClick = [this]() {
+                changeState(GameState::Playing);
+            };
+            _registry.addComponent<rtp::ecs::components::ui::Button>(btn, button);
+        }
+
+        // Quit to menu button
+        auto quitBtnRes = _registry.spawnEntity();
+        if (quitBtnRes) {
+            rtp::ecs::Entity btn = quitBtnRes.value();
+            rtp::ecs::components::ui::Button button;
+            button.text = _translations.get("game.quit_to_menu");
+            button.position = rtp::Vec2f{490.0f, 430.0f};
+            button.size = rtp::Vec2f{300.0f, 60.0f};
+            button.onClick = [this]() {
+                changeState(GameState::Menu);
+            };
+            _registry.addComponent<rtp::ecs::components::ui::Button>(btn, button);
+        }
     }
 
     void Application::initKeyBindingMenu()
@@ -549,28 +611,41 @@ namespace Client::Core
         }
     }
 
-    void Application::changeState(GameState newState)
-    {
+    void Application::changeState(GameState newState) {
         rtp::log::info("Changing state from {} to {}", 
                       static_cast<int>(_currentState), 
                       static_cast<int>(newState));
 
-        _registry.clear();
+        // Ne pas clear le registry si on passe de Playing <-> Paused
+        // pour garder l'état du jeu intact
+        bool keepGameState = (_currentState == GameState::Playing && newState == GameState::Paused) ||
+                             (_currentState == GameState::Paused && newState == GameState::Playing);
         
+        GameState previousState = _currentState;
         _currentState = newState;
+        
+        if (!keepGameState) {
+            _registry.clear();
+        }
         
         switch (newState) {
             case GameState::Menu:
                 initMenu();
                 break;
             case GameState::Playing:
-                initGame();
+                // Ne réinitialiser le jeu que si on ne vient pas de Paused
+                if (previousState != GameState::Paused) {
+                    initGame();
+                }
                 break;
             case GameState::Settings:
                 initSettingsMenu();
                 break;
             case GameState::KeyBindings:
                 initKeyBindingMenu();
+                break;
+            case GameState::Paused:
+                initPauseMenu();
                 break;
             default:
                 break;
@@ -584,8 +659,7 @@ namespace Client::Core
                 _window.close();
 
             if (const auto *kp = event->getIf<sf::Event::KeyPressed>()) {
-                // Escape global (sauf en key binding)
-                if (kp->code == sf::Keyboard::Key::Escape && _currentState != GameState::KeyBindings) {
+                if (kp->code == _settings.getKey(KeyAction::Pause) && _currentState != GameState::KeyBindings) {
                     handleGlobalEscape();
                     return;
                 }
@@ -709,8 +783,7 @@ namespace Client::Core
         }
     }
 
-    void Application::update(sf::Time delta)
-    {
+    void Application::update(sf::Time delta) {
         _lastDt = delta.asSeconds();
 
         if (_currentState == GameState::Menu) {
@@ -721,9 +794,11 @@ namespace Client::Core
         } else if (_currentState == GameState::Settings || _currentState == GameState::KeyBindings) {
             auto& menuSys = _systemManager.getSystem<Client::Systems::MenuSystem>();
             menuSys.update(_lastDt);
-
             auto& settingsSys = _systemManager.getSystem<Client::Systems::SettingsMenuSystem>();
             settingsSys.update(_lastDt);
+        } else if (_currentState == GameState::Paused) {
+            auto& menuSys = _systemManager.getSystem<Client::Systems::MenuSystem>();
+            menuSys.update(_lastDt);
         }
     }
     
@@ -843,17 +918,60 @@ namespace Client::Core
 
     void Application::render()
     {
-        _window.clear(sf::Color::Black);
+        // Déterminer si on applique le shader colorblind
+        bool applyShader = _shaderLoaded && 
+                           _currentState == GameState::Playing && 
+                           _settings.getColorBlindMode() != ColorBlindMode::None;
         
-        if (_currentState == GameState::Menu || _currentState == GameState::Settings || _currentState == GameState::KeyBindings) {  // ✅ Ajouter
-            auto& uiSys = _systemManager.getSystem<Client::Systems::UIRenderSystem>();
-            uiSys.update(0.0f);
-        } else if (_currentState == GameState::Playing) {
+        if (applyShader) {
+            // Render to texture first
+            _renderTexture.clear(sf::Color::Black);
+
+            _window.clear(sf::Color::Black);
             auto& renderSys = _systemManager.getSystem<rtp::client::RenderSystem>();
             renderSys.update(_lastDt);
+            
+
+            sf::RectangleShape overlay(sf::Vector2f(UIConstants::WINDOW_WIDTH, UIConstants::WINDOW_HEIGHT));
+            overlay.setPosition(sf::Vector2f(0.0f, 0.0f));
+            
+            // Appliquer une teinte selon le mode
+            switch (_settings.getColorBlindMode()) {
+                case ColorBlindMode::Protanopia:
+                    // Filtre rouge-orangé semi-transparent
+                    overlay.setFillColor(sf::Color(255, 150, 100, 30));
+                    break;
+                case ColorBlindMode::Deuteranopia:
+                    // Filtre jaune-vert semi-transparent
+                    overlay.setFillColor(sf::Color(200, 255, 100, 30));
+                    break;
+                case ColorBlindMode::Tritanopia:
+                    // Filtre rose-magenta semi-transparent
+                    overlay.setFillColor(sf::Color(255, 100, 200, 30));
+                    break;
+                default:
+                    break;
+            }
+            
+            _window.draw(overlay);
+            
+        } else {
+            // Rendu normal sans filtre
+            _window.clear(sf::Color::Black);
+            
+            if (_currentState == GameState::Menu || 
+                _currentState == GameState::Settings || 
+                _currentState == GameState::KeyBindings ||
+                _currentState == GameState::Paused) {
+                auto& uiSys = _systemManager.getSystem<Client::Systems::UIRenderSystem>();
+                uiSys.update(0.0f);
+            } else if (_currentState == GameState::Playing) {
+                auto& renderSys = _systemManager.getSystem<rtp::client::RenderSystem>();
+                renderSys.update(_lastDt);
+            }
         }
         
-        // Display window (hors ECS)
+        // Display window
         _window.display();
     }
 }
