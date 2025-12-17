@@ -53,6 +53,7 @@ namespace rtp::client {
             log::info("Connected to server {}:{}", _serverIp, _serverPort);
 
             _udpSocket.open(asio::ip::udp::v4());
+            _udpSocket.bind(asio::ip::udp::endpoint(asio::ip::udp::v4(), 0));
             _serverEndpoint = asio::ip::udp::endpoint(asio::ip::make_address(_serverIp), _serverPort);
 
             readTcpHeader();
