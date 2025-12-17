@@ -105,7 +105,6 @@ namespace rtp::server
     void GameManager::handlePlayerDisconnect(uint32_t sessionId)
     {
         log::info("Player with Session ID {} disconnected", sessionId);
-        std::lock_guard lock(_mutex);
 
         uint32_t entityNetId = 0;
 
@@ -132,9 +131,11 @@ namespace rtp::server
             }
         }
 
-        rtp::net::Packet disconnectPlayer(rtp::net::OpCode::Disconnect);
-        disconnectPlayer << entityNetId;
-        _networkManager.broadcastPacket(disconnectPlayer, rtp::net::NetworkMode::UDP);
+        if (entityNetId != 0) {
+            rtp::net::Packet disconnectPlayer(rtp::net::OpCode::Disconnect);
+            disconnectPlayer << entityNetId;
+            _networkManager.broadcastPacket(disconnectPlayer, rtp::net::NetworkMode::UDP);
+        }
     }
 
     void GameManager::handlePacket(uint32_t sessionId, const Packet &packet)
