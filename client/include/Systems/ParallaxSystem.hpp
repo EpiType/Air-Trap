@@ -12,17 +12,17 @@ class ParallaxSystem : public rtp::ecs::ISystem {
         explicit ParallaxSystem(rtp::ecs::Registry& r) : _r(r) {}
 
         void update(float dt) override {
-            (void)dt; 
+        auto view = _r.zipView<rtp::ecs::components::Transform, rtp::ecs::components::ParallaxLayer>();
 
-            auto view = _r.zipView<rtp::ecs::components::Transform, rtp::ecs::components::ParallaxLayer>();
+        for (auto&& [transform, parallax] : view) {
+            transform.position.x -= parallax.speed * dt;
 
-            for (auto&& [transform, parallax] : view) {
-                float scaledWidth = parallax.textureWidth * transform.scale.x;
-                if (transform.position.x <= -scaledWidth) {
-                    transform.position.x += scaledWidth * 2.0f;
-                }
+            float scaledWidth = parallax.textureWidth * transform.scale.x;
+            if (transform.position.x <= -scaledWidth) {
+                transform.position.x += scaledWidth * 2.0f;
             }
         }
+    }
 
     private:
         rtp::ecs::Registry& _r;
