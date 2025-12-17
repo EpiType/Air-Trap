@@ -43,11 +43,12 @@ namespace rtp::client {
             case 0x20: /* WorldUpdate */
                 applyWorldUpdate(event.packet);
                 break;
-            case 0x03: /* Disconnect */
+            case 0x03: {/* Disconnect */
                 uint32_t entityNetId = 0;
                 event.packet >> entityNetId;
                 disconnectPlayer(entityNetId);
                 break;
+            }
         }
     }
 
