@@ -6,6 +6,8 @@
  */
 
 #include "Systems/ClientNetworkSystem.hpp"
+#include "RType/Logger.hpp"
+#include "RType/ECS/Components/NetworkId.hpp"
 
 namespace rtp::client {
     //////////////////////////////////////////////////////////////////////////
@@ -30,9 +32,39 @@ namespace rtp::client {
     void ClientNetworkSystem::handleEvent(rtp::net::NetworkEvent& event)
     {
         uint8_t opCodeValue = static_cast<uint8_t>(event.packet.header.opCode);
-        if (opCodeValue == 0x20) {
-            applyWorldUpdate(event.packet);
+        switch (opCodeValue)
+        {
+            case 0x21: /* EntitySpawn */
+                /* code */
+                break;
+            case 0x22: /* EntityDeath */
+                /* code */
+                break;
+            case 0x20: /* WorldUpdate */
+                applyWorldUpdate(event.packet);
+                break;
+            case 0x03: /* Disconnect */
+                uint32_t entityNetId = 0;
+                event.packet >> entityNetId;
+                disconnectPlayer(entityNetId);
+                break;
         }
+    }
+
+    void ClientNetworkSystem::disconnectPlayer(uint32_t entityNetId)
+    {
+        auto it = _netIdToEntity.find(entityNetId);
+        if (it == _netIdToEntity.end()) {
+            rtp::log::warning("Disconnect: unknown entityNetId {}", entityNetId);
+            return;
+        }
+
+        rtp::ecs::Entity e = it->second;
+
+        rtp::log::info("Removing entity netId={} entity={}", entityNetId, (uint32_t)e);
+
+        _registry.killEntity(e);
+        _netIdToEntity.erase(it);
     }
 
     void ClientNetworkSystem::applyWorldUpdate(rtp::net::Packet& packet)
@@ -109,5 +141,7 @@ namespace rtp::client {
         animData.elapsedTime = 0.0f;
 
         _registry.addComponent<rtp::ecs::components::Animation>(entity, animData);
+
+        _netIdToEntity[snap.netId] = entity;
     }
 } // namespace rtp::client

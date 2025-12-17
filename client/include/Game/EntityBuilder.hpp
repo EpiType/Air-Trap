@@ -71,6 +71,7 @@ struct EntityTemplate {
 
         t.withParallax = true;
         t.parallax.textureWidth = 1280.0f;
+        t.parallax.speed = 100.0f;
         return t;
     }
 
@@ -98,6 +99,7 @@ struct EntityTemplate {
 
         t.withParallax = true;
         t.parallax.textureWidth = 1280.0f;
+        t.parallax.speed = 300.0f;
         return t;
     }
 
