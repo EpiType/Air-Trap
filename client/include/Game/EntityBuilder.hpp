@@ -131,6 +131,36 @@ struct EntityTemplate {
         return t;
     }
 
+    static EntityTemplate createBasicScout2(const rtp::Vec2f& initialPos)
+    {
+        EntityTemplate t;
+        t.id = "basic_scout";
+
+        t.position = initialPos;
+        t.rotation = 0.0f;
+        t.scale = {1.0f, 1.0f};
+
+        t.withVelocity = true;
+        t.velocity.speed = 2.0f;
+        t.velocity.direction = {-1.0f, 0.0f};
+        
+        t.sprite.texturePath = "assets/sprites/r-typesheet2.gif";
+        t.sprite.rectLeft = 300;
+        t.sprite.rectTop = 341;
+        t.sprite.rectWidth = 32;
+        t.sprite.rectHeight = 34;
+        t.sprite.zIndex = 5;
+        t.sprite.red = 255;
+
+        t.withAnimation = true;
+        t.animation.frameWidth = 32;
+        t.animation.frameHeight = 34;
+        t.animation.frameLeft = 300;
+        t.animation.frameTop = 341;
+        t.animation.totalFrames = 4;
+        return t;
+    }
+
     static EntityTemplate createBulletEnemy(const rtp::Vec2f& initialPos)
     {
         EntityTemplate t;

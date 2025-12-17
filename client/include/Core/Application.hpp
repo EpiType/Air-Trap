@@ -91,6 +91,7 @@ private:
     
     void createParallaxBackground();
     void spawnEnemy(const rtp::Vec2f& position);
+    void spawnEnemy2(const rtp::Vec2f& position);
     void spawnProjectile(const rtp::Vec2f& position);
     void killEnemy(std::size_t index);
     void killProjectile(std::size_t index);

@@ -602,6 +602,12 @@ namespace Client::Core
                     killEnemy(0);
                     rtp::log::debug("[DEBUG] Killed enemy at index 0");
                 }
+                if (kp->code == sf::Keyboard::Key::I) {
+                    rtp::Vec2f mousePos{static_cast<float>(sf::Mouse::getPosition(_window).x), 
+                                        static_cast<float>(sf::Mouse::getPosition(_window).y)};
+                    spawnEnemy2(mousePos);
+                    rtp::log::debug("[DEBUG] Enemy2 spawned at ({}, {})", mousePos.x, mousePos.y);
+                }
                 if (kp->code == sf::Keyboard::Key::L) {
                     rtp::Vec2f mousePos{static_cast<float>(sf::Mouse::getPosition(_window).x), 
                                         static_cast<float>(sf::Mouse::getPosition(_window).y)};
@@ -772,6 +778,24 @@ namespace Client::Core
         
         Game::EntityTemplate scoutTemplate = 
             Game::EntityTemplate::createBasicScout(position);
+
+        auto result = _entityBuilder.spawn(scoutTemplate);
+
+        if (result.has_value()) {
+            rtp::ecs::Entity newEnemy = result.value();
+            _spawnedEnemy.push_back(newEnemy);
+            rtp::log::debug("Enemy spawned (ID: {}) at index {}. Total: {} enemies", 
+                           static_cast<std::uint32_t>(newEnemy), newIndex, _spawnedEnemy.size());
+        } else {
+            rtp::log::error("Failed to spawn enemy: {}", result.error().message());
+        }
+    }
+
+    void Application::spawnEnemy2(const rtp::Vec2f& position) {
+        std::size_t newIndex = _spawnedEnemy.size();
+        
+        Game::EntityTemplate scoutTemplate = 
+            Game::EntityTemplate::createBasicScout2(position);
 
         auto result = _entityBuilder.spawn(scoutTemplate);
 
