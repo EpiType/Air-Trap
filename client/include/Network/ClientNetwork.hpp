@@ -18,6 +18,7 @@
     #include <mutex>
     #include <asio.hpp>
     #include <thread>
+    #include <array>
 
 /**
  * @namespace rtp::net
@@ -93,19 +94,55 @@ namespace rtp::client {
              */
             net::Packet popPacket(void);
 
+            /**
+             * @brief Read TCP packet header asynchronously
+             */
+            void readTcpHeader(void);
+
+            /**
+             * @brief Read TCP packet body asynchronously
+             */
+            void readTcpBody(void);
+
+            /**
+             * @brief Read UDP packets asynchronously
+             */
+            void readUdp(void);
+
+            /**
+             * @brief Send UDP handshake to the server
+             */
+            void sendUdpHandshake(void);
+
+            /**
+             * @brief Check if UDP socket is ready
+             * @return true if UDP socket is bound and ready, false otherwise
+             */
+            bool isUdpReady(void) const;
+
         private:
-            uint16_t _serverPort;                      /**< Server port number */
-            std::string _serverIp;                     /**< Server IP address */
+            uint16_t _serverPort;                       /**< Server port number */
+            std::string _serverIp;                      /**< Server IP address */
 
-            asio::io_context _ioContext;               /**< ASIO I/O context */
-            asio::ip::tcp::socket _tcpSocket;          /**< TCP socket for communication */
-            asio::ip::udp::socket _udpSocket;          /**< UDP socket for communication */
-            asio::ip::udp::endpoint _serverEndpoint;   /**< Server UDP endpoint */
+            asio::io_context _ioContext;                /**< ASIO I/O context */
+            asio::ip::tcp::socket _tcpSocket;           /**< TCP socket for communication */
+            asio::ip::udp::socket _udpSocket;           /**< UDP socket for communication */
+            asio::ip::udp::endpoint _serverEndpoint;    /**< Server UDP endpoint */
 
-            std::thread _ioThread;                     /**< Thread for running the I/O context */
+            std::thread _ioThread;                      /**< Thread for running the I/O context */
 
-            std::mutex _eventQueueMutex;               /**< Mutex for event queue synchronization */
-            std::deque<net::NetworkEvent> _eventQueue; /**< Queue of network events */
+            std::mutex _eventQueueMutex;                /**< Mutex for event queue synchronization */
+            std::deque<net::NetworkEvent> _eventQueue;  /**< Queue of network events */
+
+            net::Header _tcpHeader;                     /**< TCP packet header */
+            net::Header _udpHeader;                     /**< UDP packet header */
+            std::vector<uint8_t> _tcpBody;              /**< TCP packet body */
+
+            uint32_t _sessionId = 0;                    /**< Client session ID */
+            bool _udpBound = false;                     /**< Flag indicating if UDP is bound */
+            
+            std::array<char, 65536> _udpBuffer;         /**< Buffer for UDP packets */
+            asio::ip::udp::endpoint _udpSenderEndpoint; /**< Endpoint of the UDP sender */
 
      };
 }; // namespace rtp::client

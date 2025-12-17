@@ -1,12 +1,12 @@
 /**
- * File   : ServerNetworkManager.hpp
+ * File   : INetwork.hpp
  * License: MIT
  * Author : Elias Josué HAJJAR LLAUQUEN <elias-josue.hajjar-llauquen@epitech.eu>
  * Date   : 11/12/2025
  */
 
-#ifndef RTYPE_NETWORK_ServerNetworkManager_HPP_
-    #define RTYPE_NETWORK_ServerNetworkManager_HPP_
+#ifndef RTYPE_SERVER_NETWORK_HPP_
+    #define RTYPE_SERVER_NETWORK_HPP_
 
     #include "RType/Network/INetwork.hpp"
     #include "RType/Network/Core/Session.hpp"
@@ -15,133 +15,110 @@
     #include "RType/Logger.hpp"
 
     #include <asio.hpp>
-    #include <asio/write.hpp>
     #include <memory>
     #include <unordered_map>
     #include <thread>
     #include <mutex>
     #include <queue>
-
-    using namespace rtp::net;
-    using namespace rtp::log;
+    #include <optional>
 
 /**
- * @namespace rtp::net
- * @brief Network layer for R-Type protocol
+ * @namespace rtp::server
+ * @brief Network layer for R-Type server protocol
  */
 namespace rtp::server {
+
     /**
-     * @class ServerNetworkManager
-     * @brief ASIO-based implementation of the INetwork interface.
-     * 
-     * This class provides network functionalities using ASIO for TCP and UDP
-     * communication. It manages sessions, handles incoming connections and
-     * packets, and provides methods for sending and broadcasting packets.
+     * @class ServerNetwork
+     * @brief Implementation ASIO du serveur réseau (TCP + UDP)
      */
-    class ServerNetwork : public INetwork, public IEventPublisher {
+    class ServerNetwork : public rtp::net::INetwork, public rtp::net::IEventPublisher {
         public:
             /**
-             * @brief Constructor for ServerNetworkManager
+             * @brief Constructor for ServerNetwork
              * @param port Port number to start the server on
-             * @note Initializes ASIO components and prepares for accepting connections
              */
             ServerNetwork(uint16_t port);
 
             /**
-             * @brief Destructor for ServerNetworkManager
-             * @note Cleans up ASIO resources and stops the I/O context
+             * @brief Destructor for ServerNetwork
              */
             ~ServerNetwork() override;
 
             /**
              * @brief Start the network server
-             * @note Begins accepting TCP connections and receiving UDP packets
-             * and starts the I/O context thread
+             * @note Begins accepting connections and starts the I/O context thread
              */
             void start(void) override;
 
             /**
              * @brief Stop the network server
-             * @note Closes all sessions and stops the I/O context
+             * @note Closes connections and stops the I/O context
              */
             void stop(void) override;
 
             /**
              * @brief Send a packet to a specific session
              * @param sessionId ID of the session to send the packet to
-             * @param packet Packet to be sent
-             * @param mode Network mode (TCP/UDP)
+             * @param packet Packet to send
+             * @param mode Network mode (TCP or UDP)
              */
-            void sendPacket(uint32_t sessionId, const Packet &packet, NetworkMode mode);
+            void sendPacket(uint32_t sessionId, const rtp::net::Packet &packet, rtp::net::NetworkMode mode);
 
             /**
-             * @brief Broadcast a packet to all sessions
-             * @param packet Packet to be broadcasted
-             * @param mode Network mode (TCP/UDP)
+             * @brief Broadcast a packet to all connected sessions
+             * @param packet Packet to broadcast
+             * @param mode Network mode (TCP or UDP)
              */
-            void broadcastPacket(const Packet &packet, NetworkMode mode);
+            void broadcastPacket(const rtp::net::Packet &packet, rtp::net::NetworkMode mode);
 
             /**
              * @brief Poll for a network event
-             * @return Optional containing the polled network event if available
+             * @return Optional NetworkEvent if available
              */
-            std::optional<NetworkEvent> pollEvent(void) override;
+            std::optional<rtp::net::NetworkEvent> pollEvent(void) override;
 
             /**
-             * @brief Publish a network event
-             * @param event Network event to be published
+             * @brief Publish a network event to be processed
+             * @param event NetworkEvent to publish
              */
-            void publishEvent(NetworkEvent event) override;
-
-            /**
-             * @brief Get the next available session ID
-             * @return Next session ID
-             */
-            uint32_t getNextSessionId(void);
+            void publishEvent(rtp::net::NetworkEvent event) override;
 
         private:
             /**
-             * @brief Handler for accepted TCP connections
-             * @param error Error code from the accept operation
-             * @param socket Socket for the accepted connection
+             * @brief Accept incoming TCP connections
+             * @note Initiates an asynchronous accept operation
              */
-            asio::awaitable<void> runTcpAcceptor();
+            void acceptConnection();
 
             /**
-             * @brief Handler for received UDP packets
-             * @param error Error code from the receive operation
-             * @param bytesTransferred Number of bytes received
+             * @brief Receive incoming UDP packets
+             * @note Initiates an asynchronous receive operation
              */
-            asio::awaitable<void> runUdpReader();
-
-            /**
-             * @brief Helper function to send a UDP packet to a specific endpoint
-             * @param endpoint Destination UDP endpoint
-             * @param packet Packet to be sent
-             */
-            void sendUdpHelper(const asio::ip::udp::endpoint &endpoint, const Packet &packet);
+            void receiveUdpPacket();
 
         private:
-            std::unordered_map<uint32_t,
-            std::shared_ptr<rtp::net::Session>> _sessions; /**< Active sessions */
+            asio::io_context _ioContext;                       /**< ASIO I/O context for managing asynchronous operations */
+            asio::ip::tcp::acceptor _acceptor;                 /**< TCP acceptor for incoming connections */
+            asio::ip::udp::socket _udpSocket;                  /**< UDP socket for receiving and sending datagrams */
+            std::thread _ioThread;                             /**< Thread running the ASIO I/O context */
+
+            std::unordered_map<uint32_t, 
+                std::shared_ptr<rtp::net::Session>> _sessions; /**< Map of active sessions indexed by session ID */
+            std::mutex _sessionsMutex;                         /**< Mutex for protecting access to the sessions map */
             
+            std::queue<rtp::net::NetworkEvent> _eventQueue;    /**< Queue of network events to be processed */
+            std::mutex _eventQueueMutex;                       /**< Mutex for protecting access to the event queue */
+            
+            uint32_t _nextSessionId;                           /**< Next session ID to assign to a new connection */
+
             std::unordered_map<asio::ip::udp::endpoint,
-            uint32_t> _udpEndpointToId;                    /**< Mapping of UDP endpoints to session IDs */
-            
-            std::mutex _sessionsMutex;                     /**< Mutex for thread-safe session access */
-            
-            std::queue<NetworkEvent> _eventQueue;          /**< Queue of network events */
-            std::mutex _eventQueueMutex;                   /**< Mutex for thread-safe event queue access */
-            
-            asio::io_context _ioContext;                   /**< ASIO I/O context */
-            asio::ip::tcp::acceptor _tcpAcceptor;          /**< TCP acceptor for incoming connections */
-            asio::ip::udp::socket _udpSocket;              /**< UDP socket for receiving packets */
-            std::thread _ioThread;                         /**< Thread for running the I/O context */
+                uint32_t> _udpEndpointToSessionId;             /**< Map of UDP endpoints to session IDs */
+            std::mutex _udpMapMutex;                           /**< Mutex for protecting access to the UDP endpoint map */
 
-            uint32_t _nextSessionId;                       /**< Next available session ID */
-
-            uint16_t _port;                                /**< Port number the server is running on */
+            std::array<char, 4096> _udpBuffer;                 /**< Buffer for receiving UDP packets */
+            asio::ip::udp::endpoint _udpRemoteEndpoint;        /**< Remote endpoint for the last received UDP packet */
     };
-} // namespace rtp::net
+} 
 
-#endif /* !RTYPE_NETWORK_ServerServerNetworkManager_HPP_ */
+#endif /* !RTYPE_SERVER_NETWORK_HPP_ */

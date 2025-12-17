@@ -10,45 +10,52 @@
 
 #include "RType/ECS/ISystem.hpp"
 #include "RType/ECS/Registry.hpp"
-
-#include "RType/ECS/Components/Velocity.hpp"
-#include "RType/ECS/Components/Controllable.hpp"
-#include "RType/ECS/Components/Transform.hpp"
 #include "Core/Settings.hpp"
+#include "Network/ClientNetwork.hpp"
+#include "RType/Network/Packet.hpp"
 
-#include <SFML/Window/Event.hpp>
+#include <SFML/Window/Keyboard.hpp>
+#include <cstdint>
 
 namespace rtp::client {
-    class InputSystem : public rtp::ecs::ISystem {
+
+class InputSystem : public rtp::ecs::ISystem
+{
     public:
-        explicit InputSystem(rtp::ecs::Registry& r, Client::Core::Settings& settings) 
-            : _r(r), _settings(settings) {}
-
-        void update(float dt) override {
-            (void)dt;
-            
-            auto view = _r.zipView<rtp::ecs::components::Transform, rtp::ecs::components::Controllable>();
-
-            for (auto&& [transform, _] : view) {
-                if (sf::Keyboard::isKeyPressed(_settings.getKey(Client::Core::KeyAction::MoveUp))) {
-                    transform.position.y -= 5.0f;
-                }
-                if (sf::Keyboard::isKeyPressed(_settings.getKey(Client::Core::KeyAction::MoveDown))) {
-                    transform.position.y += 5.0f;
-                }
-                if (sf::Keyboard::isKeyPressed(_settings.getKey(Client::Core::KeyAction::MoveLeft))) {
-                    transform.position.x -= 5.0f;
-                }
-                if (sf::Keyboard::isKeyPressed(_settings.getKey(Client::Core::KeyAction::MoveRight))) {
-                    transform.position.x += 5.0f;
-                }
-            }
-        }
+        /** 
+         * @brief Constructor for InputSystem
+         * @param r Reference to the entity registry
+         * @param settings Reference to the client settings
+         * @param net Reference to the client network manager
+         * @param window Reference to the SFML render window
+         */
+        explicit InputSystem(rtp::ecs::Registry& r,
+                            Client::Core::Settings& settings,
+                            ClientNetwork& net,
+                            sf::RenderWindow& window);
+        
+        /**
+         * @brief Update input system logic for one frame
+         * @param deltaTime Time elapsed since last update in seconds
+         */
+        void update(float) override;
 
     private:
-        rtp::ecs::Registry& _r;
-        Client::Core::Settings& _settings;
-    };
-}
+        enum InputBits : uint8_t {              /**< Bitmask for input directions */
+            MoveUp    = 1 << 0,
+            MoveDown  = 1 << 1,
+            MoveLeft  = 1 << 2,
+            MoveRight = 1 << 3
+        };
 
-#endif // INPUT_SYSTEM_HPP
+        rtp::ecs::Registry& _r;                 /**< Reference to the entity registry */
+        Client::Core::Settings& _settings;      /**< Reference to the client settings */
+        ClientNetwork& _net;                    /**< Reference to the client network manager */
+        sf::RenderWindow& _window;              /**< Reference to the SFML render window */
+
+        uint8_t _lastMask = 0;                  /**< Last sent input mask */
+    };
+
+} // namespace rtp::client
+
+#endif

@@ -1,0 +1,113 @@
+/**
+ * File   : ClientNetworkSystem.cpp
+ * License: MIT
+ * Author : Elias Josué HAJJAR LLAUQUEN <elias-josue.hajjar-llauquen@epitech.eu>
+ * Date   : 14/12/2025
+ */
+
+#include "Systems/ClientNetworkSystem.hpp"
+
+namespace rtp::client {
+    //////////////////////////////////////////////////////////////////////////
+    // Public API
+    //////////////////////////////////////////////////////////////////////////
+
+    ClientNetworkSystem::ClientNetworkSystem(ClientNetwork& network, rtp::ecs::Registry& registry)
+        : _network(network), _registry(registry) {}
+
+    void ClientNetworkSystem::update(float dt)
+    {
+        (void)dt;
+        while (auto eventOpt = _network.pollEvent()) {
+            handleEvent(*eventOpt);
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // Private Methods
+    //////////////////////////////////////////////////////////////////////////
+
+    void ClientNetworkSystem::handleEvent(rtp::net::NetworkEvent& event)
+    {
+        uint8_t opCodeValue = static_cast<uint8_t>(event.packet.header.opCode);
+        if (opCodeValue == 0x20) {
+            applyWorldUpdate(event.packet);
+        }
+    }
+
+    void ClientNetworkSystem::applyWorldUpdate(rtp::net::Packet& packet)
+    {
+        rtp::net::WorldSnapshotPayload header;
+        std::vector<rtp::net::EntitySnapshotPayload> snapshots;
+
+        packet >> header >> snapshots;
+
+        auto view = _registry.zipView<
+            rtp::ecs::components::NetworkId,
+            rtp::ecs::components::Transform
+        >();
+
+        for (const auto& snap : snapshots) {
+            bool found = false;
+            for (auto&& [netId, tf] : view) {
+                if (netId.id == snap.netId) {
+                    tf.position.x = snap.position.x;
+                    tf.position.y = snap.position.y;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                std::cout << "Entity with NetworkId " << snap.netId << " not found in registry.\n";
+                spawnEntity(snap);
+            }
+        }
+    }
+
+    void ClientNetworkSystem::spawnEntity(const rtp::net::EntitySnapshotPayload& snap)
+    {
+        auto entityRes = _registry.spawnEntity();
+        
+        if (!entityRes) return;
+        
+        auto entity = entityRes.value();
+
+        rtp::log::info("Spawning Entity NetID: {} at ({}, {})", snap.netId, snap.position.x, snap.position.y);
+
+        _registry.addComponent<rtp::ecs::components::NetworkId>(
+            entity, 
+            rtp::ecs::components::NetworkId{snap.netId}
+        );
+                
+        _registry.addComponent<rtp::ecs::components::Transform>(
+            entity, 
+            rtp::ecs::components::Transform{ snap.position, snap.rotation, {1.0f, 1.0f} }
+        );
+
+        rtp::ecs::components::Sprite spriteData;
+        spriteData.texturePath = "assets/sprites/r-typesheet42.gif";
+        spriteData.rectLeft = 0;
+        spriteData.rectTop = 0;
+        spriteData.rectWidth = 33;
+        spriteData.rectHeight = 17;
+        spriteData.zIndex = 10;
+        spriteData.red = 255;
+
+        _registry.addComponent<rtp::ecs::components::Sprite>(
+            entity, 
+            spriteData
+        );
+
+        rtp::ecs::components::Animation animData;
+        animData.frameLeft = 0;
+        animData.frameTop = 0;
+        animData.frameWidth = 33;
+        animData.frameHeight = 17;
+        animData.totalFrames = 5;
+        animData.frameDuration = 0.1f;
+        animData.currentFrame = 0;
+        animData.elapsedTime = 0.0f;
+
+        _registry.addComponent<rtp::ecs::components::Animation>(entity, animData);
+    }
+} // namespace rtp::client
