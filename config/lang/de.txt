@@ -37,4 +37,6 @@ game.score=Punktzahl: {0}
 game.lives=Leben: {0}
 game.level=Ebene {0}
 game.paused=PAUSIERT
+game.resume=FORTSETZEN
+game.quit_to_menu=ZUM MENÜ BEENDEN
 game.game_over=SPIEL VORBEI

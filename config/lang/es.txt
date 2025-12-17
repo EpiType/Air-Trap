@@ -36,4 +36,6 @@ game.score=Puntuación: {0}
 game.lives=Vidas: {0}
 game.level=Nivel {0}
 game.paused=PAUSADO
+game.resume=REANUDAR
+game.quit_to_menu=SALIR AL MENÚ
 game.game_over=FIN DEL JUEGO

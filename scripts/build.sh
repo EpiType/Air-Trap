@@ -29,7 +29,7 @@ case "${1:-}" in
         echo "✓ Using GCC $GCC_VERSION"
         mkdir -p build
         cd build
-        conan install .. --build=missing -s build_type=Debug -s compiler.cppstd=23 -s compiler.version=$GCC_VERSION
+        conan install .. --build=missing --output-folder=. -s build_type=Debug -s compiler.cppstd=23 -s compiler.version=$GCC_VERSION
         cmake .. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=$CMAKE_C_COMPILER -DCMAKE_CXX_COMPILER=$CMAKE_CXX_COMPILER
         cmake --build . --config Debug -j$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
         
@@ -47,10 +47,11 @@ case "${1:-}" in
         echo ""
         echo "⚠️  WARNING: Use the _debug binaries for debug keys!"
         echo "   ./r-type_client        ← Release (NO debug keys)"
-        echo "   ./r-type_client_debug  ← Debug (debug keys J/K/L/M enabled)"
+        echo "   ./r-type_client_debug  ← Debug (debug keys J/I/K/L/M enabled)"
         echo ""
         echo "🎮 Debug Keys Available:"
         echo "   J - Spawn enemy at mouse position"
+        echo "   I - Spawn second type of enemy at mouse position"
         echo "   K - Kill enemy at index 0"
         echo "   L - Spawn projectile at mouse position"
         echo "   M - Kill projectile at index 0"
@@ -77,7 +78,7 @@ case "${1:-}" in
         # Build with coverage
         mkdir -p build
         cd build
-        conan install .. --build=missing -s build_type=Debug
+        conan install .. --build=missing --output-folder=. -s build_type=Debug
         cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DENABLE_COVERAGE=ON
         cmake --build . -j$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
         
@@ -105,10 +106,10 @@ case "${1:-}" in
         ;;
     fclean)
         echo "Full clean (removing build and binaries)..."
-        if [ -d !build ]; then
-            ./build.sh clean
+        if [ -d build ]; then
+            ./scripts/build.sh clean
         fi
-        rm -f r-type_client r-type_server
+        rm -f r-type_client r-type_server r-type_client_debug r-type_server_debug
         echo "✅ Full clean complete!"
         exit 0
         ;;
@@ -133,7 +134,7 @@ mkdir -p build
 cd build
 
 # Install dependencies with detected GCC version
-conan install .. --build=missing -s build_type=Release -s compiler.cppstd=23 -s compiler.version=$GCC_VERSION
+conan install .. --build=missing --output-folder=. -s build_type=Release -s compiler.cppstd=23 -s compiler.version=$GCC_VERSION
 
 # Configure with detected compiler
 cmake .. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=$CMAKE_C_COMPILER -DCMAKE_CXX_COMPILER=$CMAKE_CXX_COMPILER
@@ -151,5 +152,6 @@ echo "✅ Build complete!"
 echo "Server: ./r-type_server"
 echo "Client: ./r-type_client"
 echo ""
+echo "💡 Run debug build with: ./scripts/build.sh debug"
 echo "💡 Run tests with: ./scripts/build.sh test"
 echo "💡 Run coverage with: ./scripts/build.sh coverage"
