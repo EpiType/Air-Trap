@@ -14,7 +14,7 @@ namespace rtp::client {
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
-    explicit InputSystem::InputSystem(rtp::ecs::Registry& r,
+    InputSystem::InputSystem(rtp::ecs::Registry& r,
                          Client::Core::Settings& settings,
                          ClientNetwork& net,
                          sf::RenderWindow& window)

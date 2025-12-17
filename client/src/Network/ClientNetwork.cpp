@@ -15,13 +15,15 @@ namespace rtp::client {
     //////////////////////////////////////////////////////////////////////////
 
     ClientNetwork::ClientNetwork(const std::string& serverIp, uint16_t serverPort)
-        : _ioContext(),
-          _tcpSocket(_ioContext),
-          _udpSocket(_ioContext),
-          _serverPort(serverPort),
-          _serverIp(serverIp),
-          _eventQueue(),
-          _ioThread()
+        : _serverPort(serverPort),
+        _serverIp(serverIp),
+        _ioContext(),
+        _tcpSocket(_ioContext),
+        _udpSocket(_ioContext),
+        _serverEndpoint(),
+        _ioThread(),
+        _eventQueueMutex(),
+        _eventQueue()
     {
     }
 

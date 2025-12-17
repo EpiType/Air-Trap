@@ -13,6 +13,7 @@
 #include "Core/Settings.hpp"
 #include "Network/ClientNetwork.hpp"
 #include "RType/Network/Packet.hpp"
+#include <SFML/Graphics/RenderWindow.hpp>
 
 #include <SFML/Window/Keyboard.hpp>
 #include <cstdint>
