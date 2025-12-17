@@ -83,6 +83,10 @@ namespace rtp::client {
              */
             void spawnEntityFromServer(const rtp::net::EntitySpawnPayload& payload);
 
+            /**
+             * @brief Add sprite component for scout entity
+             * @param entity Entity to which the sprite component will be added
+             */
             void addScoutSprite(rtp::ecs::Entity entity);
     };
 }
