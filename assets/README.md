@@ -1,5 +1,11 @@
 # Assets Organization
 
+> **Note**: Assets are automatically copied to the build directory during compilation.
+> 
+> For contributors: If you're cloning this repo, you have two options:
+> 1. **Git LFS** (recommended): Install Git LFS and the assets will be downloaded automatically
+> 2. **Manual download**: Run `./scripts/download-assets.sh` to download assets from external storage
+
 ## Sprites
 
 ### Players

@@ -57,7 +57,6 @@ namespace rtp::ecs
             }
 
             template <Component T>
-            [[nodiscard]]
             auto registerComponent(void) -> SparseArray<T> &;
 
             template <Component T, typename Self>
@@ -66,7 +65,6 @@ namespace rtp::ecs
                 -> std::expected<std::reference_wrapper<ConstLike<Self, SparseArray<T>>>, rtp::Error>;
 
             template <Component T, typename... Args>
-            [[nodiscard]]
             auto addComponent(Entity entity, Args &&...args)
                 -> std::expected<std::reference_wrapper<T>, rtp::Error>;
 

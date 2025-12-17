@@ -19,6 +19,7 @@
 #include "Systems/RenderSystem.hpp"
 #include "Game/EntityBuilder.hpp"
 #include "Translation/TranslationManager.hpp"
+#include "Network/ClientNetwork.hpp"
 #include "Core/Settings.hpp"
 
 #include "RType/ECS/Registry.hpp"
@@ -107,6 +108,8 @@ private:
     Game::EntityBuilder _entityBuilder;
     Settings _settings;
     TranslationManager _translations;
+
+    rtp::client::ClientNetwork _clientNetwork;
     
     sf::Shader _colorblindShader;
     sf::RenderTexture _renderTexture;

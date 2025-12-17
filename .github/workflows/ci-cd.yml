@@ -275,6 +275,8 @@ jobs:
         path: |
           build/bin/r-type_server
           build/bin/r-type_client
+          build/bin/assets/
+          build/bin/config/
 
     # Job 4: Build on Windows
   build-windows:
@@ -345,6 +347,8 @@ jobs:
           build/bin/Release/r-type_client.exe
           build/bin/Release/r-type_server.exe
           build/bin/Release/*.dll
+          build/bin/Release/assets/
+          build/bin/Release/config/
 
   # Job 5: Build on macOS
   # DISABLED: GCC does not support Objective-C blocks required by macOS frameworks

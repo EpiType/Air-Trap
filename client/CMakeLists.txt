@@ -10,6 +10,7 @@
 set(SRC_CLIENT
     src/main.cpp
     src/Core/Application.cpp
+    src/Network/ClientNetwork.cpp
     src/Core/Settings.cpp
     src/Translation/TranslationManager.cpp
     src/Systems/MenuSystem.cpp
@@ -18,7 +19,8 @@ set(SRC_CLIENT
     src/Game/EntityBuilder.cpp
     src/Systems/SettingsMenuSystem.cpp
     # src/Systems/MovementSystem.cpp
-    # src/Systems/InputSystem.cpp
+    src/Systems/InputSystem.cpp
+    src/Systems/ClientNetworkSystem.cpp
 )
 
 # --- TARGET ---
@@ -60,3 +62,19 @@ target_link_libraries(r-type_client
 
 # --- PLUGINS ---
 add_subdirectory(plugins)
+
+# --- COPY ASSETS ---
+# Copy assets and config folders to the build directory
+add_custom_command(TARGET r-type_client POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/assets
+        $<TARGET_FILE_DIR:r-type_client>/assets
+    COMMENT "Copying assets folder to build directory"
+)
+
+add_custom_command(TARGET r-type_client POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/config
+        $<TARGET_FILE_DIR:r-type_client>/config
+    COMMENT "Copying config folder to build directory"
+)
