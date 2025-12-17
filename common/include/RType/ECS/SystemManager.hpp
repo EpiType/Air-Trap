@@ -45,7 +45,7 @@
     #include "RType/ECS/ISystem.hpp"
     #include "RType/ECS/Registry.hpp"
     #include <memory>
-    #include <unordered_map>
+    #include <map>
     #include <typeindex>
     #include <optional>
     #include <functional>
@@ -66,11 +66,11 @@ namespace rtp::ecs
 
         private:
             Registry &_registry;                            /**< Reference to the entity registry */
-            std::unordered_map<std::type_index,
+            std::map<std::type_index,
                 std::unique_ptr<ISystem>> _systems;         /**< Registered systems */
     };
 }
 
-#include "SystemManager.tpp" // Si tu as du template code
+#include "SystemManager.tpp"
 
 #endif

@@ -16,6 +16,7 @@ void SettingsMenuSystem::update(float dt) {
     
     // Handle mouse input for buttons/sliders/dropdowns
     sf::Vector2i mousePos = sf::Mouse::getPosition(_window);
+    (void)mousePos;
     
     handleSliderInteraction();
     handleDropdownInteraction();

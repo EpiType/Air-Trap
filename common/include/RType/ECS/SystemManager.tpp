@@ -1,8 +1,8 @@
 /**
- * File   : SystemManager.tpp
+ * File   : NetworkId.hpp
  * License: MIT
  * Author : Elias Josué HAJJAR LLAUQUEN <elias-josue.hajjar-llauquen@epitech.eu>
- * Date   : 14/12/2025
+ * Date   : 11/12/2025
  */
 
 #include "SystemManager.hpp"
@@ -13,17 +13,7 @@ namespace rtp::ecs
 {
     template <typename T, typename... Args>
     T& SystemManager::addSystem(Args&&... args) {
-        std::unique_ptr<T> system;
-        
-        // Detect if T can be constructed with (Registry&, Args...)
-        if constexpr (std::is_constructible_v<T, Registry&, Args...>) {
-            // System with custom args
-            system = std::make_unique<T>(_registry, std::forward<Args>(args)...);
-        }
-        else {
-            // Simple system (only Registry)
-            system = std::make_unique<T>(_registry);
-        }
+        auto system = std::make_unique<T>(std::forward<Args>(args)...);
         
         auto& ref = *system;
         _systems[std::type_index(typeid(T))] = std::move(system);
@@ -33,7 +23,11 @@ namespace rtp::ecs
     template <typename T>
     auto SystemManager::getSystem(void) -> T &
     {
-        return *static_cast<T*>(_systems[std::type_index(typeid(T))].get());
+        auto it = _systems.find(std::type_index(typeid(T)));
+        if (it == _systems.end()) {
+            throw std::runtime_error("System not found");
+        }
+
+        return *static_cast<T*>(it->second.get());
     }
 } // namespace rtp::ecs
-

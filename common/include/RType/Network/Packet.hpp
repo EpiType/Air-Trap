@@ -28,6 +28,7 @@
     #include <vector>
     #include <asio/buffer.hpp>
     #include <array>
+    #include <type_traits>
 
 /**
  * @namespace rtp::net
@@ -62,6 +63,7 @@ namespace rtp::net
         Welcome = 0x02,        /**< Server welcome response */
         Disconnect = 0x03,     /**< Disconnect notification */
 
+        // Lobby Management
         ListRooms = 0x04,     /**< Request for room list */
         RoomList = 0x05,      /**< Response with room list */
         CreateRoom = 0x06,    /**< Request to create a room */
@@ -74,10 +76,11 @@ namespace rtp::net
         InputTick = 0x10,      /**< Client input state */
 
         // Game State (S -> C)
-        EntitySnapshot = 0x20, /**< Entity state snapshot */
+        WorldUpdate = 0x20, /**< Entity state snapshot */
         EntitySpawn = 0x21,    /**< Entity spawn notification */
         EntityDeath = 0x22,     /**< Entity death notification */
 
+        // Game Control
         StartGame = 0x30      /**< Notification to start the game */
     };
 
@@ -94,6 +97,7 @@ namespace rtp::net
         uint16_t ackId = 0;             /**< Last acknowledged packet */
         OpCode opCode = OpCode::None;   /**< Operation code */
         uint8_t reserved = 0;           /**< Reserved for future use */
+        uint32_t sessionId;             /**< Session identifier */
     };
 
     /**
@@ -103,8 +107,17 @@ namespace rtp::net
     struct EntitySnapshotPayload {
         uint32_t netId;         /**< Network entity identifier */
         Vec2f position;         /**< Entity position */
-        int16_t angle;          /**< Entity rotation angle */
-        uint8_t hp;             /**< Entity health points */
+        Vec2f velocity;         /**< Entity velocity */
+        float rotation;         /**< Entity rotation */
+    };
+
+    /**
+     * @struct WorldSnapshotPayload
+     * @brief World state snapshot data
+     */
+    struct WorldSnapshotPayload {
+        uint32_t serverTick;    /**< Network entity identifier */
+        uint16_t entityCount;   /**< Entity position */
     };
 
     /**
@@ -127,6 +140,8 @@ namespace rtp::net
         Vec2f position;         /**< Death position */
     };
 
+    #pragma pack(pop)
+
     /**
      * @using BufferSequence
      * @brief Buffer sequence for efficient multi-part network transmission
@@ -144,8 +159,6 @@ namespace rtp::net
     struct InputPayload {
         uint8_t inputMask;      /**< Bitmask of input states */
     };
-
-    #pragma pack(pop)
 
     /**
      * @class Packet
@@ -189,8 +202,10 @@ namespace rtp::net
              */
             template <typename T>
             static inline T to_network(T value) {
-                if constexpr (sizeof(T) > 1 && NATIVE_ENDIAN == std::endian::little) {
-                    return std::byteswap(value); 
+                if constexpr (std::is_integral_v<T>) {
+                    if constexpr (sizeof(T) > 1 && NATIVE_ENDIAN == std::endian::little) {
+                        return std::byteswap(value); 
+                    }
                 }
                 return value;
             };
@@ -257,8 +272,12 @@ namespace rtp::net
             auto operator>>(std::string &str) -> Packet &;
 
         private:
-            size_t _readPos = 0; /**< Current read position in body */
+            size_t _readPos = 0;         /**< Current read position in body */
+
+            mutable Header _cacheHeader; /**< Cached header with network endianness */
     };
-}
+}   
+
+#include "Packet.tpp"
 
 #endif /* !RTYPE_NETWORK_PACKET_HPP_ */

@@ -14,7 +14,7 @@ namespace rtp::server
     ///////////////////////////////////////////////////////////////////////////
 
     Player::Player(uint32_t sessionId, const std::string &username)
-        : _sessionId(sessionId), _state(PlayerState::Connected)
+        : _sessionId(sessionId), _state(PlayerState::Connected), _entityId(0)
     {
         if (!username.empty()) {
             /* TODO : For the V1 i will set the username with the ID */
@@ -82,8 +82,21 @@ namespace rtp::server
         return _isReady;
     }
 
+    void Player::setEntityId(uint32_t entityId)
+    {
+        std::lock_guard lock(_mutex);
+        _entityId = entityId;
+    }
+
     uint32_t Player::getId() const
     {
+        std::lock_guard lock(_mutex);
         return _sessionId;
+    }
+
+    uint32_t Player::getEntityId() const
+    {
+        std::lock_guard lock(_mutex);
+        return _entityId;
     }
 } // namespace rtp::server

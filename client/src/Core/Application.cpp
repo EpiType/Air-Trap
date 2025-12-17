@@ -31,13 +31,14 @@
 #include "RType/ECS/Components/UI/Text.hpp"
 #include "RType/ECS/Components/UI/Slider.hpp"
 #include "RType/ECS/Components/UI/Dropdown.hpp"
+#include "RType/ECS/Components/NetworkId.hpp"
 
 // Systems
 #include "Systems/InputSystem.hpp"
-#include "Systems/MovementSystem.hpp"
 #include "Systems/AnimationSystem.hpp"
 #include "Systems/RenderSystem.hpp"
 #include "Systems/ParallaxSystem.hpp"
+#include "Systems/ClientNetworkSystem.hpp"
 
 #include "RType/Math/Vec2.hpp"
 
@@ -47,7 +48,7 @@ namespace Client::Core
         : _window(sf::VideoMode({static_cast<unsigned int>(UIConstants::WINDOW_WIDTH), 
                                  static_cast<unsigned int>(UIConstants::WINDOW_HEIGHT)}), 
                   "Air-Trap - R-Type Clone")
-        , _systemManager(_registry), _entityBuilder(_registry)
+        , _systemManager(_registry), _entityBuilder(_registry), _clientNetwork("127.0.0.1", 12345)
     {
         _window.setFramerateLimit(60);
 
@@ -73,7 +74,8 @@ namespace Client::Core
         // _audioManager.setMasterVolume(_settings.getMasterVolume());
         // _audioManager.setMusicVolume(_settings.getMusicVolume());
         // _audioManager.setSfxVolume(_settings.getSfxVolume());
-        
+
+        _clientNetwork.start();        
         initECS();
         initMenu();
     }
@@ -91,6 +93,7 @@ namespace Client::Core
 
     void Application::initECS()
     {
+        // Enregistrement des composants
         _registry.registerComponent<rtp::ecs::components::ui::Button>();
         _registry.registerComponent<rtp::ecs::components::ui::Text>();
         _registry.registerComponent<rtp::ecs::components::ui::Slider>();
@@ -111,6 +114,17 @@ namespace Client::Core
         _systemManager.addSystem<Client::Systems::UIRenderSystem>(_window);
         _systemManager.addSystem<Client::Systems::SettingsMenuSystem>(_window, _settings);
         _systemManager.addSystem<rtp::client::ParallaxSystem>(_registry);
+        _registry.registerComponent<rtp::ecs::components::NetworkId>();
+
+        _systemManager.addSystem<rtp::client::InputSystem>(_registry, _settings, _clientNetwork, _window);
+        _systemManager.addSystem<rtp::client::AnimationSystem>(_registry);
+        _systemManager.addSystem<rtp::client::RenderSystem>(_registry, _window);
+        
+        _systemManager.addSystem<Client::Systems::MenuSystem>(_registry, _window);
+        _systemManager.addSystem<Client::Systems::UIRenderSystem>(_registry, _window);
+        _systemManager.addSystem<Client::Systems::SettingsMenuSystem>(_registry, _window, _settings);
+        
+        _systemManager.addSystem<rtp::client::ClientNetworkSystem>(_clientNetwork, _registry);
     }
 
     void Application::initMenu()
@@ -234,37 +248,37 @@ namespace Client::Core
         // or implement a tag-based filtering system for systems.
         
         // Spawn player
-        auto playerRes = _registry.spawnEntity();
-        if (!playerRes) return;
-        rtp::ecs::Entity p = playerRes.value();
+        // auto playerRes = _registry.spawnEntity();
+        // if (!playerRes) return;
+        // rtp::ecs::Entity p = playerRes.value();
 
-        _registry.addComponent<rtp::ecs::components::Transform>(
-            p, rtp::Vec2f{UIConstants::PLAYER_SPAWN_X, UIConstants::PLAYER_SPAWN_Y}, 0.0f, rtp::Vec2f{1.0f, 1.0f});
-        _registry.addComponent<rtp::ecs::components::Velocity>(p);
-        _registry.addComponent<rtp::ecs::components::Controllable>(p);
+        // _registry.addComponent<rtp::ecs::components::Transform>(
+        //     p, rtp::Vec2f{UIConstants::PLAYER_SPAWN_X, UIConstants::PLAYER_SPAWN_Y}, 0.0f, rtp::Vec2f{1.0f, 1.0f});
+        // _registry.addComponent<rtp::ecs::components::Velocity>(p);
+        // _registry.addComponent<rtp::ecs::components::Controllable>(p);
 
-        rtp::ecs::components::Sprite spriteData;
-        spriteData.texturePath = "assets/sprites/r-typesheet42.gif";
-        spriteData.rectLeft = 0;
-        spriteData.rectTop = 0;
-        spriteData.rectWidth = 33;
-        spriteData.rectHeight = 17;
-        spriteData.zIndex = 10;
-        spriteData.red = 255;
+        // rtp::ecs::components::Sprite spriteData;
+        // spriteData.texturePath = "assets/sprites/r-typesheet42.gif";
+        // spriteData.rectLeft = 0;
+        // spriteData.rectTop = 0;
+        // spriteData.rectWidth = 33;
+        // spriteData.rectHeight = 17;
+        // spriteData.zIndex = 10;
+        // spriteData.red = 255;
 
-        _registry.addComponent<rtp::ecs::components::Sprite>(p, spriteData);
+        // _registry.addComponent<rtp::ecs::components::Sprite>(p, spriteData);
 
-        rtp::ecs::components::Animation animData;
-        animData.frameLeft = 0;
-        animData.frameTop = 0;
-        animData.frameWidth = 33;
-        animData.frameHeight = 17;
-        animData.totalFrames = 5;
-        animData.frameDuration = 0.1f;
-        animData.currentFrame = 0;
-        animData.elapsedTime = 0.0f;
+        // rtp::ecs::components::Animation animData;
+        // animData.frameLeft = 0;
+        // animData.frameTop = 0;
+        // animData.frameWidth = 33;
+        // animData.frameHeight = 17;
+        // animData.totalFrames = 5;
+        // animData.frameDuration = 0.1f;
+        // animData.currentFrame = 0;
+        // animData.elapsedTime = 0.0f;
 
-        _registry.addComponent<rtp::ecs::components::Animation>(p, animData);
+        // _registry.addComponent<rtp::ecs::components::Animation>(p, animData);
     }
 
     void Application::initPauseMenu() {
@@ -971,7 +985,6 @@ namespace Client::Core
             }
         }
         
-        // Display window
         _window.display();
     }
 }
