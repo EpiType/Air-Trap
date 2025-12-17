@@ -1,5 +1,7 @@
 # Air-Trap - R-Type Clone
 
+<img width="2000" height="1000" alt="image" src="https://github.com/user-attachments/assets/2dc05b29-f695-4ad3-b683-b7506aee915c" />
+
 Un moteur de jeu multi-joueur en réseau inspiré de R-Type, développé en C++23 avec une architecture ECS (Entity-Component-System).
 
 ## 🏗️ Architecture
