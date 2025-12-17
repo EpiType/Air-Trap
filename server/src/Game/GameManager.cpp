@@ -107,19 +107,34 @@ namespace rtp::server
         log::info("Player with Session ID {} disconnected", sessionId);
         std::lock_guard lock(_mutex);
 
-        _players.erase(sessionId);
+        uint32_t entityNetId = 0;
 
-        auto it = _playerRoomMap.find(sessionId);
+        {
+            std::lock_guard lock(_mutex);
 
-        if (it != _playerRoomMap.end()) {
-            uint32_t roomId = it->second;
-            auto roomIt = _rooms.find(roomId);
-            if (roomIt != _rooms.end()) {
-                roomIt->second->removePlayer(sessionId);
-                sendLobbyUpdate(*roomIt->second);
+            auto itP = _players.find(sessionId);
+            if (itP != _players.end()) {
+                entityNetId = itP->second->getEntityId();
             }
-            _playerRoomMap.erase(it);
+
+            _players.erase(sessionId);
+            
+            auto it = _playerRoomMap.find(sessionId);
+
+            if (it != _playerRoomMap.end()) {
+                uint32_t roomId = it->second;
+                auto roomIt = _rooms.find(roomId);
+                if (roomIt != _rooms.end()) {
+                    roomIt->second->removePlayer(sessionId);
+                    sendLobbyUpdate(*roomIt->second);
+                }
+                _playerRoomMap.erase(it);
+            }
         }
+
+        rtp::net::Packet disconnectPlayer(rtp::net::OpCode::Disconnect);
+        disconnectPlayer << entityNetId;
+        _networkManager.broadcastPacket(disconnectPlayer, rtp::net::NetworkMode::UDP);
     }
 
     void GameManager::handlePacket(uint32_t sessionId, const Packet &packet)

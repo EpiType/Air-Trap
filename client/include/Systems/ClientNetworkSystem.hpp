@@ -48,8 +48,9 @@ namespace rtp::client {
             void update(float dt) override;
 
         private:
-            ClientNetwork& _network;         /**< Reference to the client network manager */
-            rtp::ecs::Registry& _registry;   /**< Reference to the entity registry */
+            ClientNetwork& _network;                                       /**< Reference to the client network manager */
+            rtp::ecs::Registry& _registry;                                 /**< Reference to the entity registry */
+            std::unordered_map<uint32_t, rtp::ecs::Entity> _netIdToEntity; /**< Map of network IDs to entities */
         
         private:
             /**
@@ -57,6 +58,12 @@ namespace rtp::client {
              * @param event Reference to the network event to handle
              */
             void handleEvent(rtp::net::NetworkEvent& event);
+
+            /**
+             * @brief Disconnect a player based on session ID
+             * @param sessionId ID of the session to disconnect
+             */
+            void disconnectPlayer(uint32_t sessionId);
 
             /**
              * @brief Apply a world update from a network packet
