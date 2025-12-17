@@ -28,6 +28,10 @@ if(ENABLE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     add_link_options(--coverage)
 endif()
 
+# --- TESTING ---
+include(CTest)
+enable_testing()
+
 # --- SUBDIRECTORIES ---
 # WATCH OUT THE ORDER, COMMON MUST BE FIRST
 add_subdirectory(common)

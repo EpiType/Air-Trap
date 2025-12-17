@@ -6,7 +6,7 @@
 */
 
 #pragma once
-#include "ECS/Entity.hpp"
+#include "RType/ECS/Entity.hpp"
 
 namespace rtp::ecs::components {
 /**

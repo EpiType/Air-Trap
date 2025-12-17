@@ -16,6 +16,7 @@ namespace rtp::ecs::components {
  */
 struct ParallaxLayer {
     float textureWidth = {0.0f}; /**< Width of the texture used for parallax scrolling */
+    float speed = {100.0f};      /**< Scrolling speed of the parallax layer */
 
 };
 
