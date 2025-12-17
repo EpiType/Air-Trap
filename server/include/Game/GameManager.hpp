@@ -29,6 +29,7 @@
     #include "RType/ECS/Components/Transform.hpp"
     #include "RType/ECS/Components/Velocity.hpp"
     #include "RType/ECS/Components/NetworkId.hpp"
+    #include "RType/ECS/Components/EntityType.hpp"
 
 /**
  * @namespace rtp::server
@@ -117,6 +118,12 @@ namespace rtp::server
              * @param player Shared pointer to the Player for whom to spawn the entity
              */
             void spawnPlayerEntity(PlayerPtr player);
+
+            /**
+             * @brief Spawn an enemy entity at the specified position
+             * @param position Position where the enemy will be spawned
+             */
+            void spawnEnemyEntity(const Vec2f &position);
 
         private:
             ServerNetwork &_networkManager;                            /**< Reference to the ServerNetwork instance */

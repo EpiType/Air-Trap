@@ -7,8 +7,6 @@
 
 #pragma once
 
-#include <SFML/Graphics/Rect.hpp>
-#include <SFML/Graphics/Sprite.hpp>
 #include <string>
 
 namespace rtp::ecs::components {

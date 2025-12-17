@@ -101,6 +101,18 @@ namespace rtp::net
     };
 
     /**
+     * @enum EntityType
+     * @brief Types of entities in the game
+     */
+    enum class EntityType : uint8_t {
+        Player = 1,
+        Scout  = 2,
+        Tank   = 3,
+        Boss   = 4,
+        Bullet = 5
+    };
+
+    /**
      * @struct EntitySnapshotPayload
      * @brief Entity state snapshot data
      */
@@ -128,6 +140,7 @@ namespace rtp::net
         uint32_t netId;         /**< Network entity identifier */
         uint8_t type;           /**< Entity type */
         Vec2f position;         /**< Spawn position */
+        EntityType entityType;  /**< Type of the entity */
     };
 
     /**
