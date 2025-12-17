@@ -10,6 +10,7 @@
 set(SRC_CLIENT
     src/main.cpp
     src/Core/Application.cpp
+    src/Network/ClientNetwork.cpp
     src/Core/Settings.cpp
     src/Translation/TranslationManager.cpp
     src/Systems/MenuSystem.cpp
@@ -18,7 +19,8 @@ set(SRC_CLIENT
     src/Game/EntityBuilder.cpp
     src/Systems/SettingsMenuSystem.cpp
     # src/Systems/MovementSystem.cpp
-    # src/Systems/InputSystem.cpp
+    src/Systems/InputSystem.cpp
+    src/Systems/ClientNetworkSystem.cpp
 )
 
 # --- TARGET ---

@@ -5,7 +5,7 @@
  * Date   : 10/12/2025
  */
 
-#include "Network/Network.hpp"
+#include "ServerNetwork/ServerNetwork.hpp"
 #include "Game/GameManager.hpp"
 #include "RType/Logger.hpp"
 
@@ -16,7 +16,7 @@
 
 using namespace rtp::server;
 
-Network* g_networkManager = nullptr;
+ServerNetwork* g_networkManager = nullptr;
 GameManager* g_gameManager = nullptr;
 
 void signal_handler(int signum) {
@@ -38,7 +38,7 @@ int main(void) {
     try {
         rtp::log::info("Starting R-Type Server...");
         
-        Network networkManager(SERVER_PORT); 
+        ServerNetwork networkManager(SERVER_PORT); 
         GameManager gameManager(networkManager);
         
         g_networkManager = &networkManager;
