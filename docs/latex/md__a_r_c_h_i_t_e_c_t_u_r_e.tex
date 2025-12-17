@@ -1,0 +1,482 @@
+\chapter{📐 Architecture du Projet Air-\/\+Trap }
+\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e}{}\label{md__a_r_c_h_i_t_e_c_t_u_r_e}\index{📐 Architecture du Projet Air-\/Trap@{📐 Architecture du Projet Air-\/Trap}}
+\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md0}%
+\Hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md0}%
+\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md1}{}\doxysection{\texorpdfstring{Table des matières}{Table des matières}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md1}
+
+\begin{DoxyEnumerate}
+\item Vue d\textquotesingle{}ensemble
+\item Structure des dossiers
+\item Architecture ECS
+\item Architecture Réseau
+\item Système de Build
+\item Pipeline CI/\+CD
+\item Flux de données
+\end{DoxyEnumerate}
+
+\DoxyHorRuler{0}
+\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md3}{}\doxysection{\texorpdfstring{Vue d\textquotesingle{}ensemble}{Vue d\textquotesingle{}ensemble}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md3}
+Air-\/\+Trap est un moteur de jeu multijoueur basé sur une {\bfseries{architecture Client-\/\+Serveur Authoritative}} avec un système {\bfseries{Entity-\/\+Component-\/\+System (ECS)}} pour gérer les entités du jeu.\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md4}{}\doxysubsection{\texorpdfstring{Principes fondamentaux}{Principes fondamentaux}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md4}
+
+\begin{DoxyItemize}
+\item {\bfseries{Séparation Client/\+Serveur}} \+: Le serveur a l\textquotesingle{}autorité sur la logique de jeu
+\item {\bfseries{ECS}} \+: Découplage entre données (composants) et logique (systèmes)
+\item {\bfseries{Event Bus}} \+: Communication inter-\/systèmes sans dépendances directes
+\item {\bfseries{UDP Binaire}} \+: Protocole réseau optimisé pour la performance
+\item {\bfseries{Multi-\/threading}} \+: Le serveur gère les clients de manière asynchrone
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md6}{}\doxysection{\texorpdfstring{Structure des dossiers}{Structure des dossiers}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md6}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{Air-\/Trap/}
+\DoxyCodeLine{│}
+\DoxyCodeLine{├──\ .github/}
+\DoxyCodeLine{│\ \ \ └──\ workflows/}
+\DoxyCodeLine{│\ \ \ \ \ \ \ └──\ ci-\/cd.yml\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Pipeline\ CI/CD\ (Linux/Windows/macOS)}
+\DoxyCodeLine{│}
+\DoxyCodeLine{├──\ common/\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Code\ partagé\ entre\ client\ et\ serveur}
+\DoxyCodeLine{│\ \ \ └──\ include/}
+\DoxyCodeLine{│\ \ \ \ \ \ \ ├──\ ecs/\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Système\ Entity-\/Component-\/System}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ ├──\ Entity.hpp\ \ \ \ \ \ \ \ \ \ \ \ \#\ Définition\ d'une\ entité\ (uint32\_t)}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ ├──\ Registry.hpp\ \ \ \ \ \ \ \ \ \ \#\ Gestionnaire\ d'entités\ et\ composants}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ ├──\ components/\ \ \ \ \ \ \ \ \ \ \ \#\ Composants\ (données\ pures)}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ │\ \ \ ├──\ PositionComponent.hpp}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ │\ \ \ ├──\ VelocityComponent.hpp}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ │\ \ \ ├──\ SpriteComponent.hpp}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ │\ \ \ └──\ NetworkIdComponent.hpp}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ └──\ systems/\ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Systèmes\ (logique)}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ \ \ \ \ ├──\ ISystem.hpp\ \ \ \ \ \ \ \#\ Interface\ de\ base}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ \ \ \ \ ├──\ PhysicsSystem.hpp\ \#\ Mouvement\ et\ collisions}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ \ \ \ \ └──\ RenderingSystem.hpp\ \#\ Rendu\ (client\ uniquement)}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ ├──\ network/\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Protocole\ réseau}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ ├──\ Protocol.hpp\ \ \ \ \ \ \ \ \ \ \#\ Structures\ de\ paquets\ UDP}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ └──\ UdpSocket.hpp\ \ \ \ \ \ \ \ \ \#\ Abstraction\ socket}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ └──\ events/\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Event\ Bus\ (Mediator\ pattern)}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ └──\ EventBus.hpp\ \ \ \ \ \ \ \ \ \ \#\ Pub/Sub\ pour\ découpler\ les\ systèmes}
+\DoxyCodeLine{│}
+\DoxyCodeLine{├──\ server/\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Code\ spécifique\ au\ serveur}
+\DoxyCodeLine{│\ \ \ ├──\ include/}
+\DoxyCodeLine{│\ \ \ │\ \ \ └──\ network/}
+\DoxyCodeLine{│\ \ \ │\ \ \ \ \ \ \ └──\ NetworkServer.hpp\ \ \ \ \#\ Serveur\ UDP\ multi-\/threadé}
+\DoxyCodeLine{│\ \ \ └──\ src/}
+\DoxyCodeLine{│\ \ \ \ \ \ \ └──\ main.cpp\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Point\ d'entrée\ serveur\ (boucle\ de\ jeu)}
+\DoxyCodeLine{│}
+\DoxyCodeLine{├──\ client/\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Code\ spécifique\ au\ client}
+\DoxyCodeLine{│\ \ \ ├──\ include/}
+\DoxyCodeLine{│\ \ \ │\ \ \ └──\ network/}
+\DoxyCodeLine{│\ \ \ │\ \ \ \ \ \ \ └──\ NetworkClient.hpp\ \ \ \ \#\ Client\ UDP}
+\DoxyCodeLine{│\ \ \ └──\ src/}
+\DoxyCodeLine{│\ \ \ \ \ \ \ └──\ main.cpp\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Point\ d'entrée\ client\ (rendu\ +\ inputs)}
+\DoxyCodeLine{│}
+\DoxyCodeLine{├──\ tests/\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Tests\ unitaires\ (GTest)}
+\DoxyCodeLine{│\ \ \ ├──\ ecs/}
+\DoxyCodeLine{│\ \ \ │\ \ \ ├──\ test\_registry.cpp\ \ \ \ \ \ \ \ \#\ Tests\ du\ Registry}
+\DoxyCodeLine{│\ \ \ │\ \ \ └──\ test\_components.cpp\ \ \ \ \ \ \#\ Tests\ des\ composants}
+\DoxyCodeLine{│\ \ \ ├──\ network/}
+\DoxyCodeLine{│\ \ \ │\ \ \ └──\ test\_protocol.cpp\ \ \ \ \ \ \ \ \#\ Tests\ du\ protocole}
+\DoxyCodeLine{│\ \ \ └──\ CMakeLists.txt\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Configuration\ des\ tests}
+\DoxyCodeLine{│}
+\DoxyCodeLine{├──\ config/\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Configuration\ runtime}
+\DoxyCodeLine{│\ \ \ ├──\ server.json\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Config\ serveur\ (port,\ tick\ rate)}
+\DoxyCodeLine{│\ \ \ └──\ client.json\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Config\ client\ (résolution,\ audio)}
+\DoxyCodeLine{│}
+\DoxyCodeLine{├──\ assets/\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Ressources\ graphiques\ et\ sonores}
+\DoxyCodeLine{│\ \ \ ├──\ sprites/}
+\DoxyCodeLine{│\ \ \ │\ \ \ ├──\ players/\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Sprites\ des\ joueurs}
+\DoxyCodeLine{│\ \ \ │\ \ \ ├──\ enemies/\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Sprites\ des\ ennemis}
+\DoxyCodeLine{│\ \ \ │\ \ \ ├──\ projectiles/\ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Sprites\ des\ projectiles}
+\DoxyCodeLine{│\ \ \ │\ \ \ └──\ effects/\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Effets\ visuels}
+\DoxyCodeLine{│\ \ \ ├──\ sounds/\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Effets\ sonores}
+\DoxyCodeLine{│\ \ \ ├──\ musics/\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Musiques\ de\ fond}
+\DoxyCodeLine{│\ \ \ ├──\ fonts/\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Polices\ pour\ l'UI}
+\DoxyCodeLine{│\ \ \ └──\ README.md\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Organisation\ des\ assets}
+\DoxyCodeLine{│}
+\DoxyCodeLine{├──\ scripts/\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Scripts\ utilitaires}
+\DoxyCodeLine{│\ \ \ ├──\ build.sh\ /\ build.bat\ \ \ \ \ \ \ \ \ \#\ Scripts\ de\ build}
+\DoxyCodeLine{│\ \ \ ├──\ format.sh\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Formater\ le\ code}
+\DoxyCodeLine{│\ \ \ ├──\ lint.sh\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Analyser\ le\ code}
+\DoxyCodeLine{│\ \ \ ├──\ smart-\/commit.sh\ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Commits\ intelligents}
+\DoxyCodeLine{│\ \ \ └──\ install-\/hooks.sh\ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Installer\ les\ git\ hooks}
+\DoxyCodeLine{│}
+\DoxyCodeLine{├──\ docs/\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Documentation}
+\DoxyCodeLine{│\ \ \ ├──\ ARCHITECTURE.md\ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Ce\ fichier}
+\DoxyCodeLine{│\ \ \ └──\ subject/\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Sujet\ du\ projet}
+\DoxyCodeLine{│}
+\DoxyCodeLine{├──\ CMakeLists.txt\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Configuration\ CMake\ principale}
+\DoxyCodeLine{├──\ conanfile.txt\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Dépendances\ (ASIO,\ SFML,\ GTest)}
+\DoxyCodeLine{├──\ .clang-\/format\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Style\ de\ code}
+\DoxyCodeLine{├──\ .clang-\/tidy\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Analyse\ statique}
+\DoxyCodeLine{├──\ .gitignore\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Fichiers\ ignorés\ par\ Git}
+\DoxyCodeLine{└──\ README.md\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Documentation\ principale}
+
+\end{DoxyCode}
+
+
+\DoxyHorRuler{0}
+\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md8}{}\doxysection{\texorpdfstring{Architecture ECS}{Architecture ECS}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md8}
+\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md9}{}\doxysubsection{\texorpdfstring{Concept}{Concept}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md9}
+L\textquotesingle{}{\bfseries{Entity-\/\+Component-\/\+System}} sépare \+:
+\begin{DoxyItemize}
+\item {\bfseries{Données}} (Composants) \+: Structs contenant uniquement des attributs
+\item {\bfseries{Logique}} (Systèmes) \+: Classes qui opèrent sur des groupes d\textquotesingle{}entités
+\item {\bfseries{Entités}} \+: Simples identifiants ({\ttfamily uint32\+\_\+t}) qui lient les composants
+\end{DoxyItemize}\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md10}{}\doxysubsection{\texorpdfstring{Composants disponibles}{Composants disponibles}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md10}
+
+\begin{DoxyTable}{3}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Composant  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Description  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Attributs  \\
+{\ttfamily Position\+Component}  &Position dans le monde  &{\ttfamily x}, {\ttfamily y}  \\
+{\ttfamily Velocity\+Component}  &Vitesse de déplacement  &{\ttfamily vx}, {\ttfamily vy}  \\
+{\ttfamily Sprite\+Component}  &Apparence graphique  &{\ttfamily texture\+Path}, {\ttfamily width}, {\ttfamily height}, {\ttfamily layer}  \\
+{\ttfamily Network\+Id\+Component}  &Identifiant réseau  &{\ttfamily network\+Id}, {\ttfamily is\+Owned}  \\
+\end{DoxyTable}
+\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md11}{}\doxysubsection{\texorpdfstring{Systèmes disponibles}{Systèmes disponibles}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md11}
+
+\begin{DoxyTable}{3}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Système  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Responsabilité  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Où  \\
+{\ttfamily Physics\+System}  &Mouvement, collisions  &Serveur  \\
+{\ttfamily Rendering\+System}  &Affichage avec SFML  &Client  \\
+{\ttfamily Input\+System}  &Capture des inputs  &Client  \\
+{\ttfamily Network\+System}  &Envoi/réception de paquets  &Client + Serveur  \\
+\end{DoxyTable}
+\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md12}{}\doxysubsection{\texorpdfstring{Registry}{Registry}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md12}
+Le {\ttfamily Registry} est le cœur de l\textquotesingle{}ECS \+:
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{ecs::Registry\ registry;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Créer\ une\ entité}}
+\DoxyCodeLine{Entity\ player\ =\ registry.createEntity();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Ajouter\ des\ composants}}
+\DoxyCodeLine{registry.addComponent(player,\ PositionComponent\{100.0f,\ 200.0f\});}
+\DoxyCodeLine{registry.addComponent(player,\ VelocityComponent\{5.0f,\ 0.0f\});}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Récupérer\ un\ composant}}
+\DoxyCodeLine{\textcolor{keyword}{auto}\&\ pos\ =\ registry.getComponent<PositionComponent>(player);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Itérer\ sur\ des\ entités\ avec\ certains\ composants}}
+\DoxyCodeLine{\textcolor{keyword}{auto}\ entities\ =\ registry.view<PositionComponent,\ VelocityComponent>();}
+\DoxyCodeLine{\textcolor{keywordflow}{for}\ (Entity\ e\ :\ entities)\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Traiter\ chaque\ entité}}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md13}{}\doxysubsection{\texorpdfstring{Event Bus (Mediator Pattern)}{Event Bus (Mediator Pattern)}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md13}
+Pour éviter les dépendances directes entre systèmes, on utilise un {\bfseries{Event Bus}} \+:
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{events::EventBus\ eventBus;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Souscrire\ à\ un\ événement}}
+\DoxyCodeLine{eventBus.subscribe<EntityCreatedEvent>([](\textcolor{keyword}{const}\ EntityCreatedEvent\&\ event)\ \{}
+\DoxyCodeLine{\ \ \ \ std::cout\ <<\ \textcolor{stringliteral}{"{}Entity\ created:\ "{}}\ <<\ \textcolor{keyword}{event}.entityId\ <<\ std::endl;}
+\DoxyCodeLine{\});}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Publier\ un\ événement}}
+\DoxyCodeLine{eventBus.publish(EntityCreatedEvent\{42\});}
+
+\end{DoxyCode}
+
+
+{\bfseries{Événements disponibles}} \+:
+\begin{DoxyItemize}
+\item {\ttfamily Entity\+Created\+Event} \+: Une entité a été créée
+\item {\ttfamily Entity\+Destroyed\+Event} \+: Une entité a été détruite
+\item {\ttfamily Player\+Input\+Event} \+: Input d\textquotesingle{}un joueur reçu
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md15}{}\doxysection{\texorpdfstring{Architecture Réseau}{Architecture Réseau}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md15}
+\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md16}{}\doxysubsection{\texorpdfstring{Principe Client-\/\+Serveur Authoritaire}{Principe Client-\/\+Serveur Authoritaire}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md16}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{┌─────────┐\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ┌─────────┐}
+\DoxyCodeLine{│\ CLIENT\ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ SERVER\ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ Input\ \ │\ ──\ PlayerInputPacket\ ──>\ │\ Physics\ │}
+\DoxyCodeLine{│\ Render\ \ │\ <──\ EntityUpdatePacket\ ──\ │\ Logic\ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ Network\ │}
+\DoxyCodeLine{└─────────┘\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ └─────────┘}
+
+\end{DoxyCode}
+
+
+
+\begin{DoxyItemize}
+\item {\bfseries{Client}} \+: Envoie uniquement les {\bfseries{inputs}} du joueur
+\item {\bfseries{Serveur}} \+: Exécute {\bfseries{toute la logique}}, envoie l\textquotesingle{}{\bfseries{état du monde}}
+\end{DoxyItemize}\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md17}{}\doxysubsection{\texorpdfstring{Protocole UDP Binaire}{Protocole UDP Binaire}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md17}
+Toutes les communications utilisent des {\bfseries{paquets binaires}} pour la performance.\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md18}{}\doxysubsubsection{\texorpdfstring{Structure de paquet}{Structure de paquet}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md18}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{preprocessor}{\#pragma\ pack(push,\ 1)}}
+\DoxyCodeLine{\textcolor{keyword}{struct\ }PacketHeader\ \{}
+\DoxyCodeLine{\ \ \ \ PacketType\ type;\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Type\ de\ paquet\ (1\ byte)}}
+\DoxyCodeLine{\ \ \ \ uint32\_t\ sequence;\ \ \ \ \ \ \textcolor{comment}{//\ Numéro\ de\ séquence}}
+\DoxyCodeLine{\ \ \ \ uint16\_t\ payloadSize;\ \ \ \textcolor{comment}{//\ Taille\ du\ payload}}
+\DoxyCodeLine{\};}
+\DoxyCodeLine{\textcolor{preprocessor}{\#pragma\ pack(pop)}}
+
+\end{DoxyCode}
+\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md19}{}\doxysubsubsection{\texorpdfstring{Types de paquets}{Types de paquets}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md19}
+
+\begin{DoxyTable}{3}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Type  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Direction  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Description  \\
+{\ttfamily PLAYER\+\_\+\+INPUT}  &Client → Serveur  &Input du joueur  \\
+{\ttfamily PING}  &Client → Serveur  &Mesure de latence  \\
+{\ttfamily GAME\+\_\+\+STATE}  &Serveur → Client  &État global du jeu  \\
+{\ttfamily ENTITY\+\_\+\+UPDATE}  &Serveur → Client  &Mise à jour d\textquotesingle{}une entité  \\
+{\ttfamily ENTITY\+\_\+\+SPAWN}  &Serveur → Client  &Création d\textquotesingle{}entité  \\
+{\ttfamily ENTITY\+\_\+\+DESTROY}  &Serveur → Client  &Destruction d\textquotesingle{}entité  \\
+{\ttfamily PONG}  &Serveur → Client  &Réponse au ping  \\
+{\ttfamily DISCONNECT}  &Bidirectionnel  &Déconnexion  \\
+\end{DoxyTable}
+\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md20}{}\doxysubsubsection{\texorpdfstring{Exemple de paquet}{Exemple de paquet}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md20}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{struct\ }PlayerInputPacket\ \{}
+\DoxyCodeLine{\ \ \ \ PacketHeader\ header;}
+\DoxyCodeLine{\ \ \ \ uint32\_t\ playerId;}
+\DoxyCodeLine{\ \ \ \ uint32\_t\ inputFlags;\ \ \textcolor{comment}{//\ Bitmask\ :\ UP,\ DOWN,\ LEFT,\ RIGHT,\ SHOOT}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{float}\ deltaTime;}
+\DoxyCodeLine{\};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{struct\ }EntityUpdatePacket\ \{}
+\DoxyCodeLine{\ \ \ \ PacketHeader\ header;}
+\DoxyCodeLine{\ \ \ \ uint32\_t\ entityId;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{float}\ posX,\ posY;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{float}\ velX,\ velY;}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md21}{}\doxysubsection{\texorpdfstring{Multi-\/threading Serveur}{Multi-\/threading Serveur}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md21}
+Le serveur utilise un {\bfseries{thread dédié pour le réseau}} \+:
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{┌──────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ SERVEUR\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{├──────────────────────────────────────┤}
+\DoxyCodeLine{│\ \ Thread\ Principal\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ -\/\ Boucle\ de\ jeu\ (60\ FPS)\ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ -\/\ PhysicsSystem.update()\ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ -\/\ Logique\ de\ jeu\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ Thread\ Réseau\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ -\/\ Réception\ de\ paquets\ UDP\ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ -\/\ Envoi\ de\ paquets\ UDP\ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ -\/\ File\ d'attente\ thread-\/safe\ \ \ \ \ \ \ │}
+\DoxyCodeLine{└──────────────────────────────────────┘}
+
+\end{DoxyCode}
+
+
+{\bfseries{Avantage}} \+: Les messages réseau ne bloquent jamais la boucle de jeu.
+
+\DoxyHorRuler{0}
+\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md23}{}\doxysection{\texorpdfstring{Système de Build}{Système de Build}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md23}
+\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md24}{}\doxysubsection{\texorpdfstring{CMake}{CMake}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md24}
+Le projet utilise {\bfseries{CMake 3.\+20+}} pour la compilation multi-\/plateforme.\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md25}{}\doxysubsubsection{\texorpdfstring{Cibles}{Cibles}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md25}
+
+\begin{DoxyItemize}
+\item {\ttfamily air-\/trap-\/common} \+: Bibliothèque interface (headers partagés)
+\item {\ttfamily r-\/type\+\_\+server} \+: Exécutable serveur
+\item {\ttfamily r-\/type\+\_\+client} \+: Exécutable client
+\end{DoxyItemize}\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md26}{}\doxysubsubsection{\texorpdfstring{Dépendances}{Dépendances}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md26}
+Gérées par {\bfseries{Conan 2.\+x}} \+:
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{[requires]}
+\DoxyCodeLine{asio/1.28.0\ \ \ \ \ \ \#\ Communication\ réseau\ (header-\/only)}
+\DoxyCodeLine{sfml/2.6.1\ \ \ \ \ \ \ \#\ Rendu\ graphique\ (client\ uniquement)}
+\DoxyCodeLine{gtest/1.14.0\ \ \ \ \ \#\ Tests\ unitaires}
+
+\end{DoxyCode}
+\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md27}{}\doxysubsection{\texorpdfstring{Scripts de Build}{Scripts de Build}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md27}
+\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md28}{}\doxysubsubsection{\texorpdfstring{Linux/mac\+OS}{Linux/mac\+OS}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md28}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{./scripts/build.sh}
+
+\end{DoxyCode}
+
+
+
+\begin{DoxyEnumerate}
+\item Crée le dossier {\ttfamily build/}
+\item Installe les dépendances avec Conan
+\item Configure avec CMake
+\item Compile avec tous les cores disponibles
+\end{DoxyEnumerate}\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md29}{}\doxysubsubsection{\texorpdfstring{Windows}{Windows}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md29}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{scripts\(\backslash\)build.bat}
+
+\end{DoxyCode}
+
+
+Même processus, génère des {\ttfamily .exe} dans {\ttfamily build/\+Release/}.\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md30}{}\doxysubsection{\texorpdfstring{Tests Unitaires}{Tests Unitaires}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md30}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\#\ Lancer\ tous\ les\ tests}
+\DoxyCodeLine{cd\ build\ \&\&\ ctest}
+\DoxyCodeLine{}
+\DoxyCodeLine{\#\ Lancer\ un\ test\ spécifique}
+\DoxyCodeLine{./build/test\_ecs}
+\DoxyCodeLine{./build/test\_network}
+
+\end{DoxyCode}
+
+
+\DoxyHorRuler{0}
+\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md32}{}\doxysection{\texorpdfstring{Pipeline CI/\+CD}{Pipeline CI/\+CD}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md32}
+Le pipeline Git\+Hub Actions s\textquotesingle{}exécute sur {\bfseries{chaque push}} et {\bfseries{pull request}} vers {\ttfamily main} ou {\ttfamily develop}.\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md33}{}\doxysubsection{\texorpdfstring{Jobs du Pipeline}{Jobs du Pipeline}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md33}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{┌─────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ 1.\ STYLE\ CHECK\ (Ubuntu)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ clang-\/format\ -\/-\/dry-\/run\ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ clang-\/tidy\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ ┌─────────┴─────────┬─────────────┐}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ ▼\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼\ \ \ \ \ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{┌──────────┐\ \ \ \ \ \ ┌──────────┐\ \ ┌──────────┐}
+\DoxyCodeLine{│\ \ 2.\ BUILD│\ \ \ \ \ \ │\ \ 3.\ BUILD│\ \ │\ \ 4.\ BUILD│}
+\DoxyCodeLine{│\ \ \ LINUX\ \ │\ \ \ \ \ \ │\ \ WINDOWS\ │\ \ │\ \ \ MACOS\ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ │\ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ │\ \ │\ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ Ubuntu\ \ \ │\ \ \ \ \ \ │\ MSVC\ \ \ \ \ │\ \ │\ Clang\ \ \ \ │}
+\DoxyCodeLine{│\ GCC\ \ \ \ \ \ │\ \ \ \ \ \ │\ .exe\ \ \ \ \ │\ \ │\ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└──────────┘\ \ \ \ \ \ └──────────┘\ \ └──────────┘}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ └─────────┬─────────┴─────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{\ \ \ \ ┌──────────────────┐}
+\DoxyCodeLine{\ \ \ \ │\ \ 5.\ TESTS\ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ │\ \ (Optionnel)\ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ └──────────────────┘}
+
+\end{DoxyCode}
+\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md34}{}\doxysubsection{\texorpdfstring{Cache Conan}{Cache Conan}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md34}
+Le pipeline met en cache {\ttfamily \texorpdfstring{$\sim$}{\string~}/.conan2} pour accélérer les builds \+:
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{-\/\ uses:\ actions/cache@v4}
+\DoxyCodeLine{\ \ with:}
+\DoxyCodeLine{\ \ \ \ path:\ \string~/.conan2}
+\DoxyCodeLine{\ \ \ \ key:\ conan-\/\$\{\{\ runner.os\ \}\}-\/\$\{\{\ hashFiles('**/conanfile.txt')\ \}\}}
+
+\end{DoxyCode}
+
+
+{\bfseries{Gain de temps}} \+: \texorpdfstring{$\sim$}{\string~}5-\/10 minutes par build.\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md35}{}\doxysubsection{\texorpdfstring{Artifacts}{Artifacts}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md35}
+Les binaires compilés sont disponibles en téléchargement \+:
+\begin{DoxyItemize}
+\item {\ttfamily air-\/trap-\/linux} \+: ELF binaries
+\item {\ttfamily air-\/trap-\/windows} \+: {\ttfamily .exe} files
+\item {\ttfamily air-\/trap-\/macos} \+: Mach-\/O binaries
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md37}{}\doxysection{\texorpdfstring{Flux de données}{Flux de données}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md37}
+\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md38}{}\doxysubsection{\texorpdfstring{Boucle de jeu serveur (60 FPS)}{Boucle de jeu serveur (60 FPS)}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md38}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{┌─────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ 1.\ Recevoir\ inputs\ des\ clients\ (async)\ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Thread\ réseau\ →\ File\ d'attente\ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{┌─────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ 2.\ Traiter\ les\ inputs\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Mettre\ à\ jour\ les\ composants\ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ PlayerInputEvent\ →\ EventBus\ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{┌─────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ 3.\ Mettre\ à\ jour\ les\ systèmes\ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ PhysicsSystem.update(deltaTime)\ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Calcul\ de\ collisions\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Logique\ de\ jeu\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{┌─────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ 4.\ Envoyer\ l'état\ aux\ clients\ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Broadcast\ EntityUpdatePacket\ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Thread\ réseau\ (non\ bloquant)\ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{┌─────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ 5.\ Attendre\ le\ prochain\ tick\ (16ms)\ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────┘}
+
+\end{DoxyCode}
+\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md39}{}\doxysubsection{\texorpdfstring{Boucle de jeu client (60 FPS)}{Boucle de jeu client (60 FPS)}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md39}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{┌─────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ 1.\ Capturer\ les\ inputs\ (SFML)\ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Clavier,\ souris,\ manette\ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{┌─────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ 2.\ Envoyer\ au\ serveur\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ PlayerInputPacket\ (UDP)\ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Thread\ réseau\ (non\ bloquant)\ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{┌─────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ 3.\ Recevoir\ l'état\ du\ serveur\ (async)\ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ EntityUpdatePacket\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Mettre\ à\ jour\ le\ Registry\ local\ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{┌─────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ 4.\ Rendre\ le\ jeu\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ RenderingSystem.update()\ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ SFML\ draw\ calls\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{┌─────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ 5.\ Attendre\ le\ prochain\ frame\ (16ms)\ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────┘}
+
+\end{DoxyCode}
+
+
+\DoxyHorRuler{0}
+\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md41}{}\doxysection{\texorpdfstring{Conventions de Code}{Conventions de Code}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md41}
+\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md42}{}\doxysubsection{\texorpdfstring{Style}{Style}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md42}
+Défini dans {\ttfamily .clang-\/format} \+:
+\begin{DoxyItemize}
+\item {\bfseries{Indent}} \+: 4 espaces
+\item {\bfseries{Colonnes}} \+: 120 caractères max
+\item {\bfseries{Style}} \+: Google modifié
+\item {\bfseries{Pointeurs}} \+: {\ttfamily Type\texorpdfstring{$\ast$}{*} ptr} (aligné à gauche)
+\end{DoxyItemize}\hypertarget{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md43}{}\doxysubsection{\texorpdfstring{Nommage}{Nommage}}\label{md__a_r_c_h_i_t_e_c_t_u_r_e_autotoc_md43}
+Défini dans {\ttfamily .clang-\/tidy} \+:
+\begin{DoxyItemize}
+\item {\bfseries{Classes/\+Structs}} \+: {\ttfamily Camel\+Case} (ex\+: {\ttfamily Position\+Component})
+\item {\bfseries{Fonctions}} \+: {\ttfamily camel\+Back} (ex\+: {\ttfamily create\+Entity()})
+\item {\bfseries{Variables}} \+: {\ttfamily camel\+Back} (ex\+: {\ttfamily delta\+Time})
+\item {\bfseries{Membres privés}} \+: {\ttfamily \+\_\+camel\+Back} (ex\+: {\ttfamily \+\_\+entity\+Id})
+\item {\bfseries{Constantes}} \+: {\ttfamily UPPER\+\_\+\+CASE} (ex\+: {\ttfamily MAX\+\_\+\+PLAYERS})
+\item {\bfseries{Namespaces}} \+: {\ttfamily lower\+\_\+case} (ex\+: {\ttfamily ecs}, {\ttfamily network}) 
+\end{DoxyItemize}
