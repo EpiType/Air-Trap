@@ -33,3 +33,12 @@ endif()
 install(TARGETS r-type_server 
     RUNTIME DESTINATION bin
 )
+
+# --- COPY CONFIG ---
+# Copy config folder to the build directory (for server settings)
+add_custom_command(TARGET r-type_server POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/config
+        $<TARGET_FILE_DIR:r-type_server>/config
+    COMMENT "Copying config folder to server build directory"
+)
