@@ -96,12 +96,12 @@ namespace rtp::client {
     void ClientNetworkSystem::addScoutSprite(rtp::ecs::Entity entity)
     {
         rtp::ecs::components::Sprite spriteData;
-        spriteData.texturePath = "assets/sprites/r-typesheet42.gif";
-        spriteData.rectLeft = 0;
-        spriteData.rectTop = 34;
-        spriteData.rectWidth = 33;
-        spriteData.rectHeight = 17;
-        spriteData.zIndex = 10;
+        spriteData.texturePath = "assets/sprites/r-typesheet2.gif";
+        spriteData.rectLeft = 300;
+        spriteData.rectTop = 71;
+        spriteData.rectWidth = 30;
+        spriteData.rectHeight = 18;
+        spriteData.zIndex = 5;
         spriteData.red = 255;
 
         _registry.addComponent<rtp::ecs::components::Sprite>(
@@ -110,11 +110,11 @@ namespace rtp::client {
         );
 
         rtp::ecs::components::Animation animData;
-        animData.frameLeft = 0;
-        animData.frameTop = 34;
-        animData.frameWidth = 33;
-        animData.frameHeight = 17;
-        animData.totalFrames = 5;
+        animData.frameLeft = 300;
+        animData.frameTop = 71;
+        animData.frameWidth = 30;
+        animData.frameHeight = 18;
+        animData.totalFrames = 6;
         animData.frameDuration = 0.1f;
         animData.currentFrame = 0;
         animData.elapsedTime = 0.0f;

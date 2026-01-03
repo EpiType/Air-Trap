@@ -70,4 +70,21 @@ namespace rtp::server {
         _registry.addComponent<rtp::ecs::components::server::InputComponent>(entity, inputData);
     }
 
+    void ServerNetworkSystem::handleDisconnect(uint32_t sessionId) {
+        if (_sessionToEntity.find(sessionId) != _sessionToEntity.end()) {
+            uint32_t entityIndex = _sessionToEntity[sessionId];
+            rtp::ecs::Entity entity(entityIndex, 0);
+            _sessionToEntity.erase(sessionId);
+            rtp::log::info("Destroyed entity {} for disconnected session {}", entityIndex, sessionId);
+        }
+    }
+
+    std::pair<int, std::string> ServerNetworkSystem::handlePlayerConnection(uint32_t sessionId, const rtp::net::Packet& packet) {
+        rtp::net::PlayerConnectPayload payload;
+        rtp::net::Packet tempPacket = packet;
+        tempPacket >> payload;
+        rtp::log::info("Player connected: session={} username={}", payload.sessionId, payload.username);
+        return {sessionId, std::string(payload.username)};
+    }
+
 }; // namespace rtp::server

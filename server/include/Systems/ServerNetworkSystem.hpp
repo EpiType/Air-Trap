@@ -65,6 +65,19 @@ namespace rtp::server {
              * @param packet Packet containing the input data
              */
             void handleInput(uint32_t sessionId, const rtp::net::Packet& packet);
+
+            /**
+             * @brief Handle disconnection of a client
+             * @param sessionId ID of the disconnected session
+             */
+            void handleDisconnect(uint32_t sessionId);
+
+            /**
+             * @brief Handle new player connection
+             * @param sessionId ID of the new session
+             * @param packet Packet containing the connection data
+             */
+            std::pair<int, std::string> handlePlayerConnection(uint32_t sessionId, const rtp::net::Packet& packet);
             
         private:
             ServerNetwork& _network;           /**< Reference to the server network manager */
