@@ -113,6 +113,25 @@ namespace rtp::net
     //////////////////////////////////////////////////////////////////////////
 
     template <>
+    inline auto Packet::operator<<(PlayerConnectPayload data) -> Packet &
+    {
+        *this << data.sessionId;
+        *this << std::string_view(data.username, strnlen(data.username, sizeof(data.username)));
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator>>(PlayerConnectPayload &data) -> Packet &
+    {
+        *this >> data.sessionId;
+        std::string username;
+        *this >> username;
+        std::strncpy(data.username, username.c_str(), sizeof(data.username));
+        data.username[sizeof(data.username) - 1] = '\0';
+        return *this;
+    }
+
+    template <>
     inline auto Packet::operator<<(WorldSnapshotPayload data) -> Packet &
     {
         *this << data.serverTick;

@@ -56,32 +56,32 @@ namespace rtp::net
      * @brief Operation codes for different packet types
      */
     enum class OpCode : uint8_t {
-        None = 0x00,           /**< No operation */
+        None = 0x00,                    /**< No operation */
 
         // Connection Management
-        Hello = 0x01,          /**< Client hello packet */
-        Welcome = 0x02,        /**< Server welcome response */
-        Disconnect = 0x03,     /**< Disconnect notification */
+        Hello = 0x01,                   /**< Client hello packet */
+        Welcome = 0x02,                 /**< Server welcome response */
+        Disconnect = 0x03,              /**< Disconnect notification */
 
         // Lobby Management
-        ListRooms = 0x04,     /**< Request for room list */
-        RoomList = 0x05,      /**< Response with room list */
-        CreateRoom = 0x06,    /**< Request to create a room */
-        JoinRoom = 0x07,      /**< Request to join a room */
-        LeaveRoom = 0x08,     /**< Request to leave a room */
-        RoomUpdate = 0x09,   /**< Notification of room update */
-        SetReady = 0x0A,      /**< Set player readiness status */
+        ListRooms = 0x04,               /**< Request for room list */
+        RoomList = 0x05,                /**< Response with room list */
+        CreateRoom = 0x06,              /**< Request to create a room */
+        JoinRoom = 0x07,                /**< Request to join a room */
+        LeaveRoom = 0x08,               /**< Request to leave a room */
+        RoomUpdate = 0x09,              /**< Notification of room update */
+        SetReady = 0x0A,                /**< Set player readiness status */
 
         // Gameplay (C -> S)
-        InputTick = 0x10,      /**< Client input state */
+        InputTick = 0x10,               /**< Client input state */
 
         // Game State (S -> C)
-        WorldUpdate = 0x20, /**< Entity state snapshot */
-        EntitySpawn = 0x21,    /**< Entity spawn notification */
-        EntityDeath = 0x22,     /**< Entity death notification */
+        WorldUpdate = 0x20,             /**< Entity state snapshot */
+        EntitySpawn = 0x21,             /**< Entity spawn notification */
+        EntityDeath = 0x22,             /**< Entity death notification */
 
         // Game Control
-        StartGame = 0x30      /**< Notification to start the game */
+        StartGame = 0x30                /**< Notification to start the game */
     };
 
     #pragma pack(push, 1)
@@ -113,14 +113,23 @@ namespace rtp::net
     };
 
     /**
+     * @struct PlayerConnectPayload
+     * @brief Player connection data
+     */
+    struct PlayerConnectPayload {
+        uint32_t sessionId;             /**< Session identifier */
+        char username[32];              /**< Player username */
+    };
+
+    /**
      * @struct EntitySnapshotPayload
      * @brief Entity state snapshot data
      */
     struct EntitySnapshotPayload {
-        uint32_t netId;         /**< Network entity identifier */
-        Vec2f position;         /**< Entity position */
-        Vec2f velocity;         /**< Entity velocity */
-        float rotation;         /**< Entity rotation */
+        uint32_t netId;                 /**< Network entity identifier */
+        Vec2f position;                 /**< Entity position */
+        Vec2f velocity;                 /**< Entity velocity */
+        float rotation;                 /**< Entity rotation */
     };
 
     /**
@@ -128,8 +137,8 @@ namespace rtp::net
      * @brief World state snapshot data
      */
     struct WorldSnapshotPayload {
-        uint32_t serverTick;    /**< Network entity identifier */
-        uint16_t entityCount;   /**< Entity position */
+        uint32_t serverTick;            /**< Network entity identifier */
+        uint16_t entityCount;           /**< Entity position */
     };
 
     /**
@@ -137,10 +146,10 @@ namespace rtp::net
      * @brief Entity spawn notification data
      */
     struct EntitySpawnPayload {
-        uint32_t netId;         /**< Network entity identifier */
-        uint8_t type;           /**< Entity type */
-        Vec2f position;         /**< Spawn position */
-        EntityType entityType;  /**< Type of the entity */
+        uint32_t netId;                 /**< Network entity identifier */
+        uint8_t type;                   /**< Entity type */
+        Vec2f position;                 /**< Spawn position */
+        EntityType entityType;          /**< Type of the entity */
     };
 
     /**
@@ -148,9 +157,9 @@ namespace rtp::net
      * @brief Entity death notification data
      */
     struct EntityDeathPayload {
-        uint32_t netId;         /**< Network entity identifier */
-        uint8_t type;           /**< Entity type */
-        Vec2f position;         /**< Death position */
+        uint32_t netId;                 /**< Network entity identifier */
+        uint8_t type;                   /**< Entity type */
+        Vec2f position;                 /**< Death position */
     };
 
     #pragma pack(pop)
@@ -170,7 +179,7 @@ namespace rtp::net
      * @brief Client input state data
      */
     struct InputPayload {
-        uint8_t inputMask;      /**< Bitmask of input states */
+        uint8_t inputMask;              /**< Bitmask of input states */
     };
 
     /**

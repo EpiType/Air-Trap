@@ -17,10 +17,9 @@ namespace rtp::server
         : _sessionId(sessionId), _state(PlayerState::Connected), _entityId(0)
     {
         if (!username.empty()) {
-            /* TODO : For the V1 i will set the username with the ID */
             _username = "Player_" + std::to_string(sessionId);
         } else {
-            _username = "Player_" + std::to_string(sessionId);
+            _username = username;
         }
     }
 
