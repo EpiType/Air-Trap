@@ -97,7 +97,12 @@ namespace rtp::server
     void GameManager::handlePlayerConnect(uint32_t sessionId)
     {
         log::info("Player with Session ID {} connected", sessionId);
-        auto player = std::make_shared<Player>(sessionId, "Player_" + std::to_string(sessionId));
+        std::pair<int, std::string> result = _serverNetworkSystem->handlePlayerConnection(sessionId, net::Packet());
+        if (result.first != sessionId) {
+            log::error("Session ID mismatch on player connection");
+            return;
+        }
+        auto player = std::make_shared<Player>(sessionId, result.second);
         
         {
             std::lock_guard lock(_mutex);
@@ -134,6 +139,7 @@ namespace rtp::server
                 }
                 _playerRoomMap.erase(it);
             }
+            _serverNetworkSystem->handleDisconnect(sessionId);
         }
 
         if (entityNetId != 0) {
