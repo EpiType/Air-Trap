@@ -105,6 +105,48 @@ namespace rtp::server
             void handlePlayerRegisterAuth(uint32_t sessionId, const net::Packet &packet);
 
             /**
+             * @brief Handle a request to list available rooms
+             * @param sessionId Unique identifier of the player requesting the room list
+             * @param packet Reference to the received Packet
+             */
+            void handleListRooms(uint32_t sessionId, const net::Packet &packet);
+
+            /**
+             * @brief Handle a generic incoming packet from a player
+             * @param sessionId Unique identifier of the player sending the packet
+             * @param packet Reference to the received Packet
+             */
+            void handleCreateRoom(uint32_t sessionId, const net::Packet &packet);
+
+            /**
+             * @brief Handle a generic incoming packet from a player
+             * @param sessionId Unique identifier of the player sending the packet
+             * @param packet Reference to the received Packet
+             */
+            void handleJoinRoom(uint32_t sessionId, const net::Packet &packet);
+
+            /**
+             * @brief Handle a generic incoming packet from a player
+             * @param sessionId Unique identifier of the player sending the packet
+             * @param packet Reference to the received Packet
+             */
+            void handleLeaveRoom(uint32_t sessionId, const net::Packet &packet);
+
+            /**
+             * @brief Handle a generic incoming packet from a player
+             * @param sessionId Unique identifier of the player sending the packet
+             * @param packet Reference to the received Packet
+             */
+            void handleSetReady(uint32_t sessionId, const net::Packet &packet);
+
+            /**
+             * @brief Handle a generic incoming packet from a player
+             * @param sessionId Unique identifier of the player sending the packet
+             * @param packet Reference to the received Packet
+             */
+            void handleRoomChatSended(uint32_t sessionId, const net::Packet &packet);
+
+            /**
              * @brief Handle an incoming packet from a player
              * @param sessionId Unique identifier of the player sending the packet
              * @param packet Reference to the received Packet

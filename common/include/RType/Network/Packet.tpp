@@ -231,7 +231,7 @@ namespace rtp::net
         *this << data.currentPlayers;
         *this << data.maxPlayers;
         *this << data.inGame;
-        *this << data._difficulty;
+        *this << data.difficulty;
         *this << data.speed;
         *this << data.duration;
         *this << data.seed;
@@ -252,7 +252,7 @@ namespace rtp::net
         *this >> data.currentPlayers;
         *this >> data.maxPlayers;
         *this >> data.inGame;
-        *this >> data._difficulty;
+        *this >> data.difficulty;
         *this >> data.speed;
         *this >> data.duration;
         *this >> data.seed;

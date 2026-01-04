@@ -12,7 +12,7 @@
     #include <string>
     #include <mutex>
     #include <memory>
-    #include "RType/Network/Core/Session.hpp"
+    #include "RType/Network/Session.hpp"
 
 /**
  * @namespace rtp::server

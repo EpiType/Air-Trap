@@ -36,8 +36,8 @@ namespace rtp::server
     // Public API
     ///////////////////////////////////////////////////////////////////////////
 
-    Room::Room(uint32_t id, const std::string &name, uint32_t maxPlayers, RoomType type)
-        : _id(id), _name(name), _maxPlayers(maxPlayers), _state(State::Waiting), _type(type)
+    Room::Room(uint32_t id, const std::string &name, uint32_t maxPlayers, float difficulty, float speed, RoomType type)
+        : _id(id), _name(name), _maxPlayers(maxPlayers), _state(State::Waiting), _type(type), _difficulty(difficulty), _speed(speed)
     {
         /* TODO : For the V1 i will set the name with the ID */
 #ifdef DEBUG
@@ -123,6 +123,16 @@ namespace rtp::server
     Room::RoomType Room::getType() const
     {
         return _type;
+    }
+
+    float Room::getDifficulty() const
+    {
+        return _difficulty;
+    }
+
+    float Room::getSpeed() const
+    {
+        return _speed;
     }
 
     Room::PlayerType Room::getPlayerType(uint32_t sessionId) const
