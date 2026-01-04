@@ -22,7 +22,7 @@ namespace rtp::server {
         (void)dt;
     };
 
-    bool AuthSystem::handleLoginRequest(uint32_t sessionId, const rtp::net::Packet& packet)
+    std::pair<bool, std::string> AuthSystem::handleLoginRequest(uint32_t sessionId, const rtp::net::Packet& packet)
     {
         std::ifstream inFile("logins.txt");
 
@@ -41,7 +41,7 @@ namespace rtp::server {
         if (!inFile) {
             rtp::log::error("Failed to open logins.txt for reading");
             sendLoginResponse(sessionId, false, username);
-            return false;
+            return {false, username};
         }
 
         std::string line;
@@ -51,15 +51,15 @@ namespace rtp::server {
             if (line == record) {
                 rtp::log::info("Login successful for username '{}'", username);
                 sendLoginResponse(sessionId, true, username);
-                return true;
+                return {true, username};
             }
         }
         rtp::log::warning("Login failed for username '{}'", username);
         sendLoginResponse(sessionId, false, username);
-        return false;
+        return {false, username};
     }
 
-    bool AuthSystem::handleRegisterRequest(uint32_t sessionId, const rtp::net::Packet& packet)
+    std::pair<bool, std::string> AuthSystem::handleRegisterRequest(uint32_t sessionId, const rtp::net::Packet& packet)
     {
         std::ofstream outFile("logins.txt", std::ios::app);
 
@@ -78,14 +78,33 @@ namespace rtp::server {
         if (!outFile) {
             rtp::log::error("Failed to open logins.txt for writing");
             sendRegisterResponse(sessionId, false, username);
-            return false;
+            return {false, username};
         }
 
+        if (username.find(':') != std::string::npos || password.find(':') != std::string::npos) {
+            rtp::log::warning("Registration failed: username or password contains invalid character ':'");
+            sendRegisterResponse(sessionId, false, username);
+            return {false, username};
+        }
+
+        std::ifstream inFile("logins.txt");
+        std::string line;
+        while (std::getline(inFile, line)) {
+            size_t delimPos = line.find(':');
+            if (delimPos != std::string::npos) {
+                std::string existingUsername = line.substr(0, delimPos);
+                if (existingUsername == username) {
+                    rtp::log::warning("Registration failed: username '{}' already exists", username);
+                    sendRegisterResponse(sessionId, false, username);
+                    return {false, username};
+                }
+            }
+        }
+        
         outFile << username << ":" << password << "\n";
         rtp::log::info("Registration successful for username '{}'", username);
         sendRegisterResponse(sessionId, true, username);
-        return true;
-        
+        return {true, username};
     }
 
     void AuthSystem::sendLoginResponse(uint32_t sessionId, bool success, const std::string& username)

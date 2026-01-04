@@ -42,7 +42,7 @@ namespace rtp::server {
         if (snapshots.empty()) return;
 
         rtp::net::Packet packet(rtp::net::OpCode::WorldUpdate);
-        rtp::net::WorldSnapshotPayload header = {serverTick, (uint16_t)snapshots.size()};
+        rtp::net::RoomSnapshotPayload header = {serverTick, (uint16_t)snapshots.size()};
         
         packet << header << snapshots;
         _network.broadcastPacket(packet, rtp::net::NetworkMode::UDP);

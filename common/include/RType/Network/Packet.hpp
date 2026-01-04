@@ -36,6 +36,11 @@
  */
 namespace rtp::net
 {
+
+    //////////////////////////////////////////////////////////////////////////
+    // Constants and Enums
+    //////////////////////////////////////////////////////////////////////////
+
     /**
      * @brief Native endianness of the machine
      */
@@ -80,8 +85,8 @@ namespace rtp::net
 
         // Authentication
         LoginRequest = 0x1A,            /**< Client login request */
-        RegisterRequest = 0x1B,           /**< Server login response */
-        LoginResponse = 0x9A,       /**< Successful connection notification */
+        RegisterRequest = 0x1B,         /**< Server login response */
+        LoginResponse = 0x9A,           /**< Successful connection notification */
         RegisterResponse = 0x9B,        /**< Incorrect password notification */
 
         // Lobby Management
@@ -92,6 +97,9 @@ namespace rtp::net
         LeaveRoom = 0x08,               /**< Request to leave a room */
         RoomUpdate = 0x09,              /**< Notification of room update */
         SetReady = 0x0A,                /**< Set player readiness status */
+        RoomChatSended = 0x0B,          /**< Chat message in room */
+        RoomChatReceived = 0x0C,        /**< Chat message received in room */
+        StartGame = 0x0D,               /**< Notification to start the game */
 
         // Gameplay (C -> S)
         InputTick = 0x10,               /**< Client input state */
@@ -100,9 +108,6 @@ namespace rtp::net
         WorldUpdate = 0x20,             /**< Entity state snapshot */
         EntitySpawn = 0x21,             /**< Entity spawn notification */
         EntityDeath = 0x22,             /**< Entity death notification */
-
-        // Game Control
-        StartGame = 0x30                /**< Notification to start the game */
     };
 
     #pragma pack(push, 1)
@@ -118,7 +123,7 @@ namespace rtp::net
         uint16_t ackId = 0;             /**< Last acknowledged packet */
         OpCode opCode = OpCode::None;   /**< Operation code */
         uint8_t reserved = 0;           /**< Reserved for future use */
-        uint32_t sessionId = -1;             /**< Session identifier */
+        uint32_t sessionId = 0;             /**< Session identifier */
     };
 
     /**
@@ -133,17 +138,27 @@ namespace rtp::net
         Bullet = 5
     };
 
+    //////////////////////////////////////////////////////////////////////////
+    // Payload Structures
+    //////////////////////////////////////////////////////////////////////////
+
+    /***** Connection Management *****/
     /**
      * @struct PlayerConnectPayload
-     * @brief Player connection data sended by client for Hello
+     * @brief Player connection data sended
+     * @callergraph Client
+     * @related Hello OpCode
      */
     struct PlayerConnectPayload {
         uint32_t sessionId;             /**< Session identifier */
     };
 
+    /***** Authentication *****/
     /**
      * @struct PlayerLoginPayload
-     * @brief Player login data sended by client for LoginRequest
+     * @brief Player login data sended
+     * @callergraph Client
+     * @related LoginRequest OpCode
      */
     struct PlayerLoginPayload {
         uint32_t sessionId;             /**< Session identifier */
@@ -153,7 +168,9 @@ namespace rtp::net
 
     /**
      * @struct PlayerRegisterPayload
-     * @brief Player registration data sended by client for RegisterRequest
+     * @brief Player registration data sended by client
+     * @callergraph Client
+     * @related RegisterRequest OpCode
      */
     struct PlayerRegisterPayload {
         uint32_t sessionId;             /**< Session identifier */
@@ -164,23 +181,130 @@ namespace rtp::net
     /**
      * @struct LoginResponsePayload
      * @brief Login response data sent by server for LoginResponse
+     * @callergraph Server
+     * @related LoginResponse OpCode
      */
     struct LoginResponsePayload {
         uint32_t sessionId;             /**< Session identifier */
-        bool success;                   /**< Login success flag */
+        uint8_t success;                   /**< Login success flag */
         char username[32];              /**< Player username */
     };
 
     /**
      * @struct RegisterResponsePayload
      * @brief Registration response data sent by server for RegisterResponse
+     * @callergraph Server
+     * @related RegisterResponse OpCode
      */
     struct RegisterResponsePayload {
         uint32_t sessionId;             /**< Session identifier */
-        bool success;                   /**< Registration success flag */
+        uint8_t success;                   /**< Registration success flag */
         char username[32];              /**< Player username */
     };
 
+    /***** Lobby Management *****/
+    /**
+     * @struct RoomInfo
+     * @brief Information about a game room
+     * @callergraph Server
+     * @related RoomList OpCode
+     */
+    struct RoomInfo {
+        uint32_t roomId;                /**< Room identifier */
+        char roomName[64];              /**< Room name */
+        uint32_t currentPlayers;        /**< Current number of players */
+        uint32_t maxPlayers;            /**< Maximum number of players */
+        uint8_t inGame;                    /**< Is the game in progress */
+        float _difficulty;              /**< Difficulty level */
+        float speed;                    /**< Speed multiplier */
+        uint32_t duration;              /**< Duration of the game session */
+        uint32_t seed;                  /**< Seed for random generation */
+        uint32_t levelId;               /**< Level identifier */
+    };
+
+    /**
+     * @struct CreateRoomPayload
+     * @brief Data for creating a new room
+     * @callergraph Client
+     * @related CreateRoom OpCode
+     */
+    struct CreateRoomPayload {
+        char roomName[64];              /**< Desired room name */
+        uint32_t maxPlayers;            /**< Maximum number of players */
+        float difficulty;               /**< Difficulty level */
+        float speed;                    /**< Speed multiplier */
+        uint32_t levelId;               /**< Level identifier */
+        uint32_t seed;                  /**< Seed for random generation */
+        uint32_t duration;              /**< Duration of the game session */
+    };
+
+    /**
+     * @struct JoinRoomPayload
+     * @brief Data for joining an existing room
+     * @callergraph Client
+     * @related JoinRoom OpCode
+     */
+    struct JoinRoomPayload {
+        uint32_t roomId;                /**< Room identifier to join */
+    };
+
+    /**
+     * @struct LeaveRoomPayload
+     * @brief Data for leaving a room
+     * @callergraph Client
+     * @related LeaveRoom OpCode
+     */
+    struct LeaveRoomPayload {
+        uint32_t roomId;                /**< Room identifier to leave */
+    };
+
+    /**
+     * @struct RoomUpdatePayload
+     * @brief Data for room update notifications
+     * @callergraph Server
+     * @related RoomUpdate OpCode
+     */
+    struct RoomSnapshotPayload {
+        uint32_t roomId;                /**< Room identifier */
+        uint32_t currentPlayers;        /**< Current number of players */
+        uint32_t serverTick;            /**< Network entity identifier */
+        uint16_t entityCount;           /**< Entity position */
+        uint8_t inGame;                    /**< Is the game in progress */
+    };
+
+    /**
+     * @struct SetReadyPayload
+     * @brief Data for setting player readiness status
+     * @callergraph Client
+     * @related SetReady OpCode
+     */
+    struct SetReadyPayload {
+        uint8_t isReady;                   /**< Player readiness status */
+    };
+
+    /**
+     * @struct RoomChatPayload
+     * @brief Data for sending chat messages in a room
+     * @callergraph Client
+     * @related RoomChatSended OpCode
+     */
+    struct RoomChatPayload {
+        char message[256];              /**< Chat message content */
+    };
+
+    /**
+     * @struct RoomChatReceivedPayload
+     * @brief Data for receiving chat messages in a room
+     * @callergraph Server
+     * @related RoomChatReceived OpCode
+     */
+    struct RoomChatReceivedPayload {
+        uint32_t sessionId;             /**< Sender's session identifier */
+        char username[32];              /**< Sender's username */
+        char message[256];              /**< Chat message content */
+    };
+
+    /***** Gameplay *****/
     /**
      * @struct EntitySnapshotPayload
      * @brief Entity state snapshot data
@@ -192,14 +316,14 @@ namespace rtp::net
         float rotation;                 /**< Entity rotation */
     };
 
-    /**
-     * @struct WorldSnapshotPayload
-     * @brief World state snapshot data
-     */
-    struct WorldSnapshotPayload {
-        uint32_t serverTick;            /**< Network entity identifier */
-        uint16_t entityCount;           /**< Entity position */
-    };
+    // /**
+    //  * @struct WorldSnapshotPayload
+    //  * @brief World state snapshot data
+    //  */
+    // struct WorldSnapshotPayload {
+    //     uint32_t serverTick;            /**< Network entity identifier */
+    //     uint16_t entityCount;           /**< Entity position */
+    // };
 
     /**
      * @struct EntitySpawnPayload
@@ -223,6 +347,10 @@ namespace rtp::net
     };
 
     #pragma pack(pop)
+
+    //////////////////////////////////////////////////////////////////////
+    // Packet Class
+    //////////////////////////////////////////////////////////////////////
 
     /**
      * @using BufferSequence
@@ -283,11 +411,22 @@ namespace rtp::net
              * @return The value in network endianness format.
              */
             template <typename T>
-            static inline float Packet::to_network(float v) {
-                if constexpr (NATIVE_ENDIAN == std::endian::little) {
-                    uint32_t u = std::bit_cast<uint32_t>(v);
-                    u = std::byteswap(u);
-                    return std::bit_cast<float>(u);
+            static inline T to_network(T v)
+            {
+                if constexpr (std::is_enum_v<T>) {
+                    using U = std::underlying_type_t<T>;
+                    return static_cast<T>(to_network(static_cast<U>(v)));
+                } else if constexpr (std::is_integral_v<T>) {
+                    if constexpr (sizeof(T) > 1 && NATIVE_ENDIAN == std::endian::little)
+                        return std::byteswap(v);
+                    return v;
+                } else if constexpr (std::is_same_v<T, float>) {
+                    if constexpr (NATIVE_ENDIAN == std::endian::little) {
+                        uint32_t u = std::bit_cast<uint32_t>(v);
+                        u = std::byteswap(u);
+                        return std::bit_cast<float>(u);
+                    }
+                    return v;
                 }
                 return v;
             }
