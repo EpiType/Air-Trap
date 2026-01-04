@@ -15,6 +15,7 @@
     #include "Game/Player.hpp"
     #include <memory>
     #include <list>
+    #include <algorithm>
 
 /**
  * @namespace rtp::server
@@ -54,19 +55,12 @@ namespace rtp::server
              * @brief Enum representing the type of player in the room
              */
             enum PlayerType {
+                None,          /**< Undefined player type */
                 Player,        /**< Regular player */
                 Spectator      /**< Spectator player */
             };
 
-            /**
-             * @enum PlayerMode
-             * @brief Enum representing the mode of a player in the room
-             */
-            enum PlayerMode {
-                Member,       /**< Regular member */
-                Administrator /**< Room administrator */
-            };
-
+        public:
             /**
              * @brief Constructor for Room
              * @param id Unique identifier for the room
@@ -119,6 +113,20 @@ namespace rtp::server
             RoomType getType() const;
 
             /**
+             * @brief Get the type of a player in the room
+             * @param sessionId Unique identifier of the player
+             * @return PlayerType of the specified player
+             */
+            PlayerType getPlayerType(uint32_t sessionId) const;
+
+            /**
+             * @brief Set the type of a player in the room
+             * @param sessionId Unique identifier of the player
+             * @param type New PlayerType to set
+             */
+            void setPlayerType(uint32_t sessionId, PlayerType type);
+
+            /**
              * @brief Get the name of the room
              * @return Current room name
              */
@@ -146,10 +154,22 @@ namespace rtp::server
             uint32_t _id;                     /**< Unique room identifier */
             std::string _name;                /**< Name of the room */
             uint32_t _maxPlayers;             /**< Maximum number of players allowed */
-            std::list<PlayerPtr> _players;    /**< List of player ptr's in the room */
+            std::list<std::pair<PlayerPtr, PlayerType>>
+                _players;                    /**< List of player ptr's in the room */
             State _state;                     /**< Current state of the room */
-            RoomType _type;                       /**< Type of the room */
+            RoomType _type;                   /**< Type of the room */
+            uint32_t _creatorSessionId;       /**< Session ID of the room creator (Administrator) */
 
+            std::pair<std::string, int>
+                _bestRoomScore;               /**< Best score achieved in the room */
+                
+            uint32_t _levelId;                /**< Level identifier for the room */
+            uint32_t _seed;                   /**< Seed for random generation in the room */
+            float _difficulty;                /**< Difficulty multiplier for the room 0 -> 1 */
+            float _speed;                     /**< Speed multiplier for the room 0 -> 2 */
+            uint32_t durationMinutes;         /**< Duration of the game in minutes */
+                
+            uint32_t _currentTimeSeconds;     /**< Current time in seconds since the game started */
             mutable std::mutex _mutex;        /**< Mutex to protect access to room state */
     };
 } // namespace rtp::server

@@ -41,7 +41,7 @@ namespace rtp::net
             throw std::out_of_range("Packet read overflow");
         }
 
-        T network_data{}; // FIX: init (évite warnings / propreté)
+        T network_data{};
         std::memcpy(&network_data, body.data() + _readPos, sizeof(T));
         _readPos += sizeof(T);
 
@@ -104,7 +104,6 @@ namespace rtp::net
         uint32_t strSize;
         *this >> strSize;
 
-        // FIX: limite simple anti-DoS (cohérente avec vector)
         if (strSize > 4096) throw std::runtime_error("String too large");
 
         if (_readPos + strSize > body.size()) {
@@ -149,8 +148,8 @@ namespace rtp::net
         std::string username;
         std::string password;
         *this >> data.sessionId;
-        *this >> data.username;
-        *this >> data.password;
+        *this >> username;
+        *this >> password;
         std::strncpy(data.username, username.c_str(), sizeof(data.username));
         data.username[sizeof(data.username) - 1] = '\0';
         std::strncpy(data.password, password.c_str(), sizeof(data.password));
@@ -173,8 +172,8 @@ namespace rtp::net
         std::string username;
         std::string password;
         *this >> data.sessionId;
-        *this >> data.username;
-        *this >> data.password;
+        *this >> username;
+        *this >> password;
         std::strncpy(data.username, username.c_str(), sizeof(data.username));
         data.username[sizeof(data.username) - 1] = '\0';
         std::strncpy(data.password, password.c_str(), sizeof(data.password));
@@ -225,20 +224,238 @@ namespace rtp::net
     }
 
     template <>
-    inline auto Packet::operator<<(WorldSnapshotPayload data) -> Packet &
+    inline auto Packet::operator<<(RoomInfo data) -> Packet &
     {
-        *this << data.serverTick;
-        *this << data.entityCount;
+        *this << data.roomId;
+        *this << std::string_view(data.roomName, strnlen(data.roomName, sizeof(data.roomName)));
+        *this << data.currentPlayers;
+        *this << data.maxPlayers;
+        *this << data.inGame;
+        *this << data._difficulty;
+        *this << data.speed;
+        *this << data.duration;
+        *this << data.seed;
+        *this << data.levelId;
         return *this;
     }
 
     template <>
-    inline auto Packet::operator>>(WorldSnapshotPayload &data) -> Packet &
+    inline auto Packet::operator>>(RoomInfo &data) -> Packet &
     {
-        *this >> data.serverTick;
-        *this >> data.entityCount;
+        *this >> data.roomId;
+
+        std::string roomName;
+        *this >> roomName;
+        std::strncpy(data.roomName, roomName.c_str(), sizeof(data.roomName));
+        data.roomName[sizeof(data.roomName) - 1] = '\0';
+
+        *this >> data.currentPlayers;
+        *this >> data.maxPlayers;
+        *this >> data.inGame;
+        *this >> data._difficulty;
+        *this >> data.speed;
+        *this >> data.duration;
+        *this >> data.seed;
+        *this >> data.levelId;
         return *this;
     }
+
+    template <>
+    inline auto Packet::operator<<(CreateRoomPayload data) -> Packet &
+    {
+        *this << std::string_view(data.roomName, strnlen(data.roomName, sizeof(data.roomName)));
+        *this << data.maxPlayers;
+        *this << data.difficulty;
+        *this << data.speed;
+        *this << data.levelId;
+        *this << data.seed;
+        *this << data.duration;
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator>>(CreateRoomPayload &data) -> Packet &
+    {
+        std::string roomName;
+        *this >> roomName;
+        std::strncpy(data.roomName, roomName.c_str(), sizeof(data.roomName));
+        data.roomName[sizeof(data.roomName) - 1] = '\0';
+
+        *this >> data.maxPlayers;
+        *this >> data.difficulty;
+        *this >> data.speed;
+        *this >> data.levelId;
+        *this >> data.seed;
+        *this >> data.duration;
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator<<(JoinRoomPayload data) -> Packet &
+    {
+        *this << data.roomId;
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator>>(JoinRoomPayload &data) -> Packet &
+    {
+        *this >> data.roomId;
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator<<(LeaveRoomPayload data) -> Packet &
+    {
+        *this << data.roomId;
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator>>(LeaveRoomPayload &data) -> Packet &
+    {
+        *this >> data.roomId;
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator<<(RoomSnapshotPayload data) -> Packet &
+    {
+        *this << data.roomId;
+        *this << data.currentPlayers;
+        *this << data.serverTick;
+        *this << data.entityCount;
+        *this << data.inGame;
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator>>(RoomSnapshotPayload &data) -> Packet &
+    {
+        *this >> data.roomId;
+        *this >> data.currentPlayers;
+        *this >> data.serverTick;
+        *this >> data.entityCount;
+        *this >> data.inGame;
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator<<(SetReadyPayload data) -> Packet &
+    {
+        *this << data.isReady;
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator>>(SetReadyPayload &data) -> Packet &
+    {
+        *this >> data.isReady;
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator<<(RoomChatPayload data) -> Packet &
+    {
+        *this << std::string_view(data.message, strnlen(data.message, sizeof(data.message)));
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator>>(RoomChatPayload &data) -> Packet &
+    {
+        std::string msg;
+        *this >> msg;
+        std::strncpy(data.message, msg.c_str(), sizeof(data.message));
+        data.message[sizeof(data.message) - 1] = '\0';
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator<<(RoomChatReceivedPayload data) -> Packet &
+    {
+        *this << data.sessionId;
+        *this << std::string_view(data.username, strnlen(data.username, sizeof(data.username)));
+        *this << std::string_view(data.message, strnlen(data.message, sizeof(data.message)));
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator>>(RoomChatReceivedPayload &data) -> Packet &
+    {
+        *this >> data.sessionId;
+
+        std::string username;
+        std::string message;
+        *this >> username;
+        *this >> message;
+
+        std::strncpy(data.username, username.c_str(), sizeof(data.username));
+        data.username[sizeof(data.username) - 1] = '\0';
+
+        std::strncpy(data.message, message.c_str(), sizeof(data.message));
+        data.message[sizeof(data.message) - 1] = '\0';
+
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator<<(EntitySpawnPayload data) -> Packet &
+    {
+        *this << data.netId;
+        *this << data.type;
+        *this << data.position.x;
+        *this << data.position.y;
+        *this << data.entityType;
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator>>(EntitySpawnPayload &data) -> Packet &
+    {
+        *this >> data.netId;
+        *this >> data.type;
+        *this >> data.position.x;
+        *this >> data.position.y;
+        *this >> data.entityType;
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator<<(EntityDeathPayload data) -> Packet &
+    {
+        *this << data.netId;
+        *this << data.type;
+        *this << data.position.x;
+        *this << data.position.y;
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator>>(EntityDeathPayload &data) -> Packet &
+    {
+        *this >> data.netId;
+        *this >> data.type;
+        *this >> data.position.x;
+        *this >> data.position.y;
+        return *this;
+    }
+
+    // template <>
+    // inline auto Packet::operator<<(WorldSnapshotPayload data) -> Packet &
+    // {
+    //     *this << data.serverTick;
+    //     *this << data.entityCount;
+    //     return *this;
+    // }
+
+    // template <>
+    // inline auto Packet::operator>>(WorldSnapshotPayload &data) -> Packet &
+    // {
+    //     *this >> data.serverTick;
+    //     *this >> data.entityCount;
+    //     return *this;
+    // }
 
     template <>
     inline auto Packet::operator<<(EntitySnapshotPayload data) -> Packet &

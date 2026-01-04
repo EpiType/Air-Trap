@@ -8,6 +8,28 @@
 #include "Game/Room.hpp"
 #include "RType/Logger.hpp"
 
+#ifdef DEBUG
+    #include <iostream>
+static const char *toString(rtp::server::Room::RoomType t)
+{
+    switch (t) {
+        case rtp::server::Room::RoomType::Lobby:   return "Lobby";
+        case rtp::server::Room::RoomType::Public:  return "Public";
+        case rtp::server::Room::RoomType::Private: return "Private";
+        default: return "Unknown";
+    }
+}
+
+static const char *toString(rtp::server::Room::PlayerType t)
+{
+    switch (t) {
+        case rtp::server::Room::PlayerType::Player:    return "Player";
+        case rtp::server::Room::PlayerType::Spectator: return "Spectator";
+        default: return "Unknown";
+    }
+}
+#endif
+
 namespace rtp::server
 {
     ///////////////////////////////////////////////////////////////////////////
@@ -18,8 +40,10 @@ namespace rtp::server
         : _id(id), _name(name), _maxPlayers(maxPlayers), _state(State::Waiting), _type(type)
     {
         /* TODO : For the V1 i will set the name with the ID */
+#ifdef DEBUG
         log::info("Room '{}' type '{}' (ID: {}) created with max players: {}",
-                  _name, _type, _id, _maxPlayers);
+                  _name, toString(_type), _id, _maxPlayers);
+#endif
     }
 
     Room::~Room()
@@ -36,36 +60,59 @@ namespace rtp::server
     bool Room::addPlayer(const PlayerPtr &player)
     {
         std::lock_guard lock(_mutex);
-        if (!canJoin()) {
+
+        if (_players.size() >= _maxPlayers) {
             log::warning("Player {} cannot join Room '{}' (ID: {}): Room is full",
-                         player->getUsername(), _name, _id);
+                        player->getUsername(), _name, _id);
             return false;
         }
-        if (_players.size() < _maxPlayers) {
-            _players.push_back(player);
-            log::info("Player {} joined Room '{}' (ID: {})",
-                      player->getUsername(), _name, _id);
-        } else {
-            log::warning("Player {} failed to join Room '{}' (ID: {}): Room is full",
-                         player->getUsername(), _name, _id);
+
+        auto sid = player->getId();
+        auto it = std::find_if(_players.begin(), _players.end(),
+            [sid](const auto &entry) { return entry.first->getId() == sid; });
+
+        if (it != _players.end()) {
+            log::warning("Player {} already in Room '{}' (ID: {})",
+                        player->getUsername(), _name, _id);
+            return false;
         }
+
+        _players.emplace_back(player, PlayerType::Player);
+
+        log::info("Player {} joined Room '{}' (ID: {})",
+                player->getUsername(), _name, _id);
+
         return true;
     }
 
     void Room::removePlayer(uint32_t sessionId)
     {
         std::lock_guard lock(_mutex);
-        _players.remove_if([sessionId](const PlayerPtr &player) {
-            return player->getId() == sessionId;
+
+        auto before = _players.size();
+        _players.remove_if([sessionId](const auto &entry) {
+            return entry.first->getId() == sessionId;
         });
-        log::info("Player with Session ID {} removed from Room '{}' (ID: {})",
-                  sessionId, _name, _id);
+
+        if (_players.size() != before) {
+            log::info("Player with Session ID {} removed from Room '{}' (ID: {})",
+                    sessionId, _name, _id);
+        } else {
+            log::warning("Player with Session ID {} not found in Room '{}' (ID: {})",
+                        sessionId, _name, _id);
+        }
     }
 
     const std::list<PlayerPtr> Room::getPlayers(void) const
     {
         std::lock_guard lock(_mutex);
-        return _players;
+
+        std::list<PlayerPtr> out;
+        out.resize(0);
+        for (const auto &entry : _players) {
+            out.push_back(entry.first);
+        }
+        return out;
     }
 
     uint32_t Room::getId(void) const
@@ -76,6 +123,40 @@ namespace rtp::server
     Room::RoomType Room::getType() const
     {
         return _type;
+    }
+
+    Room::PlayerType Room::getPlayerType(uint32_t sessionId) const
+    {
+        std::lock_guard lock(_mutex);
+
+        for (const auto &entry : _players) {
+            if (entry.first->getId() == sessionId) {
+                return entry.second;
+            }
+        }
+
+        log::warning("Player with Session ID {} not found in Room '{}' (ID: {})",
+                    sessionId, _name, _id);
+        return PlayerType::None;
+    }
+
+    void Room::setPlayerType(uint32_t sessionId, PlayerType type)
+    {
+        std::lock_guard lock(_mutex);
+
+        for (auto &entry : _players) {
+            if (entry.first->getId() == sessionId) {
+                entry.second = type;
+#ifdef DEBUG
+                log::info("Player with Session ID {} set to type {} in Room '{}' (ID: {})",
+                        sessionId, toString(type), _name, _id);
+#endif
+                return;
+            }
+        }
+
+        log::warning("Player with Session ID {} not found in Room '{}' (ID: {})",
+                    sessionId, _name, _id);
     }
 
     std::string Room::getName(void) const

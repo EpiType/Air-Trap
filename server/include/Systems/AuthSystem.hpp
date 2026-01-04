@@ -48,14 +48,14 @@ namespace rtp::server {
              * @param sessionId ID of the network session
              * @param packet Packet containing the login request data
              */
-            bool handleLoginRequest(uint32_t sessionId, const rtp::net::Packet& packet);
+            std::pair<bool, std::string> handleLoginRequest(uint32_t sessionId, const rtp::net::Packet& packet);
 
             /**
              * @brief Handle a registration request from a client
              * @param sessionId ID of the network session
              * @param packet Packet containing the registration request data
              */
-            bool handleRegisterRequest(uint32_t sessionId, const rtp::net::Packet& packet);
+            std::pair<bool, std::string> handleRegisterRequest(uint32_t sessionId, const rtp::net::Packet& packet);
 
             /**
              * @brief Send a login response to a client

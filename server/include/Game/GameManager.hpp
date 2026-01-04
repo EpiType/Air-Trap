@@ -91,6 +91,20 @@ namespace rtp::server
             void handlePlayerDisconnect(uint32_t sessionId);
 
             /**
+             * @brief Handle player login with provided username if successful then join the lobby
+             * @param sessionId Unique identifier of the player
+             * @param username Player's username
+             */
+            void handlePlayerLoginAuth(uint32_t sessionId, const net::Packet &packet);
+
+            /**
+             * @brief Handle player registration with provided username
+             * @param sessionId Unique identifier of the player
+             * @param username Player's username
+             */
+            void handlePlayerRegisterAuth(uint32_t sessionId, const net::Packet &packet);
+
+            /**
              * @brief Handle an incoming packet from a player
              * @param sessionId Unique identifier of the player sending the packet
              * @param packet Reference to the received Packet

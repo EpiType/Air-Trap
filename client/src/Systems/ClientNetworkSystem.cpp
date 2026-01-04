@@ -140,7 +140,7 @@ namespace rtp::client {
 
     void ClientNetworkSystem::applyWorldUpdate(rtp::net::Packet& packet)
     {
-        rtp::net::WorldSnapshotPayload header;
+        rtp::net::RoomSnapshotPayload header;
         std::vector<rtp::net::EntitySnapshotPayload> snapshots;
 
         packet >> header >> snapshots;
