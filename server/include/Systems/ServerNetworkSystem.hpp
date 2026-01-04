@@ -77,7 +77,7 @@ namespace rtp::server {
              * @param sessionId ID of the new session
              * @param packet Packet containing the connection data
              */
-            std::pair<int, std::string> handlePlayerConnection(uint32_t sessionId, const rtp::net::Packet& packet);
+            uint32_t handlePlayerConnection(uint32_t sessionId, const rtp::net::Packet& packet);
             
         private:
             ServerNetwork& _network;           /**< Reference to the server network manager */

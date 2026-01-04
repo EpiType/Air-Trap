@@ -26,6 +26,7 @@ namespace rtp::server
      */
     enum class PlayerState {
         None,
+        NotLogged,
         Connected,
         InLobby,
         InGame
@@ -42,7 +43,7 @@ namespace rtp::server
              * @param id Unique identifier for the player
              * @param username Username of the player
              */
-            Player(uint32_t sessionId, const std::string &username);
+            Player(uint32_t sessionId);
 
             /**
              * @brief Destructor for Player

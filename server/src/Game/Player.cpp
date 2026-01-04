@@ -13,14 +13,11 @@ namespace rtp::server
     // Public API
     ///////////////////////////////////////////////////////////////////////////
 
-    Player::Player(uint32_t sessionId, const std::string &username)
-        : _sessionId(sessionId), _state(PlayerState::Connected), _entityId(0)
+    Player::Player(uint32_t sessionId)
+        : _sessionId(sessionId), _state(PlayerState::NotLogged), _entityId(0)
     {
-        if (!username.empty()) {
-            _username = "Player_" + std::to_string(sessionId);
-        } else {
-            _username = username;
-        }
+        _isReady = false;
+        _roomId = 0;
     }
 
     Player::~Player()

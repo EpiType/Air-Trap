@@ -23,6 +23,7 @@
     /* Systems */
     #include "Systems/ServerNetworkSystem.hpp"
     #include "Systems/MovementSystem.hpp"
+    #include "Systems/AuthSystem.hpp"
 
     /* Components */
     #include "RType/ECS/Components/InputComponent.hpp"
@@ -101,17 +102,26 @@ namespace rtp::server
             ////////////////////////////////////////////////////////////////////////////
             
             /**
+             * @brief Attempt to log in a player with provided credentials
+             * @param sessionId Unique identifier of the player
+             * @param username Player's username
+             * @param password Player's password
+             * @return true if login is successful, false otherwise
+             */
+            bool tryLoginPlayer(uint32_t sessionId, const std::string &username, const std::string &password, std::string &filename);
+
+            /**
              * @brief Attempt to join a player to a lobby or specified room
              * @param player Shared pointer to the Player attempting to join
              * @param roomId Optional room ID to join; defaults to 0 (lobby)
              */
-            void tryJoinLobby(PlayerPtr player, uint32_t roomId = 0);
+            void tryJoinRoom(PlayerPtr player, uint32_t roomId = 0);
 
             /**
              * @brief Send a lobby update to all players in the room
              * @param room Reference to the Room to update
              */
-            void sendLobbyUpdate(const Room &room);
+            void sendRoomUpdate(const Room &room);
 
             /**
              * @brief Spawn an entity for the player in the ECS
@@ -131,10 +141,13 @@ namespace rtp::server
             std::map<uint32_t, uint32_t> _playerRoomMap;               /**< Map of player session ID to room ID */
             std::map<uint32_t, PlayerPtr> _players;                    /**< Map of session ID to Player instances */
             uint32_t _nextRoomId = 1;                                  /**< Next available room ID */
+            uint32_t _lobbyId = 0;                                     /**< ID of the main lobby room */
     
             rtp::ecs::Registry _registry;                              /**< ECS Registry for managing entities and components */
+
             std::unique_ptr<ServerNetworkSystem> _serverNetworkSystem; /**< Server network system for handling network-related ECS operations */
             std::unique_ptr<MovementSystem> _movementSystem;           /**< Movement system for updating entity positions */
+            std::unique_ptr<AuthSystem> _authSystem;                   /**< Authentication system for handling player logins */
 
             uint32_t _serverTick = 0;                                  /**< Current server tick for synchronization */
             mutable std::mutex _mutex;                                 /**< Mutex for thread-safe operations */

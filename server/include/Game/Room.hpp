@@ -34,9 +34,37 @@ namespace rtp::server
              * @brief Enum representing the state of the room
              */
             enum State {
-                Waiting,
-                InGame,
-                Finished
+                Waiting,        /**< Waiting for players */  
+                InGame,         /**< Game in progress */
+                Finished        /**< Game finished */
+            };
+
+            /**
+             * @enum Type
+             * @brief Enum representing the type of the room
+             */
+            enum RoomType {
+                Lobby,          /**< Lobby room type, Only used for the principal Lobby */
+                Public,         /**< Public room type, can be joined by anyone */
+                Private         /**< Private room type, hosted by the player */
+            };
+
+            /**
+             * @enum PlayerType
+             * @brief Enum representing the type of player in the room
+             */
+            enum PlayerType {
+                Player,        /**< Regular player */
+                Spectator      /**< Spectator player */
+            };
+
+            /**
+             * @enum PlayerMode
+             * @brief Enum representing the mode of a player in the room
+             */
+            enum PlayerMode {
+                Member,       /**< Regular member */
+                Administrator /**< Room administrator */
             };
 
             /**
@@ -45,7 +73,7 @@ namespace rtp::server
              * @param name Name of the room
              * @param maxPlayers Maximum number of players allowed in the room
              */
-            Room(uint32_t id, const std::string &name, uint32_t maxPlayers);
+            Room(uint32_t id, const std::string &name, uint32_t maxPlayers, RoomType type);
 
             /**
              * @brief Destructor for Room
@@ -62,8 +90,9 @@ namespace rtp::server
             /**
              * @brief Add a player to the room
              * @param player Shared pointer to the player to add
+             * @return true if the player was added successfully, false if the room is full
              */
-            void addPlayer(const PlayerPtr &player);
+            bool addPlayer(const PlayerPtr &player);
 
             /**
              * @brief Remove a player from the room
@@ -75,13 +104,19 @@ namespace rtp::server
              * @brief Get the list of players in the room
              * @return Vector of shared pointers to players in the room
              */
-            const std::list<PlayerPtr>& getPlayers(void) const;
+            const std::list<PlayerPtr> getPlayers(void) const;
 
             /**
              * @brief Get the unique identifier of the room
              * @return Current room ID
              */
             uint32_t getId(void) const;
+
+            /**
+             * @brief Get the type of the room
+             * @return Current room type
+             */
+            RoomType getType() const;
 
             /**
              * @brief Get the name of the room
@@ -113,6 +148,7 @@ namespace rtp::server
             uint32_t _maxPlayers;             /**< Maximum number of players allowed */
             std::list<PlayerPtr> _players;    /**< List of player ptr's in the room */
             State _state;                     /**< Current state of the room */
+            RoomType _type;                       /**< Type of the room */
 
             mutable std::mutex _mutex;        /**< Mutex to protect access to room state */
     };
