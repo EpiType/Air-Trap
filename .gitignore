@@ -138,3 +138,6 @@ r-type_client
 r-type_server
 r-type_client_debug
 r-type_server_debug
+
+# Creditals file
+logins.txt

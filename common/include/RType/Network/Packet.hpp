@@ -123,7 +123,7 @@ namespace rtp::net
         uint16_t ackId = 0;             /**< Last acknowledged packet */
         OpCode opCode = OpCode::None;   /**< Operation code */
         uint8_t reserved = 0;           /**< Reserved for future use */
-        uint32_t sessionId = 0;             /**< Session identifier */
+        uint32_t sessionId = 0;         /**< Session identifier */
     };
 
     /**
@@ -186,7 +186,7 @@ namespace rtp::net
      */
     struct LoginResponsePayload {
         uint32_t sessionId;             /**< Session identifier */
-        uint8_t success;                   /**< Login success flag */
+        uint8_t success;                /**< Login success flag */
         char username[32];              /**< Player username */
     };
 
@@ -198,7 +198,7 @@ namespace rtp::net
      */
     struct RegisterResponsePayload {
         uint32_t sessionId;             /**< Session identifier */
-        uint8_t success;                   /**< Registration success flag */
+        uint8_t success;                /**< Registration success flag */
         char username[32];              /**< Player username */
     };
 
@@ -214,8 +214,8 @@ namespace rtp::net
         char roomName[64];              /**< Room name */
         uint32_t currentPlayers;        /**< Current number of players */
         uint32_t maxPlayers;            /**< Maximum number of players */
-        uint8_t inGame;                    /**< Is the game in progress */
-        float _difficulty;              /**< Difficulty level */
+        uint8_t inGame;                 /**< Is the game in progress */
+        float difficulty;               /**< Difficulty level */
         float speed;                    /**< Speed multiplier */
         uint32_t duration;              /**< Duration of the game session */
         uint32_t seed;                  /**< Seed for random generation */
@@ -233,9 +233,9 @@ namespace rtp::net
         uint32_t maxPlayers;            /**< Maximum number of players */
         float difficulty;               /**< Difficulty level */
         float speed;                    /**< Speed multiplier */
-        uint32_t levelId;               /**< Level identifier */
-        uint32_t seed;                  /**< Seed for random generation */
-        uint32_t duration;              /**< Duration of the game session */
+        uint32_t levelId;               /**< Level identifier */ // not used
+        uint32_t seed;                  /**< Seed for random generation */ // not used
+        uint32_t duration;              /**< Duration of the game session */ // not used
     };
 
     /**
@@ -269,7 +269,7 @@ namespace rtp::net
         uint32_t currentPlayers;        /**< Current number of players */
         uint32_t serverTick;            /**< Network entity identifier */
         uint16_t entityCount;           /**< Entity position */
-        uint8_t inGame;                    /**< Is the game in progress */
+        uint8_t inGame;                 /**< Is the game in progress */
     };
 
     /**
@@ -279,7 +279,7 @@ namespace rtp::net
      * @related SetReady OpCode
      */
     struct SetReadyPayload {
-        uint8_t isReady;                   /**< Player readiness status */
+        uint8_t isReady;                /**< Player readiness status */
     };
 
     /**

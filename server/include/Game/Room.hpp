@@ -67,7 +67,7 @@ namespace rtp::server
              * @param name Name of the room
              * @param maxPlayers Maximum number of players allowed in the room
              */
-            Room(uint32_t id, const std::string &name, uint32_t maxPlayers, RoomType type);
+            Room(uint32_t id, const std::string &name, uint32_t maxPlayers, float difficulty, float speed, RoomType type);
 
             /**
              * @brief Destructor for Room
@@ -111,6 +111,18 @@ namespace rtp::server
              * @return Current room type
              */
             RoomType getType() const;
+
+            /**
+             * @brief Get the difficulty level of the room
+             * @return Current difficulty level
+             */
+            float getDifficulty() const;
+
+            /**
+             * @brief Get the speed multiplier of the room
+             * @return Current speed multiplier
+             */
+            float getSpeed() const;
 
             /**
              * @brief Get the type of a player in the room
