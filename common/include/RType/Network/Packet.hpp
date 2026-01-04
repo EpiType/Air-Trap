@@ -52,6 +52,21 @@ namespace rtp::net
     constexpr size_t MTU_SIZE = 1400;
 
     /**
+     * @brief Maximum sizes for strings, vectors, and packet bodies
+     */
+    constexpr uint32_t MAX_STRING_SIZE = 2048;
+
+    /**
+     * @brief Maximum size for serialized vectors
+     */
+    constexpr uint32_t MAX_VECTOR_SIZE = 8192;
+
+    /**
+     * @brief Maximum size for packet body
+     */
+    constexpr uint32_t MAX_BODY_SIZE   = 64 * 1024;
+
+    /**
      * @enum OpCode
      * @brief Operation codes for different packet types
      */
@@ -62,6 +77,12 @@ namespace rtp::net
         Hello = 0x01,                   /**< Client hello packet */
         Welcome = 0x02,                 /**< Server welcome response */
         Disconnect = 0x03,              /**< Disconnect notification */
+
+        // Authentication
+        LoginRequest = 0x1A,            /**< Client login request */
+        RegisterRequest = 0x1B,           /**< Server login response */
+        LoginResponse = 0x9A,       /**< Successful connection notification */
+        RegisterResponse = 0x9B,        /**< Incorrect password notification */
 
         // Lobby Management
         ListRooms = 0x04,               /**< Request for room list */
@@ -97,7 +118,7 @@ namespace rtp::net
         uint16_t ackId = 0;             /**< Last acknowledged packet */
         OpCode opCode = OpCode::None;   /**< Operation code */
         uint8_t reserved = 0;           /**< Reserved for future use */
-        uint32_t sessionId;             /**< Session identifier */
+        uint32_t sessionId = -1;             /**< Session identifier */
     };
 
     /**
@@ -114,10 +135,49 @@ namespace rtp::net
 
     /**
      * @struct PlayerConnectPayload
-     * @brief Player connection data
+     * @brief Player connection data sended by client for Hello
      */
     struct PlayerConnectPayload {
         uint32_t sessionId;             /**< Session identifier */
+    };
+
+    /**
+     * @struct PlayerLoginPayload
+     * @brief Player login data sended by client for LoginRequest
+     */
+    struct PlayerLoginPayload {
+        uint32_t sessionId;             /**< Session identifier */
+        char username[32];              /**< Player username */
+        char password[32];              /**< Player password */
+    };
+
+    /**
+     * @struct PlayerRegisterPayload
+     * @brief Player registration data sended by client for RegisterRequest
+     */
+    struct PlayerRegisterPayload {
+        uint32_t sessionId;             /**< Session identifier */
+        char username[32];              /**< Player username */
+        char password[32];              /**< Player password */
+    };
+
+    /**
+     * @struct LoginResponsePayload
+     * @brief Login response data sent by server for LoginResponse
+     */
+    struct LoginResponsePayload {
+        uint32_t sessionId;             /**< Session identifier */
+        bool success;                   /**< Login success flag */
+        char username[32];              /**< Player username */
+    };
+
+    /**
+     * @struct RegisterResponsePayload
+     * @brief Registration response data sent by server for RegisterResponse
+     */
+    struct RegisterResponsePayload {
+        uint32_t sessionId;             /**< Session identifier */
+        bool success;                   /**< Registration success flag */
         char username[32];              /**< Player username */
     };
 
@@ -223,14 +283,14 @@ namespace rtp::net
              * @return The value in network endianness format.
              */
             template <typename T>
-            static inline T to_network(T value) {
-                if constexpr (std::is_integral_v<T>) {
-                    if constexpr (sizeof(T) > 1 && NATIVE_ENDIAN == std::endian::little) {
-                        return std::byteswap(value); 
-                    }
+            static inline float Packet::to_network(float v) {
+                if constexpr (NATIVE_ENDIAN == std::endian::little) {
+                    uint32_t u = std::bit_cast<uint32_t>(v);
+                    u = std::byteswap(u);
+                    return std::bit_cast<float>(u);
                 }
-                return value;
-            };
+                return v;
+            }
 
             /**
              * @brief Converts a primitive type (integer, float) from Big-Endian (network) to machine endianness.
@@ -294,6 +354,8 @@ namespace rtp::net
             auto operator>>(std::string &str) -> Packet &;
 
         private:
+            void _bumpBodySizeOrThrow(); /**< Increment body size and check for overflow */
+            
             size_t _readPos = 0;         /**< Current read position in body */
 
             mutable Header _cacheHeader; /**< Cached header with network endianness */

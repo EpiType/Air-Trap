@@ -79,12 +79,12 @@ namespace rtp::server {
         }
     }
 
-    std::pair<int, std::string> ServerNetworkSystem::handlePlayerConnection(uint32_t sessionId, const rtp::net::Packet& packet) {
+    uint32_t ServerNetworkSystem::handlePlayerConnection(uint32_t sessionId, const rtp::net::Packet& packet) {
         rtp::net::PlayerConnectPayload payload;
         rtp::net::Packet tempPacket = packet;
         tempPacket >> payload;
-        rtp::log::info("Player connected: session={} username={}", payload.sessionId, payload.username);
-        return {sessionId, std::string(payload.username)};
+        rtp::log::info("Player new connection [not logged]: session={}", payload.sessionId);
+        return {sessionId};
     }
 
 }; // namespace rtp::server

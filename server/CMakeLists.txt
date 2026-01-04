@@ -14,12 +14,14 @@ add_executable(r-type_server
     src/Game/Room.cpp
     src/Systems/MovementSystem.cpp
     src/Systems/ServerNetworkSystem.cpp
+    src/Systems/AuthSystem.cpp
 )
 
 target_include_directories(r-type_server PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include/ServerNetwork
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Game
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Systems
 )
 
 target_link_libraries(r-type_server PRIVATE

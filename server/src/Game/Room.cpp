@@ -14,12 +14,12 @@ namespace rtp::server
     // Public API
     ///////////////////////////////////////////////////////////////////////////
 
-    Room::Room(uint32_t id, const std::string &name, uint32_t maxPlayers)
-        : _id(id), _name(name), _maxPlayers(maxPlayers), _state(State::Waiting)
+    Room::Room(uint32_t id, const std::string &name, uint32_t maxPlayers, RoomType type)
+        : _id(id), _name(name), _maxPlayers(maxPlayers), _state(State::Waiting), _type(type)
     {
         /* TODO : For the V1 i will set the name with the ID */
-        log::info("Room '{}' (ID: {}) created with max players: {}",
-                  _name, _id, _maxPlayers);
+        log::info("Room '{}' type '{}' (ID: {}) created with max players: {}",
+                  _name, _type, _id, _maxPlayers);
     }
 
     Room::~Room()
@@ -33,9 +33,14 @@ namespace rtp::server
         return _players.size() < _maxPlayers;
     }
 
-    void Room::addPlayer(const PlayerPtr &player)
+    bool Room::addPlayer(const PlayerPtr &player)
     {
         std::lock_guard lock(_mutex);
+        if (!canJoin()) {
+            log::warning("Player {} cannot join Room '{}' (ID: {}): Room is full",
+                         player->getUsername(), _name, _id);
+            return false;
+        }
         if (_players.size() < _maxPlayers) {
             _players.push_back(player);
             log::info("Player {} joined Room '{}' (ID: {})",
@@ -44,6 +49,7 @@ namespace rtp::server
             log::warning("Player {} failed to join Room '{}' (ID: {}): Room is full",
                          player->getUsername(), _name, _id);
         }
+        return true;
     }
 
     void Room::removePlayer(uint32_t sessionId)
@@ -56,7 +62,7 @@ namespace rtp::server
                   sessionId, _name, _id);
     }
 
-    const std::list<PlayerPtr>& Room::getPlayers(void) const
+    const std::list<PlayerPtr> Room::getPlayers(void) const
     {
         std::lock_guard lock(_mutex);
         return _players;
@@ -65,6 +71,11 @@ namespace rtp::server
     uint32_t Room::getId(void) const
     {
         return _id;
+    }
+
+    Room::RoomType Room::getType() const
+    {
+        return _type;
     }
 
     std::string Room::getName(void) const
