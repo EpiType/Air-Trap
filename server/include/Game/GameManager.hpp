@@ -14,7 +14,10 @@
     #include <memory>
     #include <map>
     #include <mutex>
+    #include <thread>
+    #include <chrono>
     
+    #include "RType/Logger.hpp"
     #include "Game/Room.hpp"
     #include "Game/Player.hpp"
     #include "ServerNetwork/ServerNetwork.hpp"
@@ -24,6 +27,8 @@
     #include "Systems/ServerNetworkSystem.hpp"
     #include "Systems/MovementSystem.hpp"
     #include "Systems/AuthSystem.hpp"
+    #include "Systems/RoomSystem.hpp"
+    #include "Systems/PlayerSystem.hpp"
 
     /* Components */
     #include "RType/ECS/Components/InputComponent.hpp"
@@ -193,17 +198,14 @@ namespace rtp::server
 
         private:
             ServerNetwork &_networkManager;                            /**< Reference to the ServerNetwork instance */
-            std::map<uint32_t, std::shared_ptr<Room>> _rooms;          /**< Map of room ID to Room instances */
-            std::map<uint32_t, uint32_t> _playerRoomMap;               /**< Map of player session ID to room ID */
-            std::map<uint32_t, PlayerPtr> _players;                    /**< Map of session ID to Player instances */
-            uint32_t _nextRoomId = 1;                                  /**< Next available room ID */
-            uint32_t _lobbyId = 0;                                     /**< ID of the main lobby room */
-    
+
             rtp::ecs::Registry _registry;                              /**< ECS Registry for managing entities and components */
 
             std::unique_ptr<ServerNetworkSystem> _serverNetworkSystem; /**< Server network system for handling network-related ECS operations */
             std::unique_ptr<MovementSystem> _movementSystem;           /**< Movement system for updating entity positions */
             std::unique_ptr<AuthSystem> _authSystem;                   /**< Authentication system for handling player logins */
+            std::unique_ptr<RoomSystem> _roomSystem;                   /**< Room system for handling room management */
+            std::unique_ptr<PlayerSystem> _playerSystem;               /**< Player system for handling player-related operations */
 
             uint32_t _serverTick = 0;                                  /**< Current server tick for synchronization */
             mutable std::mutex _mutex;                                 /**< Mutex for thread-safe operations */

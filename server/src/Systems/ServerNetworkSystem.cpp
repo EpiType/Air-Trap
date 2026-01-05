@@ -22,7 +22,7 @@ namespace rtp::server {
         (void)dt;
     };
 
-    void ServerNetworkSystem::broadcastWorldState(uint32_t serverTick) {
+    void ServerNetworkSystem::broadcastRoomState(uint32_t serverTick) {
         std::vector<rtp::net::EntitySnapshotPayload> snapshots;
         
         auto view = _registry.zipView<

@@ -1,5 +1,5 @@
 /**
- * File   : INetwork.hpp
+ * File   : ServerNetworkSystem.hpp
  * License: MIT
  * Author : Elias Josué HAJJAR LLAUQUEN <elias-josue.hajjar-llauquen@epitech.eu>
  * Date   : 11/12/2025
@@ -47,10 +47,10 @@ namespace rtp::server {
             void update(float dt) override;
 
             /**
-             * @brief Broadcast the current world state to all connected clients
+             * @brief Broadcast the current world state to all connected clients on the Room
              * @param serverTick Current server tick count
              */
-            void broadcastWorldState(uint32_t serverTick);
+            void broadcastRoomState(uint32_t serverTick);
 
             /**
              * @brief Bind a network session to an entity
