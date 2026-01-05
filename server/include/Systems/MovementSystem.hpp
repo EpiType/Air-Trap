@@ -19,7 +19,6 @@
  * @brief Systems for R-Type server
  */
 namespace rtp::server {
-
     /**
      * @class MovementSystem
      * @brief System to handle entity movement based on input components.
