@@ -12,13 +12,19 @@ namespace rtp::server {
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
-    EntitySystem::EntitySystem(rtp::ecs::Registry& registry)
-        : _registry(registry) {}
+    EntitySystem::EntitySystem(rtp::ecs::Registry& registry, ServerNetwork& network)
+        : _registry(registry), _network(network) {}
 
-    uint32_t EntitySystem::createPlayerEntity(void)
+    void EntitySystem::update(float dt)
+    {
+        (void)dt;
+    }
+
+    uint32_t EntitySystem::createPlayerEntity(PlayerPtr player)
     {
         auto entityRes = _registry.spawnEntity();
         if (!entityRes) {
+            rtp::log::error("Failed to spawn player entity: {}", entityRes.error().message());
             throw std::runtime_error(std::string("Failed to spawn player entity: ") + std::string(entityRes.error().message()));
         }
 
@@ -30,7 +36,7 @@ namespace rtp::server {
         );
 
         _registry.addComponent<rtp::ecs::components::NetworkId>(
-            entity, 
+            entity,
             rtp::ecs::components::NetworkId{ (uint32_t)entity }
         );
 
@@ -43,6 +49,10 @@ namespace rtp::server {
             entity,
             rtp::ecs::components::EntityType{ rtp::net::EntityType::Player }
         );
+
+        player->setEntityId(entity.index());
+
+        rtp::log::info("Spawned Entity {} for Player {}", entity.index(), player->getId());
 
         return entity.index();
     }
@@ -75,6 +85,17 @@ namespace rtp::server {
             entity,
             rtp::ecs::components::EntityType{ rtp::net::EntityType::Scout }
         );
+
+        rtp::net::Packet spawnEnemyPacket(rtp::net::OpCode::EntitySpawn);
+        rtp::net::EntitySpawnPayload payload{
+            .netId    = entity.index(),
+            .type     = static_cast<uint8_t>(rtp::net::EntityType::Scout),
+            .position = position
+        };
+
+        spawnEnemyPacket << payload;
+
+        _network.broadcastPacket(spawnEnemyPacket, rtp::net::NetworkMode::UDP);
 
         return entity.index();
     }

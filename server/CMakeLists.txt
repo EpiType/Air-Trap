@@ -17,6 +17,7 @@ add_executable(r-type_server
     src/Systems/AuthSystem.cpp
     src/Systems/RoomSystem.cpp
     src/Systems/PlayerSystem.cpp
+    src/Systems/EntitySystem.cpp
 )
 
 target_include_directories(r-type_server PRIVATE

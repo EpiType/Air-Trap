@@ -79,7 +79,7 @@ namespace rtp::server
              * @param player Shared pointer to the player to add
              * @return true if the player was added successfully, false if the room is full
              */
-            bool canJoin() const;
+            bool canJoin(void) const;
 
             /**
              * @brief Add a player to the room
@@ -110,19 +110,19 @@ namespace rtp::server
              * @brief Get the type of the room
              * @return Current room type
              */
-            RoomType getType() const;
+            RoomType getType(void) const;
 
             /**
              * @brief Get the difficulty level of the room
              * @return Current difficulty level
              */
-            float getDifficulty() const;
+            float getDifficulty(void) const;
 
             /**
              * @brief Get the speed multiplier of the room
              * @return Current speed multiplier
              */
-            float getSpeed() const;
+            float getSpeed(void) const;
 
             /**
              * @brief Get the type of a player in the room
@@ -160,21 +160,43 @@ namespace rtp::server
              * @brief Get the current state of the room
              * @return Current room state
              */
-            State getState() const;
+            State getState(void) const;
+
+            /**
+             * @brief Check if the game in the room can be started
+             * @return true if the game can be started, false otherwise
+             */
+            bool canStartGame(void) const;
+
+            /**
+             * @brief Start the game in the room
+             */
+            void startGame(void);
+
+            /**
+             * @brief Finish the game in the room
+             */
+            void finishGame(void);
+
+            /**
+             * @brief Update the room state
+             * @param dt Time elapsed since last update in seconds
+             */
+            void update(float dt);
 
         private:
             uint32_t _id;                     /**< Unique room identifier */
             std::string _name;                /**< Name of the room */
             uint32_t _maxPlayers;             /**< Maximum number of players allowed */
             std::list<std::pair<PlayerPtr, PlayerType>>
-                _players;                    /**< List of player ptr's in the room */
+                _players;                     /**< List of player ptr's in the room */
             State _state;                     /**< Current state of the room */
             RoomType _type;                   /**< Type of the room */
             uint32_t _creatorSessionId;       /**< Session ID of the room creator (Administrator) */
 
             std::pair<std::string, int>
                 _bestRoomScore;               /**< Best score achieved in the room */
-                
+            
             uint32_t _levelId;                /**< Level identifier for the room */
             uint32_t _seed;                   /**< Seed for random generation in the room */
             float _difficulty;                /**< Difficulty multiplier for the room 0 -> 1 */

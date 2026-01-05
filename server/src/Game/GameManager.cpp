@@ -29,7 +29,7 @@ namespace rtp::server
         _authSystem = std::make_unique<AuthSystem>(_networkManager, _registry);
         _roomSystem =  std::make_unique<RoomSystem>(_networkManager, _registry);
         _playerSystem = std::make_unique<PlayerSystem>(_networkManager, _registry);
-        _entitySystem = std::make_unique<EntitySystem>(_registry);
+        _entitySystem = std::make_unique<EntitySystem>(_registry, _networkManager);
 
         log::info("GameManager initialized");
     }
@@ -49,8 +49,9 @@ namespace rtp::server
             processNetworkEvents();
 
             _serverTick++;
-            _movementSystem->update(dt);
-            _serverNetworkSystem->broadcastRoomState(_serverTick);
+            _roomSystem->update(dt);
+            // _movementSystem->update(dt);
+            // _serverNetworkSystem->broadcastRoomState(_serverTick);
             
             std::this_thread::sleep_for(std::chrono::milliseconds(16));
         }
@@ -189,7 +190,7 @@ namespace rtp::server
 
         PlayerPtr player;
         uint32_t newId = 0;
-
+        uint32_t entityId = 0;
         {
             std::lock_guard lock(_mutex);
             player = _playerSystem->getPlayer(sessionId);
@@ -202,9 +203,9 @@ namespace rtp::server
                 Room::RoomType::Public
             );
         }
-        rtp::log::info("Handle Create Room request from Session ID {}: Room Name '{}', Max Players {}, Difficulty {}, Speed {}",
-                   sessionId, payload.roomName, payload.maxPlayers, payload.difficulty, payload.speed);
         _roomSystem->joinRoom(player, newId);
+        entityId = _entitySystem->createPlayerEntity(player);
+        _serverNetworkSystem->bindSessionToEntity(player->getId(), entityId);
     }
 
     void GameManager::handleJoinRoom(uint32_t sessionId, const Packet &packet)
@@ -214,15 +215,15 @@ namespace rtp::server
         tempPacket >> payload;
 
         PlayerPtr player;
+        uint32_t entityId = 0;
         {
             std::lock_guard lock(_mutex);
             player = _playerSystem->getPlayer(sessionId);
         }
 
-        rtp::log::info("Handle Join Room request from Session ID {}: Room ID {}",
-                   sessionId, payload.roomId);
-
         _roomSystem->joinRoom(player, payload.roomId);
+        entityId = _entitySystem->createPlayerEntity(player);
+        _serverNetworkSystem->bindSessionToEntity(player->getId(), entityId);
     }
 
     void GameManager::handleLeaveRoom(uint32_t sessionId, const Packet &packet)
@@ -241,14 +242,14 @@ namespace rtp::server
 
     void GameManager::handleSetReady(uint32_t sessionId, const Packet &packet)
     {
-        // std::lock_guard lock(_mutex);
+        std::lock_guard lock(_mutex);
         
-        // rtp::net::SetReadyPayload payload;
-        // rtp::net::Packet tempPacket = packet;
-        // tempPacket >> payload;
-        // rtp::log::info("Handle Set Ready request from Session ID {}: isReady={}",
-        //           sessionId, payload.isReady);
-        // _players[sessionId]->setReady(payload.isReady != 0);
+        rtp::net::SetReadyPayload payload;
+        rtp::net::Packet tempPacket = packet;
+        tempPacket >> payload;
+        rtp::log::info("Handle Set Ready request from Session ID {}: isReady={}",
+                  sessionId, payload.isReady);
+        _playerSystem->getPlayer(sessionId)->setReady(payload.isReady != 0);
     }
 
     void GameManager::handleRoomChatSended(uint32_t sessionId, const Packet &packet)
@@ -280,53 +281,5 @@ namespace rtp::server
         std::lock_guard lock(_mutex);
         rtp::log::info("Received packet OpCode {} from Session {}", (int)rtp::net::OpCode::LoginRequest, sessionId);
         log::debug("Unknown packet received OpCode {} from Session {}", (int)packet.header.opCode, sessionId);
-    }
-
-    void GameManager::spawnPlayerEntity(PlayerPtr player)
-    {
-        uint32_t entityId = _entitySystem->createPlayerEntity();
-
-        player->setEntityId(entityId);
-        _serverNetworkSystem->bindSessionToEntity(player->getId(), entityId);
-
-        log::info("Spawned Entity {} for Player {}", entityId, player->getId());
-    }
-
-    void GameManager::spawnEnemyEntity(const Vec2f& position)
-    {
-        uint32_t entityId = _entitySystem->creaetEnemyEntity(position);
-
-        rtp::net::Packet spawnEnemyPacket(rtp::net::OpCode::EntitySpawn);
-        rtp::net::EntitySpawnPayload payload{
-            .netId    = entityId,
-            .type     = static_cast<uint8_t>(rtp::net::EntityType::Scout),
-            .position = position
-        };
-
-        spawnEnemyPacket << payload;
-
-        _networkManager.broadcastPacket(spawnEnemyPacket, rtp::net::NetworkMode::UDP);
-
-        log::info("Spawned Enemy Entity {}", entityId);
-    }
-
-    void GameManager::sendRoomUpdate(const Room &room)
-    {
-        rtp::net::Packet updatePacket(rtp::net::OpCode::RoomUpdate);
-        for (const auto& player : room.getPlayers()) {
-            _networkManager.sendPacket(player->getId(), updatePacket, rtp::net::NetworkMode::TCP);
-        }
-    }
-
-    void GameManager::tryJoinRoom(PlayerPtr player, uint32_t roomId)
-    {
-        try {
-            _roomSystem->joinRoom(player, roomId);
-            std::this_thread::yield();
-            spawnPlayerEntity(player);
-            _serverNetworkSystem->broadcastRoomState(_serverTick);
-        } catch (const std::exception &e) {
-            log::error("Exception in tryJoinRoom for Player {}: {}", player->getId(), e.what());
-        }
     }
 }
