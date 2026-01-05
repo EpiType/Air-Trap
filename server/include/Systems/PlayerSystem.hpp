@@ -47,10 +47,25 @@ namespace rtp::server {
              */
             PlayerPtr createPlayer(uint32_t sessionId, const std::string& username);
 
+            /**
+             * @brief Remove a player by their session ID
+             * @param sessionId ID of the network session
+             * @return The entity ID associated with the removed player, or 0 if not found
+             */
             uint32_t removePlayer(uint32_t sessionId);
 
+            /**
+             * @brief Update the username of a player
+             * @param sessionId ID of the network session
+             * @param username New username of the player
+             */
             void updatePlayerUsername(uint32_t sessionId, const std::string& username);
 
+            /**
+             * @brief Get a player by their session ID
+             * @param sessionId ID of the network session
+             * @return Shared pointer to the Player, or nullptr if not found
+             */
             PlayerPtr getPlayer(uint32_t sessionId) const;
 
         private:

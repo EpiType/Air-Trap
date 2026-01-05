@@ -29,7 +29,8 @@ namespace rtp::server
         _authSystem = std::make_unique<AuthSystem>(_networkManager, _registry);
         _roomSystem =  std::make_unique<RoomSystem>(_networkManager, _registry);
         _playerSystem = std::make_unique<PlayerSystem>(_networkManager, _registry);
-        
+        _entitySystem = std::make_unique<EntitySystem>(_registry);
+
         log::info("GameManager initialized");
     }
 
@@ -283,74 +284,21 @@ namespace rtp::server
 
     void GameManager::spawnPlayerEntity(PlayerPtr player)
     {
-        auto entityRes = _registry.spawnEntity();
-        if (!entityRes) {
-            log::error("Failed to spawn entity for player {}", player->getId());
-            return;
-        }
-        log::info("Spawning entity for player {}", player->getId());
-        auto entity = entityRes.value();
+        uint32_t entityId = _entitySystem->createPlayerEntity();
 
-        _registry.addComponent<rtp::ecs::components::Transform>(
-            entity, 
-            rtp::ecs::components::Transform{ {100.f, 100.f}, 0.f, {1.f, 1.f} }
-        );
+        player->setEntityId(entityId);
+        _serverNetworkSystem->bindSessionToEntity(player->getId(), entityId);
 
-        _registry.addComponent<rtp::ecs::components::NetworkId>(
-            entity, 
-            rtp::ecs::components::NetworkId{ (uint32_t)entity }
-        );
-
-        _registry.addComponent<rtp::ecs::components::server::InputComponent>(
-            entity, 
-            rtp::ecs::components::server::InputComponent{}
-        );
-
-        _registry.addComponent<rtp::ecs::components::EntityType>(
-            entity,
-            rtp::ecs::components::EntityType{ rtp::net::EntityType::Player }
-        );
-        
-        player->setEntityId((uint32_t)entity);
-        _serverNetworkSystem->bindSessionToEntity(player->getId(), (uint32_t)entity);
-
-        log::info("Spawned Entity {} for Player {}", (uint32_t)entity, player->getId());
+        log::info("Spawned Entity {} for Player {}", entityId, player->getId());
     }
 
     void GameManager::spawnEnemyEntity(const Vec2f& position)
     {
-        auto entityRes = _registry.spawnEntity();
-        if (!entityRes) {
-            log::error("Failed to spawn enemy entity");
-            return;
-        }
-        log::info("Spawning enemy entity");
-        auto entity = entityRes.value();
-
-        _registry.addComponent<rtp::ecs::components::Transform>(
-            entity, 
-            rtp::ecs::components::Transform{ position, 0.f, {1.f, 1.f} }
-        );
-
-        _registry.addComponent<rtp::ecs::components::NetworkId>(
-            entity, 
-            rtp::ecs::components::NetworkId{ (uint32_t)entity }
-        );
-
-        _registry.addComponent<rtp::ecs::components::Velocity>(
-            entity, 
-            rtp::ecs::components::Velocity{ {-100.f, 0.f} }
-        );
-
-        _registry.addComponent<rtp::ecs::components::EntityType>(
-            entity,
-            rtp::ecs::components::EntityType{ rtp::net::EntityType::Scout }
-        );
+        uint32_t entityId = _entitySystem->creaetEnemyEntity(position);
 
         rtp::net::Packet spawnEnemyPacket(rtp::net::OpCode::EntitySpawn);
-
         rtp::net::EntitySpawnPayload payload{
-            .netId    = (uint32_t)entity,
+            .netId    = entityId,
             .type     = static_cast<uint8_t>(rtp::net::EntityType::Scout),
             .position = position
         };
@@ -359,7 +307,7 @@ namespace rtp::server
 
         _networkManager.broadcastPacket(spawnEnemyPacket, rtp::net::NetworkMode::UDP);
 
-        log::info("Spawned Enemy Entity {}", (uint32_t)entity);
+        log::info("Spawned Enemy Entity {}", entityId);
     }
 
     void GameManager::sendRoomUpdate(const Room &room)
