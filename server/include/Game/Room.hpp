@@ -67,7 +67,7 @@ namespace rtp::server
              * @param name Name of the room
              * @param maxPlayers Maximum number of players allowed in the room
              */
-            Room(uint32_t id, const std::string &name, uint32_t maxPlayers, float difficulty, float speed, RoomType type);
+            Room(uint32_t id, const std::string &name, uint32_t maxPlayers, float difficulty, float speed, RoomType type, uint32_t creatorSessionId = 0);
 
             /**
              * @brief Destructor for Room
