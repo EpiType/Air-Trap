@@ -158,44 +158,6 @@ namespace rtp::server
              * @param packet Reference to the received Packet
              */
             void handlePacket(uint32_t sessionId, const net::Packet &packet);
-            
-            ////////////////////////////////////////////////////////////////////////////
-            // Room and Player Management
-            ////////////////////////////////////////////////////////////////////////////
-            
-            /**
-             * @brief Attempt to log in a player with provided credentials
-             * @param sessionId Unique identifier of the player
-             * @param username Player's username
-             * @param password Player's password
-             * @return true if login is successful, false otherwise
-             */
-            bool tryLoginPlayer(uint32_t sessionId, const std::string &username, const std::string &password, std::string &filename);
-
-            /**
-             * @brief Attempt to join a player to a lobby or specified room
-             * @param player Shared pointer to the Player attempting to join
-             * @param roomId Optional room ID to join; defaults to 0 (lobby)
-             */
-            void tryJoinRoom(PlayerPtr player, uint32_t roomId = 0);
-
-            /**
-             * @brief Send a lobby update to all players in the room
-             * @param room Reference to the Room to update
-             */
-            void sendRoomUpdate(const Room &room);
-
-            /**
-             * @brief Spawn an entity for the player in the ECS
-             * @param player Shared pointer to the Player for whom to spawn the entity
-             */
-            void spawnPlayerEntity(PlayerPtr player);
-
-            /**
-             * @brief Spawn an enemy entity at the specified position
-             * @param position Position where the enemy will be spawned
-             */
-            void spawnEnemyEntity(const Vec2f &position);
 
         private:
             ServerNetwork &_networkManager;                            /**< Reference to the ServerNetwork instance */

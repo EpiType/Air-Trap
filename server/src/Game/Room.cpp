@@ -187,4 +187,57 @@ namespace rtp::server
         std::lock_guard lock(_mutex);
         return _state;
     }
+
+    bool Room::canStartGame(void) const
+    {
+        std::lock_guard lock(_mutex);
+
+        for (const auto &entry : _players) {
+            if (entry.second == PlayerType::Player && !entry.first->isReady()) {
+                log::info("Room '{}' (ID: {}) cannot start game: Player {} is not ready",
+                          _name, _id, entry.first->getUsername());
+                return false;
+            }
+        }
+
+        log::info("Room '{}' (ID: {}) can start game", _name, _id);
+        return true;
+    }
+
+    void Room::startGame(void)
+    {
+        std::lock_guard lock(_mutex);
+        if (_state != State::Waiting) {
+            log::warning("Room '{}' (ID: {}) cannot start game: Invalid state",
+                        _name, _id);
+            return;
+        }
+
+        if (!canStartGame()) {
+            return;
+        }
+
+        _state = State::InGame;
+        log::info("Game started in Room '{}' (ID: {})", _name, _id);
+    }
+
+    void Room::finishGame(void)
+    {
+        std::lock_guard lock(_mutex);
+        if (_state != State::InGame) {
+            log::warning("Room '{}' (ID: {}) cannot finish game: Invalid state",
+                        _name, _id);
+            return;
+        }
+
+        _state = State::Finished;
+        log::info("Game finished in Room '{}' (ID: {})", _name, _id);
+    }
+
+    void Room::update(float dt)
+    {
+        std::lock_guard lock(_mutex);
+        (void)dt;
+        // Future feature: Update room state, handle game logic, etc.
+    }
 } // namespace rtp::server

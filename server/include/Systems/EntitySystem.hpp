@@ -10,6 +10,8 @@
 
     #include "RType/ECS/ISystem.hpp"
     #include "RType/ECS/Registry.hpp"
+    #include "Game/Player.hpp"
+    #include "ServerNetwork/ServerNetwork.hpp"
 
     #include "RType/ECS/Components/InputComponent.hpp"
     #include "RType/ECS/Components/Transform.hpp"
@@ -32,13 +34,19 @@ namespace rtp::server {
              * @brief Constructor for EntitySystem
              * @param registry Reference to the entity registry
              */
-            EntitySystem(rtp::ecs::Registry& registry);
+            EntitySystem(rtp::ecs::Registry& registry, ServerNetwork& network);
+
+            /**
+             * @brief Update movement system logic for one frame
+             * @param dt Time elapsed since last update in seconds
+             */
+            void update(float dt) override;
 
             /**
              * @brief Create a new player entity in the ECS
              * @return The ID of the created player entity
              */
-            uint32_t createPlayerEntity(void);
+            uint32_t createPlayerEntity(PlayerPtr player);
 
             /**
              * @brief Create a new enemy entity in the ECS
@@ -48,6 +56,7 @@ namespace rtp::server {
 
         protected:
             rtp::ecs::Registry& _registry;   /**< Reference to the entity registry */
+            ServerNetwork& _network;         /**< Reference to the server network manager */
     };
 }
 

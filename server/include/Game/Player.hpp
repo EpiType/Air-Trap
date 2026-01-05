@@ -29,6 +29,7 @@ namespace rtp::server
         NotLogged,
         Connected,
         InLobby,
+        InRoom,
         InGame
     };
 
