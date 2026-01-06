@@ -859,7 +859,7 @@ namespace Client::Core
         std::size_t newIndex = _spawnedEnemy.size();
         
         Game::EntityTemplate scoutTemplate = 
-            Game::EntityTemplate::createBasicScout(position);
+            Game::EntityTemplate::rt1_1(position);
 
         auto result = _entityBuilder.spawn(scoutTemplate);
 
