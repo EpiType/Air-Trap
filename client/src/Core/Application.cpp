@@ -1415,6 +1415,15 @@ namespace Client::Core
             }
         }
 
+        if (_currentState == GameState::RoomWaiting) {
+            auto &netSys =
+                _systemManager
+                    .getSystem<rtp::client::ClientNetworkSystem>();
+            if (netSys.isInGame()) {
+                changeState(GameState::Playing);
+            }
+        }
+
         if (_currentState ==
             GameState::Settings ||
             _currentState == GameState::KeyBindings) {

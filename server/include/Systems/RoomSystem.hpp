@@ -111,6 +111,11 @@ namespace rtp::server {
              */
             void chatInRoom(uint32_t sessionId, const rtp::net::Packet& packet);
 
+            /**
+             * @brief Launch all rooms that are ready to start the game
+             */
+            void launchReadyRooms(float dt);
+
         private:
             ServerNetwork& _network;                          /**< Reference to the server network manager */
             rtp::ecs::Registry& _registry;                    /**< Reference to the entity registry */

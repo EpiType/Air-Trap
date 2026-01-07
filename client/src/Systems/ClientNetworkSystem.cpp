@@ -149,6 +149,11 @@ namespace rtp::client {
         return _availableRooms;
     }
 
+    bool ClientNetworkSystem::isInGame(void) const
+    {
+        return _currentState == State::InGame;
+    }
+
     //////////////////////////////////////////////////////////////////////////
     // Private Methods
     //////////////////////////////////////////////////////////////////////////
@@ -185,6 +190,11 @@ namespace rtp::client {
             }
             case OpCode::LeaveRoom: {
                 onLeaveRoomResponse(event.packet);
+                break;
+            }
+            case OpCode::StartGame: {
+                rtp::log::info("Received StartGame notification from server.");
+                _currentState = State::InGame;
                 break;
             }
             default:
