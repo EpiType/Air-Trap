@@ -197,11 +197,11 @@ namespace rtp::server
             std::pair<std::string, int>
                 _bestRoomScore;               /**< Best score achieved in the room */
             
-            uint32_t _levelId;                /**< Level identifier for the room */
-            uint32_t _seed;                   /**< Seed for random generation in the room */
-            float _difficulty;                /**< Difficulty multiplier for the room 0 -> 1 */
-            float _speed;                     /**< Speed multiplier for the room 0 -> 2 */
-            uint32_t durationMinutes;         /**< Duration of the game in minutes */
+            uint32_t _levelId = 0;            /**< Level identifier for the room */
+            uint32_t _seed = 0;               /**< Seed for random generation in the room */
+            float _difficulty = 0;            /**< Difficulty multiplier for the room 0 -> 1 */
+            float _speed = 0;                 /**< Speed multiplier for the room 0 -> 2 */
+            uint32_t durationMinutes = 0;     /**< Duration of the game in minutes */
                 
             uint32_t _currentTimeSeconds;     /**< Current time in seconds since the game started */
             mutable std::mutex _mutex;        /**< Mutex to protect access to room state */

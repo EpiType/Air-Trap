@@ -16,6 +16,7 @@
 #include "RType/ECS/Components/UI/Dropdown.hpp"
 #include "RType/ECS/Components/UI/Button.hpp"
 #include "RType/ECS/Components/UI/Text.hpp"
+#include "RType/ECS/Components/UI/TextInput.hpp"
 #include "RType/Logger.hpp"
 
 namespace Client::Systems {
@@ -30,6 +31,8 @@ public:
         : _registry(registry), _window(window) {}
 
     void update(float dt) override;
+
+    void handleEvent(const sf::Event& event);
 
 private:
     void handleMouseMove(const sf::Vector2i& mousePos);
@@ -49,6 +52,13 @@ private:
     
     int getDropdownOptionAtMouse(const rtp::ecs::components::ui::Dropdown& dropdown,
                                 const sf::Vector2i& mousePos);
+
+    bool isMouseOverTextInput(const rtp::ecs::components::ui::TextInput& input, const sf::Vector2i& mousePos) const;
+    void focusTextInputAt(const sf::Vector2i& mousePos);
+    void clearAllTextInputFocus();
+
+    void handleTextEntered(std::uint32_t unicode);
+    void handleKeyPressed(sf::Keyboard::Key key);
 
     rtp::ecs::Registry& _registry;
     sf::RenderWindow& _window;

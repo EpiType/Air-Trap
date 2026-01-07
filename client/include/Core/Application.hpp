@@ -59,11 +59,16 @@ namespace UIConstants {
 
 enum class GameState {
     Menu,
+    Login,
+    Lobby,
+    CreateRoom,
+    RoomWaiting,
     Playing,
     Settings,
     KeyBindings,
     Paused
 };
+
 
 class Application {
 public:
@@ -76,6 +81,10 @@ private:
     void initGame();
     void initSettingsMenu();
     void initKeyBindingMenu();
+    void initLoginScene();
+    void initLobbyScene();
+    void initCreateRoomScene();
+    void initRoomWaitingScene();
     void initPauseMenu();
     void setupSettingsCallbacks();
 
@@ -118,11 +127,26 @@ private:
     sf::RenderTexture _renderTexture;
     bool _shaderLoaded{false};
     
-    GameState _currentState{GameState::Menu};
+    GameState _currentState{GameState::Login};
     float _lastDt{0.0f};
 
     bool _isWaitingForKey{false};
     KeyAction _keyActionToRebind;
+
+    std::string _uiUsername;
+    std::string _uiPassword;
+
+    uint32_t _uiSelectedRoomId = 0;
+
+    std::string _uiRoomName = "Room";
+    uint32_t _uiMaxPlayers = 4;
+    float _uiDifficulty = 0.5f;
+    float _uiSpeed = 1.0f;
+    uint32_t _uiDuration = 10;
+    uint32_t _uiSeed = 42;
+    uint32_t _uiLevelId = 1;
+
+    bool _uiReady = false;
 };
 
 }  // namespace Client::Core
