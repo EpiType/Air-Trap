@@ -152,6 +152,12 @@ namespace rtp::client {
              */
             std::list<rtp::net::RoomInfo> getAvailableRooms(void) const;
 
+            /**
+             * @brief Check if the client is in game
+             * @return true if in game, false otherwise
+             */
+            bool isInGame(void) const;
+
         private:
             ClientNetwork& _network;                                       /**< Reference to the client network manager */
             rtp::ecs::Registry& _registry;                                 /**< Reference to the entity registry */

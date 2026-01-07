@@ -163,20 +163,16 @@ namespace rtp::server
             State getState(void) const;
 
             /**
-             * @brief Check if the game in the room can be started
-             * @return true if the game can be started, false otherwise
-             */
-            bool canStartGame(void) const;
-
-            /**
              * @brief Start the game in the room
+             * @param dt Get the delta time since last update
              */
-            void startGame(void);
+            void startGame(float dt);
 
             /**
              * @brief Finish the game in the room
+             * @note Can be useful for the administrator to force finish the game
              */
-            void finishGame(void);
+            void forceFinishGame(void);
 
             /**
              * @brief Update the room state
@@ -202,7 +198,9 @@ namespace rtp::server
             float _difficulty = 0;            /**< Difficulty multiplier for the room 0 -> 1 */
             float _speed = 0;                 /**< Speed multiplier for the room 0 -> 2 */
             uint32_t durationMinutes = 0;     /**< Duration of the game in minutes */
-                
+
+            float _startedDt = 0.0f;          /**< Delta time accumulator since game start */
+
             uint32_t _currentTimeSeconds;     /**< Current time in seconds since the game started */
             mutable std::mutex _mutex;        /**< Mutex to protect access to room state */
     };
