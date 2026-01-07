@@ -115,6 +115,40 @@ namespace rtp::client {
     }
 
     //////////////////////////////////////////////////////////////////////////
+    // Getters
+    //////////////////////////////////////////////////////////////////////////
+
+    bool ClientNetworkSystem::isInRoom(void) const
+    {
+        return _currentState == State::InRoom || _currentState == State::InGame;
+    }
+
+    bool ClientNetworkSystem::isReady(void) const
+    {
+        return _isReady;
+    }
+
+    bool ClientNetworkSystem::isUdpReady(void) const
+    {
+        return _network.isUdpReady();
+    }
+
+    bool ClientNetworkSystem::isLoggedIn(void) const
+    {
+        return _isLoggedIn;
+    }
+
+    std::string ClientNetworkSystem::getUsername(void) const
+    {
+        return _username;
+    }
+
+    std::list<rtp::net::RoomInfo> ClientNetworkSystem::getAvailableRooms(void) const
+    {
+        return _availableRooms;
+    }
+
+    //////////////////////////////////////////////////////////////////////////
     // Private Methods
     //////////////////////////////////////////////////////////////////////////
 
@@ -208,20 +242,32 @@ namespace rtp::client {
 
     void ClientNetworkSystem::onRoomResponse(rtp::net::Packet& packet)
     {
-        rtp::net::RoomInfo roomInfo;
-        packet >> roomInfo;
-        _availableRooms.push_back(roomInfo);
-        rtp::log::info("Received Room: ID={} Name='{}' Players={}/{} Difficulty={} Speed={} Duration={} Seed={} LevelID={}",
-                           roomInfo.roomId,
-                           std::string(roomInfo.roomName),
-                           roomInfo.currentPlayers,
-                           roomInfo.maxPlayers,
-                           roomInfo.difficulty,
-                           roomInfo.speed,
-                           roomInfo.duration,
-                           roomInfo.seed,
-                           roomInfo.levelId);
+        _availableRooms.clear();
+
+        uint32_t roomCount = 0;
+        packet >> roomCount;
+
+        for (uint32_t i = 0; i < roomCount; ++i) {
+            rtp::net::RoomInfo roomInfo{};
+            packet >> roomInfo;
+            _availableRooms.push_back(roomInfo);
+
+            rtp::log::info(
+                "Received Room: ID={} Name='{}' Players={}/{} InGame={} Difficulty={} Speed={} Duration={} Seed={} LevelID={}",
+                roomInfo.roomId,
+                std::string(roomInfo.roomName),
+                roomInfo.currentPlayers,
+                roomInfo.maxPlayers,
+                (int)roomInfo.inGame,
+                roomInfo.difficulty,
+                roomInfo.speed,
+                roomInfo.duration,
+                roomInfo.seed,
+                roomInfo.levelId
+            );
+        }
     }
+
 
     void ClientNetworkSystem::onJoinRoomResponse(rtp::net::Packet& packet)
     {

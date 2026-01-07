@@ -22,6 +22,7 @@ void UIRenderSystem::update(float dt) {
     renderSliders();
     // Rendre les dropdowns en dernier pour qu'ils soient au-dessus
     renderDropdowns();
+    renderTextInputs(dt);
 }
 
 void UIRenderSystem::renderButtons() {
@@ -220,6 +221,72 @@ void UIRenderSystem::renderDropdowns() {
             } catch (const std::exception& e) {
                 rtp::log::error("Failed to render dropdown options: {}", e.what());
             }
+        }
+    }
+}
+
+void UIRenderSystem::renderTextInputs(float dt)
+{
+    auto inputsResult = _registry.getComponents<rtp::ecs::components::ui::TextInput>();
+    if (!inputsResult) return;
+
+    auto& inputs = inputsResult.value().get();
+
+    for (const auto& entity : inputs.getEntities()) {
+        auto& input = inputs[entity];
+
+        if (input.isFocused) {
+            input.blinkTimer += dt;
+            if (input.blinkTimer >= input.blinkInterval) {
+                input.blinkTimer = 0.0f;
+                input.showCursor = !input.showCursor;
+            }
+        } else {
+            input.showCursor = false;
+            input.blinkTimer = 0.0f;
+        }
+
+        sf::RectangleShape box(sf::Vector2f(input.size.x, input.size.y));
+        box.setPosition(sf::Vector2f(input.position.x, input.position.y));
+        box.setFillColor(sf::Color(input.bgColor[0], input.bgColor[1], input.bgColor[2], input.alpha));
+
+        const uint8_t* bc = input.isFocused ? input.focusBorderColor : input.borderColor;
+        box.setOutlineColor(sf::Color(bc[0], bc[1], bc[2], input.alpha));
+        box.setOutlineThickness(2.0f);
+
+        _window.draw(box);
+
+        try {
+            sf::Font& font = loadFont(input.fontPath);
+
+            const bool empty = input.value.empty();
+            std::string display = empty ? input.placeholder : input.getDisplayValue();
+
+            sf::Text text(font);
+            text.setString(sf::String::fromUtf8(display.begin(), display.end()));
+            text.setCharacterSize(input.fontSize);
+            text.setPosition(sf::Vector2f(input.position.x + 10.0f, input.position.y + 8.0f));
+
+            if (empty) {
+                text.setFillColor(sf::Color(input.placeholderColor[0], input.placeholderColor[1], input.placeholderColor[2], input.alpha));
+            } else {
+                text.setFillColor(sf::Color(input.textColor[0], input.textColor[1], input.textColor[2], input.alpha));
+            }
+
+            _window.draw(text);
+
+            if (input.isFocused && input.showCursor) {
+                sf::FloatRect bounds = text.getLocalBounds();
+                float cursorX = input.position.x + 10.0f + bounds.size.x + 2.0f;
+                float cursorY = input.position.y + 10.0f;
+
+                sf::RectangleShape cursor(sf::Vector2f(2.0f, static_cast<float>(input.fontSize)));
+                cursor.setPosition(sf::Vector2f(cursorX, cursorY));
+                cursor.setFillColor(sf::Color(255, 255, 255, input.alpha));
+                _window.draw(cursor);
+            }
+        } catch (const std::exception& e) {
+            rtp::log::error("Failed to render TextInput: {}", e.what());
         }
     }
 }

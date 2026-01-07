@@ -16,6 +16,7 @@
 #include "RType/ECS/Components/UI/Text.hpp"
 #include "RType/ECS/Components/UI/Slider.hpp"
 #include "RType/ECS/Components/UI/Dropdown.hpp"
+#include "RType/ECS/Components/UI/TextInput.hpp"
 
 namespace Client::Systems {
 
@@ -30,6 +31,7 @@ private:
     void renderTexts();
     void renderSliders();
     void renderDropdowns();
+    void renderTextInputs(float dt);
     sf::Font& loadFont(const std::string& fontPath);
 
     rtp::ecs::Registry& _registry;

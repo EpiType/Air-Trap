@@ -2,72 +2,77 @@
 ** EPITECH PROJECT, 2025
 ** Air-Trap, Client
 ** File description:
-** Application.cpp, main application loop
+**
+ * Application.cpp, main application loop
 */
 
+#include "Core/Application.hpp"
 
-#include <memory>
+#include "Core/Settings.hpp"
+#include "RType/Logger.hpp"
+#include "Systems/MenuSystem.hpp"
+#include "Systems/SettingsMenuSystem.hpp"
+#include "Systems/UIRenderSystem.hpp"
 
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/System/Clock.hpp>
-
-#include "Core/Application.hpp"
-#include "Core/Settings.hpp"
-#include "Systems/MenuSystem.hpp"
-#include "Systems/UIRenderSystem.hpp"
-#include "Systems/SettingsMenuSystem.hpp"
-#include "RType/Logger.hpp"
+#include <memory>
 // ECS
 #include "RType/ECS/Registry.hpp"
 #include "RType/ECS/SystemManager.hpp"
 
 // Components
-#include "RType/ECS/Components/Transform.hpp"
-#include "RType/ECS/Components/Velocity.hpp"
-#include "RType/ECS/Components/Controllable.hpp"
-#include "RType/ECS/Components/Sprite.hpp"
 #include "RType/ECS/Components/Animation.hpp"
-#include "RType/ECS/Components/UI/Button.hpp"
-#include "RType/ECS/Components/UI/Text.hpp"
-#include "RType/ECS/Components/UI/Slider.hpp"
-#include "RType/ECS/Components/UI/Dropdown.hpp"
+#include "RType/ECS/Components/Controllable.hpp"
 #include "RType/ECS/Components/NetworkId.hpp"
+#include "RType/ECS/Components/Sprite.hpp"
+#include "RType/ECS/Components/Transform.hpp"
+#include "RType/ECS/Components/UI/Button.hpp"
+#include "RType/ECS/Components/UI/Dropdown.hpp"
+#include "RType/ECS/Components/UI/Slider.hpp"
+#include "RType/ECS/Components/UI/Text.hpp"
+#include "RType/ECS/Components/Velocity.hpp"
 
 // Systems
-#include "Systems/InputSystem.hpp"
-#include "Systems/AnimationSystem.hpp"
-#include "Systems/RenderSystem.hpp"
-#include "Systems/ParallaxSystem.hpp"
-#include "Systems/ClientNetworkSystem.hpp"
-
 #include "RType/Math/Vec2.hpp"
+#include "Systems/AnimationSystem.hpp"
+#include "Systems/ClientNetworkSystem.hpp"
+#include "Systems/InputSystem.hpp"
+#include "Systems/ParallaxSystem.hpp"
+#include "Systems/RenderSystem.hpp"
 
 namespace Client::Core
 {
     Application::Application()
-        : _window(sf::VideoMode({static_cast<unsigned int>(UIConstants::WINDOW_WIDTH), 
-                                 static_cast<unsigned int>(UIConstants::WINDOW_HEIGHT)}), 
+        : _window(sf::VideoMode(
+                      {static_cast<unsigned int>(UIConstants::WINDOW_WIDTH),
+                       static_cast<unsigned int>(UIConstants::WINDOW_HEIGHT)}),
                   "Air-Trap - R-Type Clone")
-        , _systemManager(_registry), _entityBuilder(_registry), _clientNetwork("127.0.0.1", 5000)
+        , _systemManager(_registry)
+        , _entityBuilder(_registry)
+        , _clientNetwork("127.0.0.1", 5000)
     {
         _window.setFramerateLimit(60);
 
         _translations.loadLanguage(_settings.getLanguage());
-        
+
         setupSettingsCallbacks();
 
         // Load colorblind shader
-        if (!_colorblindShader.loadFromFile("assets/shaders/colorblind.frag", sf::Shader::Type::Fragment)) {
-            rtp::log::warning("Failed to load colorblind shader, running without colorblind support");
+        if (!_colorblindShader.loadFromFile("assets/shaders/colorblind.frag",
+                                            sf::Shader::Type::Fragment)) {
+            rtp::log::warning("Failed to load colorblind shader, running "
+                              "without colorblind support");
             _shaderLoaded = false;
         } else {
             _shaderLoaded = true;
             rtp::log::info("Colorblind shader loaded successfully");
         }
-        
+
         // Create render texture for post-processing
-        if (!_renderTexture.resize({static_cast<unsigned int>(UIConstants::WINDOW_WIDTH), 
-                                     static_cast<unsigned int>(UIConstants::WINDOW_HEIGHT)})) {
+        if (!_renderTexture.resize(
+                {static_cast<unsigned int>(UIConstants::WINDOW_WIDTH),
+                 static_cast<unsigned int>(UIConstants::WINDOW_HEIGHT)})) {
             rtp::log::error("Failed to create render texture");
         }
 
@@ -75,17 +80,22 @@ namespace Client::Core
         // _audioManager.setMusicVolume(_settings.getMusicVolume());
         // _audioManager.setSfxVolume(_settings.getSfxVolume());
 
-        _clientNetwork.start();        
+        _clientNetwork.start();
         initECS();
-        initMenu();
+        changeState(_currentState);
     }
 
     void Application::run()
     {
         sf::Clock clock;
-        _systemManager.getSystem<rtp::client::ClientNetworkSystem>().tryLogin("don", "don");
-        _systemManager.getSystem<rtp::client::ClientNetworkSystem>().tryRegister("don", "don1");
-        _systemManager.getSystem<rtp::client::ClientNetworkSystem>().RequestListRooms();
+        _systemManager.getSystem<rtp::client::ClientNetworkSystem>().tryLogin(
+            "don", "don");
+        _systemManager.getSystem<rtp::client::ClientNetworkSystem>()
+            .tryRegister("don", "don1");
+        _systemManager.getSystem<rtp::client::ClientNetworkSystem>()
+            .RequestListRooms();
+        _systemManager.getSystem<rtp::client::ClientNetworkSystem>()
+            .tryCreateRoom("Room1", 4, 0.5f, 1.0f, 10, 42, 1);
         while (_window.isOpen()) {
             sf::Time deltaTime = clock.restart();
             processInput();
@@ -96,11 +106,11 @@ namespace Client::Core
 
     void Application::initECS()
     {
-        // Enregistrement des composants
         _registry.registerComponent<rtp::ecs::components::ui::Button>();
         _registry.registerComponent<rtp::ecs::components::ui::Text>();
         _registry.registerComponent<rtp::ecs::components::ui::Slider>();
         _registry.registerComponent<rtp::ecs::components::ui::Dropdown>();
+        _registry.registerComponent<rtp::ecs::components::ui::TextInput>();
 
         _registry.registerComponent<rtp::ecs::components::Transform>();
         _registry.registerComponent<rtp::ecs::components::Velocity>();
@@ -112,90 +122,109 @@ namespace Client::Core
         _systemManager.addSystem<rtp::client::ParallaxSystem>(_registry);
         _registry.registerComponent<rtp::ecs::components::NetworkId>();
 
-        _systemManager.addSystem<rtp::client::InputSystem>(_registry, _settings, _clientNetwork, _window);
+        _systemManager.addSystem<rtp::client::InputSystem>(
+            _registry, _settings, _clientNetwork, _window);
         _systemManager.addSystem<rtp::client::AnimationSystem>(_registry);
         _systemManager.addSystem<rtp::client::RenderSystem>(_registry, _window);
-        
-        _systemManager.addSystem<Client::Systems::MenuSystem>(_registry, _window);
-        _systemManager.addSystem<Client::Systems::UIRenderSystem>(_registry, _window);
-        _systemManager.addSystem<Client::Systems::SettingsMenuSystem>(_registry, _window, _settings);
-        
-        _systemManager.addSystem<rtp::client::ClientNetworkSystem>(_clientNetwork, _registry);
+
+        _systemManager.addSystem<Client::Systems::MenuSystem>(_registry,
+                                                              _window);
+        _systemManager.addSystem<Client::Systems::UIRenderSystem>(_registry,
+                                                                  _window);
+        _systemManager.addSystem<Client::Systems::SettingsMenuSystem>(
+            _registry, _window, _settings);
+
+        _systemManager.addSystem<rtp::client::ClientNetworkSystem>(
+            _clientNetwork, _registry);
     }
 
     void Application::initMenu()
     {
         rtp::log::info("Initializing menu...");
-        
+
         auto titleResult = _registry.spawnEntity();
         if (titleResult) {
             rtp::ecs::Entity title = titleResult.value();
-            
+
             rtp::ecs::components::ui::Text titleText;
             titleText.content = _translations.get("menu.title");
-            titleText.position = rtp::Vec2f{UIConstants::TITLE_X, UIConstants::TITLE_Y};
+            titleText.position =
+                rtp::Vec2f{UIConstants::TITLE_X, UIConstants::TITLE_Y};
             titleText.fontPath = "assets/fonts/title.ttf";
-            titleText.fontSize = static_cast<unsigned int>(UIConstants::TITLE_FONT_SIZE);
+            titleText.fontSize =
+                static_cast<unsigned int>(UIConstants::TITLE_FONT_SIZE);
             titleText.red = 2;
             titleText.green = 100;
             titleText.blue = 100;
             titleText.zIndex = 10;
-            
-            _registry.addComponent<rtp::ecs::components::ui::Text>(title, titleText);
+
+            _registry.addComponent<rtp::ecs::components::ui::Text>(title,
+                                                                   titleText);
         }
-        
+
         auto playBtnResult = _registry.spawnEntity();
         if (playBtnResult) {
             rtp::ecs::Entity playBtn = playBtnResult.value();
-            
+
             rtp::ecs::components::ui::Button button;
             button.text = _translations.get("menu.play");
-            button.position = rtp::Vec2f{UIConstants::BUTTON_X, UIConstants::BUTTON_START_Y};
-            button.size = rtp::Vec2f{UIConstants::BUTTON_WIDTH, UIConstants::BUTTON_HEIGHT};
+            button.position =
+                rtp::Vec2f{UIConstants::BUTTON_X, UIConstants::BUTTON_START_Y};
+            button.size = rtp::Vec2f{UIConstants::BUTTON_WIDTH,
+                                     UIConstants::BUTTON_HEIGHT};
             button.onClick = [this]() {
                 rtp::log::info("Play button clicked!");
                 changeState(GameState::Playing);
             };
-            
-            _registry.addComponent<rtp::ecs::components::ui::Button>(playBtn, button);
+
+            _registry.addComponent<rtp::ecs::components::ui::Button>(playBtn,
+                                                                     button);
         }
-        
+
         auto settingsBtnResult = _registry.spawnEntity();
         if (settingsBtnResult) {
             rtp::ecs::Entity settingsBtn = settingsBtnResult.value();
-            
+
             rtp::ecs::components::ui::Button button;
             button.text = _translations.get("menu.settings");
-            button.position = rtp::Vec2f{UIConstants::BUTTON_X, UIConstants::BUTTON_START_Y + UIConstants::BUTTON_SPACING};
-            button.size = rtp::Vec2f{UIConstants::BUTTON_WIDTH, UIConstants::BUTTON_HEIGHT};
+            button.position = rtp::Vec2f{UIConstants::BUTTON_X,
+                                         UIConstants::BUTTON_START_Y +
+                                             UIConstants::BUTTON_SPACING};
+            button.size = rtp::Vec2f{UIConstants::BUTTON_WIDTH,
+                                     UIConstants::BUTTON_HEIGHT};
             button.onClick = [this]() {
                 rtp::log::info("Settings button clicked!");
                 changeState(GameState::Settings);
             };
-            
-            _registry.addComponent<rtp::ecs::components::ui::Button>(settingsBtn, button);
+
+            _registry.addComponent<rtp::ecs::components::ui::Button>(
+                settingsBtn, button);
         }
-        
+
         auto exitBtnResult = _registry.spawnEntity();
         if (exitBtnResult) {
             rtp::ecs::Entity exitBtn = exitBtnResult.value();
-            
+
             rtp::ecs::components::ui::Button button;
             button.text = _translations.get("menu.exit");
-            button.position = rtp::Vec2f{UIConstants::BUTTON_X, UIConstants::BUTTON_START_Y + UIConstants::BUTTON_SPACING * 2};
-            button.size = rtp::Vec2f{UIConstants::BUTTON_WIDTH, UIConstants::BUTTON_HEIGHT};
+            button.position = rtp::Vec2f{
+                UIConstants::BUTTON_X,
+                UIConstants::BUTTON_START_Y + UIConstants::BUTTON_SPACING * 2};
+            button.size = rtp::Vec2f{UIConstants::BUTTON_WIDTH,
+                                     UIConstants::BUTTON_HEIGHT};
             button.onClick = [this]() {
                 rtp::log::info("Exit button clicked!");
                 _window.close();
             };
-            
-            _registry.addComponent<rtp::ecs::components::ui::Button>(exitBtn, button);
+
+            _registry.addComponent<rtp::ecs::components::ui::Button>(exitBtn,
+                                                                     button);
         }
     }
 
     void Application::createParallaxBackground()
     {
-        const float textureWidth = 1280.0f; 
+        const float textureWidth = 1280.0f;
 
         Game::EntityTemplate t1 = Game::EntityTemplate::createParrallaxLayer1();
         float scale1X = t1.scale.x;
@@ -203,14 +232,16 @@ namespace Client::Core
         if (result1A.has_value()) {
             _parallaxLayers.push_back(result1A.value());
         } else {
-            rtp::log::error("Failed to spawn Layer 1A: {}", result1A.error().message());
+            rtp::log::error("Failed to spawn Layer 1A: {}",
+                            result1A.error().message());
         }
         t1.position.x = textureWidth * scale1X;
         auto result1B = _entityBuilder.spawn(t1);
         if (result1B.has_value()) {
             _parallaxLayers.push_back(result1B.value());
         } else {
-            rtp::log::error("Failed to spawn Layer 1B: {}", result1B.error().message());
+            rtp::log::error("Failed to spawn Layer 1B: {}",
+                            result1B.error().message());
         }
         Game::EntityTemplate t2 = Game::EntityTemplate::createParrallaxLayer2();
         float scale2X = t2.scale.x;
@@ -218,38 +249,43 @@ namespace Client::Core
         if (result2A.has_value()) {
             _parallaxLayers.push_back(result2A.value());
         } else {
-            rtp::log::error("Failed to spawn Layer 2A: {}", result2A.error().message());
+            rtp::log::error("Failed to spawn Layer 2A: {}",
+                            result2A.error().message());
         }
         t2.position.x = textureWidth * scale2X;
         auto result2B = _entityBuilder.spawn(t2);
         if (result2B.has_value()) {
             _parallaxLayers.push_back(result2B.value());
         } else {
-            rtp::log::error("Failed to spawn Layer 2B: {}", result2B.error().message());
+            rtp::log::error("Failed to spawn Layer 2B: {}",
+                            result2B.error().message());
         }
 
-        rtp::log::info("Parallax background initialized with {} layers.", _parallaxLayers.size());
+        rtp::log::info("Parallax background initialized with {} layers.",
+                       _parallaxLayers.size());
     }
 
     void Application::initGame()
     {
         rtp::log::info("Starting game...");
         createParallaxBackground();
-        
+
         // NOTE: Menu entities are not deleted to avoid a crash in killEntity().
-        // They remain in the ECS but are not rendered since only the RenderSystem
-        // is active during gameplay (UIRenderSystem is only called in Menu state).
-        // The menu buttons are still clickable but their callbacks won't do anything harmful.
-        // TODO: Fix the killEntity() implementation to properly handle entity deletion,
-        // or implement a tag-based filtering system for systems.
-        
+        // They remain in the ECS but are not rendered since only the
+        // RenderSystem is active during gameplay (UIRenderSystem is only called
+        // in Menu state). The menu buttons are still clickable but their
+        // callbacks won't do anything harmful.
+        // TODO: Fix the killEntity() implementation to properly handle entity
+        // deletion, or implement a tag-based filtering system for systems.
+
         // Spawn player
         // auto playerRes = _registry.spawnEntity();
         // if (!playerRes) return;
         // rtp::ecs::Entity p = playerRes.value();
 
         // _registry.addComponent<rtp::ecs::components::Transform>(
-        //     p, rtp::Vec2f{UIConstants::PLAYER_SPAWN_X, UIConstants::PLAYER_SPAWN_Y}, 0.0f, rtp::Vec2f{1.0f, 1.0f});
+        //     p, rtp::Vec2f{UIConstants::PLAYER_SPAWN_X,
+        //     UIConstants::PLAYER_SPAWN_Y}, 0.0f, rtp::Vec2f{1.0f, 1.0f});
         // _registry.addComponent<rtp::ecs::components::Velocity>(p);
         // _registry.addComponent<rtp::ecs::components::Controllable>(p);
 
@@ -277,9 +313,10 @@ namespace Client::Core
         // _registry.addComponent<rtp::ecs::components::Animation>(p, animData);
     }
 
-    void Application::initPauseMenu() {
+    void Application::initPauseMenu()
+    {
         rtp::log::info("Initializing pause menu...");
-        
+
         // Title "PAUSED"
         auto titleResult = _registry.spawnEntity();
         if (titleResult) {
@@ -292,7 +329,8 @@ namespace Client::Core
             titleText.red = 255;
             titleText.green = 100;
             titleText.blue = 100;
-            _registry.addComponent<rtp::ecs::components::ui::Text>(title, titleText);
+            _registry.addComponent<rtp::ecs::components::ui::Text>(title,
+                                                                   titleText);
         }
 
         // Resume button
@@ -303,10 +341,9 @@ namespace Client::Core
             button.text = _translations.get("game.resume");
             button.position = rtp::Vec2f{490.0f, 350.0f};
             button.size = rtp::Vec2f{300.0f, 60.0f};
-            button.onClick = [this]() {
-                changeState(GameState::Playing);
-            };
-            _registry.addComponent<rtp::ecs::components::ui::Button>(btn, button);
+            button.onClick = [this]() { changeState(GameState::Playing); };
+            _registry.addComponent<rtp::ecs::components::ui::Button>(btn,
+                                                                     button);
         }
 
         // Quit to menu button
@@ -317,10 +354,556 @@ namespace Client::Core
             button.text = _translations.get("game.quit_to_menu");
             button.position = rtp::Vec2f{490.0f, 430.0f};
             button.size = rtp::Vec2f{300.0f, 60.0f};
-            button.onClick = [this]() {
-                changeState(GameState::Menu);
-            };
-            _registry.addComponent<rtp::ecs::components::ui::Button>(btn, button);
+            button.onClick = [this]() { changeState(GameState::Menu); };
+            _registry.addComponent<rtp::ecs::components::ui::Button>(btn,
+                                                                     button);
+        }
+    }
+
+    void Application::initLoginScene()
+    {
+        rtp::log::info("Initializing Login scene...");
+
+        {
+            auto eRes = _registry.spawnEntity();
+            if (eRes) {
+                auto e = eRes.value();
+                rtp::ecs::components::ui::Text t;
+                t.content = "LOGIN";
+                t.position = {520.0f, 80.0f};
+                t.fontPath = "assets/fonts/title.ttf";
+                t.fontSize = 64;
+                t.red = 255;
+                t.green = 200;
+                t.blue = 100;
+                t.zIndex = 10;
+                _registry.addComponent<rtp::ecs::components::ui::Text>(e, t);
+            }
+        }
+
+        {
+            auto eRes = _registry.spawnEntity();
+            if (eRes) {
+                auto e = eRes.value();
+                rtp::ecs::components::ui::Text t;
+                t.content = "Username";
+                t.position = {360.0f, 200.0f};
+                t.fontPath = "assets/fonts/main.ttf";
+                t.fontSize = 24;
+                t.zIndex = 10;
+                _registry.addComponent<rtp::ecs::components::ui::Text>(e, t);
+            }
+        }
+
+        {
+            auto eRes = _registry.spawnEntity();
+            if (eRes) {
+                auto e = eRes.value();
+                rtp::ecs::components::ui::TextInput in;
+                in.position = {360.0f, 235.0f};
+                in.size = {560.0f, 45.0f};
+                in.placeholder = "";
+                in.fontPath = "assets/fonts/main.ttf";
+                in.fontSize = 22;
+                in.maxLength = 32;
+                in.onChange = [this](const std::string &v) { _uiUsername = v; };
+                _registry.addComponent<rtp::ecs::components::ui::TextInput>(e,
+                                                                            in);
+            }
+        }
+
+        {
+            auto eRes = _registry.spawnEntity();
+            if (eRes) {
+                auto e = eRes.value();
+                rtp::ecs::components::ui::Text t;
+                t.content = "";
+                t.position = {360.0f, 310.0f};
+                t.fontPath = "assets/fonts/main.ttf";
+                t.fontSize = 24;
+                t.zIndex = 10;
+                _registry.addComponent<rtp::ecs::components::ui::Text>(e, t);
+            }
+        }
+
+        {
+            auto eRes = _registry.spawnEntity();
+            if (eRes) {
+                auto e = eRes.value();
+                rtp::ecs::components::ui::TextInput in;
+                in.position = {360.0f, 345.0f};
+                in.size = {560.0f, 45.0f};
+                in.placeholder = "password";
+                in.isPassword = true;
+                in.fontPath = "assets/fonts/main.ttf";
+                in.fontSize = 22;
+                in.maxLength = 32;
+                in.onChange = [this](const std::string &v) { _uiPassword = v; };
+                _registry.addComponent<rtp::ecs::components::ui::TextInput>(e,
+                                                                            in);
+            }
+        }
+
+        {
+            auto eRes = _registry.spawnEntity();
+            if (eRes) {
+                auto e = eRes.value();
+                rtp::ecs::components::ui::Button b;
+                b.text = "LOGIN";
+                b.position = {360.0f, 430.0f};
+                b.size = {270.0f, 60.0f};
+                b.onClick = [this]() {
+                    auto &net =
+                        _systemManager
+                            .getSystem<rtp::client::ClientNetworkSystem>();
+                    net.tryLogin(_uiUsername, _uiPassword);
+                };
+                _registry.addComponent<rtp::ecs::components::ui::Button>(e, b);
+            }
+        }
+
+        {
+            auto eRes = _registry.spawnEntity();
+            if (eRes) {
+                auto e = eRes.value();
+                rtp::ecs::components::ui::Button b;
+                b.text = "REGISTER";
+                b.position = {650.0f, 430.0f};
+                b.size = {270.0f, 60.0f};
+                b.onClick = [this]() {
+                    auto &net =
+                        _systemManager
+                            .getSystem<rtp::client::ClientNetworkSystem>();
+                    net.tryRegister(_uiUsername.empty() ? "don" : _uiUsername,
+                                    _uiPassword.empty() ? "don1" : _uiPassword);
+                };
+                _registry.addComponent<rtp::ecs::components::ui::Button>(e, b);
+            }
+        }
+
+        // {
+        //     auto eRes = _registry.spawnEntity();
+        //     if (eRes) {
+        //         auto e = eRes.value();
+        //         rtp::ecs::components::ui::Button b;
+        //         b.text = "LOBBY (debug)";
+        //         b.position = {360.0f, 510.0f};
+        //         b.size = {560.0f, 55.0f};
+        //         b.onClick = [this]() {
+        //             changeState(GameState::Menu);
+        //             _systemManager.getSystem<rtp::client::ClientNetworkSystem>().RequestListRooms();
+        //         };
+        //         _registry.addComponent<rtp::ecs::components::ui::Button>(e,
+        //         b);
+        //     }
+        // }
+
+        {
+            auto eRes = _registry.spawnEntity();
+            if (eRes) {
+                auto e = eRes.value();
+                rtp::ecs::components::ui::Button b;
+                b.text = "BACK";
+                b.position = {360.0f, 600.0f};
+                b.size = {560.0f, 55.0f};
+                b.onClick = [this]() { changeState(GameState::Menu); };
+                _registry.addComponent<rtp::ecs::components::ui::Button>(e, b);
+            }
+        }
+    }
+
+    void Application::initLobbyScene()
+    {
+        rtp::log::info("Initializing Lobby scene...");
+
+        auto &net =
+            _systemManager.getSystem<rtp::client::ClientNetworkSystem>();
+
+        {
+            auto eRes = _registry.spawnEntity();
+            if (eRes) {
+                auto e = eRes.value();
+                rtp::ecs::components::ui::Text t;
+                t.content = "LOBBY - ROOMS";
+                t.position = {390.0f, 60.0f};
+                t.fontPath = "assets/fonts/title.ttf";
+                t.fontSize = 52;
+                t.red = 255;
+                t.green = 200;
+                t.blue = 100;
+                t.zIndex = 10;
+                _registry.addComponent<rtp::ecs::components::ui::Text>(e, t);
+            }
+        }
+
+        {
+            auto eRes = _registry.spawnEntity();
+            if (eRes) {
+                auto e = eRes.value();
+                rtp::ecs::components::ui::Button b;
+                b.text = "REFRESH";
+                b.position = {120.0f, 140.0f};
+                b.size = {220.0f, 55.0f};
+                b.onClick = [this]() {
+                    auto &n =
+                        _systemManager
+                            .getSystem<rtp::client::ClientNetworkSystem>();
+                    n.RequestListRooms();
+                    // V1: rebuild
+                    changeState(GameState::Lobby);
+                };
+                _registry.addComponent<rtp::ecs::components::ui::Button>(e, b);
+            }
+        }
+
+        {
+            auto eRes = _registry.spawnEntity();
+            if (eRes) {
+                auto e = eRes.value();
+                rtp::ecs::components::ui::Button b;
+                b.text = "CREATE ROOM";
+                b.position = {360.0f, 140.0f};
+                b.size = {260.0f, 55.0f};
+                b.onClick = [this]() { changeState(GameState::CreateRoom); };
+                _registry.addComponent<rtp::ecs::components::ui::Button>(e, b);
+            }
+        }
+
+        {
+            auto eRes = _registry.spawnEntity();
+            if (eRes) {
+                auto e = eRes.value();
+                rtp::ecs::components::ui::Button b;
+                b.text = "BACK";
+                b.position = {650.0f, 140.0f};
+                b.size = {220.0f, 55.0f};
+                b.onClick = [this]() { changeState(GameState::Menu); };
+                _registry.addComponent<rtp::ecs::components::ui::Button>(e, b);
+            }
+        }
+
+        const auto &rooms =
+            _systemManager.getSystem<rtp::client::ClientNetworkSystem>()
+                .getAvailableRooms();
+        float y = 230.0f;
+        int shown = 0;
+
+        for (const auto &r : rooms) {
+            if (shown >= 6)
+                break;
+
+            {
+                auto eRes = _registry.spawnEntity();
+                if (eRes) {
+                    auto e = eRes.value();
+                    rtp::ecs::components::ui::Text t;
+                    t.content = "ID=" +
+                                std::to_string(r.roomId) +
+                                "  " +
+                                std::string(r.roomName) +
+                                "  (" +
+                                std::to_string(r.currentPlayers) +
+                                "/" +
+                                std::to_string(r.maxPlayers) +
+                                ")";
+                    t.position = {140.0f, y + 10.0f};
+                    t.fontPath = "assets/fonts/main.ttf";
+                    t.fontSize = 22;
+                    t.zIndex = 10;
+                    _registry.addComponent<rtp::ecs::components::ui::Text>(e,
+                                                                           t);
+                }
+            }
+
+            {
+                auto eRes = _registry.spawnEntity();
+                if (eRes) {
+                    auto e = eRes.value();
+                    rtp::ecs::components::ui::Button b;
+                    b.text = "JOIN";
+                    b.position = {980.0f, y};
+                    b.size = {160.0f, 45.0f};
+
+                    const uint32_t roomId = r.roomId;
+                    b.onClick = [this, roomId]() {
+                        _uiSelectedRoomId = roomId;
+                        auto &n =
+                            _systemManager
+                                .getSystem<rtp::client::ClientNetworkSystem>();
+                        n.tryJoinRoom(roomId);
+                        // V1: transition immédiate
+                        changeState(GameState::RoomWaiting);
+                    };
+
+                    _registry.addComponent<rtp::ecs::components::ui::Button>(e,
+                                                                             b);
+                }
+            }
+
+            y += 60.0f;
+            ++shown;
+        }
+    }
+
+    void Application::initCreateRoomScene()
+    {
+        rtp::log::info("Initializing CreateRoom scene...");
+
+        {
+            auto eRes = _registry.spawnEntity();
+            if (eRes) {
+                auto e = eRes.value();
+                rtp::ecs::components::ui::Text t;
+                t.content = "CREATE ROOM";
+                t.position = {400.0f, 60.0f};
+                t.fontPath = "assets/fonts/title.ttf";
+                t.fontSize = 52;
+                t.red = 255;
+                t.green = 200;
+                t.blue = 100;
+                t.zIndex = 10;
+                _registry.addComponent<rtp::ecs::components::ui::Text>(e, t);
+            }
+        }
+
+        {
+            auto eRes = _registry.spawnEntity();
+            if (eRes) {
+                auto e = eRes.value();
+                rtp::ecs::components::ui::Text t;
+                t.content = "Room Name";
+                t.position = {280.0f, 160.0f};
+                t.fontPath = "assets/fonts/main.ttf";
+                t.fontSize = 24;
+                _registry.addComponent<rtp::ecs::components::ui::Text>(e, t);
+            }
+        }
+
+        {
+            auto eRes = _registry.spawnEntity();
+            if (eRes) {
+                auto e = eRes.value();
+                rtp::ecs::components::ui::TextInput in;
+                in.position = {280.0f, 195.0f};
+                in.size = {720.0f, 45.0f};
+                in.placeholder = "room name";
+                in.maxLength = 32;
+                in.value = _uiRoomName;
+                in.onChange = [this](const std::string &v) { _uiRoomName = v; };
+                _registry.addComponent<rtp::ecs::components::ui::TextInput>(e,
+                                                                            in);
+            }
+        }
+
+        {
+            auto eRes = _registry.spawnEntity();
+            if (eRes) {
+                auto e = eRes.value();
+                rtp::ecs::components::ui::Text t;
+                t.content = "Max Players";
+                t.position = {280.0f, 270.0f};
+                t.fontPath = "assets/fonts/main.ttf";
+                t.fontSize = 24;
+                _registry.addComponent<rtp::ecs::components::ui::Text>(e, t);
+            }
+        }
+
+        {
+            auto eRes = _registry.spawnEntity();
+            if (eRes) {
+                auto e = eRes.value();
+                rtp::ecs::components::ui::Dropdown d;
+                d.position = {520.0f, 265.0f};
+                d.size = {220.0f, 40.0f};
+                d.options = {"2", "4", "8"};
+                d.selectedIndex =
+                    (_uiMaxPlayers == 2 ? 0 : (_uiMaxPlayers == 4 ? 1 : 2));
+                d.onSelect = [this](int index) {
+                    _uiMaxPlayers = (index == 0 ? 2 : (index == 1 ? 4 : 8));
+                };
+                _registry.addComponent<rtp::ecs::components::ui::Dropdown>(e,
+                                                                           d);
+            }
+        }
+
+        {
+            auto eRes = _registry.spawnEntity();
+            if (eRes) {
+                auto e = eRes.value();
+                rtp::ecs::components::ui::Text t;
+                t.content = "Difficulty";
+                t.position = {280.0f, 340.0f};
+                t.fontPath = "assets/fonts/main.ttf";
+                t.fontSize = 24;
+                _registry.addComponent<rtp::ecs::components::ui::Text>(e, t);
+            }
+        }
+
+        {
+            auto eRes = _registry.spawnEntity();
+            if (eRes) {
+                auto e = eRes.value();
+                rtp::ecs::components::ui::Slider s;
+                s.position = {520.0f, 355.0f};
+                s.size = {480.0f, 15.0f};
+                s.minValue = 0.1f;
+                s.maxValue = 2.0f;
+                s.currentValue = _uiDifficulty;
+                s.onChange = [this](float v) { _uiDifficulty = v; };
+                _registry.addComponent<rtp::ecs::components::ui::Slider>(e, s);
+            }
+        }
+
+        {
+            auto eRes = _registry.spawnEntity();
+            if (eRes) {
+                auto e = eRes.value();
+                rtp::ecs::components::ui::Text t;
+                t.content = "Speed";
+                t.position = {280.0f, 410.0f};
+                t.fontPath = "assets/fonts/main.ttf";
+                t.fontSize = 24;
+                _registry.addComponent<rtp::ecs::components::ui::Text>(e, t);
+            }
+        }
+
+        {
+            auto eRes = _registry.spawnEntity();
+            if (eRes) {
+                auto e = eRes.value();
+                rtp::ecs::components::ui::Slider s;
+                s.position = {520.0f, 425.0f};
+                s.size = {480.0f, 15.0f};
+                s.minValue = 0.5f;
+                s.maxValue = 3.0f;
+                s.currentValue = _uiSpeed;
+                s.onChange = [this](float v) { _uiSpeed = v; };
+                _registry.addComponent<rtp::ecs::components::ui::Slider>(e, s);
+            }
+        }
+
+        {
+            auto eRes = _registry.spawnEntity();
+            if (eRes) {
+                auto e = eRes.value();
+                rtp::ecs::components::ui::Button b;
+                b.text = "CREATE";
+                b.position = {280.0f, 520.0f};
+                b.size = {350.0f, 60.0f};
+                b.onClick = [this]() {
+                    auto &net =
+                        _systemManager
+                            .getSystem<rtp::client::ClientNetworkSystem>();
+                    const std::string name =
+                        _uiRoomName.empty() ? "Room_Elias" : _uiRoomName;
+
+                    net.tryCreateRoom(name, _uiMaxPlayers, _uiDifficulty,
+                                      _uiSpeed, _uiDuration, _uiSeed,
+                                      _uiLevelId);
+
+                    changeState(GameState::RoomWaiting);
+                };
+                _registry.addComponent<rtp::ecs::components::ui::Button>(e, b);
+            }
+        }
+
+        {
+            auto eRes = _registry.spawnEntity();
+            if (eRes) {
+                auto e = eRes.value();
+                rtp::ecs::components::ui::Button b;
+                b.text = "BACK";
+                b.position = {650.0f, 520.0f};
+                b.size = {350.0f, 60.0f};
+                b.onClick = [this]() { changeState(GameState::Lobby); };
+                _registry.addComponent<rtp::ecs::components::ui::Button>(e, b);
+            }
+        }
+    }
+
+    void Application::initRoomWaitingScene()
+    {
+        rtp::log::info("Initializing RoomWaiting scene...");
+
+        {
+            auto eRes = _registry.spawnEntity();
+            if (eRes) {
+                auto e = eRes.value();
+                rtp::ecs::components::ui::Text t;
+                t.content = "WAITING ROOM";
+                t.position = {390.0f, 80.0f};
+                t.fontPath = "assets/fonts/title.ttf";
+                t.fontSize = 56;
+                t.red = 255;
+                t.green = 200;
+                t.blue = 100;
+                t.zIndex = 10;
+                _registry.addComponent<rtp::ecs::components::ui::Text>(e, t);
+            }
+        }
+
+        {
+            auto eRes = _registry.spawnEntity();
+            if (eRes) {
+                auto e = eRes.value();
+                rtp::ecs::components::ui::Text t;
+                t.content = "Room ID: " + std::to_string(_uiSelectedRoomId);
+                t.position = {450.0f, 170.0f};
+                t.fontPath = "assets/fonts/main.ttf";
+                t.fontSize = 28;
+                _registry.addComponent<rtp::ecs::components::ui::Text>(e, t);
+            }
+        }
+
+        {
+            auto eRes = _registry.spawnEntity();
+            if (eRes) {
+                auto e = eRes.value();
+                rtp::ecs::components::ui::Button b;
+                b.text = "TOGGLE READY";
+                b.position = {420.0f, 280.0f};
+                b.size = {420.0f, 60.0f};
+                b.onClick = [this]() {
+                    _uiReady = !_uiReady;
+                    auto &net =
+                        _systemManager
+                            .getSystem<rtp::client::ClientNetworkSystem>();
+                    net.trySetReady(_uiReady);
+                };
+                _registry.addComponent<rtp::ecs::components::ui::Button>(e, b);
+            }
+        }
+
+        {
+            auto eRes = _registry.spawnEntity();
+            if (eRes) {
+                auto e = eRes.value();
+                rtp::ecs::components::ui::Button b;
+                b.text = "LEAVE ROOM";
+                b.position = {420.0f, 360.0f};
+                b.size = {420.0f, 60.0f};
+                b.onClick = [this]() {
+                    auto &net =
+                        _systemManager
+                            .getSystem<rtp::client::ClientNetworkSystem>();
+                    net.tryLeaveRoom();
+                    changeState(GameState::Lobby);
+                };
+                _registry.addComponent<rtp::ecs::components::ui::Button>(e, b);
+            }
+        }
+
+        {
+            auto eRes = _registry.spawnEntity();
+            if (eRes) {
+                auto e = eRes.value();
+                rtp::ecs::components::ui::Button b;
+                b.text = "BACK TO LOBBY";
+                b.position = {420.0f, 600.0f};
+                b.size = {420.0f, 55.0f};
+                b.onClick = [this]() { changeState(GameState::Lobby); };
+                _registry.addComponent<rtp::ecs::components::ui::Button>(e, b);
+            }
         }
     }
 
@@ -340,27 +923,28 @@ namespace Client::Core
             titleText.red = 255;
             titleText.green = 200;
             titleText.blue = 100;
-            _registry.addComponent<rtp::ecs::components::ui::Text>(title, titleText);
+            _registry.addComponent<rtp::ecs::components::ui::Text>(title,
+                                                                   titleText);
         }
 
         float yPos = 150.0f;
         const float buttonSpacing = 60.0f;
 
         struct KeyBindingButton {
-            const char* labelKey;
-            KeyAction action;
+                const char *labelKey;
+                KeyAction action;
         };
 
         std::vector<KeyBindingButton> bindings = {
-            {"keybindings.move_up", KeyAction::MoveUp},
-            {"keybindings.move_down", KeyAction::MoveDown},
-            {"keybindings.move_left", KeyAction::MoveLeft},
+            {"keybindings.move_up",    KeyAction::MoveUp   },
+            {"keybindings.move_down",  KeyAction::MoveDown },
+            {"keybindings.move_left",  KeyAction::MoveLeft },
             {"keybindings.move_right", KeyAction::MoveRight},
-            {"keybindings.shoot", KeyAction::Shoot},
-            {"keybindings.pause", KeyAction::Pause}
+            {"keybindings.shoot",      KeyAction::Shoot    },
+            {"keybindings.pause",      KeyAction::Pause    }
         };
 
-        for (const auto& binding : bindings) {
+        for (const auto &binding : bindings) {
             // Label de l'action
             auto labelRes = _registry.spawnEntity();
             if (labelRes) {
@@ -370,7 +954,8 @@ namespace Client::Core
                 text.position = rtp::Vec2f{200.0f, yPos + 10.0f};
                 text.fontPath = "assets/fonts/main.ttf";
                 text.fontSize = 24;
-                _registry.addComponent<rtp::ecs::components::ui::Text>(label, text);
+                _registry.addComponent<rtp::ecs::components::ui::Text>(label,
+                                                                       text);
             }
 
             // Bouton avec la touche actuelle
@@ -386,13 +971,14 @@ namespace Client::Core
 
                 KeyAction actionToBind = binding.action;
                 button.onClick = [this, actionToBind]() {
-                    rtp::log::info("Waiting for key input for action: {}", 
-                                  static_cast<int>(actionToBind));
+                    rtp::log::info("Waiting for key input for action: {}",
+                                   static_cast<int>(actionToBind));
                     _isWaitingForKey = true;
                     _keyActionToRebind = actionToBind;
                 };
 
-                _registry.addComponent<rtp::ecs::components::ui::Button>(btn, button);
+                _registry.addComponent<rtp::ecs::components::ui::Button>(
+                    btn, button);
             }
 
             yPos += buttonSpacing;
@@ -413,14 +999,15 @@ namespace Client::Core
                 changeState(GameState::Settings);
             };
 
-            _registry.addComponent<rtp::ecs::components::ui::Button>(backBtn, button);
+            _registry.addComponent<rtp::ecs::components::ui::Button>(backBtn,
+                                                                     button);
         }
     }
 
     void Application::initSettingsMenu()
     {
         rtp::log::info("Initializing settings menu...");
-        
+
         // Title
         auto titleResult = _registry.spawnEntity();
         if (titleResult) {
@@ -433,12 +1020,13 @@ namespace Client::Core
             titleText.red = 255;
             titleText.green = 200;
             titleText.blue = 100;
-            _registry.addComponent<rtp::ecs::components::ui::Text>(title, titleText);
+            _registry.addComponent<rtp::ecs::components::ui::Text>(title,
+                                                                   titleText);
         }
-        
+
         // === AUDIO SECTION ===
         float yPos = 150.0f;
-        
+
         // Master Volume Label
         auto masterLabelRes = _registry.spawnEntity();
         if (masterLabelRes) {
@@ -450,7 +1038,7 @@ namespace Client::Core
             text.fontSize = 24;
             _registry.addComponent<rtp::ecs::components::ui::Text>(label, text);
         }
-        
+
         // Master Volume Slider
         auto masterSliderRes = _registry.spawnEntity();
         if (masterSliderRes) {
@@ -464,11 +1052,12 @@ namespace Client::Core
             sliderComp.onChange = [this](float value) {
                 _settings.setMasterVolume(value);
             };
-            _registry.addComponent<rtp::ecs::components::ui::Slider>(slider, sliderComp);
+            _registry.addComponent<rtp::ecs::components::ui::Slider>(
+                slider, sliderComp);
         }
-        
+
         yPos += 50.0f;
-        
+
         // Music Volume Label
         auto musicLabelRes = _registry.spawnEntity();
         if (musicLabelRes) {
@@ -480,7 +1069,7 @@ namespace Client::Core
             text.fontSize = 24;
             _registry.addComponent<rtp::ecs::components::ui::Text>(label, text);
         }
-        
+
         // Music Volume Slider
         auto musicSliderRes = _registry.spawnEntity();
         if (musicSliderRes) {
@@ -492,11 +1081,12 @@ namespace Client::Core
             sliderComp.onChange = [this](float value) {
                 _settings.setMusicVolume(value);
             };
-            _registry.addComponent<rtp::ecs::components::ui::Slider>(slider, sliderComp);
+            _registry.addComponent<rtp::ecs::components::ui::Slider>(
+                slider, sliderComp);
         }
-        
+
         yPos += 50.0f;
-        
+
         // SFX Volume Label
         auto sfxLabelRes = _registry.spawnEntity();
         if (sfxLabelRes) {
@@ -508,7 +1098,7 @@ namespace Client::Core
             text.fontSize = 24;
             _registry.addComponent<rtp::ecs::components::ui::Text>(label, text);
         }
-        
+
         // SFX Volume Slider
         auto sfxSliderRes = _registry.spawnEntity();
         if (sfxSliderRes) {
@@ -520,11 +1110,12 @@ namespace Client::Core
             sliderComp.onChange = [this](float value) {
                 _settings.setSfxVolume(value);
             };
-            _registry.addComponent<rtp::ecs::components::ui::Slider>(slider, sliderComp);
+            _registry.addComponent<rtp::ecs::components::ui::Slider>(
+                slider, sliderComp);
         }
-        
+
         yPos += 80.0f;
-        
+
         // === LANGUAGE SECTION ===
         auto langLabelRes = _registry.spawnEntity();
         if (langLabelRes) {
@@ -536,7 +1127,7 @@ namespace Client::Core
             text.fontSize = 24;
             _registry.addComponent<rtp::ecs::components::ui::Text>(label, text);
         }
-        
+
         // Language Dropdown
         auto langDropdownRes = _registry.spawnEntity();
         if (langDropdownRes) {
@@ -544,18 +1135,21 @@ namespace Client::Core
             rtp::ecs::components::ui::Dropdown dropdownComp;
             dropdownComp.position = rtp::Vec2f{450.0f, yPos - 5.0f};
             dropdownComp.size = rtp::Vec2f{300.0f, 35.0f};
-            dropdownComp.options = {"English", "Français", "Español", "Deutsch", "Italiano"};
-            dropdownComp.selectedIndex = static_cast<int>(_settings.getLanguage());
+            dropdownComp.options = {"English", "Français", "Español", "Deutsch",
+                                    "Italiano"};
+            dropdownComp.selectedIndex =
+                static_cast<int>(_settings.getLanguage());
             dropdownComp.onSelect = [this](int index) {
                 _settings.setLanguage(static_cast<Core::Language>(index));
                 _translations.loadLanguage(_settings.getLanguage());
                 changeState(GameState::Settings);
             };
-            _registry.addComponent<rtp::ecs::components::ui::Dropdown>(dropdown, dropdownComp);
+            _registry.addComponent<rtp::ecs::components::ui::Dropdown>(
+                dropdown, dropdownComp);
         }
-        
+
         yPos += 80.0f;
-        
+
         // === ACCESSIBILITY SECTION ===
         auto colorblindLabelRes = _registry.spawnEntity();
         if (colorblindLabelRes) {
@@ -567,7 +1161,7 @@ namespace Client::Core
             text.fontSize = 24;
             _registry.addComponent<rtp::ecs::components::ui::Text>(label, text);
         }
-        
+
         // Colorblind Mode Dropdown
         auto colorblindDropdownRes = _registry.spawnEntity();
         if (colorblindDropdownRes) {
@@ -575,17 +1169,24 @@ namespace Client::Core
             rtp::ecs::components::ui::Dropdown dropdownComp;
             dropdownComp.position = rtp::Vec2f{450.0f, yPos - 5.0f};
             dropdownComp.size = rtp::Vec2f{300.0f, 35.0f};
-            dropdownComp.options = {_translations.get("colorblind.none"), _translations.get("colorblind.protanopia"), _translations.get("colorblind.deuteranopia"), _translations.get("colorblind.tritanopia")};
-            dropdownComp.selectedIndex = static_cast<int>(_settings.getColorBlindMode());
+            dropdownComp.options = {
+                _translations.get("colorblind.none"),
+                _translations.get("colorblind.protanopia"),
+                _translations.get("colorblind.deuteranopia"),
+                _translations.get("colorblind.tritanopia")};
+            dropdownComp.selectedIndex =
+                static_cast<int>(_settings.getColorBlindMode());
             dropdownComp.onSelect = [this](int index) {
-                _settings.setColorBlindMode(static_cast<Core::ColorBlindMode>(index));
+                _settings.setColorBlindMode(
+                    static_cast<Core::ColorBlindMode>(index));
                 rtp::log::info("Colorblind mode changed to: {}", index);
             };
-            _registry.addComponent<rtp::ecs::components::ui::Dropdown>(dropdown, dropdownComp);
+            _registry.addComponent<rtp::ecs::components::ui::Dropdown>(
+                dropdown, dropdownComp);
         }
-        
+
         yPos += 80.0f;
-    
+
         auto keyBindingsBtnRes = _registry.spawnEntity();
         if (keyBindingsBtnRes) {
             rtp::ecs::Entity btn = keyBindingsBtnRes.value();
@@ -599,7 +1200,8 @@ namespace Client::Core
                 changeState(GameState::KeyBindings);
             };
 
-            _registry.addComponent<rtp::ecs::components::ui::Button>(btn, button);
+            _registry.addComponent<rtp::ecs::components::ui::Button>(btn,
+                                                                     button);
         }
 
         // Back Button (déplacer plus bas)
@@ -617,36 +1219,47 @@ namespace Client::Core
                 changeState(GameState::Menu);
             };
 
-            _registry.addComponent<rtp::ecs::components::ui::Button>(backBtn, button);
+            _registry.addComponent<rtp::ecs::components::ui::Button>(backBtn,
+                                                                     button);
         }
     }
 
-    void Application::changeState(GameState newState) {
-        rtp::log::info("Changing state from {} to {}", 
-                      static_cast<int>(_currentState), 
-                      static_cast<int>(newState));
+    void Application::changeState(GameState newState)
+    {
+        rtp::log::info("Changing state from {} to {}",
+                       static_cast<int>(_currentState),
+                       static_cast<int>(newState));
 
-        // Ne pas clear le registry si on passe de Playing <-> Paused
-        // pour garder l'état du jeu intact
-        bool keepGameState = (_currentState == GameState::Playing && newState == GameState::Paused) ||
-                             (_currentState == GameState::Paused && newState == GameState::Playing);
-        
+        bool keepGameState = (_currentState ==
+                              GameState::Playing &&
+                              newState == GameState::Paused) ||
+                             (_currentState ==
+                              GameState::Paused &&
+                              newState == GameState::Playing);
+
         GameState previousState = _currentState;
         _currentState = newState;
-        
+
         if (!keepGameState) {
+            // _registry.clearEntities();
             _registry.clear();
         }
-        
+
         switch (newState) {
             case GameState::Menu:
                 initMenu();
                 break;
-            case GameState::Playing:
-                // Ne réinitialiser le jeu que si on ne vient pas de Paused
-                if (previousState != GameState::Paused) {
-                    initGame();
-                }
+            case GameState::Login:
+                initLoginScene();
+                break;
+            case GameState::Lobby:
+                initLobbyScene();
+                break;
+            case GameState::CreateRoom:
+                initCreateRoomScene();
+                break;
+            case GameState::RoomWaiting:
+                initRoomWaitingScene();
                 break;
             case GameState::Settings:
                 initSettingsMenu();
@@ -656,6 +1269,10 @@ namespace Client::Core
                 break;
             case GameState::Paused:
                 initPauseMenu();
+                break;
+            case GameState::Playing:
+                if (previousState != GameState::Paused)
+                    initGame();
                 break;
             default:
                 break;
@@ -669,34 +1286,42 @@ namespace Client::Core
                 _window.close();
 
             if (const auto *kp = event->getIf<sf::Event::KeyPressed>()) {
-                if (kp->code == _settings.getKey(KeyAction::Pause) && _currentState != GameState::KeyBindings) {
+                if (kp->code ==
+                    _settings.getKey(KeyAction::Pause) &&
+                    _currentState != GameState::KeyBindings) {
                     handleGlobalEscape();
                     return;
                 }
-                
+
 #ifdef DEBUG
                 // Debug keys (spawn/kill) - Only in DEBUG build
                 if (kp->code == sf::Keyboard::Key::J) {
-                    rtp::Vec2f mousePos{static_cast<float>(sf::Mouse::getPosition(_window).x), 
-                                        static_cast<float>(sf::Mouse::getPosition(_window).y)};
+                    rtp::Vec2f mousePos{
+                        static_cast<float>(sf::Mouse::getPosition(_window).x),
+                        static_cast<float>(sf::Mouse::getPosition(_window).y)};
                     spawnEnemy(mousePos);
-                    rtp::log::debug("[DEBUG] Enemy spawned at ({}, {})", mousePos.x, mousePos.y);
+                    rtp::log::debug("[DEBUG] Enemy spawned at ({}, {})",
+                                    mousePos.x, mousePos.y);
                 }
                 if (kp->code == sf::Keyboard::Key::K) {
                     killEnemy(0);
                     rtp::log::debug("[DEBUG] Killed enemy at index 0");
                 }
                 if (kp->code == sf::Keyboard::Key::I) {
-                    rtp::Vec2f mousePos{static_cast<float>(sf::Mouse::getPosition(_window).x), 
-                                        static_cast<float>(sf::Mouse::getPosition(_window).y)};
+                    rtp::Vec2f mousePos{
+                        static_cast<float>(sf::Mouse::getPosition(_window).x),
+                        static_cast<float>(sf::Mouse::getPosition(_window).y)};
                     spawnEnemy2(mousePos);
-                    rtp::log::debug("[DEBUG] Enemy2 spawned at ({}, {})", mousePos.x, mousePos.y);
+                    rtp::log::debug("[DEBUG] Enemy2 spawned at ({}, {})",
+                                    mousePos.x, mousePos.y);
                 }
                 if (kp->code == sf::Keyboard::Key::L) {
-                    rtp::Vec2f mousePos{static_cast<float>(sf::Mouse::getPosition(_window).x), 
-                                        static_cast<float>(sf::Mouse::getPosition(_window).y)};
+                    rtp::Vec2f mousePos{
+                        static_cast<float>(sf::Mouse::getPosition(_window).x),
+                        static_cast<float>(sf::Mouse::getPosition(_window).y)};
                     spawnProjectile(mousePos);
-                    rtp::log::debug("[DEBUG] Projectile spawned at ({}, {})", mousePos.x, mousePos.y);
+                    rtp::log::debug("[DEBUG] Projectile spawned at ({}, {})",
+                                    mousePos.x, mousePos.y);
                 }
                 if (kp->code == sf::Keyboard::Key::M) {
                     killProjectile(0);
@@ -706,16 +1331,8 @@ namespace Client::Core
             }
 
             switch (_currentState) {
-                case GameState::Menu:
-                    processMenuInput(event.value());
-                    break;
-
                 case GameState::Playing:
                     processGameInput(event.value());
-                    break;
-
-                case GameState::Settings:
-                    processSettingsInput(event.value());
                     break;
 
                 case GameState::KeyBindings:
@@ -723,30 +1340,35 @@ namespace Client::Core
                     break;
 
                 default:
+                    processMenuInput(event.value());
                     break;
             }
         }
     }
 
-    void Application::processMenuInput(const sf::Event& event) {
-        // Le MenuSystem gère déjà les clics sur les boutons
-        // Rien de plus à faire ici pour l'instant
-        (void)event;
+    void Application::processMenuInput(const sf::Event &event)
+    {
+        auto &menuSys = _systemManager.getSystem<Client::Systems::MenuSystem>();
+        menuSys.handleEvent(event);
     }
 
-    void Application::processGameInput(const sf::Event& event) {
+    void Application::processGameInput(const sf::Event &event)
+    {
         // Les inputs de debug (J/K/L/M) sont gérés dans processInput()
         // Les touches de mouvement/tir sont gérées par InputSystem
-        (void)event;  // Éviter le warning unused
+        (void)event; // Éviter le warning unused
     }
 
-    void Application::processSettingsInput(const sf::Event& event) {
+    void Application::processSettingsInput(const sf::Event &event)
+    {
         // Le MenuSystem gère déjà les sliders/dropdowns
         (void)event;
     }
 
-    void Application::processKeyBindingInput(const sf::Event& event) {
-        if (!_isWaitingForKey) return;
+    void Application::processKeyBindingInput(const sf::Event &event)
+    {
+        if (!_isWaitingForKey)
+            return;
 
         if (const auto *kp = event.getIf<sf::Event::KeyPressed>()) {
             // Escape pour annuler
@@ -760,32 +1382,33 @@ namespace Client::Core
             _settings.setKey(_keyActionToRebind, kp->code);
             _isWaitingForKey = false;
 
-            rtp::log::info("Key {} bound to action {}", 
-                          _settings.getKeyName(kp->code),
-                          static_cast<int>(_keyActionToRebind));
-            
+            rtp::log::info("Key {} bound to action {}",
+                           _settings.getKeyName(kp->code),
+                           static_cast<int>(_keyActionToRebind));
+
             changeState(GameState::KeyBindings);
         }
     }
 
-    void Application::handleGlobalEscape() {
+    void Application::handleGlobalEscape()
+    {
         switch (_currentState) {
             case GameState::Menu:
-                _window.close();  // Quitter le jeu
+                _window.close(); // Quitter le jeu
                 break;
 
             case GameState::Playing:
-                changeState(GameState::Paused);  // Pause (ou Menu)
+                changeState(GameState::Paused); // Pause (ou Menu)
                 break;
 
             case GameState::Settings:
             case GameState::KeyBindings:
                 _settings.save();
-                changeState(GameState::Menu);  // Retour au menu
+                changeState(GameState::Menu); // Retour au menu
                 break;
 
             case GameState::Paused:
-                changeState(GameState::Playing);  // Reprendre le jeu
+                changeState(GameState::Playing); // Reprendre le jeu
                 break;
 
             default:
@@ -793,44 +1416,50 @@ namespace Client::Core
         }
     }
 
-    void Application::update(sf::Time delta) {
+    void Application::update(sf::Time delta)
+    {
         _lastDt = delta.asSeconds();
 
-        if (_currentState == GameState::Menu) {
-            auto& menuSys = _systemManager.getSystem<Client::Systems::MenuSystem>();
-            menuSys.update(_lastDt);
-        } else if (_currentState == GameState::Playing) {
+        _systemManager.getSystem<rtp::client::ClientNetworkSystem>().update(
+            _lastDt);
+
+        if (_currentState == GameState::Playing) {
             _systemManager.update(_lastDt);
-        } else if (_currentState == GameState::Settings || _currentState == GameState::KeyBindings) {
-            auto& menuSys = _systemManager.getSystem<Client::Systems::MenuSystem>();
-            menuSys.update(_lastDt);
-            auto& settingsSys = _systemManager.getSystem<Client::Systems::SettingsMenuSystem>();
+            return;
+        }
+
+        auto &menuSys = _systemManager.getSystem<Client::Systems::MenuSystem>();
+        menuSys.update(_lastDt);
+
+        if (_currentState ==
+            GameState::Settings ||
+            _currentState == GameState::KeyBindings) {
+            auto &settingsSys =
+                _systemManager.getSystem<Client::Systems::SettingsMenuSystem>();
             settingsSys.update(_lastDt);
-        } else if (_currentState == GameState::Paused) {
-            auto& menuSys = _systemManager.getSystem<Client::Systems::MenuSystem>();
-            menuSys.update(_lastDt);
         }
     }
-    
-    void Application::setupSettingsCallbacks() {
+
+    void Application::setupSettingsCallbacks()
+    {
         _settings.onMasterVolumeChanged([this](float volume) {
             rtp::log::info("Master volume changed to: {:.2f}", volume);
             // TODO: Appliquer au AudioManager quand il sera implémenté
         });
-        
+
         _settings.onMusicVolumeChanged([this](float volume) {
             rtp::log::info("Music volume changed to: {:.2f}", volume);
             // TODO: Appliquer au AudioManager quand il sera implémenté
         });
-        
+
         _settings.onSfxVolumeChanged([this](float volume) {
             rtp::log::info("SFX volume changed to: {:.2f}", volume);
             // TODO: Appliquer au AudioManager quand il sera implémenté
         });
-        
+
         _settings.onLanguageChanged([this](Language lang) {
             rtp::log::info("Language changed to: {}", static_cast<int>(lang));
-            
+
             // Recréer le menu pour appliquer la nouvelle langue
             if (_currentState == GameState::Settings) {
                 changeState(GameState::Settings);
@@ -840,10 +1469,11 @@ namespace Client::Core
         });
     }
 
-    void Application::spawnProjectile(const rtp::Vec2f& position) {
+    void Application::spawnProjectile(const rtp::Vec2f &position)
+    {
         std::size_t newIndex = _projectiles.size();
-        
-        Game::EntityTemplate createBulletEnemy = 
+
+        Game::EntityTemplate createBulletEnemy =
             Game::EntityTemplate::createBulletEnemy(position);
 
         auto result = _entityBuilder.spawn(createBulletEnemy);
@@ -851,17 +1481,21 @@ namespace Client::Core
         if (result.has_value()) {
             rtp::ecs::Entity newEnemy = result.value();
             _projectiles.push_back(newEnemy);
-            rtp::log::debug("Projectile spawned (ID: {}) at index {}. Total: {} projectiles", 
-                           static_cast<std::uint32_t>(newEnemy), newIndex, _projectiles.size());
+            rtp::log::debug("Projectile spawned (ID: {}) at index {}. Total: "
+                            "{} projectiles",
+                            static_cast<std::uint32_t>(newEnemy), newIndex,
+                            _projectiles.size());
         } else {
-            rtp::log::error("Failed to spawn projectile: {}", result.error().message());
+            rtp::log::error("Failed to spawn projectile: {}",
+                            result.error().message());
         }
     }
 
-    void Application::spawnEnemy(const rtp::Vec2f& position) {
+    void Application::spawnEnemy(const rtp::Vec2f &position)
+    {
         std::size_t newIndex = _spawnedEnemy.size();
-        
-        Game::EntityTemplate scoutTemplate = 
+
+        Game::EntityTemplate scoutTemplate =
             Game::EntityTemplate::rt1_1(position);
 
         auto result = _entityBuilder.spawn(scoutTemplate);
@@ -869,17 +1503,21 @@ namespace Client::Core
         if (result.has_value()) {
             rtp::ecs::Entity newEnemy = result.value();
             _spawnedEnemy.push_back(newEnemy);
-            rtp::log::debug("Enemy spawned (ID: {}) at index {}. Total: {} enemies", 
-                           static_cast<std::uint32_t>(newEnemy), newIndex, _spawnedEnemy.size());
+            rtp::log::debug(
+                "Enemy spawned (ID: {}) at index {}. Total: {} enemies",
+                static_cast<std::uint32_t>(newEnemy), newIndex,
+                _spawnedEnemy.size());
         } else {
-            rtp::log::error("Failed to spawn enemy: {}", result.error().message());
+            rtp::log::error("Failed to spawn enemy: {}",
+                            result.error().message());
         }
     }
 
-    void Application::spawnEnemy2(const rtp::Vec2f& position) {
+    void Application::spawnEnemy2(const rtp::Vec2f &position)
+    {
         std::size_t newIndex = _spawnedEnemy.size();
-        
-        Game::EntityTemplate scoutTemplate = 
+
+        Game::EntityTemplate scoutTemplate =
             Game::EntityTemplate::createBasicScout2(position);
 
         auto result = _entityBuilder.spawn(scoutTemplate);
@@ -887,64 +1525,82 @@ namespace Client::Core
         if (result.has_value()) {
             rtp::ecs::Entity newEnemy = result.value();
             _spawnedEnemy.push_back(newEnemy);
-            rtp::log::debug("Enemy spawned (ID: {}) at index {}. Total: {} enemies", 
-                           static_cast<std::uint32_t>(newEnemy), newIndex, _spawnedEnemy.size());
+            rtp::log::debug(
+                "Enemy spawned (ID: {}) at index {}. Total: {} enemies",
+                static_cast<std::uint32_t>(newEnemy), newIndex,
+                _spawnedEnemy.size());
         } else {
-            rtp::log::error("Failed to spawn enemy: {}", result.error().message());
+            rtp::log::error("Failed to spawn enemy: {}",
+                            result.error().message());
         }
     }
 
-    void Application::killEnemy(std::size_t index) {
+    void Application::killEnemy(std::size_t index)
+    {
         if (index >= _spawnedEnemy.size()) {
-            rtp::log::warning("Cannot kill enemy: index {} out of bounds (0-{})", 
-                            index, _spawnedEnemy.empty() ? 0 : _spawnedEnemy.size() - 1);
+            rtp::log::warning(
+                "Cannot kill enemy: index {} out of bounds (0-{})", index,
+                _spawnedEnemy.empty() ? 0 : _spawnedEnemy.size() - 1);
             return;
         }
 
         rtp::ecs::Entity entityToKill = _spawnedEnemy.at(index);
 
         _entityBuilder.kill(entityToKill);
-        _spawnedEnemy.erase(_spawnedEnemy.begin() + static_cast<std::vector<rtp::ecs::Entity>::difference_type>(index));
+        _spawnedEnemy.erase(
+            _spawnedEnemy.begin() +
+            static_cast<std::vector<rtp::ecs::Entity>::difference_type>(index));
 
-        rtp::log::debug("Enemy killed (ID: {}) at index {}. Remaining: {} enemies", 
-                       static_cast<std::uint32_t>(entityToKill), index, _spawnedEnemy.size());
+        rtp::log::debug(
+            "Enemy killed (ID: {}) at index {}. Remaining: {} enemies",
+            static_cast<std::uint32_t>(entityToKill), index,
+            _spawnedEnemy.size());
     }
 
-    void Application::killProjectile(std::size_t index) {
+    void Application::killProjectile(std::size_t index)
+    {
         if (index >= _projectiles.size()) {
-            rtp::log::warning("Cannot kill projectile: index {} out of bounds (0-{})", 
-                            index, _projectiles.empty() ? 0 : _projectiles.size() - 1);
+            rtp::log::warning(
+                "Cannot kill projectile: index {} out of bounds (0-{})", index,
+                _projectiles.empty() ? 0 : _projectiles.size() - 1);
             return;
         }
 
         rtp::ecs::Entity entityToKill = _projectiles.at(index);
 
         _entityBuilder.kill(entityToKill);
-        _projectiles.erase(_projectiles.begin() + static_cast<std::vector<rtp::ecs::Entity>::difference_type>(index));
+        _projectiles.erase(
+            _projectiles.begin() +
+            static_cast<std::vector<rtp::ecs::Entity>::difference_type>(index));
 
-        rtp::log::debug("Projectile killed (ID: {}) at index {}. Remaining: {} projectiles", 
-                       static_cast<std::uint32_t>(entityToKill), index, _projectiles.size());
+        rtp::log::debug(
+            "Projectile killed (ID: {}) at index {}. Remaining: {} projectiles",
+            static_cast<std::uint32_t>(entityToKill), index,
+            _projectiles.size());
     }
 
     void Application::render()
     {
         // Déterminer si on applique le shader colorblind
-        bool applyShader = _shaderLoaded && 
-                           _currentState == GameState::Playing && 
-                           _settings.getColorBlindMode() != ColorBlindMode::None;
-        
+        bool applyShader = _shaderLoaded &&
+                           _currentState ==
+                           GameState::Playing &&
+                           _settings.getColorBlindMode() !=
+                           ColorBlindMode::None;
+
         if (applyShader) {
             // Render to texture first
             _renderTexture.clear(sf::Color::Black);
 
             _window.clear(sf::Color::Black);
-            auto& renderSys = _systemManager.getSystem<rtp::client::RenderSystem>();
+            auto &renderSys =
+                _systemManager.getSystem<rtp::client::RenderSystem>();
             renderSys.update(_lastDt);
-            
 
-            sf::RectangleShape overlay(sf::Vector2f(UIConstants::WINDOW_WIDTH, UIConstants::WINDOW_HEIGHT));
+            sf::RectangleShape overlay(sf::Vector2f(
+                UIConstants::WINDOW_WIDTH, UIConstants::WINDOW_HEIGHT));
             overlay.setPosition(sf::Vector2f(0.0f, 0.0f));
-            
+
             // Appliquer une teinte selon le mode
             switch (_settings.getColorBlindMode()) {
                 case ColorBlindMode::Protanopia:
@@ -962,25 +1618,38 @@ namespace Client::Core
                 default:
                     break;
             }
-            
+
             _window.draw(overlay);
-            
+
         } else {
             // Rendu normal sans filtre
             _window.clear(sf::Color::Black);
-            
-            if (_currentState == GameState::Menu || 
-                _currentState == GameState::Settings || 
-                _currentState == GameState::KeyBindings ||
+
+            if (_currentState ==
+                GameState::Menu ||
+                _currentState ==
+                GameState::Login ||
+                _currentState ==
+                GameState::Lobby ||
+                _currentState ==
+                GameState::CreateRoom ||
+                _currentState ==
+                GameState::RoomWaiting ||
+                _currentState ==
+                GameState::Settings ||
+                _currentState ==
+                GameState::KeyBindings ||
                 _currentState == GameState::Paused) {
-                auto& uiSys = _systemManager.getSystem<Client::Systems::UIRenderSystem>();
-                uiSys.update(0.0f);
+                auto &uiSys =
+                    _systemManager.getSystem<Client::Systems::UIRenderSystem>();
+                uiSys.update(_lastDt);
             } else if (_currentState == GameState::Playing) {
-                auto& renderSys = _systemManager.getSystem<rtp::client::RenderSystem>();
+                auto &renderSys =
+                    _systemManager.getSystem<rtp::client::RenderSystem>();
                 renderSys.update(_lastDt);
             }
         }
-        
+
         _window.display();
     }
-}
+} // namespace Client::Core
