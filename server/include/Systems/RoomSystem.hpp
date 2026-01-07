@@ -102,7 +102,7 @@ namespace rtp::server {
              * @param sessionId ID of the network session
              * @param packet Packet containing the room list request data
              */
-            void listAllRooms(uint32_t sessionId, const rtp::net::Packet &packet);
+            void listAllRooms(uint32_t sessionId);
 
             /**
              * @brief Handle chat message in the room based on client request

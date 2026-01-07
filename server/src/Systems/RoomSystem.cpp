@@ -131,7 +131,7 @@ namespace rtp::server
         }
     }
 
-    void RoomSystem::listAllRooms(uint32_t sessionId, const rtp::net::Packet &packet)
+    void RoomSystem::listAllRooms(uint32_t sessionId)
     {
         std::lock_guard lock(_mutex);
         log::info("Handle List Rooms request from Session ID {}", sessionId);

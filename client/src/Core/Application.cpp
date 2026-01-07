@@ -48,7 +48,7 @@ namespace Client::Core
         : _window(sf::VideoMode({static_cast<unsigned int>(UIConstants::WINDOW_WIDTH), 
                                  static_cast<unsigned int>(UIConstants::WINDOW_HEIGHT)}), 
                   "Air-Trap - R-Type Clone")
-        , _systemManager(_registry), _entityBuilder(_registry), _clientNetwork("185.98.136.30", 5000)
+        , _systemManager(_registry), _entityBuilder(_registry), _clientNetwork("127.0.0.1", 5000)
     {
         _window.setFramerateLimit(60);
 
@@ -83,6 +83,9 @@ namespace Client::Core
     void Application::run()
     {
         sf::Clock clock;
+        _systemManager.getSystem<rtp::client::ClientNetworkSystem>().tryLogin("don", "don");
+        _systemManager.getSystem<rtp::client::ClientNetworkSystem>().tryRegister("don", "don1");
+        _systemManager.getSystem<rtp::client::ClientNetworkSystem>().RequestListRooms();
         while (_window.isOpen()) {
             sf::Time deltaTime = clock.restart();
             processInput();

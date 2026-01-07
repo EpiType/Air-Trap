@@ -115,7 +115,7 @@ namespace rtp::server
              * @param sessionId Unique identifier of the player requesting the room list
              * @param packet Reference to the received Packet
              */
-            void handleListRooms(uint32_t sessionId, const net::Packet &packet);
+            void handleListRooms(uint32_t sessionId);
 
             /**
              * @brief Handle a generic incoming packet from a player

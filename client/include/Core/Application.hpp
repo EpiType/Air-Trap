@@ -78,11 +78,13 @@ private:
     void initKeyBindingMenu();
     void initPauseMenu();
     void setupSettingsCallbacks();
-    
+
+private:    
     void processInput();
     void update(sf::Time delta);
     void render();
     
+private:
     void processMenuInput(const sf::Event& event);
     void processGameInput(const sf::Event& event);
     void processSettingsInput(const sf::Event& event);
@@ -97,7 +99,8 @@ private:
     void spawnProjectile(const rtp::Vec2f& position);
     void killEnemy(std::size_t index);
     void killProjectile(std::size_t index);
-    
+
+private:
     std::vector<rtp::ecs::Entity> _parallaxLayers;
     std::vector<rtp::ecs::Entity> _spawnedEnemy;
     std::vector<rtp::ecs::Entity> _projectiles;
