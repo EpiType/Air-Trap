@@ -396,9 +396,8 @@ namespace rtp::net
     {
         *this << data.netId;
         *this << data.type;
-        *this << data.position.x;
-        *this << data.position.y;
-        *this << data.entityType;
+        *this << data.posX;
+        *this << data.posY;
         return *this;
     }
 
@@ -407,9 +406,8 @@ namespace rtp::net
     {
         *this >> data.netId;
         *this >> data.type;
-        *this >> data.position.x;
-        *this >> data.position.y;
-        *this >> data.entityType;
+        *this >> data.posX;
+        *this >> data.posY;
         return *this;
     }
 

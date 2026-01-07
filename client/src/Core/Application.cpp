@@ -127,7 +127,7 @@ namespace Client::Core
             _registry, _window, _settings);
 
         _systemManager.addSystem<rtp::client::ClientNetworkSystem>(
-            _clientNetwork, _registry);
+            _clientNetwork, _registry, _entityBuilder);
     }
 
     void Application::initMenu()

@@ -20,24 +20,12 @@ namespace rtp::server
     {
         auto view = _registry.zipView<
             rtp::ecs::components::Transform,
-            rtp::ecs::components::server::InputComponent
+            rtp::ecs::components::Velocity
         >();
 
-        constexpr float speed = 200.f;
-
-        for (auto&& [tf, input] : view) {
-            float dx = 0.f;
-            float dy = 0.f;
-
-            using Bits = rtp::ecs::components::server::InputComponent::InputBits;
-
-            if (input.mask & Bits::MoveUp)    dy -= 1.f; /* Up */
-            if (input.mask & Bits::MoveDown)  dy += 1.f; /* Down */
-            if (input.mask & Bits::MoveLeft)  dx -= 1.f; /* Left */
-            if (input.mask & Bits::MoveRight) dx += 1.f; /* Right */
-
-            tf.position.x += dx * speed * dt;
-            tf.position.y += dy * speed * dt;
+        for (auto&& [tf, vel] : view) {
+            tf.position.x += vel.direction.x * dt;
+            tf.position.y += vel.direction.y * dt;
         }
     }
 } // namespace rtp::server

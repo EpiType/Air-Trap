@@ -49,6 +49,11 @@ namespace rtp::server {
             };
 
         public:
+            
+            using RoomStartedCb = std::function<void(uint32_t roomId)>;
+
+            void setOnRoomStarted(RoomStartedCb cb) { _onRoomStarted = std::move(cb); }
+
             /** 
              * @brief Constructor for RoomSystem
              * @param network Reference to the server network manager
@@ -116,6 +121,13 @@ namespace rtp::server {
              */
             void launchReadyRooms(float dt);
 
+            /**
+             * @brief Get a room by its ID
+             * @param roomId ID of the room
+             * @return Shared pointer to the Room instance, or nullptr if not found
+             */
+            std::shared_ptr<Room> getRoom(uint32_t roomId);
+
         private:
             ServerNetwork& _network;                          /**< Reference to the server network manager */
             rtp::ecs::Registry& _registry;                    /**< Reference to the entity registry */
@@ -124,6 +136,7 @@ namespace rtp::server {
             uint32_t _nextRoomId = 1;                         /**< Next available room ID */
             uint32_t _lobbyId = 0;                            /**< ID of the main lobby room */  
             mutable std::mutex _mutex;                        /**< Mutex for thread-safe operations */
+            RoomStartedCb _onRoomStarted;                     /**< Callback for when a room starts */
 
     };
 } // namespace rtp::server

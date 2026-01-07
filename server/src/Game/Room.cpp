@@ -188,18 +188,20 @@ namespace rtp::server
         return _state;
     }
 
-    void Room::startGame(float dt)
+    bool Room::startGame(float dt)
     {
         std::lock_guard lock(_mutex);
         _startedDt += dt;
+
         if (_state != State::Waiting) {
             log::warning("Room '{}' (ID: {}) cannot start game: Invalid state",
                         _name, _id);
-            return;
+            return false;
         }
 
         _state = State::InGame;
         log::info("Game started in Room '{}' (ID: {})", _name, _id);
+        return true;
     }
 
     void Room::forceFinishGame(void)

@@ -166,7 +166,7 @@ namespace rtp::server
              * @brief Start the game in the room
              * @param dt Get the delta time since last update
              */
-            void startGame(float dt);
+            bool startGame(float dt);
 
             /**
              * @brief Finish the game in the room

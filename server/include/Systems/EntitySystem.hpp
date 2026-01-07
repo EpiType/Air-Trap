@@ -12,12 +12,16 @@
     #include "RType/ECS/Registry.hpp"
     #include "Game/Player.hpp"
     #include "ServerNetwork/ServerNetwork.hpp"
+    #include "RType/Network/Packet.hpp"
 
     #include "RType/ECS/Components/InputComponent.hpp"
     #include "RType/ECS/Components/Transform.hpp"
     #include "RType/ECS/Components/Velocity.hpp"
     #include "RType/ECS/Components/NetworkId.hpp"
     #include "RType/ECS/Components/EntityType.hpp"
+    #include "RType/ECS/Components/MouvementPattern.hpp"
+    #include "RType/ECS/Components/IABehavior.hpp"
+    #include "RType/ECS/Components/RoomId.hpp"
 
 /**
  * @namespace rtp::server
@@ -52,7 +56,14 @@ namespace rtp::server {
              * @brief Create a new enemy entity in the ECS
              * @return The ID of the created enemy entity
              */
-            uint32_t creaetEnemyEntity(const Vec2f& position);
+            uint32_t creaetEnemyEntity(
+                uint32_t roomId,
+                const rtp::Vec2f& pos,
+                rtp::ecs::components::Patterns pattern,
+                float speed,
+                float amplitude,
+                float frequency
+            );
 
         protected:
             rtp::ecs::Registry& _registry;   /**< Reference to the entity registry */

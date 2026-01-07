@@ -1,12 +1,12 @@
 /**
- * File   : MovementSystem.hpp
+ * File   : PlayerMouvementSystem.hpp
  * License: MIT
  * Author : Elias Josué HAJJAR LLAUQUEN <elias-josue.hajjar-llauquen@epitech.eu>
  * Date   : 11/12/2025
  */
 
-#ifndef RTYPE_MOVEMENT_SYSTEM_HPP_
-    #define RTYPE_MOVEMENT_SYSTEM_HPP_
+#ifndef RTYPE_PLAYER_MOUVEMENT_SYSTEM_HPP_
+    #define RTYPE_PLAYER_MOUVEMENT_SYSTEM_HPP_
 
     #include "RType/ECS/ISystem.hpp"
     #include "RType/ECS/Registry.hpp"
@@ -14,6 +14,7 @@
     #include "RType/ECS/Components/InputComponent.hpp"
     #include "RType/ECS/Components/Transform.hpp"
     #include "RType/ECS/Components/Velocity.hpp"
+    #include "RType/ECS/Components/EntityType.hpp"
 
 /**
  * @namespace rtp::server
@@ -21,19 +22,19 @@
  */
 namespace rtp::server {
     /**
-     * @class MovementSystem
-     * @brief System to handle entity movement based on input components.
+     * @class PlayerMouvementSystem
+     * @brief System to handle player entity movement based on input components.
      */
-    class MovementSystem : public rtp::ecs::ISystem {
+    class PlayerMouvementSystem : public rtp::ecs::ISystem {
         public:
             /**
-             * @brief Constructor for MovementSystem
+             * @brief Constructor for PlayerMouvementSystem
              * @param registry Reference to the entity registry
              */
-            MovementSystem(rtp::ecs::Registry& registry);
-            
+            PlayerMouvementSystem(rtp::ecs::Registry& registry);
+
             /**
-             * @brief Update movement system logic for one frame
+             * @brief Update player movement system logic for one frame
              * @param dt Time elapsed since last update in seconds
              */
             void update(float dt) override;
@@ -42,5 +43,4 @@ namespace rtp::server {
             rtp::ecs::Registry& _registry;   /**< Reference to the entity registry */
     };
 }
-
-#endif /* !RTYPE_MOVEMENT_SYSTEM_HPP_ */
+#endif /* !RTYPE_PLAYER_MOUVEMENT_SYSTEM_HPP_ */
