@@ -88,14 +88,6 @@ namespace Client::Core
     void Application::run()
     {
         sf::Clock clock;
-        _systemManager.getSystem<rtp::client::ClientNetworkSystem>().tryLogin(
-            "don", "don");
-        _systemManager.getSystem<rtp::client::ClientNetworkSystem>()
-            .tryRegister("don", "don1");
-        _systemManager.getSystem<rtp::client::ClientNetworkSystem>()
-            .RequestListRooms();
-        _systemManager.getSystem<rtp::client::ClientNetworkSystem>()
-            .tryCreateRoom("Room1", 4, 0.5f, 1.0f, 10, 42, 1);
         while (_window.isOpen()) {
             sf::Time deltaTime = clock.restart();
             processInput();
@@ -174,7 +166,7 @@ namespace Client::Core
                                      UIConstants::BUTTON_HEIGHT};
             button.onClick = [this]() {
                 rtp::log::info("Play button clicked!");
-                changeState(GameState::Playing);
+                changeState(GameState::Lobby);
             };
 
             _registry.addComponent<rtp::ecs::components::ui::Button>(playBtn,
@@ -417,7 +409,7 @@ namespace Client::Core
             if (eRes) {
                 auto e = eRes.value();
                 rtp::ecs::components::ui::Text t;
-                t.content = "";
+                t.content = "Password";
                 t.position = {360.0f, 310.0f};
                 t.fontPath = "assets/fonts/main.ttf";
                 t.fontSize = 24;
@@ -433,7 +425,7 @@ namespace Client::Core
                 rtp::ecs::components::ui::TextInput in;
                 in.position = {360.0f, 345.0f};
                 in.size = {560.0f, 45.0f};
-                in.placeholder = "password";
+                in.placeholder = "";
                 in.isPassword = true;
                 in.fontPath = "assets/fonts/main.ttf";
                 in.fontSize = 22;
@@ -480,36 +472,6 @@ namespace Client::Core
                 _registry.addComponent<rtp::ecs::components::ui::Button>(e, b);
             }
         }
-
-        // {
-        //     auto eRes = _registry.spawnEntity();
-        //     if (eRes) {
-        //         auto e = eRes.value();
-        //         rtp::ecs::components::ui::Button b;
-        //         b.text = "LOBBY (debug)";
-        //         b.position = {360.0f, 510.0f};
-        //         b.size = {560.0f, 55.0f};
-        //         b.onClick = [this]() {
-        //             changeState(GameState::Menu);
-        //             _systemManager.getSystem<rtp::client::ClientNetworkSystem>().RequestListRooms();
-        //         };
-        //         _registry.addComponent<rtp::ecs::components::ui::Button>(e,
-        //         b);
-        //     }
-        // }
-
-        {
-            auto eRes = _registry.spawnEntity();
-            if (eRes) {
-                auto e = eRes.value();
-                rtp::ecs::components::ui::Button b;
-                b.text = "BACK";
-                b.position = {360.0f, 600.0f};
-                b.size = {560.0f, 55.0f};
-                b.onClick = [this]() { changeState(GameState::Menu); };
-                _registry.addComponent<rtp::ecs::components::ui::Button>(e, b);
-            }
-        }
     }
 
     void Application::initLobbyScene()
@@ -549,7 +511,6 @@ namespace Client::Core
                         _systemManager
                             .getSystem<rtp::client::ClientNetworkSystem>();
                     n.RequestListRooms();
-                    // V1: rebuild
                     changeState(GameState::Lobby);
                 };
                 _registry.addComponent<rtp::ecs::components::ui::Button>(e, b);
@@ -587,6 +548,21 @@ namespace Client::Core
                 .getAvailableRooms();
         float y = 230.0f;
         int shown = 0;
+
+        if (rooms.empty()) {
+            auto eRes = _registry.spawnEntity();
+            if (eRes) {
+                auto e = eRes.value();
+                rtp::ecs::components::ui::Text t;
+                t.content = "No available rooms.";
+                t.position = {500.0f, y + 10.0f};
+                t.fontPath = "assets/fonts/main.ttf";
+                t.fontSize = 22;
+                t.zIndex = 10;
+                _registry.addComponent<rtp::ecs::components::ui::Text>(e, t);
+            }
+            return;
+        }
 
         for (const auto &r : rooms) {
             if (shown >= 6)
@@ -1430,6 +1406,14 @@ namespace Client::Core
 
         auto &menuSys = _systemManager.getSystem<Client::Systems::MenuSystem>();
         menuSys.update(_lastDt);
+        
+        if (_currentState == GameState::Login) {
+            if (_systemManager
+                    .getSystem<rtp::client::ClientNetworkSystem>()
+                    .isLoggedIn()) {
+                changeState(GameState::Menu);
+            }
+        }
 
         if (_currentState ==
             GameState::Settings ||
