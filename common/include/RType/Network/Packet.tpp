@@ -120,34 +120,32 @@ namespace rtp::net
     //////////////////////////////////////////////////////////////////////////
 
     template <>
-    inline auto Packet::operator<<(PlayerConnectPayload data) -> Packet &
+    inline auto Packet::operator<<(ConnectPayload data) -> Packet &
     {
         *this << data.sessionId;
         return *this;
     }
 
     template <>
-    inline auto Packet::operator>>(PlayerConnectPayload &data) -> Packet &
+    inline auto Packet::operator>>(ConnectPayload &data) -> Packet &
     {
         *this >> data.sessionId;
         return *this;
     }
 
     template <>
-    inline auto Packet::operator<<(PlayerLoginPayload data) -> Packet &
+    inline auto Packet::operator<<(LoginPayload data) -> Packet &
     {
-        *this << data.sessionId;
         *this << std::string_view(data.username, strnlen(data.username, sizeof(data.username)));
         *this << std::string_view(data.password, strnlen(data.password, sizeof(data.password)));
         return *this;
     }
 
     template <>
-    inline auto Packet::operator>>(PlayerLoginPayload &data) -> Packet &
+    inline auto Packet::operator>>(LoginPayload &data) -> Packet &
     {
         std::string username;
         std::string password;
-        *this >> data.sessionId;
         *this >> username;
         *this >> password;
         std::strncpy(data.username, username.c_str(), sizeof(data.username));
@@ -158,20 +156,18 @@ namespace rtp::net
     }
 
     template <>
-    inline auto Packet::operator<<(PlayerRegisterPayload data) -> Packet &
+    inline auto Packet::operator<<(RegisterPayload data) -> Packet &
     {
-        *this << data.sessionId;
         *this << std::string_view(data.username, strnlen(data.username, sizeof(data.username)));
         *this << std::string_view(data.password, strnlen(data.password, sizeof(data.password)));
         return *this;
     }
 
     template <>
-    inline auto Packet::operator>>(PlayerRegisterPayload &data) -> Packet &
+    inline auto Packet::operator>>(RegisterPayload &data) -> Packet &
     {
         std::string username;
         std::string password;
-        *this >> data.sessionId;
         *this >> username;
         *this >> password;
         std::strncpy(data.username, username.c_str(), sizeof(data.username));
@@ -184,7 +180,6 @@ namespace rtp::net
     template <>
     inline auto Packet::operator<<(LoginResponsePayload data) -> Packet &
     {
-        *this << data.sessionId;
         *this << data.success;
         *this << std::string_view(data.username, strnlen(data.username, sizeof(data.username)));
         return *this;
@@ -193,7 +188,6 @@ namespace rtp::net
     template <>
     inline auto Packet::operator>>(LoginResponsePayload &data) -> Packet &
     {
-        *this >> data.sessionId;
         *this >> data.success;
         std::string username;
         *this >> username;
@@ -205,7 +199,6 @@ namespace rtp::net
     template <>
     inline auto Packet::operator<<(RegisterResponsePayload data) -> Packet &
     {
-        *this << data.sessionId;
         *this << data.success;
         *this << std::string_view(data.username, strnlen(data.username, sizeof(data.username)));
         return *this;
@@ -214,7 +207,6 @@ namespace rtp::net
     template <>
     inline auto Packet::operator>>(RegisterResponsePayload &data) -> Packet &
     {
-        *this >> data.sessionId;
         *this >> data.success;
         std::string username;
         *this >> username;
@@ -304,19 +296,19 @@ namespace rtp::net
         return *this;
     }
 
-    template <>
-    inline auto Packet::operator<<(LeaveRoomPayload data) -> Packet &
-    {
-        *this << data.roomId;
-        return *this;
-    }
+    // template <>
+    // inline auto Packet::operator<<(LeaveRoomPayload data) -> Packet &
+    // {
+    //     *this << data.roomId;
+    //     return *this;
+    // }
 
-    template <>
-    inline auto Packet::operator>>(LeaveRoomPayload &data) -> Packet &
-    {
-        *this >> data.roomId;
-        return *this;
-    }
+    // template <>
+    // inline auto Packet::operator>>(LeaveRoomPayload &data) -> Packet &
+    // {
+    //     *this >> data.roomId;
+    //     return *this;
+    // }
 
     template <>
     inline auto Packet::operator<<(RoomSnapshotPayload data) -> Packet &

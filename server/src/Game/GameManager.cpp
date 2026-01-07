@@ -90,7 +90,7 @@ namespace rtp::server
                     _serverNetworkSystem->handleInput(event.sessionId, event.packet);
                     break;
                 case OpCode::ListRooms:
-                    handleListRooms(event.sessionId, event.packet);
+                    handleListRooms(event.sessionId);
                     break;
                 case OpCode::CreateRoom:
                     handleCreateRoom(event.sessionId, event.packet);
@@ -177,9 +177,9 @@ namespace rtp::server
         }
     }
 
-    void GameManager::handleListRooms(uint32_t sessionId, const Packet &packet)
+    void GameManager::handleListRooms(uint32_t sessionId)
     {
-        _roomSystem->listAllRooms(sessionId, packet);
+        _roomSystem->listAllRooms(sessionId);
     }
 
     void GameManager::handleCreateRoom(uint32_t sessionId, const Packet &packet)

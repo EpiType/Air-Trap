@@ -41,7 +41,7 @@ namespace rtp::server {
 
         if (snapshots.empty()) return;
 
-        rtp::net::Packet packet(rtp::net::OpCode::WorldUpdate);
+        rtp::net::Packet packet(rtp::net::OpCode::RoomUpdate);
         rtp::net::RoomSnapshotPayload header = {serverTick, (uint16_t)snapshots.size()};
         
         packet << header << snapshots;
@@ -80,7 +80,7 @@ namespace rtp::server {
     }
 
     uint32_t ServerNetworkSystem::handlePlayerConnection(uint32_t sessionId, const rtp::net::Packet& packet) {
-        rtp::net::PlayerConnectPayload payload;
+        rtp::net::ConnectPayload payload;
         rtp::net::Packet tempPacket = packet;
         tempPacket >> payload;
         rtp::log::info("Player new connection [not logged]: session={}", payload.sessionId);

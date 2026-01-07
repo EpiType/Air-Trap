@@ -29,7 +29,7 @@ namespace rtp::server {
         std::string username;
         std::string password;
 
-        rtp::net::PlayerLoginPayload payload;
+        rtp::net::LoginPayload payload;
         rtp::net::Packet tempPacket = packet;
         tempPacket >> payload;
         username = std::string(payload.username);
@@ -66,14 +66,14 @@ namespace rtp::server {
         std::string username;
         std::string password;
 
-        rtp::net::PlayerRegisterPayload payload;
+        rtp::net::RegisterPayload payload;
         rtp::net::Packet tempPacket = packet;
         tempPacket >> payload;
         username = std::string(payload.username);
         password = std::string(payload.password);
 
-        rtp::log::info("Registration attempt: session={} username='{}' password='{}'",
-                       sessionId, username, password);
+        rtp::log::info("Registration attempt: username='{}' password='{}'",
+                       username, password);
 
         if (!outFile) {
             rtp::log::error("Failed to open logins.txt for writing");
@@ -111,7 +111,6 @@ namespace rtp::server {
     {
         rtp::net::Packet responsePacket(rtp::net::OpCode::LoginResponse);
         rtp::net::LoginResponsePayload payload{};
-        payload.sessionId = sessionId;
         payload.success = success;
         std::strncpy(payload.username, username.c_str(), sizeof(payload.username) - 1);
         payload.username[sizeof(payload.username) - 1] = '\0';
@@ -123,7 +122,6 @@ namespace rtp::server {
     {
         rtp::net::Packet responsePacket(rtp::net::OpCode::RegisterResponse);
         rtp::net::RegisterResponsePayload payload{};
-        payload.sessionId = sessionId;
         payload.success = success;
         std::strncpy(payload.username, username.c_str(), sizeof(payload.username) - 1);
         payload.username[sizeof(payload.username) - 1] = '\0';

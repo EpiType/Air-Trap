@@ -132,6 +132,7 @@ namespace rtp::server
 
             uint32_t _entityId = 0;      /**< Associated entity ID in the ECS */
             mutable std::mutex _mutex;   /**< Mutex to protect access to player state */
+            bool _isMuted = false;       /**< Mute status of the player */
     };
 
     /**

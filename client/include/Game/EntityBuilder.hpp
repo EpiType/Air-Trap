@@ -248,7 +248,7 @@ struct EntityTemplate {
 
     static EntityTemplate rt2_8(const rtp::Vec2f& initialPos)
     {
-        return makeFromDef(initialPos, k_rt2_8);
+        return makeFromDef(initialPos, k_rt2_7);
     }
 
     static EntityTemplate rt2_7(const rtp::Vec2f& initialPos)

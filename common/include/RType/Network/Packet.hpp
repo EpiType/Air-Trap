@@ -105,7 +105,7 @@ namespace rtp::net
         InputTick = 0x10,               /**< Client input state */
 
         // Game State (S -> C)
-        WorldUpdate = 0x20,             /**< Entity state snapshot */
+        // RoomUpdate = 0x20,             /**< Entity state snapshot */
         EntitySpawn = 0x21,             /**< Entity spawn notification */
         EntityDeath = 0x22,             /**< Entity death notification */
     };
@@ -144,13 +144,21 @@ namespace rtp::net
 
     /***** Connection Management *****/
     /**
-     * @struct PlayerConnectPayload
+     * @struct ConnectPayload
      * @brief Player connection data sended
      * @callergraph Client
      * @related Hello OpCode
      */
-    struct PlayerConnectPayload {
+    struct ConnectPayload {
         uint32_t sessionId;             /**< Session identifier */
+    };
+
+    /**
+     * @struct BooleanPayload
+     * @brief Generic boolean response payload
+     */
+    struct BooleanPayload {
+        uint8_t status;                 /**< Status code */
     };
 
     /***** Authentication *****/
@@ -160,20 +168,18 @@ namespace rtp::net
      * @callergraph Client
      * @related LoginRequest OpCode
      */
-    struct PlayerLoginPayload {
-        uint32_t sessionId;             /**< Session identifier */
+    struct LoginPayload {
         char username[32];              /**< Player username */
         char password[32];              /**< Player password */
     };
 
     /**
-     * @struct PlayerRegisterPayload
+     * @struct RegisterPayload
      * @brief Player registration data sended by client
      * @callergraph Client
      * @related RegisterRequest OpCode
      */
-    struct PlayerRegisterPayload {
-        uint32_t sessionId;             /**< Session identifier */
+    struct RegisterPayload {
         char username[32];              /**< Player username */
         char password[32];              /**< Player password */
     };
@@ -185,7 +191,6 @@ namespace rtp::net
      * @related LoginResponse OpCode
      */
     struct LoginResponsePayload {
-        uint32_t sessionId;             /**< Session identifier */
         uint8_t success;                /**< Login success flag */
         char username[32];              /**< Player username */
     };
@@ -197,7 +202,6 @@ namespace rtp::net
      * @related RegisterResponse OpCode
      */
     struct RegisterResponsePayload {
-        uint32_t sessionId;             /**< Session identifier */
         uint8_t success;                /**< Registration success flag */
         char username[32];              /**< Player username */
     };
@@ -246,16 +250,6 @@ namespace rtp::net
      */
     struct JoinRoomPayload {
         uint32_t roomId;                /**< Room identifier to join */
-    };
-
-    /**
-     * @struct LeaveRoomPayload
-     * @brief Data for leaving a room
-     * @callergraph Client
-     * @related LeaveRoom OpCode
-     */
-    struct LeaveRoomPayload {
-        uint32_t roomId;                /**< Room identifier to leave */
     };
 
     /**
@@ -315,15 +309,6 @@ namespace rtp::net
         Vec2f velocity;                 /**< Entity velocity */
         float rotation;                 /**< Entity rotation */
     };
-
-    // /**
-    //  * @struct WorldSnapshotPayload
-    //  * @brief World state snapshot data
-    //  */
-    // struct WorldSnapshotPayload {
-    //     uint32_t serverTick;            /**< Network entity identifier */
-    //     uint16_t entityCount;           /**< Entity position */
-    // };
 
     /**
      * @struct EntitySpawnPayload
