@@ -137,25 +137,44 @@ namespace rtp::server
         log::info("Handle List Rooms request from Session ID {}", sessionId);
 
         rtp::net::Packet responsePacket(rtp::net::OpCode::RoomList);
-        uint32_t roomCount = static_cast<uint32_t>(_rooms.size());
+
+        uint32_t roomCount = 0;
+        for (const auto& [roomId, roomPtr] : _rooms) {
+            (void)roomId;
+            if (roomPtr->getType() == Room::RoomType::Lobby)
+                continue;
+            ++roomCount;
+        }
+
         responsePacket << roomCount;
 
         for (const auto& [roomId, roomPtr] : _rooms) {
-            rtp::net::RoomInfo roomInfo;
+            (void)roomId;
+
+            if (roomPtr->getType() == Room::RoomType::Lobby)
+                continue;
+
+            rtp::net::RoomInfo roomInfo{};
             roomInfo.roomId = roomPtr->getId();
-            std::strncpy(roomInfo.roomName, roomPtr->getName().c_str(), sizeof(roomInfo.roomName));
+            std::strncpy(roomInfo.roomName,
+                        roomPtr->getName().c_str(),
+                        sizeof(roomInfo.roomName) - 1);
+            roomInfo.roomName[sizeof(roomInfo.roomName) - 1] = '\0';
+
             roomInfo.currentPlayers = roomPtr->getCurrentPlayerCount();
             roomInfo.maxPlayers = roomPtr->getMaxPlayers();
             roomInfo.difficulty = roomPtr->getDifficulty();
             roomInfo.speed = roomPtr->getSpeed();
+
             responsePacket << roomInfo;
+
             rtp::log::info("Listed Room ID {}: Name='{}', Players={}/{}",
-                      roomInfo.roomId, roomInfo.roomName,
-                      roomInfo.currentPlayers, roomInfo.maxPlayers);
+                        roomInfo.roomId, roomInfo.roomName,
+                        roomInfo.currentPlayers, roomInfo.maxPlayers);
         }
 
         _network.sendPacket(sessionId, responsePacket, rtp::net::NetworkMode::TCP);
-        rtp::log::info("Sent Room List to Session ID {}", sessionId);
+        rtp::log::info("Sent Room List ({} rooms) to Session ID {}", roomCount, sessionId);
     }
 
     void RoomSystem::chatInRoom(uint32_t sessionId, const rtp::net::Packet &packet)

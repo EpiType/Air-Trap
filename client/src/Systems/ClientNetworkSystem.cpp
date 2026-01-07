@@ -59,7 +59,8 @@ namespace rtp::client {
 
     void ClientNetworkSystem::RequestListRooms(void)
     {
-        _availableRooms.clear();
+        if (_availableRooms.size() > 0)
+            _availableRooms.clear();
         rtp::net::Packet packet(rtp::net::OpCode::ListRooms);
         _network.sendPacket(packet, rtp::net::NetworkMode::TCP);
     }
@@ -246,6 +247,11 @@ namespace rtp::client {
 
         uint32_t roomCount = 0;
         packet >> roomCount;
+
+        if (roomCount <= 0) {
+            rtp::log::info("No available rooms received from server.");
+            return;
+        }
 
         for (uint32_t i = 0; i < roomCount; ++i) {
             rtp::net::RoomInfo roomInfo{};
