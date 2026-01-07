@@ -22,8 +22,8 @@ namespace rtp::client {
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
-    ClientNetworkSystem::ClientNetworkSystem(ClientNetwork& network, rtp::ecs::Registry& registry)
-        : _network(network), _registry(registry) {}
+    ClientNetworkSystem::ClientNetworkSystem(ClientNetwork& network, rtp::ecs::Registry& registry, Client::Game::EntityBuilder builder)
+        : _network(network), _registry(registry), _builder(builder) {}
 
     void ClientNetworkSystem::update(float dt)
     {
@@ -197,6 +197,10 @@ namespace rtp::client {
                 _currentState = State::InGame;
                 break;
             }
+            case OpCode::EntitySpawn: {
+                onSpawnEntityFromServer(event.packet);
+                break;
+            }
             default:
                 rtp::log::warning("Unhandled OpCode received: {}", static_cast<uint8_t>(event.packet.header.opCode));
                 break;
@@ -324,7 +328,50 @@ namespace rtp::client {
         }
     }
 
+    void ClientNetworkSystem::onSpawnEntityFromServer(rtp::net::Packet& packet)
+    {
+        rtp::net::EntitySpawnPayload payload;
+        packet >> payload;
 
+        rtp::log::info("Spawning entity from server: NetID={}, Type={}, Position=({}, {})",
+            payload.netId, static_cast<int>(payload.type), payload.posX, payload.posY);
+
+        const rtp::Vec2f pos{payload.posX, payload.posY};
+
+        Client::Game::EntityTemplate t;
+        switch (static_cast<rtp::net::EntityType>(payload.type)) {
+            case rtp::net::EntityType::Scout:
+                t = Client::Game::EntityTemplate::rt2_4(pos); // exemple: scout
+                break;
+
+            case rtp::net::EntityType::Player:
+                // si tu as un template player côté client, utilise-le ici
+                // sinon fais un minimum (sprite de player, etc.)
+                t = Client::Game::EntityTemplate::rt1_1(pos); // placeholder si tu veux voir qqch
+                break;
+
+            default:
+                rtp::log::warning("Unknown entity type {}, fallback template", (int)payload.type);
+                t = Client::Game::EntityTemplate::rt2_2(pos);
+                break;
+        }
+
+        auto res = _builder.spawn(t);
+        if (!res) {
+            rtp::log::error("Failed to spawn entity from template: {}", res.error().message());
+            return;
+        }
+
+        auto e = res.value();
+
+        // IMPORTANT: associer le netId envoyé par le serveur
+        _registry.addComponent<rtp::ecs::components::NetworkId>(
+            e, rtp::ecs::components::NetworkId{payload.netId}
+        );
+
+        // (Optionnel) garder une map netId -> entity pour updates/kill
+        _netIdToEntity[payload.netId] = e;
+    }
 
     // void ClientNetworkSystem::spawnEntityFromServer(const rtp::net::EntitySpawnPayload& payload)
     // {

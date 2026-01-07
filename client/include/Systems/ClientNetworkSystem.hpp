@@ -18,6 +18,8 @@
     #include "RType/ECS/Components/Animation.hpp"
     #include "RType/Network/Packet.hpp"
 
+    #include "Game/EntityBuilder.hpp"
+
     #include <vector>
     #include <iostream>
     #include <list>
@@ -50,7 +52,7 @@ namespace rtp::client {
              * @param network Reference to the client network manager
              * @param registry Reference to the entity registry
              */
-            ClientNetworkSystem(ClientNetwork& network, rtp::ecs::Registry& registry);
+            ClientNetworkSystem(ClientNetwork& network, rtp::ecs::Registry& registry, Client::Game::EntityBuilder builder);
 
             /**
              * @brief Update system logic for one frame
@@ -162,6 +164,7 @@ namespace rtp::client {
             ClientNetwork& _network;                                       /**< Reference to the client network manager */
             rtp::ecs::Registry& _registry;                                 /**< Reference to the entity registry */
             std::unordered_map<uint32_t, rtp::ecs::Entity> _netIdToEntity; /**< Map of network IDs to entities */
+            Client::Game::EntityBuilder _builder;                          /**< Entity builder for spawning entities */
 
         private:
             bool _isInRoom = false;                                        /**< Flag indicating if the client is in a room */
@@ -190,6 +193,8 @@ namespace rtp::client {
             void onCreateRoomResponse(rtp::net::Packet& packet);
 
             void onLeaveRoomResponse(rtp::net::Packet& packet);
+
+            void onSpawnEntityFromServer(rtp::net::Packet& packet);
 
             // /**
             //  * @brief Disconnect a player based on session ID

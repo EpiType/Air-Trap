@@ -31,6 +31,23 @@ namespace rtp::server
         _playerSystem = std::make_unique<PlayerSystem>(_networkManager, _registry);
         _entitySystem = std::make_unique<EntitySystem>(_registry, _networkManager);
 
+        _roomSystem->setOnRoomStarted(
+            [this](uint32_t roomId) {
+                auto room = _roomSystem->getRoom(roomId);
+
+                for (auto& player : room->getPlayers()) {
+                    uint32_t entityId = _entitySystem->createPlayerEntity(player);
+                    _serverNetworkSystem->bindSessionToEntity(player->getId(), entityId);
+                }
+
+                for (int i = 0; i < 5; ++i) {
+                    _entitySystem->creaetEnemyEntity(roomId, {120.f + i * 15.f, 200.f + i * 8.f}, 
+                        rtp::ecs::components::Patterns::SineWave, 200.0f, 40.0f, 2.0f);
+                }
+            }
+        );
+
+
         log::info("GameManager initialized");
     }
 
@@ -204,8 +221,8 @@ namespace rtp::server
             );
         }
         _roomSystem->joinRoom(player, newId);
-        entityId = _entitySystem->createPlayerEntity(player);
-        _serverNetworkSystem->bindSessionToEntity(player->getId(), entityId);
+        // entityId = _entitySystem->createPlayerEntity(player);
+        // _serverNetworkSystem->bindSessionToEntity(player->getId(), entityId);
     }
 
     void GameManager::handleJoinRoom(uint32_t sessionId, const Packet &packet)
@@ -222,8 +239,8 @@ namespace rtp::server
         }
 
         _roomSystem->joinRoom(player, payload.roomId);
-        entityId = _entitySystem->createPlayerEntity(player);
-        _serverNetworkSystem->bindSessionToEntity(player->getId(), entityId);
+        // entityId = _entitySystem->createPlayerEntity(player);
+        // _serverNetworkSystem->bindSessionToEntity(player->getId(), entityId);
     }
 
     void GameManager::handleLeaveRoom(uint32_t sessionId, const Packet &packet)

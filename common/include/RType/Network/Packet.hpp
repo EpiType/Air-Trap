@@ -316,9 +316,9 @@ namespace rtp::net
      */
     struct EntitySpawnPayload {
         uint32_t netId;                 /**< Network entity identifier */
-        uint8_t type;                   /**< Entity type */
-        Vec2f position;                 /**< Spawn position */
-        EntityType entityType;          /**< Type of the entity */
+        uint8_t type;                   /**< Entity type from EntityType */
+        float posX;                     /**< Spawn X position */
+        float posY;                     /**< Spawn Y position */
     };
 
     /**

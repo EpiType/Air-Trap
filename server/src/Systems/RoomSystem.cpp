@@ -2,9 +2,11 @@
  * File   : RoomSystem.cpp
  * License: MIT
  * Author : Elias Josué HAJJAR
- *
+
+ * *
  * LLAUQUEN <elias-josue.hajjar-llauquen@epitech.eu>
- * Date   : 11/12/2025
+ * Date   :
+ * 11/12/2025
  */
 
 #include "Systems/RoomSystem.hpp"
@@ -63,9 +65,11 @@ namespace rtp::server
 
             auto it = _rooms.find(roomId);
             if (it == _rooms.end()) {
-                log::error("Failed to join Player {} to Room ID {}. Room does "
-                           "not exist.",
-                           player->getId(), roomId);
+                log::error(
+                    "Failed to join Player {} to Room ID {}. Room does " "not "
+                                                                         "exist"
+                                                                         ".",
+                    player->getId(), roomId);
                 return false;
             }
 
@@ -79,15 +83,23 @@ namespace rtp::server
             }
 
             if (!leaveRoom(player)) {
-                log::warning(" Could not leave previous room, maybe first "
-                             "connection ?. Player {} (Session ID {})",
-                             player->getId(), roomId);
+                log::warning(
+                    " Could not leave previous room, maybe first " "connection "
+                                                                   "?. Player "
+                                                                   "{} "
+                                                                   "(Session "
+                                                                   "ID {})",
+                    player->getId(), roomId);
             }
 
             if (!room->addPlayer(player)) {
-                log::error("Failed to join Player {} to Room ID {}. Could not "
-                           "add to new room.",
-                           player->getId(), roomId);
+                log::error(
+                    "Failed to join Player {} to Room ID {}. Could not " "add "
+                                                                         "to "
+                                                                         "new "
+                                                                         "room"
+                                                                         ".",
+                    player->getId(), roomId);
                 return false;
             }
 
@@ -224,7 +236,11 @@ namespace rtp::server
         }
 
         for (auto &roomPtr : toStart) {
-            roomPtr->startGame(dt);
+            const bool started = roomPtr->startGame(dt);
+
+            if (started && _onRoomStarted) {
+                _onRoomStarted(roomPtr->getId());
+            }
 
             if (roomPtr->getState() == Room::State::InGame) {
                 rtp::log::info("Launching Room ID {} as all players are ready.",
@@ -241,6 +257,17 @@ namespace rtp::server
                     roomPtr->getId());
             }
         }
+    }
+
+    std::shared_ptr<Room> RoomSystem::getRoom(uint32_t roomId)
+    {
+        std::lock_guard lock(_mutex);
+
+        auto it = _rooms.find(roomId);
+        if (it != _rooms.end()) {
+            return it->second;
+        }
+        return nullptr;
     }
 
 } // namespace rtp::server
