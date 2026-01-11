@@ -30,6 +30,7 @@
     #include "Systems/RoomSystem.hpp"
     #include "Systems/PlayerSystem.hpp"
     #include "Systems/EntitySystem.hpp"
+    #include "Systems/PlayerMouvementSystem.hpp"
 
     /* Components */
     #include "RType/ECS/Components/InputComponent.hpp"
@@ -170,6 +171,7 @@ namespace rtp::server
             std::unique_ptr<RoomSystem> _roomSystem;                   /**< Room system for handling room management */
             std::unique_ptr<PlayerSystem> _playerSystem;               /**< Player system for handling player-related operations */
             std::unique_ptr<EntitySystem> _entitySystem;               /**< Entity system for handling entity-related operations */
+            std::unique_ptr<PlayerMouvementSystem> _playerMouvementSystem; /**< Player movement system for handling player-specific movement logic */
 
             uint32_t _serverTick = 0;                                  /**< Current server tick for synchronization */
             mutable std::mutex _mutex;                                 /**< Mutex for thread-safe operations */

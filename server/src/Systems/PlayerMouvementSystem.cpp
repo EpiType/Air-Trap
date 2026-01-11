@@ -54,8 +54,8 @@ namespace rtp::server
                 dy /= len;
             }
 
-            vel.velocity.x = dx * speed;
-            vel.velocity.y = dy * speed;
+            vel.direction.x = dx * speed;
+            vel.direction.y = dy * speed;
         }
     }
 } // namespace rtp::server

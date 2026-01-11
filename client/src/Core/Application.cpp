@@ -166,6 +166,9 @@ namespace Client::Core
                                      UIConstants::BUTTON_HEIGHT};
             button.onClick = [this]() {
                 rtp::log::info("Play button clicked!");
+                _systemManager
+                    .getSystem<rtp::client::ClientNetworkSystem>()
+                    .RequestListRooms();
                 changeState(GameState::Lobby);
             };
 
@@ -262,6 +265,33 @@ namespace Client::Core
         rtp::log::info("Starting game...");
         createParallaxBackground();
 
+        _hudInit = false;
+
+        auto makeHudText = [&](const rtp::Vec2f& pos, unsigned size) -> rtp::ecs::Entity {
+            auto eRes = _registry.spawnEntity();
+            if (!eRes) return {};
+
+            auto e = eRes.value();
+            rtp::ecs::components::ui::Text t;
+            t.content = "";
+            t.position = pos;
+            t.fontPath = "assets/fonts/main.ttf";
+            t.fontSize = size;
+            t.red = 255; t.green = 255; t.blue = 255;
+            t.alpha = 255;
+            t.zIndex = 999; // au-dessus
+            _registry.addComponent<rtp::ecs::components::ui::Text>(e, t);
+            return e;
+        };
+
+        // Coin haut-droit
+        _hudPing     = makeHudText({980.0f, 15.0f}, 18);
+        _hudFps      = makeHudText({980.0f, 40.0f}, 18);
+        _hudScore    = makeHudText({980.0f, 65.0f}, 20);
+        _hudEntities = makeHudText({980.0f, 90.0f}, 18);
+
+        _hudInit = true;
+
         // NOTE: Menu entities are not deleted to avoid a crash in killEntity().
         // They remain in the ECS but are not rendered since only the
         // RenderSystem is active during gameplay (UIRenderSystem is only called
@@ -346,7 +376,12 @@ namespace Client::Core
             button.text = _translations.get("game.quit_to_menu");
             button.position = rtp::Vec2f{490.0f, 430.0f};
             button.size = rtp::Vec2f{300.0f, 60.0f};
-            button.onClick = [this]() { changeState(GameState::Menu); };
+            button.onClick = [this]() {
+                _systemManager
+                    .getSystem<rtp::client::ClientNetworkSystem>()
+                    .RequestListRooms();
+                changeState(GameState::Menu);
+            };
             _registry.addComponent<rtp::ecs::components::ui::Button>(btn,
                                                                      button);
         }
@@ -543,26 +578,28 @@ namespace Client::Core
             }
         }
 
+        sleep(1);
+
         const auto &rooms =
             _systemManager.getSystem<rtp::client::ClientNetworkSystem>()
                 .getAvailableRooms();
         float y = 230.0f;
         int shown = 0;
 
-        if (rooms.empty()) {
-            auto eRes = _registry.spawnEntity();
-            if (eRes) {
-                auto e = eRes.value();
-                rtp::ecs::components::ui::Text t;
-                t.content = "No available rooms.";
-                t.position = {500.0f, y + 10.0f};
-                t.fontPath = "assets/fonts/main.ttf";
-                t.fontSize = 22;
-                t.zIndex = 10;
-                _registry.addComponent<rtp::ecs::components::ui::Text>(e, t);
-            }
-            return;
-        }
+        // if (rooms.empty()) {
+        //     auto eRes = _registry.spawnEntity();
+        //     if (eRes) {
+        //         auto e = eRes.value();
+        //         rtp::ecs::components::ui::Text t;
+        //         t.content = "No available rooms.";
+        //         t.position = {500.0f, y + 10.0f};
+        //         t.fontPath = "assets/fonts/main.ttf";
+        //         t.fontSize = 22;
+        //         t.zIndex = 10;
+        //         _registry.addComponent<rtp::ecs::components::ui::Text>(e, t);
+        //     }
+        //     return;
+        // }
 
         for (const auto &r : rooms) {
             if (shown >= 6)
@@ -771,7 +808,7 @@ namespace Client::Core
                         _systemManager
                             .getSystem<rtp::client::ClientNetworkSystem>();
                     const std::string name =
-                        _uiRoomName.empty() ? "Room_Elias" : _uiRoomName;
+                        _uiRoomName.empty() ? "Room" : _uiRoomName;
 
                     net.tryCreateRoom(name, _uiMaxPlayers, _uiDifficulty,
                                       _uiSpeed, _uiDuration, _uiSeed,
@@ -947,8 +984,8 @@ namespace Client::Core
 
                 KeyAction actionToBind = binding.action;
                 button.onClick = [this, actionToBind]() {
-                    rtp::log::info("Waiting for key input for action: {}",
-                                   static_cast<int>(actionToBind));
+                    // rtp::log::info("Waiting for key input for action: {}",
+                    //                static_cast<int>(actionToBind));
                     _isWaitingForKey = true;
                     _keyActionToRebind = actionToBind;
                 };
@@ -1201,59 +1238,57 @@ namespace Client::Core
     }
 
     void Application::changeState(GameState newState)
-    {
-        rtp::log::info("Changing state from {} to {}",
-                       static_cast<int>(_currentState),
-                       static_cast<int>(newState));
+{
+    rtp::log::info("Changing state from {} to {}",
+                   static_cast<int>(_currentState),
+                   static_cast<int>(newState));
 
-        bool keepGameState = (_currentState ==
-                              GameState::Playing &&
-                              newState == GameState::Paused) ||
-                             (_currentState ==
-                              GameState::Paused &&
-                              newState == GameState::Playing);
+    GameState previousState = _currentState;
 
-        GameState previousState = _currentState;
-        _currentState = newState;
+    const bool keepWorld =
+        (previousState == GameState::RoomWaiting) ||
+        (previousState == GameState::Paused);
 
-        if (!keepGameState) {
-            // _registry.clearEntities();
-            _registry.clear();
-        }
+    _currentState = newState;
 
-        switch (newState) {
-            case GameState::Menu:
-                initMenu();
-                break;
-            case GameState::Login:
-                initLoginScene();
-                break;
-            case GameState::Lobby:
-                initLobbyScene();
-                break;
-            case GameState::CreateRoom:
-                initCreateRoomScene();
-                break;
-            case GameState::RoomWaiting:
-                initRoomWaitingScene();
-                break;
-            case GameState::Settings:
-                initSettingsMenu();
-                break;
-            case GameState::KeyBindings:
-                initKeyBindingMenu();
-                break;
-            case GameState::Paused:
-                initPauseMenu();
-                break;
-            case GameState::Playing:
-                if (previousState != GameState::Paused)
-                    initGame();
-                break;
-            default:
-                break;
-        }
+    if (!keepWorld) {
+        _registry.clear();
     }
+
+    switch (newState) {
+        case GameState::Menu:
+            initMenu();
+            break;
+        case GameState::Login:
+            initLoginScene();
+            break;
+        case GameState::Lobby:
+            initLobbyScene();
+            break;
+        case GameState::CreateRoom:
+            initCreateRoomScene();
+            break;
+        case GameState::RoomWaiting:
+            initRoomWaitingScene();
+            break;
+        case GameState::Settings:
+            initSettingsMenu();
+            break;
+        case GameState::KeyBindings:
+            initKeyBindingMenu();
+            break;
+        case GameState::Paused:
+            initPauseMenu();
+            break;
+        case GameState::Playing:
+            if (previousState != GameState::Paused) {
+                initGame();
+            }
+            break;
+        default:
+            break;
+    }
+}
 
     void Application::processInput()
     {
@@ -1393,45 +1428,54 @@ namespace Client::Core
     }
 
     void Application::update(sf::Time delta)
-    {
-        _lastDt = delta.asSeconds();
+{
+    _lastDt = delta.asSeconds();
 
-        _systemManager.getSystem<rtp::client::ClientNetworkSystem>().update(
-            _lastDt);
+    _systemManager.getSystem<rtp::client::ClientNetworkSystem>().update(_lastDt);
 
-        if (_currentState == GameState::Playing) {
-            _systemManager.update(_lastDt);
-            return;
-        }
+    if (_currentState == GameState::Playing) {
+        _systemManager.update(_lastDt);
 
-        auto &menuSys = _systemManager.getSystem<Client::Systems::MenuSystem>();
-        menuSys.update(_lastDt);
-        
-        if (_currentState == GameState::Login) {
-            if (_systemManager
-                    .getSystem<rtp::client::ClientNetworkSystem>()
-                    .isLoggedIn()) {
-                changeState(GameState::Menu);
+        if (_hudInit) {
+            auto textsOpt = _registry.getComponents<rtp::ecs::components::ui::Text>();
+            if (textsOpt) {
+                auto &texts = textsOpt.value().get();
+
+                const float dtMs = _lastDt * 1000.0f;
+                const float fps  = (_lastDt > 0.00001f) ? (1.0f / _lastDt) : 0.0f;
+
+                if (texts.has(_hudPing))
+                    texts[_hudPing].content = "dt: " + std::to_string((int)dtMs) + " ms";
+                if (texts.has(_hudFps))
+                    texts[_hudFps].content = "fps: " + std::to_string((int)fps);
+                if (texts.has(_hudScore))
+                    texts[_hudScore].content = "score: " + std::to_string(_score);
+                if (texts.has(_hudEntities))
+                    texts[_hudEntities].content = "entities: (debug)";
             }
-        }
-
-        if (_currentState == GameState::RoomWaiting) {
-            auto &netSys =
-                _systemManager
-                    .getSystem<rtp::client::ClientNetworkSystem>();
-            if (netSys.isInGame()) {
-                changeState(GameState::Playing);
-            }
-        }
-
-        if (_currentState ==
-            GameState::Settings ||
-            _currentState == GameState::KeyBindings) {
-            auto &settingsSys =
-                _systemManager.getSystem<Client::Systems::SettingsMenuSystem>();
-            settingsSys.update(_lastDt);
         }
     }
+
+    // Menus / UI logique (clicks etc.)
+    _systemManager.getSystem<Client::Systems::MenuSystem>().update(_lastDt);
+
+    if (_currentState == GameState::Login) {
+        auto &netSys = _systemManager.getSystem<rtp::client::ClientNetworkSystem>();
+        if (netSys.isLoggedIn())
+            changeState(GameState::Menu);
+    }
+
+    if (_currentState == GameState::RoomWaiting) {
+        auto &netSys = _systemManager.getSystem<rtp::client::ClientNetworkSystem>();
+        if (netSys.isInGame())
+            changeState(GameState::Playing);
+    }
+
+    if (_currentState == GameState::Settings || _currentState == GameState::KeyBindings) {
+        _systemManager.getSystem<Client::Systems::SettingsMenuSystem>().update(_lastDt);
+    }
+}
+
 
     void Application::setupSettingsCallbacks()
     {
@@ -1573,76 +1617,32 @@ namespace Client::Core
     }
 
     void Application::render()
-    {
-        // Déterminer si on applique le shader colorblind
-        bool applyShader = _shaderLoaded &&
-                           _currentState ==
-                           GameState::Playing &&
-                           _settings.getColorBlindMode() !=
-                           ColorBlindMode::None;
+{
+    _window.clear(sf::Color::Black);
 
-        if (applyShader) {
-            // Render to texture first
-            _renderTexture.clear(sf::Color::Black);
+    if (_currentState == GameState::Playing) {
+        _systemManager.getSystem<rtp::client::RenderSystem>().update(_lastDt);
 
-            _window.clear(sf::Color::Black);
-            auto &renderSys =
-                _systemManager.getSystem<rtp::client::RenderSystem>();
-            renderSys.update(_lastDt);
-
+        if (_shaderLoaded && _settings.getColorBlindMode() != ColorBlindMode::None) {
             sf::RectangleShape overlay(sf::Vector2f(
                 UIConstants::WINDOW_WIDTH, UIConstants::WINDOW_HEIGHT));
-            overlay.setPosition(sf::Vector2f(0.0f, 0.0f));
+            overlay.setPosition({0.0f, 0.0f});
 
-            // Appliquer une teinte selon le mode
             switch (_settings.getColorBlindMode()) {
-                case ColorBlindMode::Protanopia:
-                    // Filtre rouge-orangé semi-transparent
-                    overlay.setFillColor(sf::Color(255, 150, 100, 30));
-                    break;
-                case ColorBlindMode::Deuteranopia:
-                    // Filtre jaune-vert semi-transparent
-                    overlay.setFillColor(sf::Color(200, 255, 100, 30));
-                    break;
-                case ColorBlindMode::Tritanopia:
-                    // Filtre rose-magenta semi-transparent
-                    overlay.setFillColor(sf::Color(255, 100, 200, 30));
-                    break;
-                default:
-                    break;
+                case ColorBlindMode::Protanopia:   overlay.setFillColor(sf::Color(255, 150, 100, 30)); break;
+                case ColorBlindMode::Deuteranopia: overlay.setFillColor(sf::Color(200, 255, 100, 30)); break;
+                case ColorBlindMode::Tritanopia:   overlay.setFillColor(sf::Color(255, 100, 200, 30)); break;
+                default: break;
             }
-
             _window.draw(overlay);
-
-        } else {
-            // Rendu normal sans filtre
-            _window.clear(sf::Color::Black);
-
-            if (_currentState ==
-                GameState::Menu ||
-                _currentState ==
-                GameState::Login ||
-                _currentState ==
-                GameState::Lobby ||
-                _currentState ==
-                GameState::CreateRoom ||
-                _currentState ==
-                GameState::RoomWaiting ||
-                _currentState ==
-                GameState::Settings ||
-                _currentState ==
-                GameState::KeyBindings ||
-                _currentState == GameState::Paused) {
-                auto &uiSys =
-                    _systemManager.getSystem<Client::Systems::UIRenderSystem>();
-                uiSys.update(_lastDt);
-            } else if (_currentState == GameState::Playing) {
-                auto &renderSys =
-                    _systemManager.getSystem<rtp::client::RenderSystem>();
-                renderSys.update(_lastDt);
-            }
         }
 
-        _window.display();
+        _systemManager.getSystem<Client::Systems::UIRenderSystem>().update(_lastDt);
+
+    } else {
+        _systemManager.getSystem<Client::Systems::UIRenderSystem>().update(_lastDt);
     }
-} // namespace Client::Core
+
+    _window.display();
+}
+}

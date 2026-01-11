@@ -196,6 +196,8 @@ namespace rtp::client {
 
             void onSpawnEntityFromServer(rtp::net::Packet& packet);
 
+            void onRoomUpdate(rtp::net::Packet& packet);
+
             // /**
             //  * @brief Disconnect a player based on session ID
             //  * @param sessionId ID of the session to disconnect

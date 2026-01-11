@@ -59,6 +59,7 @@ namespace rtp::client {
 
     void ClientNetworkSystem::RequestListRooms(void)
     {
+        rtp::log::info("Requesting list of available rooms from server...");
         if (_availableRooms.size() > 0)
             _availableRooms.clear();
         rtp::net::Packet packet(rtp::net::OpCode::ListRooms);
@@ -67,6 +68,7 @@ namespace rtp::client {
 
     void ClientNetworkSystem::tryCreateRoom(const std::string& roomName, uint32_t maxPlayers, float difficulty, float speed, uint32_t duration, uint32_t seed, uint32_t levelId)
     {
+        rtp::log::info("Attempting to create room '{}' on server...", roomName);
         _currentState = State::CreatingRoom;
         rtp::net::CreateRoomPayload payload;
         std::strncpy(payload.roomName, roomName.c_str(), sizeof(payload.roomName) - 1);
@@ -97,6 +99,7 @@ namespace rtp::client {
         _currentState = State::LeavingRoom;
         rtp::net::Packet packet(rtp::net::OpCode::LeaveRoom);
         _network.sendPacket(packet, rtp::net::NetworkMode::TCP);
+        trySetReady(false);
     }
 
     void ClientNetworkSystem::trySetReady(bool isReady)
@@ -201,6 +204,9 @@ namespace rtp::client {
                 onSpawnEntityFromServer(event.packet);
                 break;
             }
+            case OpCode::RoomUpdate:
+                onRoomUpdate(event.packet);
+                break;
             default:
                 rtp::log::warning("Unhandled OpCode received: {}", static_cast<uint8_t>(event.packet.header.opCode));
                 break;
@@ -261,6 +267,8 @@ namespace rtp::client {
 
         uint32_t roomCount = 0;
         packet >> roomCount;
+
+        rtp::log::info("Received {} available rooms from server.", roomCount);
 
         if (roomCount <= 0) {
             rtp::log::info("No available rooms received from server.");
@@ -341,13 +349,11 @@ namespace rtp::client {
         Client::Game::EntityTemplate t;
         switch (static_cast<rtp::net::EntityType>(payload.type)) {
             case rtp::net::EntityType::Scout:
-                t = Client::Game::EntityTemplate::rt2_4(pos); // exemple: scout
+                t = Client::Game::EntityTemplate::rt2_4(pos);
                 break;
 
             case rtp::net::EntityType::Player:
-                // si tu as un template player côté client, utilise-le ici
-                // sinon fais un minimum (sprite de player, etc.)
-                t = Client::Game::EntityTemplate::rt1_1(pos); // placeholder si tu veux voir qqch
+                t = Client::Game::EntityTemplate::rt1_1(pos);
                 break;
 
             default:
@@ -364,13 +370,42 @@ namespace rtp::client {
 
         auto e = res.value();
 
-        // IMPORTANT: associer le netId envoyé par le serveur
         _registry.addComponent<rtp::ecs::components::NetworkId>(
             e, rtp::ecs::components::NetworkId{payload.netId}
         );
 
-        // (Optionnel) garder une map netId -> entity pour updates/kill
         _netIdToEntity[payload.netId] = e;
+    }
+
+    void ClientNetworkSystem::onRoomUpdate(rtp::net::Packet& packet)
+    {
+        rtp::net::RoomSnapshotPayload header{};
+        std::vector<rtp::net::EntitySnapshotPayload> snapshots;
+
+        packet >> header >> snapshots;
+
+        for (const auto& snap : snapshots) {
+            auto it = _netIdToEntity.find(snap.netId);
+            if (it == _netIdToEntity.end()) {
+                continue;
+            }
+
+            const rtp::ecs::Entity e = it->second;
+
+            auto transformsOpt = _registry.getComponents<rtp::ecs::components::Transform>();
+            if (!transformsOpt)
+                continue;
+
+            auto &transforms = transformsOpt.value().get();
+            if (!transforms.has(e))
+                continue;
+
+            // rtp::log::debug("Updating entity NetID={} Position=({}, {}) Rotation={}",
+            //     snap.netId, snap.position.x, snap.position.y, snap.rotation);
+            transforms[e].position.x = snap.position.x;
+            transforms[e].position.y = snap.position.y;
+            transforms[e].rotation   = snap.rotation;
+        }
     }
 
     // void ClientNetworkSystem::spawnEntityFromServer(const rtp::net::EntitySpawnPayload& payload)
