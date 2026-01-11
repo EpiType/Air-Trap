@@ -124,7 +124,7 @@ namespace rtp::client {
                                                     const size& size,
                                                     const std::vector<std::string>& options,
                                                     const int selectedIndex,
-                                                    std::function<void(const std::string&)> onSelect = nullptr
+                                                    std::function<void(int index)> onSelect = nullptr
                                                     );
 
                 /**

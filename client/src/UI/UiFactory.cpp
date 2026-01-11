@@ -121,7 +121,7 @@ namespace rtp::client {
 
             rtp::ecs::components::ui::Dropdown dropdown;
 
-            dropdown.position = { position.x, position.y };
+            dropdown.position = { position.x, position.y - 5.0f };
             dropdown.size = { size.width, size.height };
             dropdown.options = options;
             dropdown.selectedIndex = selectedIndex;

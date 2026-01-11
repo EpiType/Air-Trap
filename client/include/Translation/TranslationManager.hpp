@@ -14,7 +14,7 @@
 #include "Core/Settings.hpp"
 #include "RType/Logger.hpp"
 
-namespace Client::Core {
+namespace rtp::client {
 
 /**
  * @class TranslationManager
