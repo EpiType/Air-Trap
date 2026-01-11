@@ -30,6 +30,7 @@ namespace rtp::server
         _roomSystem =  std::make_unique<RoomSystem>(_networkManager, _registry);
         _playerSystem = std::make_unique<PlayerSystem>(_networkManager, _registry);
         _entitySystem = std::make_unique<EntitySystem>(_registry, _networkManager);
+        _playerMouvementSystem = std::make_unique<PlayerMouvementSystem>(_registry);
 
         _roomSystem->setOnRoomStarted(
             [this](uint32_t roomId) {
@@ -67,8 +68,9 @@ namespace rtp::server
 
             _serverTick++;
             _roomSystem->update(dt);
-            // _movementSystem->update(dt);
-            // _serverNetworkSystem->broadcastRoomState(_serverTick);
+            _playerMouvementSystem->update(dt);
+            _movementSystem->update(dt);
+            _serverNetworkSystem->broadcastRoomState(_serverTick);
             
             std::this_thread::sleep_for(std::chrono::milliseconds(16));
         }

@@ -3,7 +3,6 @@
 ** Air-Trap
 ** File description:
 ** MenuSystem
- * implementation
 */
 
 #include "Systems/MenuSystem.hpp"

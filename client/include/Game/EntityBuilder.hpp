@@ -129,7 +129,7 @@ struct EntityTemplate {
         t.sprite.rectTop = 0;
         t.sprite.rectWidth = 1280;
         t.sprite.rectHeight = 720;
-        t.sprite.zIndex = 5;
+        t.sprite.zIndex = -1000;
         t.sprite.red = 255;
         t.sprite.opacity = p.opacity;
 

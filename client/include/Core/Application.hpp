@@ -25,15 +25,12 @@
 #include "RType/ECS/Registry.hpp"
 #include "RType/ECS/SystemManager.hpp"
 
-namespace Client::Core {
+namespace rtp::client {
 
-// UI Layout Constants
 namespace UIConstants {
-    // Window
     constexpr float WINDOW_WIDTH = 1280.0f;
     constexpr float WINDOW_HEIGHT = 720.0f;
     
-    // Menu Layout
     constexpr float TITLE_X = 400.0f;
     constexpr float TITLE_Y = 100.0f;
     constexpr float TITLE_FONT_SIZE = 72.0f;
@@ -43,10 +40,6 @@ namespace UIConstants {
     constexpr float BUTTON_X = 490.0f;
     constexpr float BUTTON_SPACING = 80.0f;
     constexpr float BUTTON_START_Y = 300.0f;
-    
-    // Player spawn
-    constexpr float PLAYER_SPAWN_X = 200.0f;
-    constexpr float PLAYER_SPAWN_Y = 150.0f;
 }
 
 /**
@@ -73,34 +66,34 @@ enum class GameState {
 class Application {
 public:
     Application();
-    void run();
+    void run(); // to keep
     
 private:
-    void initECS();
-    void initMenu();
-    void initGame();
-    void initSettingsMenu();
-    void initKeyBindingMenu();
-    void initLoginScene();
-    void initLobbyScene();
-    void initCreateRoomScene();
-    void initRoomWaitingScene();
-    void initPauseMenu();
+    void initECS(); // to keep
+    // void initMenu();
+    // void initGame();
+    // void initSettingsMenu();
+    // void initKeyBindingMenu();
+    // void initLoginScene();
+    // void initLobbyScene();
+    // void initCreateRoomScene();
+    // void initRoomWaitingScene();
+    // void initPauseMenu();
     void setupSettingsCallbacks();
 
 private:    
-    void processInput();
-    void update(sf::Time delta);
-    void render();
+    void processInput(); // to keep
+    void update(sf::Time delta); // to keep
+    void render(); // to keep
     
 private:
     void processMenuInput(const sf::Event& event);
     void processGameInput(const sf::Event& event);
     void processSettingsInput(const sf::Event& event);
     void processKeyBindingInput(const sf::Event& event);
-    void handleGlobalEscape();
+    void handleGlobalEscape(); // to keep
     
-    void changeState(GameState newState);
+    void changeState(GameState newState); // to keep
     
     void createParallaxBackground();
     void spawnEnemy(const rtp::Vec2f& position);
@@ -109,12 +102,15 @@ private:
     void killEnemy(std::size_t index);
     void killProjectile(std::size_t index);
 
+    void clearRoomWaitingUiEntities();
+
 private:
     std::vector<rtp::ecs::Entity> _parallaxLayers;
     std::vector<rtp::ecs::Entity> _spawnedEnemy;
     std::vector<rtp::ecs::Entity> _projectiles;
     sf::RenderWindow _window;
-    rtp::ecs::Registry _registry;
+    rtp::ecs::Registry _worldRegistry;
+    rtp::ecs::Registry _uiRegistry;
     rtp::ecs::SystemManager _systemManager;
     Graphics::AssetManager _assetManager;
     Game::EntityBuilder _entityBuilder;
@@ -130,23 +126,16 @@ private:
     GameState _currentState{GameState::Login};
     float _lastDt{0.0f};
 
-    bool _isWaitingForKey{false};
-    KeyAction _keyActionToRebind;
+    // bool _uiReady = false;
 
-    std::string _uiUsername;
-    std::string _uiPassword;
+    // rtp::ecs::Entity _hudScore{};
+    // rtp::ecs::Entity _hudPing{};
+    // rtp::ecs::Entity _hudFps{};
+    // rtp::ecs::Entity _hudEntities{};
+    // bool _hudInit = false;
 
-    uint32_t _uiSelectedRoomId = 0;
+    // int _score = 12345;
 
-    std::string _uiRoomName = "Room";
-    uint32_t _uiMaxPlayers = 4;
-    float _uiDifficulty = 0.5f;
-    float _uiSpeed = 1.0f;
-    uint32_t _uiDuration = 10;
-    uint32_t _uiSeed = 42;
-    uint32_t _uiLevelId = 1;
-
-    bool _uiReady = false;
 };
 
 }  // namespace Client::Core
