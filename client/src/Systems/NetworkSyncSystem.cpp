@@ -1,11 +1,11 @@
 /**
- * File   : ClientNetworkSystem.cpp
+ * File   : NetworkSyncSystem.cpp
  * License: MIT
  * Author : Elias Josué HAJJAR LLAUQUEN <elias-josue.hajjar-llauquen@epitech.eu>
  * Date   : 14/12/2025
  */
 
-#include "Systems/ClientNetworkSystem.hpp"
+#include "Systems/NetworkSyncSystem.hpp"
 #include "RType/Logger.hpp"
 #include "RType/ECS/Components/NetworkId.hpp"
 #include "RType/ECS/Components/Transform.hpp"
@@ -22,10 +22,10 @@ namespace rtp::client {
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
-    ClientNetworkSystem::ClientNetworkSystem(ClientNetwork& network, rtp::ecs::Registry& registry, Client::Game::EntityBuilder builder)
+    NetworkSyncSystem::NetworkSyncSystem(ClientNetwork& network, rtp::ecs::Registry& registry, Client::Game::EntityBuilder builder)
         : _network(network), _registry(registry), _builder(builder) {}
 
-    void ClientNetworkSystem::update(float dt)
+    void NetworkSyncSystem::update(float dt)
     {
         (void)dt;
         while (auto eventOpt = _network.pollEvent()) {
@@ -33,7 +33,7 @@ namespace rtp::client {
         }
     }
 
-    void ClientNetworkSystem::tryLogin(const std::string& username, const std::string& password) const
+    void NetworkSyncSystem::tryLogin(const std::string& username, const std::string& password) const
     {
         rtp::net::LoginPayload payload;
         std::strncpy(payload.username, username.c_str(), sizeof(payload.username) - 1);
@@ -45,7 +45,7 @@ namespace rtp::client {
         _network.sendPacket(packet, rtp::net::NetworkMode::TCP);
     }
 
-    void ClientNetworkSystem::tryRegister(const std::string& username, const std::string& password) const
+    void NetworkSyncSystem::tryRegister(const std::string& username, const std::string& password) const
     {
         rtp::net::RegisterPayload payload;
         std::strncpy(payload.username, username.c_str(), sizeof(payload.username) - 1);
@@ -57,7 +57,7 @@ namespace rtp::client {
         _network.sendPacket(packet, rtp::net::NetworkMode::TCP);
     }
 
-    void ClientNetworkSystem::RequestListRooms(void)
+    void NetworkSyncSystem::requestListRooms(void)
     {
         rtp::log::info("Requesting list of available rooms from server...");
         if (_availableRooms.size() > 0)
@@ -66,7 +66,7 @@ namespace rtp::client {
         _network.sendPacket(packet, rtp::net::NetworkMode::TCP);
     }
 
-    void ClientNetworkSystem::tryCreateRoom(const std::string& roomName, uint32_t maxPlayers, float difficulty, float speed, uint32_t duration, uint32_t seed, uint32_t levelId)
+    void NetworkSyncSystem::tryCreateRoom(const std::string& roomName, uint32_t maxPlayers, float difficulty, float speed, uint32_t duration, uint32_t seed, uint32_t levelId)
     {
         rtp::log::info("Attempting to create room '{}' on server...", roomName);
         _currentState = State::CreatingRoom;
@@ -85,7 +85,7 @@ namespace rtp::client {
         _network.sendPacket(packet, rtp::net::NetworkMode::TCP);
     }
 
-    void ClientNetworkSystem::tryJoinRoom(uint32_t roomId)
+    void NetworkSyncSystem::tryJoinRoom(uint32_t roomId)
     {
         _currentState = State::JoiningRoom;
         rtp::net::Packet packet(rtp::net::OpCode::JoinRoom);
@@ -94,7 +94,7 @@ namespace rtp::client {
         _network.sendPacket(packet, rtp::net::NetworkMode::TCP);
     }
 
-    void ClientNetworkSystem::tryLeaveRoom(void)
+    void NetworkSyncSystem::tryLeaveRoom(void)
     {
         _currentState = State::LeavingRoom;
         rtp::net::Packet packet(rtp::net::OpCode::LeaveRoom);
@@ -102,7 +102,7 @@ namespace rtp::client {
         trySetReady(false);
     }
 
-    void ClientNetworkSystem::trySetReady(bool isReady)
+    void NetworkSyncSystem::trySetReady(bool isReady)
     {
         rtp::net::Packet packet(rtp::net::OpCode::SetReady);
         packet << static_cast<uint8_t>(isReady ? 1 : 0);
@@ -110,7 +110,7 @@ namespace rtp::client {
         _network.sendPacket(packet, rtp::net::NetworkMode::TCP);
     }
     
-    void ClientNetworkSystem::trySendMessage(const std::string& message) const
+    void NetworkSyncSystem::trySendMessage(const std::string& message) const
     {
         rtp::net::Packet packet(rtp::net::OpCode::RoomChatSended);
         packet << message;
@@ -122,37 +122,37 @@ namespace rtp::client {
     // Getters
     //////////////////////////////////////////////////////////////////////////
 
-    bool ClientNetworkSystem::isInRoom(void) const
+    bool NetworkSyncSystem::isInRoom(void) const
     {
         return _currentState == State::InRoom || _currentState == State::InGame;
     }
 
-    bool ClientNetworkSystem::isReady(void) const
+    bool NetworkSyncSystem::isReady(void) const
     {
         return _isReady;
     }
 
-    bool ClientNetworkSystem::isUdpReady(void) const
+    bool NetworkSyncSystem::isUdpReady(void) const
     {
         return _network.isUdpReady();
     }
 
-    bool ClientNetworkSystem::isLoggedIn(void) const
+    bool NetworkSyncSystem::isLoggedIn(void) const
     {
         return _isLoggedIn;
     }
 
-    std::string ClientNetworkSystem::getUsername(void) const
+    std::string NetworkSyncSystem::getUsername(void) const
     {
         return _username;
     }
 
-    std::list<rtp::net::RoomInfo> ClientNetworkSystem::getAvailableRooms(void) const
+    std::list<rtp::net::RoomInfo> NetworkSyncSystem::getAvailableRooms(void) const
     {
         return _availableRooms;
     }
 
-    bool ClientNetworkSystem::isInGame(void) const
+    bool NetworkSyncSystem::isInGame(void) const
     {
         return _currentState == State::InGame;
     }
@@ -161,7 +161,7 @@ namespace rtp::client {
     // Private Methods
     //////////////////////////////////////////////////////////////////////////
 
-    void ClientNetworkSystem::handleEvent(rtp::net::NetworkEvent& event)
+    void NetworkSyncSystem::handleEvent(rtp::net::NetworkEvent& event)
     {
         switch (event.packet.header.opCode)
         {
@@ -225,7 +225,7 @@ namespace rtp::client {
         }
     }
 
-    void ClientNetworkSystem::onLoginResponse(rtp::net::Packet& packet)
+    void NetworkSyncSystem::onLoginResponse(rtp::net::Packet& packet)
     {
         rtp::net::LoginResponsePayload payload;
         packet >> payload;
@@ -243,7 +243,7 @@ namespace rtp::client {
         }
     }
 
-    void ClientNetworkSystem::onRegisterResponse(rtp::net::Packet& packet)
+    void NetworkSyncSystem::onRegisterResponse(rtp::net::Packet& packet)
     {
         rtp::net::RegisterResponsePayload payload;
         packet >> payload;
@@ -261,7 +261,7 @@ namespace rtp::client {
         }
     }
 
-    void ClientNetworkSystem::onRoomResponse(rtp::net::Packet& packet)
+    void NetworkSyncSystem::onRoomResponse(rtp::net::Packet& packet)
     {
         _availableRooms.clear();
 
@@ -297,7 +297,7 @@ namespace rtp::client {
     }
 
 
-    void ClientNetworkSystem::onJoinRoomResponse(rtp::net::Packet& packet)
+    void NetworkSyncSystem::onJoinRoomResponse(rtp::net::Packet& packet)
     {
         uint8_t success = 0;
         packet >> success;
@@ -310,7 +310,7 @@ namespace rtp::client {
         }
     }
 
-    void ClientNetworkSystem::onCreateRoomResponse(rtp::net::Packet& packet)
+    void NetworkSyncSystem::onCreateRoomResponse(rtp::net::Packet& packet)
     {
         uint8_t success = 0;
         packet >> success;
@@ -323,7 +323,7 @@ namespace rtp::client {
         }
     }
 
-    void ClientNetworkSystem::onLeaveRoomResponse(rtp::net::Packet& packet)
+    void NetworkSyncSystem::onLeaveRoomResponse(rtp::net::Packet& packet)
     {
         uint8_t success = 0;
         packet >> success;
@@ -336,7 +336,7 @@ namespace rtp::client {
         }
     }
 
-    void ClientNetworkSystem::onSpawnEntityFromServer(rtp::net::Packet& packet)
+    void NetworkSyncSystem::onSpawnEntityFromServer(rtp::net::Packet& packet)
     {
         rtp::net::EntitySpawnPayload payload;
         packet >> payload;
@@ -377,7 +377,7 @@ namespace rtp::client {
         _netIdToEntity[payload.netId] = e;
     }
 
-    void ClientNetworkSystem::onRoomUpdate(rtp::net::Packet& packet)
+    void NetworkSyncSystem::onRoomUpdate(rtp::net::Packet& packet)
     {
         rtp::net::RoomSnapshotPayload header{};
         std::vector<rtp::net::EntitySnapshotPayload> snapshots;
@@ -408,7 +408,7 @@ namespace rtp::client {
         }
     }
 
-    // void ClientNetworkSystem::spawnEntityFromServer(const rtp::net::EntitySpawnPayload& payload)
+    // void NetworkSyncSystem::spawnEntityFromServer(const rtp::net::EntitySpawnPayload& payload)
     // {
     //     auto res = _registry.spawnEntity();
     //     if (!res) return;
@@ -440,7 +440,7 @@ namespace rtp::client {
     //     _netIdToEntity[payload.netId] = e;
     // }
 
-    // void ClientNetworkSystem::addScoutSprite(rtp::ecs::Entity entity)
+    // void NetworkSyncSystem::addScoutSprite(rtp::ecs::Entity entity)
     // {
     //     rtp::ecs::components::Sprite spriteData;
     //     spriteData.texturePath = "assets/sprites/r-typesheet2.gif";
@@ -469,7 +469,7 @@ namespace rtp::client {
     //     _registry.addComponent<rtp::ecs::components::Animation>(entity, animData);
     // }
 
-    // void ClientNetworkSystem::disconnectPlayer(uint32_t entityNetId)
+    // void NetworkSyncSystem::disconnectPlayer(uint32_t entityNetId)
     // {
     //     auto it = _netIdToEntity.find(entityNetId);
     //     if (it == _netIdToEntity.end()) {
@@ -485,7 +485,7 @@ namespace rtp::client {
     //     _netIdToEntity.erase(it);
     // }
 
-    // void ClientNetworkSystem::applyWorldUpdate(rtp::net::Packet& packet)
+    // void NetworkSyncSystem::applyWorldUpdate(rtp::net::Packet& packet)
     // {
     //     rtp::net::RoomSnapshotPayload header;
     //     std::vector<rtp::net::EntitySnapshotPayload> snapshots;
@@ -514,7 +514,7 @@ namespace rtp::client {
     //     }
     // }
 
-    // void ClientNetworkSystem::spawnEntity(const rtp::net::EntitySnapshotPayload& snap)
+    // void NetworkSyncSystem::spawnEntity(const rtp::net::EntitySnapshotPayload& snap)
     // {
     //     auto entityRes = _registry.spawnEntity();
         

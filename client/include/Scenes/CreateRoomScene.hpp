@@ -11,13 +11,13 @@
     #include "Interfaces/IScene.hpp"
     #include "RType/ECS/Registry.hpp"
     #include "UI/UiFactory.hpp"
-    #include "Network/ClientNetwork.hpp"
+    #include "Utils/GameState.hpp"
+    #include "Translation/TranslationManager.hpp"
+    #include "Systems/NetworkSyncSystem.hpp"
     #include "Core/Settings.hpp"
     #include <SFML/Graphics.hpp>
     #include <memory>
     #include <functional>
-
-enum class GameState;
 
 namespace rtp::client {
     namespace Scenes {
@@ -40,7 +40,8 @@ namespace rtp::client {
                  */
                 CreateRoomScene(ecs::Registry& UiRegistry,
                                 Settings& settings,
-                                ClientNetwork& network,
+                                TranslationManager& translationManager,
+                                NetworkSyncSystem& network,
                                 graphics::UiFactory& uiFactory,
                                 std::function<void(GameState)> changeState);
 
@@ -52,12 +53,12 @@ namespace rtp::client {
                 /**
                  * @brief Called when the scene is entered.
                  */
-                void onEnter() override;
+                void onEnter(void) override;
 
                 /**
                  * @brief Called when the scene is exited.
                  */
-                void onExit() override;
+                void onExit(void) override;
 
                 /**
                  * @brief Handle an incoming event.
@@ -72,19 +73,20 @@ namespace rtp::client {
                 void update(float dt) override;
 
             private:
-                ecs::Registry& _uiRegistry;         /**< Reference to the ECS registry */
-                Settings& _settings;                /**< Reference to the application settings */
-                ClientNetwork& _network;            /**< Reference to the client network */
-                graphics::UiFactory& _uiFactory;    /**< UI Factory for creating UI components */
-                ChangeStateFn _changeState;         /**< Function to change the game state */
+                ecs::Registry& _uiRegistry;                 /**< Reference to the ECS registry */
+                Settings& _settings;                        /**< Reference to the application settings */
+                TranslationManager& _translationManager;    /**< Reference to the translation manager */
+                NetworkSyncSystem& _network;                /**< Reference to the client network */
+                graphics::UiFactory& _uiFactory;            /**< UI Factory for creating UI components */
+                ChangeStateFn _changeState;                 /**< Function to change the game state */
 
-                std::string _uiRoomName = "Room";   /**< Name of the room to be created */
-                uint32_t _uiMaxPlayers = 4;         /**< Maximum number of players in the room */
-                float _uiDifficulty = 0.5f;         /**< Difficulty setting for the room */
-                float _uiSpeed = 1.0f;              /**< Game speed setting for the room */
-                uint32_t _uiDuration = 10;          /**< Duration of the game in minutes */
-                uint32_t _uiSeed = 42;              /**< Seed for random generation */
-                uint32_t _uiLevelId = 1;            /**< Level ID for the game */
+                std::string _uiRoomName = "Room";           /**< Name of the room to be created */
+                uint32_t _uiMaxPlayers = 4;                 /**< Maximum number of players in the room */
+                float _uiDifficulty = 0.5f;                 /**< Difficulty setting for the room */
+                float _uiSpeed = 1.0f;                      /**< Game speed setting for the room */
+                uint32_t _uiDuration = 10;                  /**< Duration of the game in minutes */
+                uint32_t _uiSeed = 42;                      /**< Seed for random generation */
+                uint32_t _uiLevelId = 1;                    /**< Level ID for the game */
         };
     } // namespace Scenes
 } // namespace rtp::client

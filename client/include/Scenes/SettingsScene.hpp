@@ -11,13 +11,13 @@
     #include "Interfaces/IScene.hpp"
     #include "RType/ECS/Registry.hpp"
     #include "UI/UiFactory.hpp"
-    #include "Network/ClientNetwork.hpp"
+    #include "Utils/GameState.hpp"
+    #include "Systems/NetworkSyncSystem.hpp"
+    #include "Translation/TranslationManager.hpp"
     #include "Core/Settings.hpp"
     #include <SFML/Graphics.hpp>
     #include <memory>
     #include <functional>
-
-enum class GameState;
 
 namespace rtp::client {
     namespace Scenes {
@@ -40,7 +40,8 @@ namespace rtp::client {
                  */
                 SettingsScene(ecs::Registry& UiRegistry,
                               Settings& settings,
-                              ClientNetwork& network,
+                              TranslationManager& translationManager,
+                              NetworkSyncSystem& network,
                               graphics::UiFactory& uiFactory,
                               std::function<void(GameState)> changeState);
 
@@ -72,11 +73,12 @@ namespace rtp::client {
                 void update(float dt) override;
 
             private:
-                ecs::Registry& _uiRegistry;            /**< Reference to the ECS registry */
-                Settings& _settings;                   /**< Reference to the application settings */
-                ClientNetwork& _network;               /**< Reference to the client network */
-                graphics::UiFactory& _uiFactory;       /**< UI Factory for creating UI components */
-                ChangeStateFn _changeState;            /**< Function to change the game state */
+                ecs::Registry& _uiRegistry;                 /**< Reference to the ECS registry */
+                Settings& _settings;                        /**< Reference to the application settings */
+                TranslationManager& _translationManager;    /**< Reference to the translation manager */
+                NetworkSyncSystem& _network;                /**< Reference to the client network */
+                graphics::UiFactory& _uiFactory;            /**< UI Factory for creating UI components */
+                ChangeStateFn _changeState;                 /**< Function to change the game state */
         };
     } // namespace Scenes
 } // namespace rtp::client

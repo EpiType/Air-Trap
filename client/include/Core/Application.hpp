@@ -21,6 +21,7 @@
 #include "Translation/TranslationManager.hpp"
 #include "Network/ClientNetwork.hpp"
 #include "Core/Settings.hpp"
+#include "Utils/GameState.hpp"
 
 #include "RType/ECS/Registry.hpp"
 #include "RType/ECS/SystemManager.hpp"
@@ -30,38 +31,7 @@ namespace rtp::client {
 namespace UIConstants {
     constexpr float WINDOW_WIDTH = 1280.0f;
     constexpr float WINDOW_HEIGHT = 720.0f;
-    
-    constexpr float TITLE_X = 400.0f;
-    constexpr float TITLE_Y = 100.0f;
-    constexpr float TITLE_FONT_SIZE = 72.0f;
-    
-    constexpr float BUTTON_WIDTH = 300.0f;
-    constexpr float BUTTON_HEIGHT = 60.0f;
-    constexpr float BUTTON_X = 490.0f;
-    constexpr float BUTTON_SPACING = 80.0f;
-    constexpr float BUTTON_START_Y = 300.0f;
 }
-
-/**
- * @class Application
- * @brief Main application class for the R-Type client.
- *
- * This class initializes and runs the main application loop,
- * handling window creation, ECS setup, and system management.
- */
-
-enum class GameState {
-    Menu,
-    Login,
-    Lobby,
-    CreateRoom,
-    RoomWaiting,
-    Playing,
-    Settings,
-    KeyBindings,
-    Paused
-};
-
 
 class Application {
 public:

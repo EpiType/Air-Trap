@@ -1,5 +1,5 @@
 /**
- * File   : ClientNetworkSystem.hpp
+ * File   : NetworkSyncSystem.hpp
  * License: MIT
  * Author : Elias Josué HAJJAR LLAUQUEN <elias-josue.hajjar-llauquen@epitech.eu>
  * Date   : 14/12/2025
@@ -31,10 +31,10 @@
 namespace rtp::client {
 
     /**
-     * @class ClientNetworkSystem
+     * @class NetworkSyncSystem
      * @brief System to handle network-related operations on the client side.
      */
-    class ClientNetworkSystem : public rtp::ecs::ISystem
+    class NetworkSyncSystem : public rtp::ecs::ISystem
     {
         public:
             enum class State {
@@ -48,11 +48,11 @@ namespace rtp::client {
             };
         public:
             /** 
-             * @brief Constructor for ClientNetworkSystem
+             * @brief Constructor for NetworkSyncSystem
              * @param network Reference to the client network manager
              * @param registry Reference to the entity registry
              */
-            ClientNetworkSystem(ClientNetwork& network, rtp::ecs::Registry& registry, Client::Game::EntityBuilder builder);
+            NetworkSyncSystem(ClientNetwork& network, rtp::ecs::Registry& registry, Client::Game::EntityBuilder builder);
 
             /**
              * @brief Update system logic for one frame
@@ -80,7 +80,7 @@ namespace rtp::client {
              * @brief Send a request to have the list of available rooms from the server
              * @note It updates the internal _availableRooms list
              */
-            void RequestListRooms(void);
+            void requestListRooms(void);
 
             /**
              * @brief Send a request to create a new room on the server
