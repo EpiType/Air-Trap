@@ -52,7 +52,7 @@ namespace rtp::client {
              * @param network Reference to the client network manager
              * @param registry Reference to the entity registry
              */
-            NetworkSyncSystem(ClientNetwork& network, rtp::ecs::Registry& registry, Client::Game::EntityBuilder builder);
+            NetworkSyncSystem(ClientNetwork& network, rtp::ecs::Registry& registry, EntityBuilder builder);
 
             /**
              * @brief Update system logic for one frame
@@ -164,7 +164,7 @@ namespace rtp::client {
             ClientNetwork& _network;                                       /**< Reference to the client network manager */
             rtp::ecs::Registry& _registry;                                 /**< Reference to the entity registry */
             std::unordered_map<uint32_t, rtp::ecs::Entity> _netIdToEntity; /**< Map of network IDs to entities */
-            Client::Game::EntityBuilder _builder;                          /**< Entity builder for spawning entities */
+            EntityBuilder _builder;                                        /**< Entity builder for spawning entities */
 
         private:
             bool _isInRoom = false;                                        /**< Flag indicating if the client is in a room */
