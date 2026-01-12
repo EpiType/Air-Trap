@@ -62,4 +62,33 @@ namespace rtp::server {
         return {sessionId};
     }
 
+    void NetworkSyncSystem::sendPacketToEntity(uint32_t entityId,
+                                           const rtp::net::Packet& packet,
+                                           rtp::net::NetworkMode mode)
+    {
+        for (const auto& [sessionId, eId] : _sessionToEntity) {
+            if (eId == entityId) {
+                rtp::log::info("sendPacketToEntity: sending packet to session {} for entity {}", sessionId, entityId);
+                _network.sendPacket(sessionId, packet, mode);
+                return;
+            }
+        }
+        rtp::log::warning("sendPacketToEntity: no session bound to entity {}", entityId);
+    }
+
+    void NetworkSyncSystem::sendPacketToSession(uint32_t sessionId,
+                                           const rtp::net::Packet& packet,
+                                           rtp::net::NetworkMode mode)
+    {
+        _network.sendPacket(sessionId, packet, mode);
+    }
+
+    void NetworkSyncSystem::sendPacketToSessions(const std::vector<uint32_t>& sessions,
+                                            const rtp::net::Packet& packet,
+                                            rtp::net::NetworkMode mode)
+    {
+        for (uint32_t sessionId : sessions) {
+            _network.sendPacket(sessionId, packet, mode);
+        }
+    }
 }; // namespace rtp::server

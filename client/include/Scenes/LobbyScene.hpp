@@ -80,6 +80,10 @@ namespace rtp::client {
                 ChangeStateFn _changeState;                 /**< Function to change the game state */
 
                 uint32_t _uiSelectedRoomId = 0;             /**< Currently selected room ID in the UI */
+                std::size_t _roomsHash = 0;                 /**< Hash of the last room list displayed */
+                bool _uiBuilt = false;                      /**< Tracks if the UI has been built at least once */
+
+                void buildUi(void);
         };
     } // namespace Scenes
 } // namespace rtp::client

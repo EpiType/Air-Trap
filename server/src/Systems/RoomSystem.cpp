@@ -19,11 +19,12 @@ namespace rtp::server
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
-    RoomSystem::RoomSystem(ServerNetwork &network, rtp::ecs::Registry &registry)
+    RoomSystem::RoomSystem(ServerNetwork &network, rtp::ecs::Registry &registry, NetworkSyncSystem& networkSync)
         : _network(network)
         , _registry(registry)
+        , _networkSync(networkSync)
     {
-        auto lobby = std::make_shared<Room>(_nextRoomId++, "Global Lobby", 9999,
+        auto lobby = std::make_shared<Room>(_registry, _networkSync, _nextRoomId++, "Global Lobby", 9999,
                                             0, 0, Room::RoomType::Lobby);
         _rooms[lobby->getId()] = lobby;
         _lobbyId = lobby->getId();
@@ -32,8 +33,11 @@ namespace rtp::server
 
     void RoomSystem::update(float dt)
     {
-        (void)dt;
         launchReadyRooms(dt);
+        for (auto &[roomId, roomPtr] : _rooms) {
+            // (void)roomId;
+            roomPtr->update(0, dt);
+        }
     };
 
     uint32_t RoomSystem::createRoom(uint32_t sessionId,
@@ -45,7 +49,7 @@ namespace rtp::server
 
         newId = _nextRoomId++;
 
-        auto room = std::make_shared<Room>(newId, roomName, maxPlayers,
+        auto room = std::make_shared<Room>(_registry, _networkSync, newId, roomName, maxPlayers,
                                            difficulty, speed, type, sessionId);
         _rooms.emplace(newId, room);
 
@@ -70,6 +74,9 @@ namespace rtp::server
                                                                          "exist"
                                                                          ".",
                     player->getId(), roomId);
+                rtp::net::Packet response(rtp::net::OpCode::JoinRoom);
+                response << static_cast<uint8_t>(0);
+                _network.sendPacket(player->getId(), response, rtp::net::NetworkMode::TCP);
                 return false;
             }
 
@@ -79,33 +86,36 @@ namespace rtp::server
                 log::error(
                     "Failed to join Player {} to Room ID {}. Room is full.",
                     player->getId(), roomId);
+                if (room->getType() != Room::RoomType::Lobby) {
+                    rtp::net::Packet response(rtp::net::OpCode::JoinRoom);
+                    response << static_cast<uint8_t>(0);
+                    _network.sendPacket(player->getId(), response, rtp::net::NetworkMode::TCP);
+                }
                 return false;
             }
 
             if (!leaveRoom(player)) {
                 log::warning(
-                    " Could not leave previous room, maybe first " "connection "
-                                                                   "?. Player "
-                                                                   "{} "
-                                                                   "(Session "
-                                                                   "ID {})",
+                    " Could not leave previous room, maybe first connection ?. Player {} (Session ID {})",
                     player->getId(), roomId);
             }
 
             if (!room->addPlayer(player)) {
                 log::error(
-                    "Failed to join Player {} to Room ID {}. Could not " "add "
-                                                                         "to "
-                                                                         "new "
-                                                                         "room"
-                                                                         ".",
+                    "Failed to join Player {} to Room ID {}. Could not add to new room.",
                     player->getId(), roomId);
                 return false;
             }
 
             _playerRoomMap[player->getId()] = room->getId();
             player->setRoomId(room->getId());
-            player->setState(PlayerState::InLobby);
+            if (room->getState() == Room::State::InGame) {
+                player->setReady(true);
+                player->setState(PlayerState::InGame);
+            } else {
+                player->setReady(false);
+                player->setState(PlayerState::InLobby);
+            }
 
             log::info("Player {} (Session ID {}) joined Room ID {}",
                       player->getUsername(), player->getId(), room->getId());
@@ -248,6 +258,11 @@ namespace rtp::server
 
                 rtp::net::Packet startPacket(rtp::net::OpCode::StartGame);
                 for (const auto &player : roomPtr->getPlayers()) {
+                    rtp::log::info(
+                        "Notifying Player {} (Session ID {}) of game start "
+                        "in Room ID {}.",
+                        player->getUsername(), player->getId(),
+                        roomPtr->getId());
                     _network.sendPacket(player->getId(), startPacket,
                                         rtp::net::NetworkMode::TCP);
                 }
@@ -269,5 +284,4 @@ namespace rtp::server
         }
         return nullptr;
     }
-
 } // namespace rtp::server

@@ -13,7 +13,7 @@ add_executable(r-type_server
     src/Game/Player.cpp
     src/Game/Room.cpp
     src/Systems/MovementSystem.cpp
-    src/Systems/ServerNetworkSystem.cpp
+    src/Systems/NetworkSyncSystem.cpp
     src/Systems/AuthSystem.cpp
     src/Systems/RoomSystem.cpp
     src/Systems/PlayerSystem.cpp

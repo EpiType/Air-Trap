@@ -7,6 +7,9 @@
 
 #include "Game/Room.hpp"
 #include "RType/Logger.hpp"
+#include "RType/ECS/Components/RoomId.hpp"
+
+using namespace rtp::ecs;
 
 #ifdef DEBUG
     #include <iostream>
@@ -36,8 +39,8 @@ namespace rtp::server
     // Public API
     ///////////////////////////////////////////////////////////////////////////
 
-    Room::Room(uint32_t id, const std::string &name, uint32_t maxPlayers, float difficulty, float speed, RoomType type, uint32_t creatorSessionId)
-        : _id(id), _name(name), _maxPlayers(maxPlayers), _state(State::Waiting), _type(type), _difficulty(difficulty), _speed(speed), _creatorSessionId(creatorSessionId)
+    Room::Room(Registry& registry, NetworkSyncSystem& network, uint32_t id, const std::string &name, uint32_t maxPlayers, float difficulty, float speed, RoomType type, uint32_t creatorSessionId)
+        : _registry(registry), _network(network), _id(id), _name(name), _maxPlayers(maxPlayers), _state(State::Waiting), _type(type), _difficulty(difficulty), _speed(speed), _creatorSessionId(creatorSessionId)
     {
         log::info("Room '{}' (ID: {}) created with max players: {} by session {}",
                   _name, _id, _maxPlayers, creatorSessionId);
@@ -56,30 +59,41 @@ namespace rtp::server
 
     bool Room::addPlayer(const PlayerPtr &player)
     {
-        std::lock_guard lock(_mutex);
+        const uint32_t sessionId = player->getId();
+        bool added = false;
+        {
+            std::lock_guard lock(_mutex);
 
-        if (_players.size() >= _maxPlayers) {
-            log::warning("Player {} cannot join Room '{}' (ID: {}): Room is full",
-                        player->getUsername(), _name, _id);
-            return false;
+            if (_players.size() >= _maxPlayers) {
+                log::warning("Player {} cannot join Room '{}' (ID: {}): Room is full",
+                            player->getUsername(), _name, _id);
+            } else if (_state != State::Waiting) {
+                log::warning("Player {} cannot join Room '{}' (ID: {}): Game already started",
+                            player->getUsername(), _name, _id);
+            } else {
+                auto it = std::find_if(_players.begin(), _players.end(),
+                    [sessionId](const auto &entry) { return entry.first->getId() == sessionId; });
+
+                if (it != _players.end()) {
+                    log::warning("Player {} already in Room '{}' (ID: {})",
+                                player->getUsername(), _name, _id);
+                } else {
+                    _players.emplace_back(player, PlayerType::Player);
+                    log::info("Player {} joined Room '{}' (ID: {})",
+                            player->getUsername(), _name, _id);
+                    added = true;
+                }
+            }
         }
 
-        auto sid = player->getId();
-        auto it = std::find_if(_players.begin(), _players.end(),
-            [sid](const auto &entry) { return entry.first->getId() == sid; });
-
-        if (it != _players.end()) {
-            log::warning("Player {} already in Room '{}' (ID: {})",
-                        player->getUsername(), _name, _id);
-            return false;
+        if (_type != RoomType::Lobby) {
+            rtp::net::Packet response(rtp::net::OpCode::JoinRoom);
+            const uint8_t success = added ? 1 : 0;
+            response << success;
+            _network.sendPacketToSession(sessionId, response, rtp::net::NetworkMode::TCP);
         }
 
-        _players.emplace_back(player, PlayerType::Player);
-
-        log::info("Player {} joined Room '{}' (ID: {})",
-                player->getUsername(), _name, _id);
-
-        return true;
+        return added;
     }
 
     void Room::removePlayer(uint32_t sessionId)
@@ -217,10 +231,61 @@ namespace rtp::server
         log::info("Game finished in Room '{}' (ID: {})", _name, _id);
     }
 
-    void Room::update(float dt)
+    void Room::update(uint32_t serverTick, float dt)
     {
-        std::lock_guard lock(_mutex);
         (void)dt;
-        // Future feature: Update room state, handle game logic, etc.
+        broadcastRoomState(serverTick);
+    }
+
+    void Room::broadcastRoomState(uint32_t serverTick)
+    {
+        std::vector<uint32_t> sessions;
+        {
+            std::lock_guard lock(_mutex);
+            if (_type == RoomType::Lobby)
+                return;
+            if (_state != State::InGame)
+                return;
+
+            sessions.reserve(_players.size());
+            for (const auto& entry : _players) {
+                sessions.push_back(entry.first->getId());
+            }
+        }
+
+        std::vector<rtp::net::EntitySnapshotPayload> snapshots;
+
+        auto view = _registry.zipView<
+            rtp::ecs::components::Transform,
+            rtp::ecs::components::NetworkId,
+            rtp::ecs::components::RoomId
+        >();
+
+        for (auto&& [tf, net, room] : view) {
+            if (room.id != _id)
+                continue;
+            snapshots.push_back({
+                net.id,
+                tf.position,
+                {0.0f, 0.0f},
+                tf.rotation
+            });
+        }
+
+        rtp::log::debug("Room '{}' (ID: {}) broadcasting {} entity snapshots",
+                       _name, _id, snapshots.size());
+        if (snapshots.empty())
+            return;
+
+        rtp::net::Packet packet(rtp::net::OpCode::RoomUpdate);
+        rtp::net::RoomSnapshotPayload header = {
+            serverTick,
+            static_cast<uint16_t>(snapshots.size())
+        };
+        packet << header << snapshots;
+
+        for (uint32_t sid : sessions) {
+            _network.sendPacketToSession(sid, packet, rtp::net::NetworkMode::UDP);
+        }
     }
 } // namespace rtp::server

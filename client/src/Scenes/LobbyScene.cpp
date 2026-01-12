@@ -7,8 +7,38 @@
 
 #include "Scenes/LobbyScene.hpp"
 
+#include <cstddef>
+#include <functional>
+#include <list>
+#include <string>
+
 namespace rtp::client {
     namespace Scenes {
+
+        namespace {
+            void hashCombine(std::size_t &seed, std::size_t value)
+            {
+                seed ^= value + 0x9e3779b97f4a7c15ULL + (seed << 6) + (seed >> 2);
+            }
+
+            std::size_t hashRoomList(const std::list<rtp::net::RoomInfo>& rooms)
+            {
+                std::size_t seed = 0;
+                for (const auto& room : rooms) {
+                    hashCombine(seed, std::hash<uint32_t>{}(room.roomId));
+                    hashCombine(seed, std::hash<uint32_t>{}(room.currentPlayers));
+                    hashCombine(seed, std::hash<uint32_t>{}(room.maxPlayers));
+                    hashCombine(seed, std::hash<uint8_t>{}(room.inGame));
+                    hashCombine(seed, std::hash<float>{}(room.difficulty));
+                    hashCombine(seed, std::hash<float>{}(room.speed));
+                    hashCombine(seed, std::hash<uint32_t>{}(room.duration));
+                    hashCombine(seed, std::hash<uint32_t>{}(room.seed));
+                    hashCombine(seed, std::hash<uint32_t>{}(room.levelId));
+                    hashCombine(seed, std::hash<std::string>{}(std::string(room.roomName)));
+                }
+                return seed;
+            }
+        }
 
         //////////////////////////////////////////////////////////////////////////
         // Public API
@@ -34,6 +64,13 @@ namespace rtp::client {
             rtp::log::info("Entering LobbyScene");
 
             _network.requestListRooms();
+            _roomsHash = hashRoomList(_network.getAvailableRooms());
+            buildUi();
+            _uiBuilt = true;
+        }
+
+        void LobbyScene::buildUi(void)
+        {
             float y = 230.0f;
             int shown = 0;
 
@@ -104,6 +141,7 @@ namespace rtp::client {
                     "JOIN",
                     [this, room]() {
                         _uiSelectedRoomId = room.roomId;
+                        rtp::log::info("Attempting to join Room ID {}", room.roomId);
                         _network.tryJoinRoom(room.roomId);
                     }
                 );
@@ -126,6 +164,17 @@ namespace rtp::client {
         void LobbyScene::update(float dt)
         {
             (void)dt;
+            const auto rooms = _network.getAvailableRooms();
+            const std::size_t newHash = hashRoomList(rooms);
+            if (!_uiBuilt || newHash != _roomsHash) {
+                _uiRegistry.clear();
+                _roomsHash = newHash;
+                buildUi();
+                _uiBuilt = true;
+            }
+            if (_network.getState() == NetworkSyncSystem::State::InRoom) {
+                _changeState(GameState::RoomWaiting);
+            }
         }
 
     } // namespace Scenes

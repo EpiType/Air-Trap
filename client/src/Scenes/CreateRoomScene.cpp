@@ -128,8 +128,6 @@ namespace rtp::client {
                     _network.tryCreateRoom(name, _uiMaxPlayers, _uiDifficulty,
                                       _uiSpeed, _uiDuration, _uiSeed,
                                       _uiLevelId);
-
-                    _changeState(GameState::RoomWaiting);
                 }
             );
 
@@ -155,6 +153,9 @@ namespace rtp::client {
         void CreateRoomScene::update(float dt)
         {
             (void)dt;
+            if (_network.getState() == NetworkSyncSystem::State::InRoom) {
+                _changeState(GameState::RoomWaiting);
+            }
         }
 
         //////////////////////////////////////////////////////////////////////////
