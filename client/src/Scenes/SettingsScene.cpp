@@ -123,7 +123,7 @@ namespace rtp::client {
 
             _uiFactory.createDropdown(
                 _uiRegistry,
-                {450.0f, yPos - 5.0f},
+                {450.0f, yPos},
                 {300.0f, 35.0f},
                 std::vector<std::string>{"English", "Français", "Español", "Deutsch", "Italiano"},
                 static_cast<int>(_settings.getLanguage()),
@@ -154,7 +154,7 @@ namespace rtp::client {
 
             _uiFactory.createDropdown(
                 _uiRegistry,
-                {450.0f, yPos - 5.0f},
+                {450.0f, yPos},
                 {300.0f, 35.0f},
                 colorblindOptions,
                 static_cast<int>(_settings.getColorBlindMode()),

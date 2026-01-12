@@ -8,23 +8,61 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <SFML/System.hpp>
 #include <memory>
 #include <optional>
 #include <vector>
 #include <string>
 #include <filesystem>
+#include <unordered_map>
 
-#include "Graphics/AssetManager.hpp"
-#include "Systems/InputSystem.hpp"
-#include "Systems/RenderSystem.hpp"
+#include "Game/AssetManager.hpp"
 #include "Game/EntityBuilder.hpp"
 #include "Translation/TranslationManager.hpp"
 #include "Network/ClientNetwork.hpp"
 #include "Core/Settings.hpp"
-#include "Utils/GameState.hpp"
+#include "RType/Logger.hpp"
 
+/* Components */
+#include "RType/ECS/Components/Animation.hpp"
+#include "RType/ECS/Components/Controllable.hpp"
+#include "RType/ECS/Components/NetworkId.hpp"
+#include "RType/ECS/Components/Sprite.hpp"
+#include "RType/ECS/Components/Transform.hpp"
+#include "RType/ECS/Components/UI/Button.hpp"
+#include "RType/ECS/Components/UI/Dropdown.hpp"
+#include "RType/ECS/Components/UI/Slider.hpp"
+#include "RType/ECS/Components/UI/Text.hpp"
+#include "RType/ECS/Components/Velocity.hpp"
+
+/* Utils */
+#include "Utils/GameState.hpp"
+#include "RType/Math/Vec2.hpp"
+
+/* Systems */
+#include "Systems/NetworkSyncSystem.hpp"
+#include "Systems/InputSystem.hpp"
+#include "Systems/ParallaxSystem.hpp"
+#include "Systems/RenderSystem.hpp"
+#include "Systems/AnimationSystem.hpp"
+#include "Systems/UISystem.hpp"
+#include "Systems/UIRenderSystem.hpp"
+
+/* ECS */
 #include "RType/ECS/Registry.hpp"
 #include "RType/ECS/SystemManager.hpp"
+
+/* Scenes */
+#include "Interfaces/IScene.hpp"
+#include "Scenes/CreateRoomScene.hpp"
+#include "Scenes/KeyBindingScene.hpp"
+#include "Scenes/LobbyScene.hpp"
+#include "Scenes/LoginScene.hpp"
+#include "Scenes/MenuScene.hpp"
+#include "Scenes/PauseScene.hpp"
+#include "Scenes/PlayingScene.hpp"
+#include "Scenes/RoomWaitingScene.hpp"
+#include "Scenes/SettingsScene.hpp"
 
 namespace rtp::client {
 
@@ -36,30 +74,21 @@ namespace UIConstants {
 class Application {
 public:
     Application();
-    void run(); // to keep
+    void run(void); // to keep
     
 private:
-    void initECS(); // to keep
-    // void initMenu();
-    // void initGame();
-    // void initSettingsMenu();
-    // void initKeyBindingMenu();
-    // void initLoginScene();
-    // void initLobbyScene();
-    // void initCreateRoomScene();
-    // void initRoomWaitingScene();
-    // void initPauseMenu();
+    void initUiECS(void); // to keep
+    void initWorldECS(void); // to keep
+    void initSystems(void); // to keep
+
     void setupSettingsCallbacks();
 
 private:    
-    void processInput(); // to keep
+    void processInput(void); // to keep
     void update(sf::Time delta); // to keep
-    void render(); // to keep
+    void render(void); // to keep
     
 private:
-    void processMenuInput(const sf::Event& event);
-    void processGameInput(const sf::Event& event);
-    void processSettingsInput(const sf::Event& event);
     void processKeyBindingInput(const sf::Event& event);
     void handleGlobalEscape(); // to keep
     
@@ -75,17 +104,30 @@ private:
     void clearRoomWaitingUiEntities();
 
 private:
+    std::unordered_map<GameState, std::unique_ptr<interfaces::IScene>> _scenes;
+    interfaces::IScene* _activeScene = nullptr;
+
+    Settings _settings;
+    TranslationManager _translations;
+
+    sf::RenderWindow _window;
+
+    rtp::ecs::Registry _worldRegistry;
+    rtp::ecs::Registry _uiRegistry;
+    rtp::ecs::SystemManager _UiSystemManager;
+    rtp::ecs::SystemManager _WorldSystemManager;
+
+    AssetManager _assetManager;
+
+    EntityBuilder _uiEntityBuilder;
+    EntityBuilder _worldEntityBuilder;
+
+
+
+
     std::vector<rtp::ecs::Entity> _parallaxLayers;
     std::vector<rtp::ecs::Entity> _spawnedEnemy;
     std::vector<rtp::ecs::Entity> _projectiles;
-    sf::RenderWindow _window;
-    rtp::ecs::Registry _worldRegistry;
-    rtp::ecs::Registry _uiRegistry;
-    rtp::ecs::SystemManager _systemManager;
-    Graphics::AssetManager _assetManager;
-    Game::EntityBuilder _entityBuilder;
-    Settings _settings;
-    TranslationManager _translations;
 
     rtp::client::ClientNetwork _clientNetwork;
     
@@ -95,16 +137,6 @@ private:
     
     GameState _currentState{GameState::Login};
     float _lastDt{0.0f};
-
-    // bool _uiReady = false;
-
-    // rtp::ecs::Entity _hudScore{};
-    // rtp::ecs::Entity _hudPing{};
-    // rtp::ecs::Entity _hudFps{};
-    // rtp::ecs::Entity _hudEntities{};
-    // bool _hudInit = false;
-
-    // int _score = 12345;
 
 };
 

@@ -22,19 +22,19 @@ namespace rtp::client {
          */
         class IScene {
             public:
-                virtual ~IScene() = default;
+                virtual ~IScene(void) = default;
 
                 /**
                  * @brief Called when the scene is entered.
                  * @note Used for initializing scene-specific resources.
                  */
-                virtual void onEnter() = 0;
+                virtual void onEnter(void) = 0;
 
                 /**
                  * @brief Called when the scene is exited.
                  * @note Used for cleaning up scene-specific resources.
                  */
-                virtual void onExit() = 0;
+                virtual void onExit(void) = 0;
 
                 /**
                  * @brief Handle an incoming event.

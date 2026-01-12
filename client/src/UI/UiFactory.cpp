@@ -109,7 +109,7 @@ namespace rtp::client {
             const size& size,
             const std::vector<std::string>& options,
             const int selectedIndex,
-            std::function<void(const std::string&)> onSelect)
+            std::function<void(int index)> onSelect)
         {
             auto entityRes = registry.spawnEntity();
             if (!entityRes) {
@@ -126,8 +126,12 @@ namespace rtp::client {
             dropdown.options = options;
             dropdown.selectedIndex = selectedIndex;
             dropdown.onSelect = [options, onSelect](int index) {
-                if (index >= 0 && index < static_cast<int>(options.size())) {
-                    onSelect(options[static_cast<std::size_t>(index)]);
+                if (index < 0 || index >= static_cast<int>(options.size())) {
+                    rtp::log::warning("Dropdown selection index {} is out of bounds", index);
+                    return;
+                }
+                if (onSelect) {
+                    onSelect(index);
                 }
             };
 

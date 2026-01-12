@@ -22,7 +22,7 @@
 #include "RType/ECS/Components/Animation.hpp"
 #include "RType/ECS/Components/ParallaxLayer.hpp"
 
-namespace Client::Game {
+namespace rtp::client {
 
 /**
  * @struct EnemyTemplate
