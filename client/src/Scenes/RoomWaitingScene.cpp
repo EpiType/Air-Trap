@@ -74,7 +74,6 @@ namespace rtp::client {
 
         void RoomWaitingScene::onExit(void)
         {
-            _uiRegistry.clear();
         }
 
         void RoomWaitingScene::handleEvent(const sf::Event& event)

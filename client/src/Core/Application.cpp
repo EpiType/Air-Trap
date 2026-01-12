@@ -169,7 +169,9 @@ namespace rtp::client
         if (_activeScene) {
             _activeScene->onExit();
         }
-
+        
+        _uiRegistry.clear();
+        
         if (newState != GameState::Playing) _worldRegistry.clear();
 
         auto it = _scenes.find(newState);
@@ -183,8 +185,6 @@ namespace rtp::client
         }
 
         _currentState = newState;
-
-        _activeScene = nullptr;
     }
 
     void Application::processInput()

@@ -68,7 +68,6 @@ namespace rtp::client {
         void PauseScene::onExit(void)
         {
             rtp::log::info("Exiting PauseScene");
-            _uiRegistry.clear();
         }
 
         void PauseScene::handleEvent(const sf::Event& e)

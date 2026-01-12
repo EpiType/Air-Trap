@@ -190,7 +190,6 @@ namespace rtp::client {
 
         void SettingsScene::onExit(void)
         {
-            _uiRegistry.clear();
         }
 
         void SettingsScene::handleEvent(const sf::Event& e)

@@ -145,7 +145,6 @@ namespace rtp::client {
         void CreateRoomScene::onExit()
         {
             rtp::log::info("CreateRoomScene exited");
-            _uiRegistry.clear();
         }
 
         void CreateRoomScene::handleEvent(const sf::Event& event)

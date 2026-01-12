@@ -78,7 +78,6 @@ namespace rtp::client {
         void MenuScene::onExit(void)
         {
             rtp::log::info("Exiting MenuScene");
-            _uiRegistry.clear();
         }
 
         void MenuScene::handleEvent(const sf::Event& e)

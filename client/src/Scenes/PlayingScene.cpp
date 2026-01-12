@@ -67,7 +67,6 @@ namespace rtp::client {
         void PlayingScene::onExit(void)
         {
             _hudInit = false;
-            _uiRegistry.clear();
         }
 
 
