@@ -193,9 +193,13 @@ namespace rtp::client {
             _uiRegistry.clear();
         }
 
-        void SettingsScene::handleEvent(const sf::Event& event)
+        void SettingsScene::handleEvent(const sf::Event& e)
         {
-            (void)event;
+            if (const auto* kp = e.getIf<sf::Event::KeyPressed>()) {
+                if (kp->code == sf::Keyboard::Key::Escape) {
+                    _changeState(GameState::Menu);
+                }
+            }
         }
 
         void SettingsScene::update(float dt)

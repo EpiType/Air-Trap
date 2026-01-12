@@ -81,9 +81,13 @@ namespace rtp::client {
             _uiRegistry.clear();
         }
 
-        void MenuScene::handleEvent(const sf::Event& event)
+        void MenuScene::handleEvent(const sf::Event& e)
         {
-            (void)event;
+            if (const auto* kp = e.getIf<sf::Event::KeyPressed>()) {
+                if (kp->code == sf::Keyboard::Key::Escape) {
+                    std::exit(0);
+                }
+            }
         }
 
         void MenuScene::update(float dt)

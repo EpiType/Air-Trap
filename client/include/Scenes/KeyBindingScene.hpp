@@ -15,29 +15,17 @@
     #include "Systems/NetworkSyncSystem.hpp"
     #include "Translation/TranslationManager.hpp"
     #include "Core/Settings.hpp"
+    #include "Utils/KeyAction.hpp"
     #include <SFML/Graphics.hpp>
     #include <memory>
     #include <functional>
     #include <string>
     #include <cstdint>
     #include <vector>
+    #include <unordered_map>
 
 namespace rtp::client
 {
-    /**
-     * @enum KeyAction
-     * @brief Actions that can be bound to keys
-     */
-    enum class KeyAction {
-        MoveUp,
-        MoveDown,
-        MoveLeft,
-        MoveRight,
-        Shoot,
-        Pause,
-        Menu
-    };
-
     /**
      * @class KeyBindingScene
      * @brief Scene for configuring key bindings.
@@ -111,7 +99,8 @@ namespace rtp::client
                 ChangeStateFn _changeState;                 /**< Function to change the game state */
 
                 bool _isWaitingForKey{false};               /**< Flag indicating if waiting for key input */
-                KeyAction _actionToRebind;                  /**< Action currently being rebound */
+                KeyAction _actionToRebind
+                    {KeyAction::MoveUp};                    /**< Action currently being rebound */
 
                 std::unordered_map<KeyAction,
                     rtp::ecs::Entity> _actionToButton;      /**< Map of actions to their corresponding button entities */

@@ -71,16 +71,18 @@ namespace rtp::client {
                     {255, 255, 255}
                 );
                 sf::Keyboard::Key currentKey = _settings.getKey(binding.action);
-                _uiFactory.createButton(
+                auto e = _uiFactory.createButton(
                     _uiRegistry,
                     {500.0f, yPos},
                     {200.0f, 40.0f},
                     _settings.getKeyName(currentKey),
                     [this, actionToBind = binding.action]() {
                         _isWaitingForKey = true;
-                        // _keyActionToRebind = actionToBind;
+                        _actionToRebind = actionToBind;
+                        refreshButtonLabel(actionToBind);
                     }
                 );
+                _actionToButton[binding.action] = e;
                 yPos += buttonSpacing;
             }
 
@@ -102,12 +104,65 @@ namespace rtp::client {
 
         void KeyBindingScene::handleEvent(const sf::Event& event)
         {
-            (void)event;
+            if (!_isWaitingForKey)
+                return;
+
+            if (const auto* kp = event.getIf<sf::Event::KeyPressed>()) {
+                if (kp->code == sf::Keyboard::Key::Escape) {
+                    _isWaitingForKey = false;
+                    rtp::log::info("Key binding cancelled");
+                    refreshButtonLabel(_actionToRebind);
+                    return;
+                }
+
+                _settings.setKey(_actionToRebind, kp->code);
+                _settings.save();
+                _isWaitingForKey = false;
+
+                rtp::log::info("Key {} bound to action {}",
+                            _settings.getKeyName(kp->code),
+                            static_cast<int>(_actionToRebind));
+
+                refreshButtonLabel(_actionToRebind);
+            }
         }
 
         void KeyBindingScene::update(float dt)
         {
             (void)dt;
+        }
+
+        //////////////////////////////////////////////////////////////////////////
+        // Private API
+        //////////////////////////////////////////////////////////////////////////
+
+        void KeyBindingScene::refreshButtonLabel(KeyAction action)
+        {
+            auto it = _actionToButton.find(action);
+            if (it == _actionToButton.end()) {
+                rtp::log::warning("No button found for action {}", static_cast<int>(action));
+                return;
+            }
+
+            const rtp::ecs::Entity e = it->second;
+
+            const sf::Keyboard::Key key = _settings.getKey(action);
+            const std::string keyName = _settings.getKeyName(key);
+
+            auto buttonsRes = _uiRegistry.getComponents<rtp::ecs::components::ui::Button>();
+            if (!buttonsRes) {
+                rtp::log::error("Failed to get Button components");
+                return;
+            }
+
+            auto& buttons = buttonsRes.value().get();
+
+            if (!buttons.has(e)) {
+                rtp::log::warning("Button component not found for entity {}", static_cast<std::uint64_t>(e));
+                return;
+            }
+
+            buttons[e].text = keyName;
         }
 
     } // namespace Scenes

@@ -71,9 +71,13 @@ namespace rtp::client {
             _uiRegistry.clear();
         }
 
-        void PauseScene::handleEvent(const sf::Event& event)
+        void PauseScene::handleEvent(const sf::Event& e)
         {
-            (void)event;
+            if (const auto* kp = e.getIf<sf::Event::KeyPressed>()) {
+                if (kp->code == sf::Keyboard::Key::Escape) {
+                    _changeState(GameState::Playing);
+                }
+            }
         }
 
         void PauseScene::update(float dt)

@@ -38,12 +38,14 @@ namespace rtp::client {
                  * @param network Reference to the client network
                  * @param window Reference to the SFML render window
                  */
-                PlayingScene(ecs::Registry& UiRegistry,
-                             Settings& settings,
-                             TranslationManager& translationManager,
-                             NetworkSyncSystem& network,
-                             graphics::UiFactory& uiFactory,
-                             std::function<void(GameState)> changeState);
+                PlayingScene(ecs::Registry& worldRegistry,
+                                ecs::Registry& uiRegistry,
+                                Settings& settings,
+                                TranslationManager& translationManager,
+                                NetworkSyncSystem& network,
+                                graphics::UiFactory& uiFactory,
+                                EntityBuilder& worldBuilder,
+                                std::function<void(GameState)> changeState);
 
                 /**
                  * @brief Type alias for a function that changes the game state.
@@ -71,6 +73,12 @@ namespace rtp::client {
                  * @param dt Time delta since the last update.
                  */
                 void update(float dt) override;
+            
+            private:
+                /**
+                 * @brief Spawn parallax background entities.
+                 */
+                void spawnParallax(void);
 
             private:
                 ecs::Registry& _uiRegistry;                 /**< Reference to the ECS registry */
@@ -79,10 +87,18 @@ namespace rtp::client {
                 NetworkSyncSystem& _network;                /**< Reference to the client network */
                 graphics::UiFactory& _uiFactory;            /**< UI Factory for creating UI components */
                 ChangeStateFn _changeState;                 /**< Function to change the game state */
+                ecs::Registry& _worldRegistry;              /**< Reference to the world ECS registry */
+                EntityBuilder& _worldBuilder;               /**< Reference to the world entity builder */
 
                 uint32_t _uiScore = 0;                      /**< Player score in the UI */
                 uint32_t _uiFps = 0;                        /**< Current FPS in the UI */
                 uint32_t _uiPing = 0;                       /**< Current ping in the UI */
+
+                rtp::ecs::Entity _hudPing{};                /**< Entity for displaying ping in the HUD */
+                rtp::ecs::Entity _hudFps{};                 /**< Entity for displaying FPS in the HUD */
+                rtp::ecs::Entity _hudScore{};               /**< Entity for displaying score in the HUD */
+                rtp::ecs::Entity _hudEntities{};            /**< Parent entity for HUD elements */
+                bool _hudInit{false};                       /**< Flag indicating if HUD is initialized */
         };
     } // namespace Scenes
 } // namespace rtp::client

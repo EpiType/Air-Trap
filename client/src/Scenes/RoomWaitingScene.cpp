@@ -85,6 +85,9 @@ namespace rtp::client {
         void RoomWaitingScene::update(float dt)
         {
             (void)dt;
+            if (_network.isInGame()) {
+                _changeState(GameState::Playing);
+            }
         }
     } // namespace Scenes
 } // namespace rtp::client
