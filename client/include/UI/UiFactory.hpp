@@ -60,6 +60,10 @@ namespace rtp::client {
          */
         class UiFactory {
             public:
+                UiFactory() = default;
+                
+                ~UiFactory() = default;
+
                 /**
                  * @brief Create a button UI component.
                  * @param registry Reference to the ECS registry.

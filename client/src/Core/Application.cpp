@@ -57,6 +57,7 @@ namespace rtp::client
         initWorldSystems();
         initUiECS();
         initWorldECS();
+        initScenes();
         changeState(GameState::Login);
     }
 
@@ -116,6 +117,47 @@ namespace rtp::client
         rtp::log::info("OK : World ECS initialized with components");
     }
 
+    void Application::initScenes()
+    {
+        auto changeStateCb = [this](GameState s) { this->changeState(s); };
+        try {
+            auto& net = _worldSystemManager.getSystem<rtp::client::NetworkSyncSystem>();
+
+        _scenes[GameState::Login] = std::make_unique<rtp::client::Scenes::LoginScene>(
+            _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
+        );
+        _scenes[GameState::Menu] = std::make_unique<rtp::client::Scenes::MenuScene>(
+            _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
+        );
+        _scenes[GameState::Lobby] = std::make_unique<rtp::client::Scenes::LobbyScene>(
+            _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
+        );
+        _scenes[GameState::CreateRoom] = std::make_unique<rtp::client::Scenes::CreateRoomScene>(
+            _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
+        );
+        _scenes[GameState::RoomWaiting] = std::make_unique<rtp::client::Scenes::RoomWaitingScene>(
+            _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
+        );
+        _scenes[GameState::Settings] = std::make_unique<rtp::client::Scenes::SettingsScene>(
+            _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
+        );
+        _scenes[GameState::KeyBindings] = std::make_unique<rtp::client::Scenes::KeyBindingScene>(
+            _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
+        );
+        _scenes[GameState::Paused] = std::make_unique<rtp::client::Scenes::PauseScene>(
+            _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
+        );
+        _scenes[GameState::Playing] = std::make_unique<rtp::client::Scenes::PlayingScene>(
+            _worldRegistry, _uiRegistry, _settings, _translations, net, _uiFactory, _worldEntityBuilder, changeStateCb
+        );
+        } catch (const std::exception& e) {
+            rtp::log::error("Failed to get NetworkSyncSystem: {}", e.what());
+            throw;
+        }
+
+        rtp::log::info("OK: Scenes initialized");
+    }
+
     void Application::changeState(GameState newState)
     {
         rtp::log::info("Changing state from {} to {}",
@@ -123,6 +165,10 @@ namespace rtp::client
                     static_cast<int>(newState));
 
         if (newState == _currentState) return;
+
+        if (_activeScene) {
+            _activeScene->onExit();
+        }
 
         if (newState != GameState::Playing) _worldRegistry.clear();
 
@@ -143,8 +189,13 @@ namespace rtp::client
 
     void Application::processInput()
     {
-        while (auto event = _window.pollEvent()) {
-            if (event->is<sf::Event::Closed>()) _window.close();
+        while (auto eventOpt = _window.pollEvent()) {
+            const sf::Event& event = *eventOpt;
+
+            if (event.is<sf::Event::Closed>()) {
+                _window.close();
+                continue;
+            }
 
             if (_activeScene)
                 _activeScene->handleEvent(event);

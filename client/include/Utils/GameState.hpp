@@ -18,6 +18,7 @@ namespace rtp::client {
      * handling window creation, ECS setup, and system management.
      */
     enum class GameState {
+        NotInit,       /**< Uninitialized state */
         Menu,          /**< Main menu state */
         Login,         /**< Login screen state */
         Lobby,         /**< Lobby state */

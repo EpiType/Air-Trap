@@ -6,7 +6,8 @@
  * configuration and preferences
 */
 
-#pragma once
+#ifndef RTYPE_CLIENT_CORE_SETTINGS_HPP_
+    #define RTYPE_CLIENT_CORE_SETTINGS_HPP_
 
 #include "RType/Logger.hpp"
 #include "Utils/KeyAction.hpp"
@@ -158,5 +159,6 @@ namespace rtp::client
             std::vector<VolumeCallback> _onSfxVolumeChanged;
             std::vector<LanguageCallback> _onLanguageChanged;
     };
-
 } // namespace rtp::client
+
+#endif // RTYPE_CLIENT_CORE_SETTINGS_HPP_

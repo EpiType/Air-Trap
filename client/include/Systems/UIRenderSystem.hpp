@@ -20,24 +20,24 @@
 
 namespace Client::Systems {
 
-class UIRenderSystem : public rtp::ecs::ISystem {
-public:
-    UIRenderSystem(rtp::ecs::Registry& registry, sf::RenderWindow& window);
+    class UIRenderSystem : public rtp::ecs::ISystem {
+        public:
+            UIRenderSystem(rtp::ecs::Registry& registry, sf::RenderWindow& window);
 
-    void update(float dt) override;
+            void update(float dt) override;
 
-private:
-    void renderButtons();
-    void renderTexts();
-    void renderSliders();
-    void renderDropdowns();
-    void renderTextInputs(float dt);
-    sf::Font& loadFont(const std::string& fontPath);
+        private:
+            void renderButtons();
+            void renderTexts();
+            void renderSliders();
+            void renderDropdowns();
+            void renderTextInputs(float dt);
+            sf::Font& loadFont(const std::string& fontPath);
 
-    rtp::ecs::Registry& _registry;
-    sf::RenderWindow& _window;
-    std::unordered_map<std::string, sf::Font> _fonts;
-};
+            rtp::ecs::Registry& _registry;
+            sf::RenderWindow& _window;
+            std::unordered_map<std::string, sf::Font> _fonts;
+    };
 
 }  // namespace Client::Systems
 

@@ -23,6 +23,7 @@
 #include "Network/ClientNetwork.hpp"
 #include "Core/Settings.hpp"
 #include "RType/Logger.hpp"
+#include "UI/UiFactory.hpp"
 
 /* Components */
 #include "RType/ECS/Components/Animation.hpp"
@@ -66,60 +67,124 @@
 #include "Scenes/RoomWaitingScene.hpp"
 #include "Scenes/SettingsScene.hpp"
 
+/**
+ * @namespace rtp::client
+ * @brief R-Type client namespace
+ */
 namespace rtp::client {
 
+    /**
+     * @namespace UIConstants
+     * @brief Constants related to the UI
+     */
     namespace UIConstants {
-        constexpr float WINDOW_WIDTH = 1280.0f;
-        constexpr float WINDOW_HEIGHT = 720.0f;
+        constexpr float WINDOW_WIDTH = 1280.0f;     /**< Standard window width */
+        constexpr float WINDOW_HEIGHT = 720.0f;     /**< Standard window height */
     }
 
+    /**
+     * @class Application
+     * @brief Main application class for the R-Type client.
+     * 
+     * This class manages the main application loop, including initialization
+     * of systems, scenes, and handling of game states.
+     */
     class Application {
         public:
+            /**
+             * @brief Construct a new Application object
+             */
             Application();
+
+            /**
+             * @brief Run the main application loop
+             */
             void run(void);
             
         private:
+            /**
+             * @brief Initialize the ECS and systems for the UI
+             */
             void initUiECS(void);
+
+            /**
+             * @brief Initialize the ECS and systems for the game world
+             */
             void initWorldECS(void);
+
+            /**
+             * @brief Initialize the game world systems
+             */
             void initUiSystems(void);
+
+            /**
+             * @brief Initialize the UI systems
+             */
             void initWorldSystems(void);
 
+            /**
+             * @brief Initialize all application scenes
+             */
+            void initScenes(void);
+
+            /**
+             * @brief Setup callbacks for settings changes
+             */
             void setupSettingsCallbacks();
 
         private:
+            /**
+             * @brief Handle input events
+             */
             void processInput(void);
+
+            /**
+             * @brief Update the application state
+             * @param delta Time delta since the last update
+             */
             void update(sf::Time delta);
+
+            /**
+             * @brief Render the current scene
+             */
             void render(void);
             
+            /**
+             * @brief Change the current game state and active scene
+             * @param newState The new game state to switch to
+             */
             void changeState(GameState newState);
 
         private:
-            std::unordered_map<GameState, std::unique_ptr<interfaces::IScene>> _scenes;
-            interfaces::IScene* _activeScene = nullptr;
+            std::unordered_map<GameState,
+                std::unique_ptr<interfaces::IScene>> _scenes;   /**< Map of game states to their corresponding scenes */
+            interfaces::IScene* _activeScene = nullptr;         /**< Pointer to the currently active scene */
 
-            Settings _settings;
-            TranslationManager _translations;
+            graphics::UiFactory _uiFactory;                     /**< UI Factory for creating UI components */
 
-            sf::RenderWindow _window;
+            Settings _settings;                                 /**< Application settings manager */
+            TranslationManager _translations;                   /**< Translation manager for localization */
 
-            rtp::ecs::Registry _worldRegistry;
-            rtp::ecs::Registry _uiRegistry;
-            rtp::ecs::SystemManager _uiSystemManager;
-            rtp::ecs::SystemManager _worldSystemManager;
+            sf::RenderWindow _window;                           /**< SFML render window */
 
-            AssetManager _assetManager;
+            rtp::ecs::Registry _worldRegistry;                  /**< ECS registry for the game world */
+            rtp::ecs::Registry _uiRegistry;                     /**< ECS registry for the UI */
+            rtp::ecs::SystemManager _uiSystemManager;           /**< ECS system manager for the UI */
+            rtp::ecs::SystemManager _worldSystemManager;        /**< ECS system manager for the game world */
 
-            EntityBuilder _uiEntityBuilder;
-            EntityBuilder _worldEntityBuilder;
+            AssetManager _assetManager;                         /**< Asset manager for textures and fonts */
 
-            rtp::client::ClientNetwork _clientNetwork;
+            EntityBuilder _uiEntityBuilder;                     /**< Entity builder for UI entities */
+            EntityBuilder _worldEntityBuilder;                  /**< Entity builder for world entities */
+
+            rtp::client::ClientNetwork _clientNetwork;          /**< Client network manager */
             
-            sf::Shader _colorblindShader;
-            sf::RenderTexture _renderTexture;
-            bool _shaderLoaded{false};
+            sf::Shader _colorblindShader;                       /**< Shader for colorblind mode */
+            sf::RenderTexture _renderTexture;                   /**< Render texture for off-screen rendering */
+            bool _shaderLoaded{false};                          /**< Flag indicating if the shader was loaded successfully */
             
-            GameState _currentState{GameState::Login};
-            float _lastDt{0.0f};
+            GameState _currentState{GameState::NotInit};        /**< Current game state */
+            float _lastDt{0.0f};                                /**< Last delta time value */
     };
 }  // namespace Client::Core
 

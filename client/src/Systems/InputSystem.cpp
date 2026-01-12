@@ -15,7 +15,7 @@ namespace rtp::client {
     //////////////////////////////////////////////////////////////////////////
 
     InputSystem::InputSystem(rtp::ecs::Registry& r,
-                         Client::Core::Settings& settings,
+                         Settings& settings,
                          ClientNetwork& net,
                          sf::RenderWindow& window)
         : _r(r), _settings(settings), _net(net), _window(window) {}
@@ -29,13 +29,13 @@ namespace rtp::client {
 
         uint8_t mask = 0;
 
-        if (sf::Keyboard::isKeyPressed(_settings.getKey(Client::Core::KeyAction::MoveUp)))
+        if (sf::Keyboard::isKeyPressed(_settings.getKey(KeyAction::MoveUp)))
             mask |= InputBits::MoveUp;
-        if (sf::Keyboard::isKeyPressed(_settings.getKey(Client::Core::KeyAction::MoveDown)))
+        if (sf::Keyboard::isKeyPressed(_settings.getKey(KeyAction::MoveDown)))
             mask |= InputBits::MoveDown;
-        if (sf::Keyboard::isKeyPressed(_settings.getKey(Client::Core::KeyAction::MoveLeft)))
+        if (sf::Keyboard::isKeyPressed(_settings.getKey(KeyAction::MoveLeft)))
             mask |= InputBits::MoveLeft;
-        if (sf::Keyboard::isKeyPressed(_settings.getKey(Client::Core::KeyAction::MoveRight)))
+        if (sf::Keyboard::isKeyPressed(_settings.getKey(KeyAction::MoveRight)))
             mask |= InputBits::MoveRight;
 
         if (mask == _lastMask)
