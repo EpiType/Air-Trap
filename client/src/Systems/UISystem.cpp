@@ -2,16 +2,16 @@
 ** EPITECH PROJECT, 2025
 ** Air-Trap
 ** File description:
-** MenuSystem
+** UISystem
 */
 
-#include "Systems/MenuSystem.hpp"
+#include "Systems/UISystem.hpp"
 
 #include "RType/Logger.hpp"
 
-namespace Client::Systems
+namespace rtp::client
 {
-    void MenuSystem::update(float dt)
+    void UISystem::update(float dt)
     {
         (void)dt;
 
@@ -41,7 +41,7 @@ namespace Client::Systems
         wasPressed = isPressed;
     }
 
-    void MenuSystem::handleEvent(const sf::Event &event)
+    void UISystem::handleEvent(const sf::Event &event)
     {
         if (const auto *te = event.getIf<sf::Event::TextEntered>()) {
             handleTextEntered(te->unicode);
@@ -51,7 +51,7 @@ namespace Client::Systems
         }
     }
 
-    void MenuSystem::handleMouseMove(const sf::Vector2i &mousePos)
+    void UISystem::handleMouseMove(const sf::Vector2i &mousePos)
     {
         auto buttonsResult =
             _registry.getComponents<rtp::ecs::components::ui::Button>();
@@ -70,7 +70,7 @@ namespace Client::Systems
         }
     }
 
-    void MenuSystem::handleMouseClick(const sf::Vector2i &mousePos)
+    void UISystem::handleMouseClick(const sf::Vector2i &mousePos)
     {
         auto dropdownsResult =
             _registry.getComponents<rtp::ecs::components::ui::Dropdown>();
@@ -237,7 +237,7 @@ namespace Client::Systems
         }
     }
 
-    bool MenuSystem::isMouseOverButton(
+    bool UISystem::isMouseOverButton(
         const rtp::ecs::components::ui::Button &button,
         const sf::Vector2i &mousePos)
     {
@@ -253,7 +253,7 @@ namespace Client::Systems
                button.size.y;
     }
 
-    bool MenuSystem::isMouseOverSlider(
+    bool UISystem::isMouseOverSlider(
         const rtp::ecs::components::ui::Slider &slider,
         const sf::Vector2i &mousePos)
     {
@@ -269,7 +269,7 @@ namespace Client::Systems
                slider.size.y;
     }
 
-    bool MenuSystem::isMouseOverDropdown(
+    bool UISystem::isMouseOverDropdown(
         const rtp::ecs::components::ui::Dropdown &dropdown,
         const sf::Vector2i &mousePos)
     {
@@ -285,7 +285,7 @@ namespace Client::Systems
                dropdown.size.y;
     }
 
-    void MenuSystem::updateSliderValue(rtp::ecs::components::ui::Slider &slider,
+    void UISystem::updateSliderValue(rtp::ecs::components::ui::Slider &slider,
                                        const sf::Vector2i &mousePos)
     {
         float relativeX = mousePos.x - slider.position.x;
@@ -299,7 +299,7 @@ namespace Client::Systems
         }
     }
 
-    int MenuSystem::getDropdownOptionAtMouse(
+    int UISystem::getDropdownOptionAtMouse(
         const rtp::ecs::components::ui::Dropdown &dropdown,
         const sf::Vector2i &mousePos)
     {
@@ -326,7 +326,7 @@ namespace Client::Systems
         return -1;
     }
 
-    bool MenuSystem::isMouseOverTextInput(
+    bool UISystem::isMouseOverTextInput(
         const rtp::ecs::components::ui::TextInput &input,
         const sf::Vector2i &mousePos) const
     {
@@ -342,7 +342,7 @@ namespace Client::Systems
                input.size.y;
     }
 
-    void MenuSystem::clearAllTextInputFocus()
+    void UISystem::clearAllTextInputFocus()
     {
         auto inputsResult =
             _registry.getComponents<rtp::ecs::components::ui::TextInput>();
@@ -357,7 +357,7 @@ namespace Client::Systems
         }
     }
 
-    void MenuSystem::focusTextInputAt(const sf::Vector2i &mousePos)
+    void UISystem::focusTextInputAt(const sf::Vector2i &mousePos)
     {
         auto inputsResult =
             _registry.getComponents<rtp::ecs::components::ui::TextInput>();
@@ -382,7 +382,7 @@ namespace Client::Systems
         }
     }
 
-    void MenuSystem::handleTextEntered(std::uint32_t unicode)
+    void UISystem::handleTextEntered(std::uint32_t unicode)
     {
         auto inputsResult =
             _registry.getComponents<rtp::ecs::components::ui::TextInput>();
@@ -439,7 +439,7 @@ namespace Client::Systems
         }
     }
 
-    void MenuSystem::handleKeyPressed(sf::Keyboard::Key key)
+    void UISystem::handleKeyPressed(sf::Keyboard::Key key)
     {
         auto inputsResult =
             _registry.getComponents<rtp::ecs::components::ui::TextInput>();

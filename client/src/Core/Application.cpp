@@ -8,49 +8,17 @@
 
 #include "Core/Application.hpp"
 
-#include "Core/Settings.hpp"
-#include "RType/Logger.hpp"
-#include "Systems/MenuSystem.hpp"
-#include "Systems/SettingsMenuSystem.hpp"
-#include "Systems/UIRenderSystem.hpp"
-
-#include <SFML/Graphics/Color.hpp>
-#include <SFML/System/Clock.hpp>
-#include <memory>
-// ECS
-#include "RType/ECS/Registry.hpp"
-#include "RType/ECS/SystemManager.hpp"
-
-// Components
-#include "RType/ECS/Components/Animation.hpp"
-#include "RType/ECS/Components/Controllable.hpp"
-#include "RType/ECS/Components/NetworkId.hpp"
-#include "RType/ECS/Components/Sprite.hpp"
-#include "RType/ECS/Components/Transform.hpp"
-#include "RType/ECS/Components/UI/Button.hpp"
-#include "RType/ECS/Components/UI/Dropdown.hpp"
-#include "RType/ECS/Components/UI/Slider.hpp"
-#include "RType/ECS/Components/UI/Text.hpp"
-#include "RType/ECS/Components/Velocity.hpp"
-
-// Systems
-#include "RType/Math/Vec2.hpp"
-#include "Systems/AnimationSystem.hpp"
-#include "Utils/GameState.hpp"
-#include "Systems/NetworkSyncSystem.hpp"
-#include "Systems/InputSystem.hpp"
-#include "Systems/ParallaxSystem.hpp"
-#include "Systems/RenderSystem.hpp"
-
-namespace Client::Core
+namespace rtp::client
 {
     Application::Application()
         : _window(sf::VideoMode(
                       {static_cast<unsigned int>(UIConstants::WINDOW_WIDTH),
                        static_cast<unsigned int>(UIConstants::WINDOW_HEIGHT)}),
                   "Air-Trap - R-Type Clone")
-        , _systemManager(_registry)
-        , _entityBuilder(_registry)
+        , _UiSystemManager(_uiRegistry)
+        , _WorldSystemManager(_worldRegistry)
+        , _uiEntityBuilder(_uiRegistry)
+        , _worldEntityBuilder(_worldRegistry)
         , _clientNetwork("127.0.0.1", 5000)
     {
         _window.setFramerateLimit(60);
@@ -59,7 +27,6 @@ namespace Client::Core
 
         setupSettingsCallbacks();
 
-        // Load colorblind shader
         if (!_colorblindShader.loadFromFile("assets/shaders/colorblind.frag",
                                             sf::Shader::Type::Fragment)) {
             rtp::log::warning("Failed to load colorblind shader, running "
@@ -70,7 +37,6 @@ namespace Client::Core
             rtp::log::info("Colorblind shader loaded successfully");
         }
 
-        // Create render texture for post-processing
         if (!_renderTexture.resize(
                 {static_cast<unsigned int>(UIConstants::WINDOW_WIDTH),
                  static_cast<unsigned int>(UIConstants::WINDOW_HEIGHT)})) {
@@ -82,11 +48,48 @@ namespace Client::Core
         // _audioManager.setSfxVolume(_settings.getSfxVolume());
 
         _clientNetwork.start();
-        initECS();
-        changeState(_currentState);
+        initSystems();
+        initUiECS();
+        initWorldECS();
+        changeState(GameState::Login);
     }
 
-    void Application::run()
+    void Application::initSystems(void)
+    {
+        _systemManager.addSystem<rtp::client::ParallaxSystem>(_registry);
+        _systemManager.addSystem<rtp::client::InputSystem>(_registry, _settings, _clientNetwork, _window);
+        _systemManager.addSystem<rtp::client::AnimationSystem>(_registry);
+        _systemManager.addSystem<rtp::client::RenderSystem>(_registry, _window);
+        _systemManager.addSystem<rtp::client::UISystem>(_registry, _window);
+        _systemManager.addSystem<Client::Systems::UIRenderSystem>(_registry, _window);
+        _systemManager.addSystem<Client::Systems::SettingsMenuSystem>(_registry, _window, _settings);
+        _systemManager.addSystem<rtp::client::ClientNetworkSystem>( _clientNetwork, _registry, _entityBuilder);
+        rtp::log::info("OK : Systems initialized");
+    }
+
+    void Application::initUiECS(void)
+    {
+        _uiRegistry.registerComponent<rtp::ecs::components::ui::Button>();
+        _uiRegistry.registerComponent<rtp::ecs::components::ui::Text>();
+        _uiRegistry.registerComponent<rtp::ecs::components::ui::Slider>();
+        _uiRegistry.registerComponent<rtp::ecs::components::ui::Dropdown>();
+        _uiRegistry.registerComponent<rtp::ecs::components::ui::TextInput>();
+        rtp::log::info("OK : UI ECS initialized with components");
+    }
+
+    void Application::initWorldECS(void)
+    {
+        _worldRegistry.registerComponent<rtp::ecs::components::Transform>();
+        _worldRegistry.registerComponent<rtp::ecs::components::Velocity>();
+        _worldRegistry.registerComponent<rtp::ecs::components::Controllable>();
+        _worldRegistry.registerComponent<rtp::ecs::components::Sprite>();
+        _worldRegistry.registerComponent<rtp::ecs::components::Animation>();
+        _worldRegistry.registerComponent<rtp::ecs::components::ParallaxLayer>();
+        _worldRegistry.registerComponent<rtp::ecs::components::NetworkId>();
+        rtp::log::info("OK : World ECS initialized with components");
+    }
+
+    void Application::run(void)
     {
         sf::Clock clock;
         while (_window.isOpen()) {
@@ -95,45 +98,6 @@ namespace Client::Core
             update(deltaTime);
             render();
         }
-    }
-
-    void Application::initECS()
-    {
-        _registry.registerComponent<rtp::ecs::components::ui::Button>();
-        _registry.registerComponent<rtp::ecs::components::ui::Text>();
-        _registry.registerComponent<rtp::ecs::components::ui::Slider>();
-        _registry.registerComponent<rtp::ecs::components::ui::Dropdown>();
-        _registry.registerComponent<rtp::ecs::components::ui::TextInput>();
-
-        _registry.registerComponent<rtp::ecs::components::Transform>();
-        _registry.registerComponent<rtp::ecs::components::Velocity>();
-        _registry.registerComponent<rtp::ecs::components::Controllable>();
-        _registry.registerComponent<rtp::ecs::components::Sprite>();
-        _registry.registerComponent<rtp::ecs::components::Animation>();
-        _registry.registerComponent<rtp::ecs::components::ParallaxLayer>();
-
-        _systemManager.addSystem<rtp::client::ParallaxSystem>(_registry);
-        _registry.registerComponent<rtp::ecs::components::NetworkId>();
-
-        _systemManager.addSystem<rtp::client::InputSystem>(
-            _registry, _settings, _clientNetwork, _window);
-        _systemManager.addSystem<rtp::client::AnimationSystem>(_registry);
-        _systemManager.addSystem<rtp::client::RenderSystem>(_registry, _window);
-
-        _systemManager.addSystem<Client::Systems::MenuSystem>(_registry,
-                                                              _window);
-        _systemManager.addSystem<Client::Systems::UIRenderSystem>(_registry,
-                                                                  _window);
-        _systemManager.addSystem<Client::Systems::SettingsMenuSystem>(
-            _registry, _window, _settings);
-
-        _systemManager.addSystem<rtp::client::ClientNetworkSystem>(
-            _clientNetwork, _registry, _entityBuilder);
-    }
-
-    void Application::initMenu()
-    {
-        rtp::log::info("Initializing menu...");
     }
 
     void Application::createParallaxBackground()
@@ -210,302 +174,6 @@ namespace Client::Core
         _hudEntities = makeHudText({980.0f, 90.0f}, 18);
 
         _hudInit = true;
-
-        // NOTE: Menu entities are not deleted to avoid a crash in killEntity().
-        // They remain in the ECS but are not rendered since only the
-        // RenderSystem is active during gameplay (UIRenderSystem is only called
-        // in Menu state). The menu buttons are still clickable but their
-        // callbacks won't do anything harmful.
-        // TODO: Fix the killEntity() implementation to properly handle entity
-        // deletion, or implement a tag-based filtering system for systems.
-
-        // Spawn player
-        // auto playerRes = _registry.spawnEntity();
-        // if (!playerRes) return;
-        // rtp::ecs::Entity p = playerRes.value();
-
-        // _registry.addComponent<rtp::ecs::components::Transform>(
-        //     p, rtp::Vec2f{UIConstants::PLAYER_SPAWN_X,
-        //     UIConstants::PLAYER_SPAWN_Y}, 0.0f, rtp::Vec2f{1.0f, 1.0f});
-        // _registry.addComponent<rtp::ecs::components::Velocity>(p);
-        // _registry.addComponent<rtp::ecs::components::Controllable>(p);
-
-        // rtp::ecs::components::Sprite spriteData;
-        // spriteData.texturePath = "assets/sprites/r-typesheet42.gif";
-        // spriteData.rectLeft = 0;
-        // spriteData.rectTop = 0;
-        // spriteData.rectWidth = 33;
-        // spriteData.rectHeight = 17;
-        // spriteData.zIndex = 10;
-        // spriteData.red = 255;
-
-        // _registry.addComponent<rtp::ecs::components::Sprite>(p, spriteData);
-
-        // rtp::ecs::components::Animation animData;
-        // animData.frameLeft = 0;
-        // animData.frameTop = 0;
-        // animData.frameWidth = 33;
-        // animData.frameHeight = 17;
-        // animData.totalFrames = 5;
-        // animData.frameDuration = 0.1f;
-        // animData.currentFrame = 0;
-        // animData.elapsedTime = 0.0f;
-
-        // _registry.addComponent<rtp::ecs::components::Animation>(p, animData);
-    }
-
-    void Application::initPauseMenu()
-    {
-        rtp::log::info("Initializing pause menu...");
-
-    }
-
-    void Application::initLoginScene()
-    {
-        rtp::log::info("Initializing Login scene...");
-
-    }
-
-    void Application::initLobbyScene()
-    {
-        rtp::log::info("Initializing Lobby scene...");
-
-    }
-
-    void Application::initCreateRoomScene()
-    {
-        (void)_registry;
-    }
-
-    void Application::initRoomWaitingScene()
-    {
-        rtp::log::info("Initializing RoomWaiting scene...");
-    }
-
-    void Application::initKeyBindingMenu()
-    {
-        rtp::log::info("Initializing key bindings menu...");
-
-    }
-
-    void Application::initSettingsMenu()
-    {
-        rtp::log::info("Initializing settings menu...");
-
-        // Title
-        auto titleResult = _registry.spawnEntity();
-        if (titleResult) {
-            rtp::ecs::Entity title = titleResult.value();
-            rtp::ecs::components::ui::Text titleText;
-            titleText.content = _translations.get("settings.title");
-            titleText.position = rtp::Vec2f{500.0f, 50.0f};
-            titleText.fontPath = "assets/fonts/main.ttf";
-            titleText.fontSize = 60;
-            titleText.red = 255;
-            titleText.green = 200;
-            titleText.blue = 100;
-            _registry.addComponent<rtp::ecs::components::ui::Text>(title,
-                                                                   titleText);
-        }
-
-        // === AUDIO SECTION ===
-        float yPos = 150.0f;
-
-        // Master Volume Label
-        auto masterLabelRes = _registry.spawnEntity();
-        if (masterLabelRes) {
-            rtp::ecs::Entity label = masterLabelRes.value();
-            rtp::ecs::components::ui::Text text;
-            text.content = _translations.get("settings.master_volume");
-            text.position = rtp::Vec2f{200.0f, yPos};
-            text.fontPath = "assets/fonts/main.ttf";
-            text.fontSize = 24;
-            _registry.addComponent<rtp::ecs::components::ui::Text>(label, text);
-        }
-
-        // Master Volume Slider
-        auto masterSliderRes = _registry.spawnEntity();
-        if (masterSliderRes) {
-            rtp::ecs::Entity slider = masterSliderRes.value();
-            rtp::ecs::components::ui::Slider sliderComp;
-            sliderComp.position = rtp::Vec2f{450.0f, yPos + 5.0f};
-            sliderComp.size = rtp::Vec2f{300.0f, 15.0f};
-            sliderComp.minValue = 0.0f;
-            sliderComp.maxValue = 1.0f;
-            sliderComp.currentValue = _settings.getMasterVolume();
-            sliderComp.onChange = [this](float value) {
-                _settings.setMasterVolume(value);
-            };
-            _registry.addComponent<rtp::ecs::components::ui::Slider>(
-                slider, sliderComp);
-        }
-
-        yPos += 50.0f;
-
-        // Music Volume Label
-        auto musicLabelRes = _registry.spawnEntity();
-        if (musicLabelRes) {
-            rtp::ecs::Entity label = musicLabelRes.value();
-            rtp::ecs::components::ui::Text text;
-            text.content = _translations.get("settings.music_volume");
-            text.position = rtp::Vec2f{200.0f, yPos};
-            text.fontPath = "assets/fonts/main.ttf";
-            text.fontSize = 24;
-            _registry.addComponent<rtp::ecs::components::ui::Text>(label, text);
-        }
-
-        // Music Volume Slider
-        auto musicSliderRes = _registry.spawnEntity();
-        if (musicSliderRes) {
-            rtp::ecs::Entity slider = musicSliderRes.value();
-            rtp::ecs::components::ui::Slider sliderComp;
-            sliderComp.position = rtp::Vec2f{450.0f, yPos + 5.0f};
-            sliderComp.size = rtp::Vec2f{300.0f, 15.0f};
-            sliderComp.currentValue = _settings.getMusicVolume();
-            sliderComp.onChange = [this](float value) {
-                _settings.setMusicVolume(value);
-            };
-            _registry.addComponent<rtp::ecs::components::ui::Slider>(
-                slider, sliderComp);
-        }
-
-        yPos += 50.0f;
-
-        // SFX Volume Label
-        auto sfxLabelRes = _registry.spawnEntity();
-        if (sfxLabelRes) {
-            rtp::ecs::Entity label = sfxLabelRes.value();
-            rtp::ecs::components::ui::Text text;
-            text.content = _translations.get("settings.sfx_volume");
-            text.position = rtp::Vec2f{200.0f, yPos};
-            text.fontPath = "assets/fonts/main.ttf";
-            text.fontSize = 24;
-            _registry.addComponent<rtp::ecs::components::ui::Text>(label, text);
-        }
-
-        // SFX Volume Slider
-        auto sfxSliderRes = _registry.spawnEntity();
-        if (sfxSliderRes) {
-            rtp::ecs::Entity slider = sfxSliderRes.value();
-            rtp::ecs::components::ui::Slider sliderComp;
-            sliderComp.position = rtp::Vec2f{450.0f, yPos + 5.0f};
-            sliderComp.size = rtp::Vec2f{300.0f, 15.0f};
-            sliderComp.currentValue = _settings.getSfxVolume();
-            sliderComp.onChange = [this](float value) {
-                _settings.setSfxVolume(value);
-            };
-            _registry.addComponent<rtp::ecs::components::ui::Slider>(
-                slider, sliderComp);
-        }
-
-        yPos += 80.0f;
-
-        // === LANGUAGE SECTION ===
-        auto langLabelRes = _registry.spawnEntity();
-        if (langLabelRes) {
-            rtp::ecs::Entity label = langLabelRes.value();
-            rtp::ecs::components::ui::Text text;
-            text.content = _translations.get("settings.language");
-            text.position = rtp::Vec2f{200.0f, yPos};
-            text.fontPath = "assets/fonts/main.ttf";
-            text.fontSize = 24;
-            _registry.addComponent<rtp::ecs::components::ui::Text>(label, text);
-        }
-
-        // Language Dropdown
-        auto langDropdownRes = _registry.spawnEntity();
-        if (langDropdownRes) {
-            rtp::ecs::Entity dropdown = langDropdownRes.value();
-            rtp::ecs::components::ui::Dropdown dropdownComp;
-            dropdownComp.position = rtp::Vec2f{450.0f, yPos - 5.0f};
-            dropdownComp.size = rtp::Vec2f{300.0f, 35.0f};
-            dropdownComp.options = {"English", "Français", "Español", "Deutsch",
-                                    "Italiano"};
-            dropdownComp.selectedIndex =
-                static_cast<int>(_settings.getLanguage());
-            dropdownComp.onSelect = [this](int index) {
-                _settings.setLanguage(static_cast<Core::Language>(index));
-                _translations.loadLanguage(_settings.getLanguage());
-                changeState(GameState::Settings);
-            };
-            _registry.addComponent<rtp::ecs::components::ui::Dropdown>(
-                dropdown, dropdownComp);
-        }
-
-        yPos += 80.0f;
-
-        // === ACCESSIBILITY SECTION ===
-        auto colorblindLabelRes = _registry.spawnEntity();
-        if (colorblindLabelRes) {
-            rtp::ecs::Entity label = colorblindLabelRes.value();
-            rtp::ecs::components::ui::Text text;
-            text.content = _translations.get("settings.colorblind_mode");
-            text.position = rtp::Vec2f{200.0f, yPos};
-            text.fontPath = "assets/fonts/main.ttf";
-            text.fontSize = 24;
-            _registry.addComponent<rtp::ecs::components::ui::Text>(label, text);
-        }
-
-        // Colorblind Mode Dropdown
-        auto colorblindDropdownRes = _registry.spawnEntity();
-        if (colorblindDropdownRes) {
-            rtp::ecs::Entity dropdown = colorblindDropdownRes.value();
-            rtp::ecs::components::ui::Dropdown dropdownComp;
-            dropdownComp.position = rtp::Vec2f{450.0f, yPos - 5.0f};
-            dropdownComp.size = rtp::Vec2f{300.0f, 35.0f};
-            dropdownComp.options = {
-                _translations.get("colorblind.none"),
-                _translations.get("colorblind.protanopia"),
-                _translations.get("colorblind.deuteranopia"),
-                _translations.get("colorblind.tritanopia")};
-            dropdownComp.selectedIndex =
-                static_cast<int>(_settings.getColorBlindMode());
-            dropdownComp.onSelect = [this](int index) {
-                _settings.setColorBlindMode(
-                    static_cast<Core::ColorBlindMode>(index));
-                rtp::log::info("Colorblind mode changed to: {}", index);
-            };
-            _registry.addComponent<rtp::ecs::components::ui::Dropdown>(
-                dropdown, dropdownComp);
-        }
-
-        yPos += 80.0f;
-
-        auto keyBindingsBtnRes = _registry.spawnEntity();
-        if (keyBindingsBtnRes) {
-            rtp::ecs::Entity btn = keyBindingsBtnRes.value();
-
-            rtp::ecs::components::ui::Button button;
-            button.text = _translations.get("settings.key_bindings");
-            button.position = rtp::Vec2f{490.0f, yPos};
-            button.size = rtp::Vec2f{300.0f, 60.0f};
-            button.onClick = [this]() {
-                rtp::log::info("Key Bindings button clicked!");
-                changeState(GameState::KeyBindings);
-            };
-
-            _registry.addComponent<rtp::ecs::components::ui::Button>(btn,
-                                                                     button);
-        }
-
-        // Back Button (déplacer plus bas)
-        auto backBtnRes = _registry.spawnEntity();
-        if (backBtnRes) {
-            rtp::ecs::Entity backBtn = backBtnRes.value();
-
-            rtp::ecs::components::ui::Button button;
-            button.text = _translations.get("settings.back");
-            button.position = rtp::Vec2f{490.0f, 600.0f};
-            button.size = rtp::Vec2f{300.0f, 60.0f};
-            button.onClick = [this]() {
-                rtp::log::info("Back button clicked!");
-                _settings.save();
-                changeState(GameState::Menu);
-            };
-
-            _registry.addComponent<rtp::ecs::components::ui::Button>(backBtn,
-                                                                     button);
-        }
     }
 
     void Application::changeState(GameState newState)
@@ -514,51 +182,23 @@ namespace Client::Core
                    static_cast<int>(_currentState),
                    static_cast<int>(newState));
 
-    GameState previousState = _currentState;
+    if (newState == _currentState) return;
 
-    const bool keepWorld =
-        (previousState == GameState::RoomWaiting) ||
-        (previousState == GameState::Paused);
+    if (_newState != GameState::Playing) _worldRegistry.clear();
+
+    auto it = _scenes.find(newState);
+    if (it != _scenes.end()) {
+        _activeScene = it->second.get();
+        _activeScene->onEnter();
+    } else {
+        rtp::log::warning("No scene found for state {}, cannot change state",
+                          static_cast<int>(newState));
+        return;
+    }
 
     _currentState = newState;
 
-    if (!keepWorld) {
-        _registry.clear();
-    }
-
-    switch (newState) {
-        case GameState::Menu:
-            initMenu();
-            break;
-        case GameState::Login:
-            initLoginScene();
-            break;
-        case GameState::Lobby:
-            initLobbyScene();
-            break;
-        case GameState::CreateRoom:
-            initCreateRoomScene();
-            break;
-        case GameState::RoomWaiting:
-            initRoomWaitingScene();
-            break;
-        case GameState::Settings:
-            initSettingsMenu();
-            break;
-        case GameState::KeyBindings:
-            initKeyBindingMenu();
-            break;
-        case GameState::Paused:
-            initPauseMenu();
-            break;
-        case GameState::Playing:
-            if (previousState != GameState::Paused) {
-                initGame();
-            }
-            break;
-        default:
-            break;
-    }
+    _activeScene = nullptr;
 }
 
     void Application::processInput()
@@ -611,40 +251,9 @@ namespace Client::Core
                 }
 #endif
             }
-
-            switch (_currentState) {
-                case GameState::Playing:
-                    processGameInput(event.value());
-                    break;
-
-                case GameState::KeyBindings:
-                    processKeyBindingInput(event.value());
-                    break;
-
-                default:
-                    processMenuInput(event.value());
-                    break;
-            }
+            auto &UISystem = _systemManager.getSystem<rtp::client::UISystem>();
+            UISystem.handleEvent(event);
         }
-    }
-
-    void Application::processMenuInput(const sf::Event &event)
-    {
-        auto &menuSys = _systemManager.getSystem<Client::Systems::MenuSystem>();
-        menuSys.handleEvent(event);
-    }
-
-    void Application::processGameInput(const sf::Event &event)
-    {
-        // Les inputs de debug (J/K/L/M) sont gérés dans processInput()
-        // Les touches de mouvement/tir sont gérées par InputSystem
-        (void)event; // Éviter le warning unused
-    }
-
-    void Application::processSettingsInput(const sf::Event &event)
-    {
-        // Le MenuSystem gère déjà les sliders/dropdowns
-        (void)event;
     }
 
     void Application::processKeyBindingInput(const sf::Event &event)

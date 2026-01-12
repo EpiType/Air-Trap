@@ -22,17 +22,29 @@
 namespace rtp::client {
     namespace graphics {
 
+        /**
+         * @struct color
+         * @brief Represents an RGB color.
+         */
         struct color {
             uint8_t r;
             uint8_t g;
             uint8_t b;
         };
 
+        /**
+         * @struct position
+         * @brief Represents the position of a UI component.
+         */
         struct position {
             float x;
             float y;
         };
 
+        /**
+         * @struct size
+         * @brief Represents the size of a UI component.
+         */
         struct size {
             float width;
             float height;

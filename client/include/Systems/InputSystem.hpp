@@ -31,7 +31,7 @@ class InputSystem : public rtp::ecs::ISystem
          * @param window Reference to the SFML render window
          */
         explicit InputSystem(rtp::ecs::Registry& r,
-                            Client::Core::Settings& settings,
+                            Settings& settings,
                             ClientNetwork& net,
                             sf::RenderWindow& window);
         
@@ -50,7 +50,7 @@ class InputSystem : public rtp::ecs::ISystem
         };
 
         rtp::ecs::Registry& _r;                 /**< Reference to the entity registry */
-        Client::Core::Settings& _settings;      /**< Reference to the client settings */
+        Settings& _settings;                    /**< Reference to the client settings */
         ClientNetwork& _net;                    /**< Reference to the client network manager */
         sf::RenderWindow& _window;              /**< Reference to the SFML render window */
 

@@ -73,7 +73,7 @@ namespace rtp::client {
 
             _uiFactory.createDropdown(
                 _uiRegistry,
-                {520.0f, 265.0f},
+                {520.0f, 270.0f},
                 {220.0f, 40.0f},
                 {"2", "3", "4", "5", "6", "7", "8"},
                 _uiMaxPlayers - 2,
