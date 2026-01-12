@@ -9,6 +9,7 @@
 #pragma once
 
 #include "RType/Logger.hpp"
+#include "Utils/KeyAction.hpp"
 
 #include <SFML/Window/Keyboard.hpp>
 #include <algorithm>
@@ -24,9 +25,9 @@
 namespace rtp::client
 {
     /**
- * @enum Language
- * @brief Supported languages
- */
+     * @enum Language
+     * @brief Supported languages
+     */
     enum class Language {
         English,
         French,
@@ -36,9 +37,9 @@ namespace rtp::client
     };
 
     /**
- * @enum ColorBlindMode
- * @brief Color blind assistance modes
- */
+     * @enum ColorBlindMode
+     * @brief Color blind assistance modes
+     */
     enum class ColorBlindMode {
         None,
         Protanopia,   // Red-blind
@@ -47,23 +48,9 @@ namespace rtp::client
     };
 
     /**
- * @enum KeyAction
- * @brief Actions that can be bound to keys
- */
-    enum class KeyAction {
-        MoveUp,
-        MoveDown,
-        MoveLeft,
-        MoveRight,
-        Shoot,
-        Pause,
-        Menu
-    };
-
-    /**
- * @class Settings
- * @brief Manages game settings and preferences
- */
+     * @class Settings
+     * @brief Manages game settings and preferences
+     */
     class Settings {
         public:
             Settings();

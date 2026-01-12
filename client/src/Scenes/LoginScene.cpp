@@ -115,6 +115,9 @@ namespace rtp::client {
         void LoginScene::update(float dt)
         {
             (void)dt;
+            if (_network.isLoggedIn()) {
+                _changeState(GameState::Menu);
+            }
         }
 
     } // namespace Scenes

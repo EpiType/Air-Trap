@@ -5,7 +5,8 @@
 ** Application
 */
 
-#pragma once
+#ifndef RTYPE_CLIENT_CORE_APPLICATION_HPP_
+    #define RTYPE_CLIENT_CORE_APPLICATION_HPP_
 
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
@@ -37,6 +38,7 @@
 
 /* Utils */
 #include "Utils/GameState.hpp"
+#include "Utils/KeyAction.hpp"
 #include "RType/Math/Vec2.hpp"
 
 /* Systems */
@@ -66,78 +68,59 @@
 
 namespace rtp::client {
 
-namespace UIConstants {
-    constexpr float WINDOW_WIDTH = 1280.0f;
-    constexpr float WINDOW_HEIGHT = 720.0f;
-}
+    namespace UIConstants {
+        constexpr float WINDOW_WIDTH = 1280.0f;
+        constexpr float WINDOW_HEIGHT = 720.0f;
+    }
 
-class Application {
-public:
-    Application();
-    void run(void); // to keep
-    
-private:
-    void initUiECS(void); // to keep
-    void initWorldECS(void); // to keep
-    void initSystems(void); // to keep
+    class Application {
+        public:
+            Application();
+            void run(void);
+            
+        private:
+            void initUiECS(void);
+            void initWorldECS(void);
+            void initUiSystems(void);
+            void initWorldSystems(void);
 
-    void setupSettingsCallbacks();
+            void setupSettingsCallbacks();
 
-private:    
-    void processInput(void); // to keep
-    void update(sf::Time delta); // to keep
-    void render(void); // to keep
-    
-private:
-    void processKeyBindingInput(const sf::Event& event);
-    void handleGlobalEscape(); // to keep
-    
-    void changeState(GameState newState); // to keep
-    
-    void createParallaxBackground();
-    void spawnEnemy(const rtp::Vec2f& position);
-    void spawnEnemy2(const rtp::Vec2f& position);
-    void spawnProjectile(const rtp::Vec2f& position);
-    void killEnemy(std::size_t index);
-    void killProjectile(std::size_t index);
+        private:
+            void processInput(void);
+            void update(sf::Time delta);
+            void render(void);
+            
+            void changeState(GameState newState);
 
-    void clearRoomWaitingUiEntities();
+        private:
+            std::unordered_map<GameState, std::unique_ptr<interfaces::IScene>> _scenes;
+            interfaces::IScene* _activeScene = nullptr;
 
-private:
-    std::unordered_map<GameState, std::unique_ptr<interfaces::IScene>> _scenes;
-    interfaces::IScene* _activeScene = nullptr;
+            Settings _settings;
+            TranslationManager _translations;
 
-    Settings _settings;
-    TranslationManager _translations;
+            sf::RenderWindow _window;
 
-    sf::RenderWindow _window;
+            rtp::ecs::Registry _worldRegistry;
+            rtp::ecs::Registry _uiRegistry;
+            rtp::ecs::SystemManager _uiSystemManager;
+            rtp::ecs::SystemManager _worldSystemManager;
 
-    rtp::ecs::Registry _worldRegistry;
-    rtp::ecs::Registry _uiRegistry;
-    rtp::ecs::SystemManager _UiSystemManager;
-    rtp::ecs::SystemManager _WorldSystemManager;
+            AssetManager _assetManager;
 
-    AssetManager _assetManager;
+            EntityBuilder _uiEntityBuilder;
+            EntityBuilder _worldEntityBuilder;
 
-    EntityBuilder _uiEntityBuilder;
-    EntityBuilder _worldEntityBuilder;
-
-
-
-
-    std::vector<rtp::ecs::Entity> _parallaxLayers;
-    std::vector<rtp::ecs::Entity> _spawnedEnemy;
-    std::vector<rtp::ecs::Entity> _projectiles;
-
-    rtp::client::ClientNetwork _clientNetwork;
-    
-    sf::Shader _colorblindShader;
-    sf::RenderTexture _renderTexture;
-    bool _shaderLoaded{false};
-    
-    GameState _currentState{GameState::Login};
-    float _lastDt{0.0f};
-
-};
-
+            rtp::client::ClientNetwork _clientNetwork;
+            
+            sf::Shader _colorblindShader;
+            sf::RenderTexture _renderTexture;
+            bool _shaderLoaded{false};
+            
+            GameState _currentState{GameState::Login};
+            float _lastDt{0.0f};
+    };
 }  // namespace Client::Core
+
+#endif /* !RTYPE_CLIENT_CORE_APPLICATION_HPP_ */

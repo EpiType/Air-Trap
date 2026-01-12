@@ -22,7 +22,7 @@ namespace rtp::client {
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
-    NetworkSyncSystem::NetworkSyncSystem(ClientNetwork& network, rtp::ecs::Registry& registry, Client::Game::EntityBuilder builder)
+    NetworkSyncSystem::NetworkSyncSystem(ClientNetwork& network, rtp::ecs::Registry& registry, EntityBuilder builder)
         : _network(network), _registry(registry), _builder(builder) {}
 
     void NetworkSyncSystem::update(float dt)
