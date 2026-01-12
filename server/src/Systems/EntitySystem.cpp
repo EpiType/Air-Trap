@@ -12,15 +12,15 @@ namespace rtp::server {
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
-    EntitySystem::EntitySystem(rtp::ecs::Registry& registry, ServerNetwork& network)
-        : _registry(registry), _network(network) {}
+    EntitySystem::EntitySystem(rtp::ecs::Registry& registry, ServerNetwork& network, NetworkSyncSystem& networkSync)
+        : _registry(registry), _network(network), _networkSync(networkSync) {}
 
     void EntitySystem::update(float dt)
     {
         (void)dt;
     }
 
-    uint32_t EntitySystem::createPlayerEntity(PlayerPtr player)
+    rtp::ecs::Entity EntitySystem::createPlayerEntity(PlayerPtr player)
     {
         auto entityRes = _registry.spawnEntity();
         if (!entityRes) {
@@ -33,6 +33,11 @@ namespace rtp::server {
         _registry.addComponent<rtp::ecs::components::Transform>(
             entity, 
             rtp::ecs::components::Transform{ {100.f, 100.f}, 0.f, {1.f, 1.f} }
+        );
+
+        _registry.addComponent<rtp::ecs::components::Velocity>(
+            entity,
+            rtp::ecs::components::Velocity{ {0.f, 0.f}, 0.f }
         );
 
         _registry.addComponent<rtp::ecs::components::NetworkId>(
@@ -50,23 +55,20 @@ namespace rtp::server {
             rtp::ecs::components::EntityType{ rtp::net::EntityType::Player }
         );
 
-        player->setEntityId(entity.index());
+        _registry.addComponent<rtp::ecs::components::Health>(
+            entity,
+            rtp::ecs::components::Health{ 100, 100 }
+        );
 
-        rtp::log::info("Spawned Entity {} for Player {}", entity.index(), player->getId());
-        rtp::net::Packet packet(rtp::net::OpCode::EntitySpawn);
-        rtp::net::EntitySpawnPayload payload = {
-            static_cast<uint32_t>(entity.index()),
-            (uint8_t)rtp::net::EntityType::Player,
-            100.f,
-            100.f
-        };
-        packet << payload;
-        _network.broadcastPacket(packet, rtp::net::NetworkMode::TCP);
-
-        return static_cast<uint32_t>(entity.index());
+        _registry.addComponent<rtp::ecs::components::RoomId>(
+            entity,
+            rtp::ecs::components::RoomId{ player->getRoomId() }
+        );
+        
+        return entity;
     }
 
-    uint32_t EntitySystem::creaetEnemyEntity(
+    rtp::ecs::Entity EntitySystem::creaetEnemyEntity(
         uint32_t roomId,
         const rtp::Vec2f& pos,
         rtp::ecs::components::Patterns pattern = rtp::ecs::components::Patterns::StraightLine,
@@ -113,17 +115,6 @@ namespace rtp::server {
         //     rtp::ecs::components::IABehaviorComponent{ rtp::ecs::components::IABehavior::Passive, 500.0 }
         // );
 
-        rtp::log::info("Spawned Enemy Entity {} in room {}", entity.index(), roomId);
-        rtp::net::Packet packet(rtp::net::OpCode::EntitySpawn);
-        rtp::net::EntitySpawnPayload payload = {
-            static_cast<uint32_t>(entity.index()),
-            (uint8_t)rtp::net::EntityType::Scout,
-            pos.x,
-            pos.y
-        };
-        packet << payload;
-        _network.broadcastPacket(packet, rtp::net::NetworkMode::TCP);
-
-        return static_cast<uint32_t>(entity.index());
+        return entity;
     }
 } // namespace rtp::server

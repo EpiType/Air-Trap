@@ -6,6 +6,7 @@
  */
 
 #include "Game/GameManager.hpp"
+#include "RType/ECS/Components/RoomId.hpp"
 
 using namespace rtp::net;
 
@@ -23,27 +24,45 @@ namespace rtp::server
         _registry.registerComponent<rtp::ecs::components::NetworkId>();
         _registry.registerComponent<rtp::ecs::components::server::InputComponent>();
         _registry.registerComponent<rtp::ecs::components::EntityType>();
+        _registry.registerComponent<rtp::ecs::components::RoomId>();
 
-        _serverNetworkSystem = std::make_unique<ServerNetworkSystem>(_networkManager, _registry);
+        _networkSyncSystem = std::make_unique<NetworkSyncSystem>(_networkManager, _registry);
         _movementSystem = std::make_unique<MovementSystem>(_registry);
         _authSystem = std::make_unique<AuthSystem>(_networkManager, _registry);
-        _roomSystem =  std::make_unique<RoomSystem>(_networkManager, _registry);
+        _roomSystem =  std::make_unique<RoomSystem>(_networkManager, _registry, *_networkSyncSystem);
         _playerSystem = std::make_unique<PlayerSystem>(_networkManager, _registry);
-        _entitySystem = std::make_unique<EntitySystem>(_registry, _networkManager);
+        _entitySystem = std::make_unique<EntitySystem>(_registry, _networkManager, *_networkSyncSystem);
         _playerMouvementSystem = std::make_unique<PlayerMouvementSystem>(_registry);
 
         _roomSystem->setOnRoomStarted(
             [this](uint32_t roomId) {
                 auto room = _roomSystem->getRoom(roomId);
+                if (!room) {
+                    rtp::log::error("Room ID {} not found for start event", roomId);
+                    return;
+                }
 
-                for (auto& player : room->getPlayers()) {
-                    uint32_t entityId = _entitySystem->createPlayerEntity(player);
-                    _serverNetworkSystem->bindSessionToEntity(player->getId(), entityId);
+                const auto players = room->getPlayers();
+                std::vector<uint32_t> sessions;
+                sessions.reserve(players.size());
+                for (const auto& player : players) {
+                    sessions.push_back(player->getId());
+                }
+
+                for (auto& player : players) {
+                    auto entity = _entitySystem->createPlayerEntity(player);
+                    uint32_t entityId = static_cast<uint32_t>(entity.index());
+                    player->setEntityId(entityId);
+                    rtp::log::info("Spawned Entity {} for Player {}", entity.index(), player->getId());
+                    _networkSyncSystem->bindSessionToEntity(player->getId(), entityId);
+                    sendEntitySpawnToSessions(entity, sessions);
                 }
 
                 for (int i = 0; i < 5; ++i) {
-                    _entitySystem->creaetEnemyEntity(roomId, {120.f + i * 15.f, 200.f + i * 8.f}, 
+                    auto entity = _entitySystem->creaetEnemyEntity(roomId, {120.f + i * 15.f, 200.f + i * 8.f}, 
                         rtp::ecs::components::Patterns::SineWave, 200.0f, 40.0f, 2.0f);
+                    rtp::log::info("Spawned Enemy Entity {} in room {}", entity.index(), roomId);
+                    sendEntitySpawnToSessions(entity, sessions);
                 }
             }
         );
@@ -70,8 +89,6 @@ namespace rtp::server
             _roomSystem->update(dt);
             _playerMouvementSystem->update(dt);
             _movementSystem->update(dt);
-            _serverNetworkSystem->broadcastRoomState(_serverTick);
-            
             std::this_thread::sleep_for(std::chrono::milliseconds(16));
         }
     }
@@ -106,7 +123,7 @@ namespace rtp::server
                     handlePlayerRegisterAuth(event.sessionId, event.packet);
                     break;
                 case OpCode::InputTick:
-                    _serverNetworkSystem->handleInput(event.sessionId, event.packet);
+                    _networkSyncSystem->handleInput(event.sessionId, event.packet);
                     break;
                 case OpCode::ListRooms:
                     handleListRooms(event.sessionId);
@@ -146,7 +163,7 @@ namespace rtp::server
             std::lock_guard lock(_mutex);
             entityId = _playerSystem->removePlayer(sessionId);
             _roomSystem->disconnectPlayer(sessionId);
-            _serverNetworkSystem->handleDisconnect(sessionId);
+            _networkSyncSystem->handleDisconnect(sessionId);
         }
 
         if (entityId != 0) {
@@ -209,7 +226,7 @@ namespace rtp::server
 
         PlayerPtr player;
         uint32_t newId = 0;
-        uint32_t entityId = 0;
+        uint8_t success = 0;
         {
             std::lock_guard lock(_mutex);
             player = _playerSystem->getPlayer(sessionId);
@@ -221,8 +238,14 @@ namespace rtp::server
                 payload.speed,
                 Room::RoomType::Public
             );
+            success = (newId != 0) ? 1 : 0;
         }
-        _roomSystem->joinRoom(player, newId);
+        if (success) {
+            success = _roomSystem->joinRoom(player, newId) ? 1 : 0;
+        }
+        rtp::net::Packet response(rtp::net::OpCode::CreateRoom);
+        response << success;
+        _networkManager.sendPacket(sessionId, response, rtp::net::NetworkMode::TCP);
         // entityId = _entitySystem->createPlayerEntity(player);
         // _serverNetworkSystem->bindSessionToEntity(player->getId(), entityId);
     }
@@ -234,13 +257,24 @@ namespace rtp::server
         tempPacket >> payload;
 
         PlayerPtr player;
-        uint32_t entityId = 0;
         {
             std::lock_guard lock(_mutex);
             player = _playerSystem->getPlayer(sessionId);
         }
 
-        _roomSystem->joinRoom(player, payload.roomId);
+        const bool success = _roomSystem->joinRoom(player, payload.roomId);
+        if (!success)
+            return;
+
+        auto room = _roomSystem->getRoom(payload.roomId);
+        if (!room)
+            return;
+        if (room->getState() != Room::State::InGame)
+            return;
+
+        rtp::net::Packet startPacket(rtp::net::OpCode::StartGame);
+        _networkManager.sendPacket(sessionId, startPacket, rtp::net::NetworkMode::TCP);
+        sendRoomEntitySpawnsToSession(payload.roomId, sessionId);
         // entityId = _entitySystem->createPlayerEntity(player);
         // _serverNetworkSystem->bindSessionToEntity(player->getId(), entityId);
     }
@@ -300,5 +334,66 @@ namespace rtp::server
         std::lock_guard lock(_mutex);
         rtp::log::info("Received packet OpCode {} from Session {}", (int)rtp::net::OpCode::LoginRequest, sessionId);
         log::debug("Unknown packet received OpCode {} from Session {}", (int)packet.header.opCode, sessionId);
+    }
+
+    void GameManager::sendEntitySpawnToSessions(const rtp::ecs::Entity& entity,
+                                                const std::vector<uint32_t>& sessions)
+    {
+        if (sessions.empty())
+            return;
+
+        auto transformRes = _registry.getComponents<rtp::ecs::components::Transform>();
+        auto typeRes = _registry.getComponents<rtp::ecs::components::EntityType>();
+        auto netRes = _registry.getComponents<rtp::ecs::components::NetworkId>();
+        if (!transformRes || !typeRes || !netRes) {
+            rtp::log::error("Missing component array for EntitySpawn");
+            return;
+        }
+
+        auto &transforms = transformRes->get();
+        auto &types = typeRes->get();
+        auto &nets = netRes->get();
+        if (!transforms.has(entity) || !types.has(entity) || !nets.has(entity)) {
+            rtp::log::error("Entity {} missing Transform/EntityType/NetworkId", entity.index());
+            return;
+        }
+
+        const auto &transform = transforms[entity];
+        const auto &type = types[entity];
+        const auto &net = nets[entity];
+        rtp::net::Packet packet(rtp::net::OpCode::EntitySpawn);
+        rtp::net::EntitySpawnPayload payload = {
+            net.id,
+            static_cast<uint8_t>(type.type),
+            transform.position.x,
+            transform.position.y
+        };
+        packet << payload;
+        _networkSyncSystem->sendPacketToSessions(sessions, packet, rtp::net::NetworkMode::TCP);
+    }
+
+    void GameManager::sendRoomEntitySpawnsToSession(uint32_t roomId, uint32_t sessionId)
+    {
+        auto view = _registry.zipView<
+            rtp::ecs::components::Transform,
+            rtp::ecs::components::NetworkId,
+            rtp::ecs::components::EntityType,
+            rtp::ecs::components::RoomId
+        >();
+
+        for (auto&& [tf, net, type, room] : view) {
+            if (room.id != roomId)
+                continue;
+
+            rtp::net::Packet packet(rtp::net::OpCode::EntitySpawn);
+            rtp::net::EntitySpawnPayload payload = {
+                net.id,
+                static_cast<uint8_t>(type.type),
+                tf.position.x,
+                tf.position.y
+            };
+            packet << payload;
+            _networkSyncSystem->sendPacketToSession(sessionId, packet, rtp::net::NetworkMode::TCP);
+        }
     }
 }

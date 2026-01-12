@@ -16,6 +16,9 @@
     #include <memory>
     #include <list>
     #include <algorithm>
+    #include "RType/Network/Packet.hpp"
+    #include "Systems/NetworkSyncSystem.hpp"
+    #include "RType/ECS/Registry.hpp"
 
 /**
  * @namespace rtp::server
@@ -67,7 +70,7 @@ namespace rtp::server
              * @param name Name of the room
              * @param maxPlayers Maximum number of players allowed in the room
              */
-            Room(uint32_t id, const std::string &name, uint32_t maxPlayers, float difficulty, float speed, RoomType type, uint32_t creatorSessionId = 0);
+            Room(rtp::ecs::Registry& registry, NetworkSyncSystem& network, uint32_t id, const std::string &name, uint32_t maxPlayers, float difficulty, float speed, RoomType type, uint32_t creatorSessionId = 0);
 
             /**
              * @brief Destructor for Room
@@ -178,9 +181,18 @@ namespace rtp::server
              * @brief Update the room state
              * @param dt Time elapsed since last update in seconds
              */
-            void update(float dt);
+            void update(uint32_t serverTick, float dt);
+
+            /**
+             * @brief Broadcast the current room state to all connected players
+             * @param serverTick Current server tick count
+             */
+            void broadcastRoomState(uint32_t serverTick);
 
         private:
+            NetworkSyncSystem _network;       /**< Reference to the server network manager */
+            rtp::ecs::Registry& _registry;    /**< Reference to the entity registry */
+
             uint32_t _id;                     /**< Unique room identifier */
             std::string _name;                /**< Name of the room */
             uint32_t _maxPlayers;             /**< Maximum number of players allowed */

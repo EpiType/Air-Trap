@@ -15,7 +15,7 @@
     #include "RType/ECS/Components/NetworkId.hpp"
     #include "RType/ECS/Components/EntityType.hpp"
     #include "RType/Network/Packet.hpp"
-    #include "Systems/ServerNetworkSystem.hpp"
+    #include "Systems/NetworkSyncSystem.hpp"
     #include "Game/Room.hpp"
     
     #include <memory>
@@ -59,7 +59,7 @@ namespace rtp::server {
              * @param network Reference to the server network manager
              * @param registry Reference to the entity registry
              */
-            RoomSystem(ServerNetwork& network, rtp::ecs::Registry& registry);
+            RoomSystem(ServerNetwork& network, rtp::ecs::Registry& registry, NetworkSyncSystem& networkSync);
 
             /**
              * @brief Update system logic for one frame
@@ -127,11 +127,13 @@ namespace rtp::server {
              * @return Shared pointer to the Room instance, or nullptr if not found
              */
             std::shared_ptr<Room> getRoom(uint32_t roomId);
-
+        
         private:
             ServerNetwork& _network;                          /**< Reference to the server network manager */
+            NetworkSyncSystem& _networkSync;                  /**< Reference to the network sync system */
             rtp::ecs::Registry& _registry;                    /**< Reference to the entity registry */
-            std::map<uint32_t, std::shared_ptr<Room>> _rooms; /**< Map of room ID to Room instances */
+            std::map<uint32_t,
+                std::shared_ptr<Room>> _rooms{};              /**< Map of room ID to Room instances */
             std::map<uint32_t, uint32_t> _playerRoomMap;      /**< Map of player session ID to room ID */
             uint32_t _nextRoomId = 1;                         /**< Next available room ID */
             uint32_t _lobbyId = 0;                            /**< ID of the main lobby room */  

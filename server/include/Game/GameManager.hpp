@@ -24,7 +24,7 @@
     #include "RType/ECS/Registry.hpp"
 
     /* Systems */
-    #include "Systems/ServerNetworkSystem.hpp"
+    #include "Systems/NetworkSyncSystem.hpp"
     #include "Systems/MovementSystem.hpp"
     #include "Systems/AuthSystem.hpp"
     #include "Systems/RoomSystem.hpp"
@@ -160,12 +160,16 @@ namespace rtp::server
              */
             void handlePacket(uint32_t sessionId, const net::Packet &packet);
 
+            void sendEntitySpawnToSessions(const rtp::ecs::Entity& entity,
+                                           const std::vector<uint32_t>& sessions);
+            void sendRoomEntitySpawnsToSession(uint32_t roomId, uint32_t sessionId);
+
         private:
             ServerNetwork &_networkManager;                            /**< Reference to the ServerNetwork instance */
 
             rtp::ecs::Registry _registry;                              /**< ECS Registry for managing entities and components */
 
-            std::unique_ptr<ServerNetworkSystem> _serverNetworkSystem; /**< Server network system for handling network-related ECS operations */
+            std::unique_ptr<NetworkSyncSystem> _networkSyncSystem; /**< Server network system for handling network-related ECS operations */
             std::unique_ptr<MovementSystem> _movementSystem;           /**< Movement system for updating entity positions */
             std::unique_ptr<AuthSystem> _authSystem;                   /**< Authentication system for handling player logins */
             std::unique_ptr<RoomSystem> _roomSystem;                   /**< Room system for handling room management */

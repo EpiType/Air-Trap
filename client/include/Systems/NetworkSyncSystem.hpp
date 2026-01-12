@@ -160,6 +160,12 @@ namespace rtp::client {
              */
             bool isInGame(void) const;
 
+            /**
+             * @brief Get the current state of the client
+             * @return Current State enum value
+             */
+            State getState(void) const;
+
         private:
             ClientNetwork& _network;                                       /**< Reference to the client network manager */
             rtp::ecs::Registry& _registry;                                 /**< Reference to the entity registry */

@@ -1,12 +1,12 @@
 /**
- * File   : ServerNetworkSystem.hpp
+ * File   : NetworkSyncSystem.hpp
  * License: MIT
  * Author : Elias Josué HAJJAR LLAUQUEN <elias-josue.hajjar-llauquen@epitech.eu>
  * Date   : 11/12/2025
  */
 
-#ifndef RTYPE_NETWORK_SERVERNETWORKSYSTEM_HPP_
-    #define RTYPE_NETWORK_SERVERNETWORKSYSTEM_HPP_
+#ifndef RTYPE_NETWORK_NetworkSyncSystem_HPP_
+    #define RTYPE_NETWORK_NetworkSyncSystem_HPP_
 
     #include "RType/ECS/ISystem.hpp"
     #include "RType/ECS/Registry.hpp"
@@ -15,6 +15,8 @@
     #include "RType/ECS/Components/InputComponent.hpp"
     #include "RType/ECS/Components/Transform.hpp"
     #include "RType/ECS/Components/NetworkId.hpp"
+    #include "RType/ECS/Components/EntityType.hpp"
+    #include "RType/ECS/Components/RoomId.hpp"
     #include "RType/Network/Packet.hpp"
 
     #include <vector>
@@ -27,17 +29,17 @@
 namespace rtp::server {
 
     /**
-     * @class ServerNetworkSystem
+     * @class NetworkSyncSystem
      * @brief System to handle network-related operations on the server side.
      */
-    class ServerNetworkSystem : public rtp::ecs::ISystem {
+    class NetworkSyncSystem : public rtp::ecs::ISystem {
         public:
             /** 
-             * @brief Constructor for ServerNetworkSystem
+             * @brief Constructor for NetworkSyncSystem
              * @param network Reference to the server network manager
              * @param registry Reference to the entity registry
              */
-            ServerNetworkSystem(ServerNetwork& network, rtp::ecs::Registry& registry);
+            NetworkSyncSystem(ServerNetwork& network, rtp::ecs::Registry& registry);
 
             /**
              * @brief Update system logic for one frame
@@ -45,12 +47,6 @@ namespace rtp::server {
              * @note Currently not used
              */
             void update(float dt) override;
-
-            /**
-             * @brief Broadcast the current world state to all connected clients on the Room
-             * @param serverTick Current server tick count
-             */
-            void broadcastRoomState(uint32_t serverTick);
 
             /**
              * @brief Bind a network session to an entity
@@ -78,6 +74,30 @@ namespace rtp::server {
              * @param packet Packet containing the connection data
              */
             uint32_t handlePlayerConnection(uint32_t sessionId, const rtp::net::Packet& packet);
+
+            /**
+             * @brief Send a packet to the entity associated with the given ID
+             * @param entityId ID of the target entity
+             * @param packet Packet to send
+             * @param mode Network mode (TCP or UDP)
+             */
+            void sendPacketToEntity(uint32_t entityId, const rtp::net::Packet& packet, rtp::net::NetworkMode mode);
+
+            /**
+             * @brief Send a packet to a specific session
+             * @param sessionId ID of the target session
+             * @param packet Packet to send
+             * @param mode Network mode (TCP or UDP)
+             */
+            void sendPacketToSession(uint32_t sessionId, const rtp::net::Packet& packet, rtp::net::NetworkMode mode);
+
+            /**
+             * @brief Send a packet to multiple sessions
+             * @param sessions List of session IDs
+             * @param packet Packet to send
+             * @param mode Network mode (TCP or UDP)
+             */
+            void sendPacketToSessions(const std::vector<uint32_t>& sessions, const rtp::net::Packet& packet, rtp::net::NetworkMode mode);
             
         private:
             ServerNetwork& _network;           /**< Reference to the server network manager */
@@ -87,4 +107,4 @@ namespace rtp::server {
     };
 }
 
-#endif /* !RTYPE_NETWORK_SERVERNETWORKSYSTEM_HPP_ */
+#endif /* !RTYPE_NETWORK_NetworkSyncSystem_HPP_ */

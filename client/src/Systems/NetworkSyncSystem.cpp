@@ -157,6 +157,11 @@ namespace rtp::client {
         return _currentState == State::InGame;
     }
 
+    NetworkSyncSystem::State NetworkSyncSystem::getState(void) const
+    {
+        return _currentState;
+    }
+
     //////////////////////////////////////////////////////////////////////////
     // Private Methods
     //////////////////////////////////////////////////////////////////////////
@@ -400,8 +405,8 @@ namespace rtp::client {
             if (!transforms.has(e))
                 continue;
 
-            rtp::log::debug("Updating entity NetID={} Position=({}, {}) Rotation={}",
-                snap.netId, snap.position.x, snap.position.y, snap.rotation);
+            // rtp::log::debug("Updating entity NetID={} Position=({}, {}) Rotation={}",
+            //     snap.netId, snap.position.x, snap.position.y, snap.rotation);
             transforms[e].position.x = snap.position.x;
             transforms[e].position.y = snap.position.y;
             transforms[e].rotation   = snap.rotation;

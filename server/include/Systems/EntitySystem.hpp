@@ -13,11 +13,14 @@
     #include "Game/Player.hpp"
     #include "ServerNetwork/ServerNetwork.hpp"
     #include "RType/Network/Packet.hpp"
+    #include "Systems/NetworkSyncSystem.hpp"
 
     #include "RType/ECS/Components/InputComponent.hpp"
     #include "RType/ECS/Components/Transform.hpp"
     #include "RType/ECS/Components/Velocity.hpp"
     #include "RType/ECS/Components/NetworkId.hpp"
+    #include "RType/ECS/Components/Health.hpp"
+    #include "RType/ECS/Components/RoomId.hpp"
     #include "RType/ECS/Components/EntityType.hpp"
     #include "RType/ECS/Components/MouvementPattern.hpp"
     #include "RType/ECS/Components/IABehavior.hpp"
@@ -38,7 +41,7 @@ namespace rtp::server {
              * @brief Constructor for EntitySystem
              * @param registry Reference to the entity registry
              */
-            EntitySystem(rtp::ecs::Registry& registry, ServerNetwork& network);
+            EntitySystem(rtp::ecs::Registry& registry, ServerNetwork& network, NetworkSyncSystem& networkSync);
 
             /**
              * @brief Update movement system logic for one frame
@@ -50,13 +53,13 @@ namespace rtp::server {
              * @brief Create a new player entity in the ECS
              * @return The ID of the created player entity
              */
-            uint32_t createPlayerEntity(PlayerPtr player);
+            rtp::ecs::Entity createPlayerEntity(PlayerPtr player);
 
             /**
              * @brief Create a new enemy entity in the ECS
              * @return The ID of the created enemy entity
              */
-            uint32_t creaetEnemyEntity(
+            rtp::ecs::Entity creaetEnemyEntity(
                 uint32_t roomId,
                 const rtp::Vec2f& pos,
                 rtp::ecs::components::Patterns pattern,
@@ -68,6 +71,7 @@ namespace rtp::server {
         protected:
             rtp::ecs::Registry& _registry;   /**< Reference to the entity registry */
             ServerNetwork& _network;         /**< Reference to the server network manager */
+            NetworkSyncSystem& _networkSync; /**< Reference to the network sync system */
     };
 }
 
