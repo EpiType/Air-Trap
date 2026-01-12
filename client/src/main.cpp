@@ -9,7 +9,7 @@
 
 int main(void)
 {
-    Client::Core::Application app;
+    rtp::client::Application app;
     app.run();
     return 0;
 }
