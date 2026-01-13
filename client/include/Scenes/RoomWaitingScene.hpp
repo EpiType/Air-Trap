@@ -81,6 +81,20 @@ namespace rtp::client {
                 ChangeStateFn _changeState;                 /**< Function to change the game state */
 
                 bool _uiReady = false;                      /**< Player ready status in the UI */
+                bool _chatOpen = false;                     /**< Whether expanded chat is open */
+
+                rtp::ecs::Entity _chatCompactPanel{};       /**< Compact chat background panel */
+                rtp::ecs::Entity _chatCompactText{};        /**< Text entity for last chat message */
+                rtp::ecs::Entity _chatToggleButton{};       /**< Toggle button for chat */
+
+                rtp::ecs::Entity _chatPanel{};              /**< Expanded chat panel */
+                rtp::ecs::Entity _chatHistoryText{};        /**< Text entity for chat history */
+                rtp::ecs::Entity _chatInput{};              /**< Text input entity for chat */
+
+                void openChat(void);
+                void closeChat(void);
+                void updateChatHistoryText(void);
+                void sendChatMessage(void);
         };
     } // namespace Scenes
 } // namespace rtp::client

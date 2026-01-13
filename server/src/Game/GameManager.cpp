@@ -8,6 +8,8 @@
 #include "Game/GameManager.hpp"
 #include "RType/ECS/Components/RoomId.hpp"
 
+#include <cstring>
+
 using namespace rtp::net;
 
 namespace rtp::server
@@ -25,6 +27,8 @@ namespace rtp::server
         _registry.registerComponent<rtp::ecs::components::server::InputComponent>();
         _registry.registerComponent<rtp::ecs::components::EntityType>();
         _registry.registerComponent<rtp::ecs::components::RoomId>();
+        _registry.registerComponent<rtp::ecs::components::SimpleWeapon>();
+        _registry.registerComponent<rtp::ecs::components::Ammo>();
 
         _networkSyncSystem = std::make_unique<NetworkSyncSystem>(_networkManager, _registry);
         _movementSystem = std::make_unique<MovementSystem>(_registry);
@@ -33,6 +37,7 @@ namespace rtp::server
         _playerSystem = std::make_unique<PlayerSystem>(_networkManager, _registry);
         _entitySystem = std::make_unique<EntitySystem>(_registry, _networkManager, *_networkSyncSystem);
         _playerMouvementSystem = std::make_unique<PlayerMouvementSystem>(_registry);
+        _playerShootSystem = std::make_unique<PlayerShootSystem>(_registry, *_roomSystem, *_networkSyncSystem);
 
         _roomSystem->setOnRoomStarted(
             [this](uint32_t roomId) {
@@ -88,6 +93,7 @@ namespace rtp::server
             _serverTick++;
             _roomSystem->update(dt);
             _playerMouvementSystem->update(dt);
+            _playerShootSystem->update(dt);
             _movementSystem->update(dt);
             std::this_thread::sleep_for(std::chrono::milliseconds(16));
         }
@@ -142,6 +148,9 @@ namespace rtp::server
                     break;
                 case OpCode::RoomChatSended:
                     handleRoomChatSended(event.sessionId, event.packet);
+                    break;
+                case OpCode::Ping:
+                    handlePing(event.sessionId, event.packet);
                     break;
                 default:
                     handlePacket(event.sessionId, event.packet);
@@ -241,7 +250,7 @@ namespace rtp::server
             success = (newId != 0) ? 1 : 0;
         }
         if (success) {
-            success = _roomSystem->joinRoom(player, newId) ? 1 : 0;
+            success = _roomSystem->joinRoom(player, newId, false) ? 1 : 0;
         }
         rtp::net::Packet response(rtp::net::OpCode::CreateRoom);
         response << success;
@@ -262,7 +271,7 @@ namespace rtp::server
             player = _playerSystem->getPlayer(sessionId);
         }
 
-        const bool success = _roomSystem->joinRoom(player, payload.roomId);
+        const bool success = _roomSystem->joinRoom(player, payload.roomId, payload.isSpectator != 0);
         if (!success)
             return;
 
@@ -307,26 +316,41 @@ namespace rtp::server
 
     void GameManager::handleRoomChatSended(uint32_t sessionId, const Packet &packet)
     {
-        // std::lock_guard lock(_mutex);
-        
-        // rtp::net::RoomChatSendedPayload payload;
-        // rtp::net::Packet tempPacket = packet;
-        // tempPacket >> payload;
-        // rtp::log::info("Handle Room Chat from Session ID {}: Message='{}'",
-        //           sessionId, payload.message);
-        // auto it = _playerRoomMap.find(sessionId);
-        // if (it != _playerRoomMap.end()) {
-        //     uint32_t roomId = it->second;
-        //     auto roomIt = _rooms.find(roomId);
-        //     if (roomIt != _rooms.end()) {
-        //         rtp::net::Packet chatPacket(rtp::net::OpCode::RoomChatReceived);
-        //         rtp::net::RoomChatReceivedPayload chatPayload;
-        //         chatPayload.sessionId = sessionId;
-        //         std::strncpy(chatPayload.message, payload.message, sizeof(chatPayload.message));
-        //         chatPacket << chatPayload;
-        //         roomIt->second->broadcastPacket(chatPacket, _networkManager, rtp::net::NetworkMode::TCP);
-        //     }
-        // }
+        rtp::net::RoomChatPayload payload;
+        rtp::net::Packet tempPacket = packet;
+        tempPacket >> payload;
+
+        PlayerPtr player;
+        {
+            std::lock_guard lock(_mutex);
+            player = _playerSystem->getPlayer(sessionId);
+        }
+        if (!player)
+            return;
+
+        const uint32_t roomId = player->getRoomId();
+        if (roomId == 0)
+            return;
+
+        auto room = _roomSystem->getRoom(roomId);
+        if (!room)
+            return;
+
+        rtp::net::RoomChatReceivedPayload chatPayload{};
+        chatPayload.sessionId = sessionId;
+        const std::string username = player->getUsername();
+        std::strncpy(chatPayload.username, username.c_str(), sizeof(chatPayload.username) - 1);
+        chatPayload.username[sizeof(chatPayload.username) - 1] = '\0';
+        std::strncpy(chatPayload.message, payload.message, sizeof(chatPayload.message) - 1);
+        chatPayload.message[sizeof(chatPayload.message) - 1] = '\0';
+
+        rtp::net::Packet chatPacket(rtp::net::OpCode::RoomChatReceived);
+        chatPacket << chatPayload;
+
+        const auto players = room->getPlayers();
+        for (const auto& p : players) {
+            _networkManager.sendPacket(p->getId(), chatPacket, rtp::net::NetworkMode::TCP);
+        }
     }
 
     void GameManager::handlePacket(uint32_t sessionId, const Packet &packet)
@@ -334,6 +358,17 @@ namespace rtp::server
         std::lock_guard lock(_mutex);
         rtp::log::info("Received packet OpCode {} from Session {}", (int)rtp::net::OpCode::LoginRequest, sessionId);
         log::debug("Unknown packet received OpCode {} from Session {}", (int)packet.header.opCode, sessionId);
+    }
+
+    void GameManager::handlePing(uint32_t sessionId, const Packet &packet)
+    {
+        rtp::net::PingPayload payload{};
+        rtp::net::Packet tempPacket = packet;
+        tempPacket >> payload;
+
+        rtp::net::Packet response(rtp::net::OpCode::Pong);
+        response << payload;
+        _networkManager.sendPacket(sessionId, response, rtp::net::NetworkMode::UDP);
     }
 
     void GameManager::sendEntitySpawnToSessions(const rtp::ecs::Entity& entity,

@@ -81,7 +81,7 @@ namespace rtp::server {
              * @param sessionId ID of the network session
              * @param packet Packet containing the room join data
              */
-            bool joinRoom(PlayerPtr player, uint32_t roomId);
+            bool joinRoom(PlayerPtr player, uint32_t roomId, bool asSpectator = false);
 
             /**
              * @brief Join the lobby room

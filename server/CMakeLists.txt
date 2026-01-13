@@ -19,6 +19,7 @@ add_executable(r-type_server
     src/Systems/PlayerSystem.cpp
     src/Systems/EntitySystem.cpp
     src/Systems/PlayerMouvementSystem.cpp
+    src/Systems/PlayerShootSystem.cpp
 )
 
 target_include_directories(r-type_server PRIVATE

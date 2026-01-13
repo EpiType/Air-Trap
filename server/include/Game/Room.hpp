@@ -89,13 +89,13 @@ namespace rtp::server
              * @param player Shared pointer to the player to add
              * @return true if the player was added successfully, false if the room is full
              */
-            bool addPlayer(const PlayerPtr &player);
+            bool addPlayer(const PlayerPtr &player, PlayerType type = PlayerType::Player);
 
             /**
              * @brief Remove a player from the room
              * @param sessionId Unique identifier of the player to remove
              */
-            void removePlayer(uint32_t sessionId);
+            void removePlayer(uint32_t sessionId, bool disconnected = false);
 
             /**
              * @brief Get the list of players in the room
@@ -190,6 +190,7 @@ namespace rtp::server
             void broadcastRoomState(uint32_t serverTick);
 
         private:
+            void broadcastSystemMessage(const std::string &message);
             NetworkSyncSystem _network;       /**< Reference to the server network manager */
             rtp::ecs::Registry& _registry;    /**< Reference to the entity registry */
 

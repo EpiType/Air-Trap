@@ -57,7 +57,7 @@ namespace rtp::client {
                 {"keybindings.move_left",  KeyAction::MoveLeft },
                 {"keybindings.move_right", KeyAction::MoveRight},
                 {"keybindings.shoot",      KeyAction::Shoot    },
-                {"keybindings.pause",      KeyAction::Pause    }
+                {"keybindings.reload",     KeyAction::Reload   },
             };
 
             for (const auto& binding : bindings) {

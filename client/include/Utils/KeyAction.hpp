@@ -19,6 +19,7 @@ namespace rtp::client {
         MoveLeft,           /**< Action for moving left */
         MoveRight,          /**< Action for moving right */
         Shoot,              /**< Action for shooting */
+        Reload,             /**< Action for reloading */
         Pause,              /**< Action for pausing the game */
         Menu                /**< Action for opening the menu */
     };

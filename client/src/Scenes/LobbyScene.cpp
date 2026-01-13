@@ -136,13 +136,25 @@ namespace rtp::client {
 
                 _uiFactory.createButton(
                     _uiRegistry,
-                    {980.0f, y},
-                    {160.0f, 50.0f},
+                    {900.0f, y},
+                    {140.0f, 50.0f},
                     "JOIN",
                     [this, room]() {
                         _uiSelectedRoomId = room.roomId;
                         rtp::log::info("Attempting to join Room ID {}", room.roomId);
-                        _network.tryJoinRoom(room.roomId);
+                        _network.tryJoinRoom(room.roomId, false);
+                    }
+                );
+
+                _uiFactory.createButton(
+                    _uiRegistry,
+                    {1060.0f, y},
+                    {120.0f, 50.0f},
+                    "SPEC",
+                    [this, room]() {
+                        _uiSelectedRoomId = room.roomId;
+                        rtp::log::info("Attempting to spectate Room ID {}", room.roomId);
+                        _network.tryJoinRoom(room.roomId, true);
                     }
                 );
 
@@ -172,7 +184,9 @@ namespace rtp::client {
                 buildUi();
                 _uiBuilt = true;
             }
-            if (_network.getState() == NetworkSyncSystem::State::InRoom) {
+            if (_network.getState() == NetworkSyncSystem::State::InGame) {
+                _changeState(GameState::Playing);
+            } else if (_network.getState() == NetworkSyncSystem::State::InRoom) {
                 _changeState(GameState::RoomWaiting);
             }
         }

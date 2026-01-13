@@ -79,7 +79,7 @@ namespace rtp::client
     void Application::initWorldSystems(void)
     {
         _worldSystemManager.addSystem<rtp::client::NetworkSyncSystem>(_clientNetwork, _worldRegistry, _worldEntityBuilder);
-        _worldSystemManager.addSystem<rtp::client::InputSystem>(_worldRegistry, _settings, _clientNetwork, _window);
+        _worldSystemManager.addSystem<rtp::client::InputSystem>(_worldRegistry, _uiRegistry, _settings, _clientNetwork, _window);
         _worldSystemManager.addSystem<rtp::client::ParallaxSystem>(_worldRegistry);
         _worldSystemManager.addSystem<rtp::client::AnimationSystem>(_worldRegistry);
         _worldSystemManager.addSystem<rtp::client::RenderSystem>(_worldRegistry, _window);
@@ -172,7 +172,9 @@ namespace rtp::client
         
         _uiRegistry.clear();
         
-        if (newState != GameState::Playing) _worldRegistry.clear();
+        if (newState != GameState::Playing && newState != GameState::Paused) {
+            _worldRegistry.clear();
+        }
 
         auto it = _scenes.find(newState);
         if (it != _scenes.end()) {

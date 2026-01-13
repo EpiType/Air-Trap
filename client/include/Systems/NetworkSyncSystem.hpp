@@ -20,6 +20,7 @@
 
     #include "Game/EntityBuilder.hpp"
 
+    #include <deque>
     #include <vector>
     #include <iostream>
     #include <list>
@@ -98,7 +99,7 @@ namespace rtp::client {
              * @brief Send a request to join an existing room on the server
              * @param roomId Identifier of the room to join
              */
-            void tryJoinRoom(uint32_t roomId);
+            void tryJoinRoom(uint32_t roomId, bool asSpectator = false);
 
             /**
              * @brief Send a request to leave the current room on the server
@@ -166,6 +167,24 @@ namespace rtp::client {
              */
             State getState(void) const;
 
+            /**
+             * @brief Get the last received room chat message
+             * @return Last chat message string
+             */
+            std::string getLastChatMessage(void) const;
+
+            /**
+             * @brief Get chat history buffer (most recent last)
+             * @return Chat message buffer
+             */
+            const std::deque<std::string>& getChatHistory(void) const;
+
+            uint16_t getAmmoCurrent(void) const;
+            uint16_t getAmmoMax(void) const;
+            bool isReloading(void) const;
+            float getReloadCooldownRemaining(void) const;
+            uint32_t getPingMs(void) const;
+
         private:
             ClientNetwork& _network;                                       /**< Reference to the client network manager */
             rtp::ecs::Registry& _registry;                                 /**< Reference to the entity registry */
@@ -180,6 +199,16 @@ namespace rtp::client {
             std::string _username;                                         /**< The username of the client */
             std::list<rtp::net::RoomInfo> _availableRooms;                 /**< List of available rooms from the server */
             State _currentState = State::NotLogged;                        /**< Current state of the client */
+            std::string _lastChatMessage;                                  /**< Last received chat message */
+            std::deque<std::string> _chatHistory;                          /**< Recent chat messages */
+            std::size_t _chatHistoryLimit = 8;                             /**< Max chat messages to keep */
+            uint16_t _ammoCurrent = 0;                                     /**< Current ammo */
+            uint16_t _ammoMax = 100;                                       /**< Max ammo */
+            bool _ammoReloading = false;                                   /**< Reload state */
+            float _ammoReloadRemaining = 0.0f;                             /**< Reload time remaining */
+            uint32_t _pingMs = 0;                                          /**< Latest ping in ms */
+            float _pingTimer = 0.0f;                                       /**< Ping timer accumulator */
+            float _pingInterval = 1.0f;                                    /**< Ping interval in seconds */
         
         private:
             /**
@@ -203,6 +232,14 @@ namespace rtp::client {
             void onSpawnEntityFromServer(rtp::net::Packet& packet);
 
             void onRoomUpdate(rtp::net::Packet& packet);
+
+            void onRoomChatReceived(rtp::net::Packet& packet);
+
+            void pushChatMessage(const std::string& message);
+
+            void onAmmoUpdate(rtp::net::Packet& packet);
+
+            void onPong(rtp::net::Packet& packet);
 
             // /**
             //  * @brief Disconnect a player based on session ID

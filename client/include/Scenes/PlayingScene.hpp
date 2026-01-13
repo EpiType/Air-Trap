@@ -79,6 +79,10 @@ namespace rtp::client {
                  * @brief Spawn parallax background entities.
                  */
                 void spawnParallax(void);
+                void sendChatMessage(void);
+                void openChat(void);
+                void closeChat(void);
+                void updateChatHistoryText(void);
 
             private:
                 ecs::Registry& _uiRegistry;                 /**< Reference to the ECS registry */
@@ -93,12 +97,23 @@ namespace rtp::client {
                 uint32_t _uiScore = 0;                      /**< Player score in the UI */
                 uint32_t _uiFps = 0;                        /**< Current FPS in the UI */
                 uint32_t _uiPing = 0;                       /**< Current ping in the UI */
+                float _fpsTimer = 0.0f;                     /**< FPS timer accumulator */
+                uint32_t _fpsFrames = 0;                    /**< FPS frame count */
 
                 rtp::ecs::Entity _hudPing{};                /**< Entity for displaying ping in the HUD */
                 rtp::ecs::Entity _hudFps{};                 /**< Entity for displaying FPS in the HUD */
                 rtp::ecs::Entity _hudScore{};               /**< Entity for displaying score in the HUD */
                 rtp::ecs::Entity _hudEntities{};            /**< Parent entity for HUD elements */
+                rtp::ecs::Entity _hudAmmo{};                /**< Entity for displaying ammo */
                 bool _hudInit{false};                       /**< Flag indicating if HUD is initialized */
+
+                bool _chatOpen{false};                      /**< Whether expanded chat is open */
+                rtp::ecs::Entity _chatCompactPanel{};       /**< Compact chat background panel */
+                rtp::ecs::Entity _chatCompactText{};        /**< Text entity for last chat message */
+
+                rtp::ecs::Entity _chatPanel{};              /**< Expanded chat panel */
+                rtp::ecs::Entity _chatHistoryText{};        /**< Text entity for chat history */
+                rtp::ecs::Entity _chatInput{};              /**< Text input entity for chat */
         };
     } // namespace Scenes
 } // namespace rtp::client
