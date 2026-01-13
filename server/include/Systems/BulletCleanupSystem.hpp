@@ -48,7 +48,7 @@ namespace rtp::server {
              * @param entity The entity to despawn
              * @param roomId The ID of the room the entity belongs to
              */
-            void despawnEntity(const rtp::ecs::Entity& entity, uint32_t roomId);
+            void despawn(const rtp::ecs::Entity& entity, uint32_t roomId);
 
         private:
             rtp::ecs::Registry& _registry;      /**< Reference to the ECS registry */

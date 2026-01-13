@@ -486,22 +486,22 @@ namespace rtp::client {
 
         auto e = res.value();
 
-        _registry.addComponent<rtp::ecs::components::NetworkId>(
+        _registry.add<rtp::ecs::components::NetworkId>(
             e, rtp::ecs::components::NetworkId{payload.netId}
         );
 
         const auto entityType = static_cast<rtp::net::EntityType>(payload.type);
-        _registry.addComponent<rtp::ecs::components::EntityType>(
+        _registry.add<rtp::ecs::components::EntityType>(
             e, rtp::ecs::components::EntityType{entityType}
         );
 
         if (payload.sizeX > 0.0f && payload.sizeY > 0.0f) {
-            _registry.addComponent<rtp::ecs::components::BoundingBox>(
+            _registry.add<rtp::ecs::components::BoundingBox>(
                 e, rtp::ecs::components::BoundingBox{payload.sizeX, payload.sizeY}
             );
         } else if (entityType == rtp::net::EntityType::Obstacle ||
                    entityType == rtp::net::EntityType::ObstacleSolid) {
-            _registry.addComponent<rtp::ecs::components::BoundingBox>(
+            _registry.add<rtp::ecs::components::BoundingBox>(
                 e, rtp::ecs::components::BoundingBox{32.0f, 32.0f}
             );
         }

@@ -55,9 +55,9 @@ TEST(SparseArrayTest, EntitiesAndDataSizesStayConsistent) {
     arr.emplace(e1, DummyComponent{5});
     arr.emplace(e2, DummyComponent{6});
 
-    EXPECT_EQ(arr.entities().size(), arr.data().size());
+    EXPECT_EQ(arr.entities().size(), arr.kill().size());
 
     arr.erase(e1);
 
-    EXPECT_EQ(arr.entities().size(), arr.data().size());
+    EXPECT_EQ(arr.entities().size(), arr.kill().size());
 }

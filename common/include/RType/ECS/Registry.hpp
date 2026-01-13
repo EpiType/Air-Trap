@@ -11,6 +11,7 @@
     #include "RType/ECS/ComponentConcept.hpp"
     #include "RType/ECS/Entity.hpp"
     #include "RType/ECS/SparseArray.hpp"
+    #include "RType/ECS/ZipView.hpp"
     #include "RType/Logger.hpp"
     #include "RType/Error.hpp"
 
@@ -51,28 +52,21 @@ namespace rtp::ecs
             void kill(Entity entity);
 
             template <Component T, typename Self>
-            [[nodiscard]]
             auto registerComponent(this Self &self)
                 -> std::expected<std::reference_wrapper<ConstLike<Self,
                                                                   SparseArray<T>>>,
                                  rtp::Error>;
 
             template <Component T, typename Self>
-            [[nodiscard]]
             auto getComponents(this Self &self)
                 -> std::expected<std::reference_wrapper<ConstLike<Self,
                                                                   SparseArray<T>>>,
                                  rtp::Error>;
 
-            template <Component T, typename... Args>
-            [[nodiscard]]
-            auto addComponent(Entity entity, Args &&...args);
-
             [[nodiscard]]
             bool isAlive(Entity entity) const noexcept;
 
             template <Component T, typename... Args>
-            [[nodiscard]]
             auto add(Entity entity, Args &&...args)
                 -> std::expected<std::reference_wrapper<T>, rtp::Error>;
 
@@ -115,7 +109,7 @@ namespace rtp::ecs
                                std::unique_ptr<ISparseArray>> _arrays; /**< Registered component arrays */
             std::vector<std::uint32_t> _generations; /**< Generation counters for entities */
             std::deque<std::size_t> _freeIndices; /**< Recyclable entity indices */
-            std::shared_mutex _mutex; /**< Mutex for thread-safe operations */
+            mutable std::shared_mutex _mutex; /**< Mutex for thread-safe operations */
 
         private:
             template <Component T, typename Self>
@@ -123,7 +117,7 @@ namespace rtp::ecs
             auto getArray(this Self &self)
                 -> ConstLikeRef<Self, SparseArray<T>>;
 
-            template <Component... Ts>
+            template <Component T, Component... Ts>
             [[nodiscard]]
             auto &getSmallestArray(void);
 

@@ -153,8 +153,8 @@ ecs::Registry registry;
 Entity player = registry.createEntity();
 
 // Ajouter des composants
-registry.addComponent(player, PositionComponent{100.0f, 200.0f});
-registry.addComponent(player, VelocityComponent{5.0f, 0.0f});
+registry.add(player, PositionComponent{100.0f, 200.0f});
+registry.add(player, VelocityComponent{5.0f, 0.0f});
 
 // Récupérer un composant
 auto& pos = registry.getComponent<PositionComponent>(player);

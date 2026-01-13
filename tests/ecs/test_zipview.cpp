@@ -9,11 +9,15 @@ using namespace rtp::ecs::components;
 
 TEST(ZipViewTest, IterationAlignsOnCommonEntities) {
     Registry reg;
-    auto &ts = reg.registerComponent<Transform>();
-    auto &vs = reg.registerComponent<Velocity>();
+    auto tsResult = reg.registerComponent<Transform>();
+    auto vsResult = reg.registerComponent<Velocity>();
+    ASSERT_TRUE(tsResult.has_value());
+    ASSERT_TRUE(vsResult.has_value());
+    auto &ts = tsResult->get();
+    auto &vs = vsResult->get();
 
-    auto e1 = reg.spawnEntity();
-    auto e2 = reg.spawnEntity();
+    auto e1 = reg.spawn();
+    auto e2 = reg.spawn();
     ASSERT_TRUE(e1.has_value());
     ASSERT_TRUE(e2.has_value());
 
@@ -33,10 +37,14 @@ TEST(ZipViewTest, IterationAlignsOnCommonEntities) {
 
 TEST(ZipViewTest, UpdatesAfterErase) {
     Registry reg;
-    auto &ts = reg.registerComponent<Transform>();
-    auto &vs = reg.registerComponent<Velocity>();
+    auto tsResult = reg.registerComponent<Transform>();
+    auto vsResult = reg.registerComponent<Velocity>();
+    ASSERT_TRUE(tsResult.has_value());
+    ASSERT_TRUE(vsResult.has_value());
+    auto &ts = tsResult->get();
+    auto &vs = vsResult->get();
 
-    auto e1 = reg.spawnEntity();
+    auto e1 = reg.spawn();
     ASSERT_TRUE(e1.has_value());
 
     ts.emplace(e1.value(), Transform{Vec2f{5.f, 5.f}, 0.f, Vec2f{1.f,1.f}});

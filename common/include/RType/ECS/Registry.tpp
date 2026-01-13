@@ -22,12 +22,20 @@ namespace rtp::ecs
         std::unique_lock lock(self._mutex);
         std::type_index type = typeid(T);
 
-        if (this->_arrays.contains(type)) [[unlikely]]
+        if (self._arrays.contains(type)) [[unlikely]]
             return std::unexpected{Error::failure(ErrorCode::InternalRuntimeError,
                                                   "Component already registered: {}",
                                                   type.name())};
 
-        return this->_arrays.emplace(type, std::make_unique<SparseArray<T>>());
+        auto [it, inserted] = self._arrays.emplace(
+            type, std::make_unique<SparseArray<T>>());
+        if (!inserted) [[unlikely]]
+            return std::unexpected{Error::failure(ErrorCode::InternalRuntimeError,
+                                                  "Failed to register component: {}",
+                                                  type.name())};
+
+        auto *rawPtr = static_cast<ConstLike<Self, SparseArray<T>> *>(it->second.get());
+        return std::ref(*rawPtr);
     }
 
     template <Component T, typename... Args>
@@ -61,6 +69,15 @@ namespace rtp::ecs
         auto *rawPtr = static_cast<SparseArray<T> *>(ptr.get());
 
         return std::ref(*rawPtr);
+    }
+
+    template <Component T, typename Self>
+    auto Registry::getComponents(this Self &self)
+        -> std::expected<std::reference_wrapper<ConstLike<Self,
+                                                          SparseArray<T>>>,
+                         rtp::Error>
+    {
+        return self.template get<T>();
     }
 
     template <Component T>
@@ -103,17 +120,27 @@ namespace rtp::ecs
     auto Registry::view(this Self &self)
     {
         std::shared_lock lock{self._mutex};
-        auto &base = this->getSmallestArray<Ts...>();
 
-        return std::views::iota(std::size_t{0}, base.size())
-            | std::views::transform([&](std::size_t i) {
-                Entity e = base.entities()[i];
-                return std::tuple<Entity, Ts&...>(e, get<Ts>()[e]...);
-            })
-            | std::views::filter([&](auto const &t) {
-                Entity e = std::get<0>(t);
-                return (get<Ts>().has(e) && ...);
-            });
+        if constexpr (sizeof...(Ts) == 1) {
+            using T = std::tuple_element_t<0, std::tuple<Ts...>>;
+            auto result = self.template get<T>();
+            if (!result.has_value()) {
+                return std::span<ConstLike<Self, T>>{};
+            }
+            return result->get().data();
+        } else {
+            auto &base = self.template getSmallestArray<Ts...>();
+            return std::views::iota(std::size_t{0}, base.size())
+                | std::views::transform([&](std::size_t i) {
+                    Entity e = base.entities()[i];
+                    return std::tuple<Entity, Ts&...>(
+                        e, self.template getArray<Ts>()[e]...);
+                })
+                | std::views::filter([&](auto const &t) {
+                    Entity e = std::get<0>(t);
+                    return (self.template getArray<Ts>().has(e) && ...);
+                });
+        }
     }
 
     template <Component... Ts, typename Self>
@@ -153,17 +180,10 @@ namespace rtp::ecs
         return static_cast<ConstLikeRef<Self, SparseArray<T>>>(*it->second);
     }
 
-    template <Component... Ts>
+    template <Component T, Component... Ts>
     auto &Registry::getSmallestArray(void)
     {
-        std::array<SparseArray<Ts> *,
-                   sizeof...(Ts)> arrays{&getArray<Ts>()...};
-
-        auto it = std::ranges::min_element(arrays, std::less<>(),
-                                           [](const auto const *a) { return a->size(); });
-        size_t idx = std::distance(arrays.begin(), it);
-
-        return *arrays[idx];
+        return this->template getArray<T>();
     }
 
     template <Component... Ts>

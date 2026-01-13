@@ -64,7 +64,7 @@ class CollisionSystem : public rtp::ecs::ISystem {
          * @param entityA First entity involved in the collision
          * @param entityB Second entity involved in the collision
          */
-        void despawnEntity(const rtp::ecs::Entity& entity, uint32_t roomId);
+        void despawn(const rtp::ecs::Entity& entity, uint32_t roomId);
     
     private:
         rtp::ecs::Registry& _registry;      /**< Reference to the ECS registry */

@@ -16,7 +16,7 @@ namespace rtp::server
     {
     }
 
-    void BulletCleanupSystem::despawnEntity(const rtp::ecs::Entity& entity, uint32_t roomId)
+    void BulletCleanupSystem::despawn(const rtp::ecs::Entity& entity, uint32_t roomId)
     {
         auto transformRes = _registry.getComponents<rtp::ecs::components::Transform>();
         auto typeRes = _registry.getComponents<rtp::ecs::components::EntityType>();
@@ -38,13 +38,13 @@ namespace rtp::server
 
         auto room = _roomSystem.getRoom(roomId);
         if (!room) {
-            _registry.killEntity(entity);
+            _registry.kill(entity);
             return;
         }
 
         const auto players = room->getPlayers();
         if (players.empty()) {
-            _registry.killEntity(entity);
+            _registry.kill(entity);
             return;
         }
 
@@ -59,7 +59,7 @@ namespace rtp::server
             _networkSync.sendPacketToSession(player->getId(), packet, rtp::net::NetworkMode::TCP);
         }
 
-        _registry.killEntity(entity);
+        _registry.kill(entity);
     }
 
     void BulletCleanupSystem::update(float dt)
@@ -79,7 +79,7 @@ namespace rtp::server
 
         std::vector<std::pair<rtp::ecs::Entity, uint32_t>> pending;
 
-        for (auto entity : types.getEntities()) {
+        for (auto entity : types.entities()) {
             if (!types.has(entity)) {
                 continue;
             }
@@ -104,7 +104,7 @@ namespace rtp::server
         }
 
         for (const auto& [entity, roomId] : pending) {
-            despawnEntity(entity, roomId);
+            despawn(entity, roomId);
         }
     }
 } // namespace rtp::server

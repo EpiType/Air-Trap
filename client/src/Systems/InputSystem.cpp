@@ -31,7 +31,7 @@ namespace rtp::client {
 
         if (auto inputsOpt = _uiRegistry.getComponents<rtp::ecs::components::ui::TextInput>()) {
             auto &inputs = inputsOpt.value().get();
-            for (const auto &e : inputs.getEntities()) {
+            for (const auto &e : inputs.entities()) {
                 if (inputs[e].isFocused) {
                     if (_lastMask != 0) {
                         rtp::net::Packet p(rtp::net::OpCode::InputTick);
