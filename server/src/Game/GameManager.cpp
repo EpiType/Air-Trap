@@ -53,6 +53,9 @@ namespace rtp::server
         _bulletCleanupSystem = std::make_unique<BulletCleanupSystem>(_registry, *_roomSystem, *_networkSyncSystem);
 
         _levelSystem->registerLevelPath(1, "common/assets/levels/level_01.json");
+        _levelSystem->registerLevelPath(2, "common/assets/levels/level_02.json");
+        _levelSystem->registerLevelPath(3, "common/assets/levels/level_03.json");
+        _levelSystem->registerLevelPath(4, "common/assets/levels/level_04.json");
 
         _roomSystem->setOnRoomStarted(
             [this](uint32_t roomId) {
