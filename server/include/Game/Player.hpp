@@ -12,7 +12,7 @@
     #include <string>
     #include <mutex>
     #include <memory>
-    #include "RType/Network/Core/Session.hpp"
+    #include "RType/Network/Session.hpp"
 
 /**
  * @namespace rtp::server
@@ -26,8 +26,10 @@ namespace rtp::server
      */
     enum class PlayerState {
         None,
+        NotLogged,
         Connected,
         InLobby,
+        InRoom,
         InGame
     };
 
@@ -42,7 +44,7 @@ namespace rtp::server
              * @param id Unique identifier for the player
              * @param username Username of the player
              */
-            Player(uint32_t sessionId, const std::string &username);
+            Player(uint32_t sessionId);
 
             /**
              * @brief Destructor for Player
@@ -121,6 +123,9 @@ namespace rtp::server
              */
             uint32_t getEntityId() const;
 
+            void setMuted(bool muted);
+            bool isMuted() const;
+
         private:
             uint32_t _sessionId;         /**< Unique player identifier */
             std::string _username;       /**< Player username */
@@ -130,6 +135,7 @@ namespace rtp::server
 
             uint32_t _entityId = 0;      /**< Associated entity ID in the ECS */
             mutable std::mutex _mutex;   /**< Mutex to protect access to player state */
+            bool _isMuted = false;       /**< Mute status of the player */
     };
 
     /**

@@ -9,7 +9,7 @@
     #define RTYPE_SERVER_NETWORK_HPP_
 
     #include "RType/Network/INetwork.hpp"
-    #include "RType/Network/Core/Session.hpp"
+    #include "RType/Network/Session.hpp"
     #include "RType/Network/Packet.hpp"
     #include "RType/Network/IEventPublisher.hpp"
     #include "RType/Logger.hpp"
