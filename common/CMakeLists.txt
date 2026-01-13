@@ -41,7 +41,7 @@ set(SRC_ECS
 )
 
 set(SRC_NETWORK
-    src/Network/Core/Session.cpp
+    src/Network/Session.cpp
     src/Network/Packet.cpp
 )
 

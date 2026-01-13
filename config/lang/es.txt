@@ -29,6 +29,7 @@ keybindings.move_down=Abajo
 keybindings.move_left=Izquierda
 keybindings.move_right=Derecha
 keybindings.shoot=Disparar
+keybindings.reload=Recargar
 keybindings.pause=Pausa
 
 # Juego / Game

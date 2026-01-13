@@ -13,13 +13,15 @@
     
     #include "RType/ECS/Components/InputComponent.hpp"
     #include "RType/ECS/Components/Transform.hpp"
+    #include "RType/ECS/Components/Velocity.hpp"
+    #include "RType/ECS/Components/BoundingBox.hpp"
+    #include "RType/ECS/Components/EntityType.hpp"
 
 /**
  * @namespace rtp::server
  * @brief Systems for R-Type server
  */
 namespace rtp::server {
-
     /**
      * @class MovementSystem
      * @brief System to handle entity movement based on input components.

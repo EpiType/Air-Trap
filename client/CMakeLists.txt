@@ -13,14 +13,25 @@ set(SRC_CLIENT
     src/Network/ClientNetwork.cpp
     src/Core/Settings.cpp
     src/Translation/TranslationManager.cpp
-    src/Systems/MenuSystem.cpp
+    src/Systems/UISystem.cpp
+    src/UI/UiFactory.cpp
     src/Systems/UIRenderSystem.cpp
     src/Systems/RenderSystem.cpp
     src/Game/EntityBuilder.cpp
-    src/Systems/SettingsMenuSystem.cpp
+    # src/Systems/SettingsMenuSystem.cpp
     # src/Systems/MovementSystem.cpp
     src/Systems/InputSystem.cpp
-    src/Systems/ClientNetworkSystem.cpp
+    src/Systems/NetworkSyncSystem.cpp
+    # Scenes
+    src/Scenes/CreateRoomScene.cpp
+    src/Scenes/KeyBindingScene.cpp
+    src/Scenes/LoginScene.cpp
+    src/Scenes/LobbyScene.cpp
+    src/Scenes/MenuScene.cpp
+    src/Scenes/PauseScene.cpp
+    src/Scenes/RoomWaitingScene.cpp
+    src/Scenes/SettingsScene.cpp
+    src/Scenes/PlayingScene.cpp
 )
 
 # --- TARGET ---

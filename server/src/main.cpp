@@ -16,36 +16,39 @@
 
 using namespace rtp::server;
 
-ServerNetwork* g_networkManager = nullptr;
-GameManager* g_gameManager = nullptr;
-
-void signal_handler(int signum) {
+void signal_handler(int signum)
+{
     if (signum == SIGINT) {
         rtp::log::info("Server received SIGINT (Ctrl+C). Initiating graceful shutdown...");
-        
-        if (g_networkManager) {
-            g_networkManager->stop();
-            exit(0);
-        }
+        exit(0);
     }
 }
 
-int main(void) {
-    const uint16_t SERVER_PORT = 5000;
-    
+uint16_t parseArguments(int argc, char** argv)
+{
+    uint16_t port = 5000;
+    for (int i = 1; i < argc; ++i) {
+        std::string arg = argv[i];
+        if (arg == "--port" && i + 1 < argc) {
+            port = static_cast<uint16_t>(std::stoi(argv[++i]));
+        }
+    }
+    return port;
+}
+
+int main(int ac, char** av)
+{    
     std::signal(SIGINT, signal_handler);
-    
+
+    uint16_t ServerPort = parseArguments(ac, av);
     try {
-        rtp::log::info("Starting R-Type Server...");
+        rtp::log::info("Starting R-Type Server on port {}", ServerPort);
         
-        ServerNetwork networkManager(SERVER_PORT); 
+        ServerNetwork networkManager(ServerPort); 
         GameManager gameManager(networkManager);
         
-        g_networkManager = &networkManager;
-        g_gameManager = &gameManager;
-
         networkManager.start();
-         
+        
         gameManager.gameLoop(); 
         
     } catch (const std::exception& e) {
