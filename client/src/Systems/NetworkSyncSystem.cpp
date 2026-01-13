@@ -12,6 +12,7 @@
 #include "RType/ECS/Components/Sprite.hpp"
 #include "RType/ECS/Components/Animation.hpp"
 #include "RType/ECS/Components/EntityType.hpp"
+#include "RType/ECS/Components/BoundingBox.hpp"
 #include "RType/Network/Packet.hpp"
 #include "Game/EntityBuilder.hpp"
 #include "Utils/DebugFlags.hpp"
@@ -274,6 +275,10 @@ namespace rtp::client {
                 onSpawnEntityFromServer(event.packet);
                 break;
             }
+            case OpCode::EntityDeath: {
+                onEntityDeath(event.packet);
+                break;
+            }
             case OpCode::RoomUpdate:
                 onRoomUpdate(event.packet);
                 break;
@@ -303,18 +308,6 @@ namespace rtp::client {
             default:
                 rtp::log::warning("Unhandled OpCode received: {}", static_cast<uint8_t>(event.packet.header.opCode));
                 break;
-            // case OpCode::EntityDeath: /* EntityDeath */
-            //     /* code */
-            //     break;
-            // case OpCode::RoomUpdate: /* WorldUpdate */
-            //     applyWorldUpdate(event.packet);
-            //     break;
-            // case OpCode::Disconnect: {/* Disconnect */
-            //     uint32_t entityNetId = 0;
-            //     event.packet >> entityNetId;
-            //     disconnectPlayer(entityNetId);
-            //     break;
-            // }
         }
     }
 
@@ -446,6 +439,12 @@ namespace rtp::client {
             case rtp::net::EntityType::Scout:
                 t = EntityTemplate::rt2_4(pos);
                 break;
+            case rtp::net::EntityType::Tank:
+                t = EntityTemplate::rt1_3(pos);
+                break;
+            case rtp::net::EntityType::Boss:
+                t = EntityTemplate::rt1_13(pos);
+                break;
 
             case rtp::net::EntityType::Player:
                 t = EntityTemplate::rt1_1(pos);
@@ -453,6 +452,24 @@ namespace rtp::client {
 
             case rtp::net::EntityType::Bullet:
                 t = EntityTemplate::createBulletEnemy(pos);
+                break;
+            case rtp::net::EntityType::EnemyBullet:
+                t = EntityTemplate::createBulletEnemy(pos);
+                break;
+
+            case rtp::net::EntityType::PowerupHeal:
+                t = EntityTemplate::rt1_4(pos);
+                break;
+
+            case rtp::net::EntityType::PowerupSpeed:
+                t = EntityTemplate::rt1_5(pos);
+                break;
+
+            case rtp::net::EntityType::Obstacle:
+                t = EntityTemplate::rt2_6(pos);
+                break;
+            case rtp::net::EntityType::ObstacleSolid:
+                t = EntityTemplate::rt2_6(pos);
                 break;
 
             default:
@@ -473,16 +490,54 @@ namespace rtp::client {
             e, rtp::ecs::components::NetworkId{payload.netId}
         );
 
-        if (static_cast<rtp::net::EntityType>(payload.type) == rtp::net::EntityType::Bullet) {
+        const auto entityType = static_cast<rtp::net::EntityType>(payload.type);
+        _registry.addComponent<rtp::ecs::components::EntityType>(
+            e, rtp::ecs::components::EntityType{entityType}
+        );
+
+        if (payload.sizeX > 0.0f && payload.sizeY > 0.0f) {
+            _registry.addComponent<rtp::ecs::components::BoundingBox>(
+                e, rtp::ecs::components::BoundingBox{payload.sizeX, payload.sizeY}
+            );
+        } else if (entityType == rtp::net::EntityType::Obstacle ||
+                   entityType == rtp::net::EntityType::ObstacleSolid) {
+            _registry.addComponent<rtp::ecs::components::BoundingBox>(
+                e, rtp::ecs::components::BoundingBox{32.0f, 32.0f}
+            );
+        }
+
+        if (entityType == rtp::net::EntityType::Bullet) {
             if (auto transformsOpt = _registry.getComponents<rtp::ecs::components::Transform>(); transformsOpt) {
                 auto &transforms = transformsOpt.value().get();
                 if (transforms.has(e)) {
                     transforms[e].rotation = 180.0f;
                 }
             }
+        } else if (entityType == rtp::net::EntityType::EnemyBullet) {
+            if (auto transformsOpt = _registry.getComponents<rtp::ecs::components::Transform>(); transformsOpt) {
+                auto &transforms = transformsOpt.value().get();
+                if (transforms.has(e)) {
+                    transforms[e].rotation = 0.0f;
+                }
+            }
         }
 
         _netIdToEntity[payload.netId] = e;
+    }
+
+    void NetworkSyncSystem::onEntityDeath(rtp::net::Packet& packet)
+    {
+        rtp::net::EntityDeathPayload payload{};
+        packet >> payload;
+
+        auto it = _netIdToEntity.find(payload.netId);
+        if (it == _netIdToEntity.end()) {
+            return;
+        }
+
+        const rtp::ecs::Entity entity = it->second;
+        _builder.kill(entity);
+        _netIdToEntity.erase(it);
     }
 
     void NetworkSyncSystem::onRoomUpdate(rtp::net::Packet& packet)

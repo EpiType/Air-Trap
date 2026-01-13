@@ -140,7 +140,12 @@ namespace rtp::net
         Scout  = 2,
         Tank   = 3,
         Boss   = 4,
-        Bullet = 5
+        Bullet = 5,
+        PowerupHeal = 6,
+        PowerupSpeed = 7,
+        Obstacle = 8,
+        EnemyBullet = 9,
+        ObstacleSolid = 10
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -325,6 +330,8 @@ namespace rtp::net
         uint8_t type;                   /**< Entity type from EntityType */
         float posX;                     /**< Spawn X position */
         float posY;                     /**< Spawn Y position */
+        float sizeX{0.0f};              /**< Optional width for static entities */
+        float sizeY{0.0f};              /**< Optional height for static entities */
     };
 
     /**

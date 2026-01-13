@@ -15,6 +15,7 @@
     #include "RType/ECS/Components/Transform.hpp"
     #include "RType/ECS/Components/Velocity.hpp"
     #include "RType/ECS/Components/EntityType.hpp"
+    #include "RType/ECS/Components/MovementSpeed.hpp"
 
 /**
  * @namespace rtp::server

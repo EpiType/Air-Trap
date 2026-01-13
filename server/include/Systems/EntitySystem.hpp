@@ -27,6 +27,10 @@
     #include "RType/ECS/Components/RoomId.hpp"
     #include "RType/ECS/Components/SimpleWeapon.hpp"
     #include "RType/ECS/Components/Ammo.hpp"
+    #include "RType/ECS/Components/BoundingBox.hpp"
+    #include "RType/ECS/Components/Damage.hpp"
+    #include "RType/ECS/Components/Powerup.hpp"
+    #include "RType/ECS/Components/MovementSpeed.hpp"
 
 /**
  * @namespace rtp::server
@@ -56,9 +60,30 @@ namespace rtp::server {
              * @return The ID of the created player entity
              */
             rtp::ecs::Entity createPlayerEntity(PlayerPtr player);
+            rtp::ecs::Entity createPlayerEntity(PlayerPtr player, const rtp::Vec2f& spawnPos);
 
             /**
              * @brief Create a new enemy entity in the ECS
+             * @return The ID of the created enemy entity
+             */
+            rtp::ecs::Entity createEnemyEntity(
+                uint32_t roomId,
+                const rtp::Vec2f& pos,
+                rtp::ecs::components::Patterns pattern,
+                float speed,
+                float amplitude,
+                float frequency,
+                rtp::net::EntityType type = rtp::net::EntityType::Scout
+            );
+
+            /**
+             * @brief Create a new enemy entity in the ECS with default type Scout
+             * @param roomId ID of the room the enemy belongs to
+             * @param pos Position to spawn the enemy at
+             * @param pattern Movement pattern for the enemy
+             * @param speed Movement speed of the enemy
+             * @param amplitude Amplitude for movement patterns that require it
+             * @param frequency Frequency for movement patterns that require it
              * @return The ID of the created enemy entity
              */
             rtp::ecs::Entity creaetEnemyEntity(
@@ -68,6 +93,40 @@ namespace rtp::server {
                 float speed,
                 float amplitude,
                 float frequency
+            );
+
+            /**
+             * @brief Create a new powerup entity in the ECS
+             * @param roomId ID of the room the powerup belongs to
+             * @param pos Position to spawn the powerup at
+             * @param type Type of the powerup
+             * @param value Value associated with the powerup
+             * @param duration Duration the powerup effect lasts
+             * @return The ID of the created powerup entity
+             */
+            rtp::ecs::Entity createPowerupEntity(
+                uint32_t roomId,
+                const rtp::Vec2f& pos,
+                rtp::ecs::components::PowerupType type,
+                float value,
+                float duration
+            );
+
+            /**
+             * @brief Create a new obstacle entity in the ECS
+             * @param roomId ID of the room the obstacle belongs to
+             * @param pos Position to spawn the obstacle at
+             * @param size Size of the obstacle
+             * @param health Health points of the obstacle
+             * @param type Type of the obstacle entity
+             * @return The ID of the created obstacle entity
+             */
+            rtp::ecs::Entity createObstacleEntity(
+                uint32_t roomId,
+                const rtp::Vec2f& pos,
+                const rtp::Vec2f& size,
+                int health,
+                rtp::net::EntityType type = rtp::net::EntityType::Obstacle
             );
 
         protected:

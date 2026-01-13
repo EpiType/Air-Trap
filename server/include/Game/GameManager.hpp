@@ -32,6 +32,11 @@
     #include "Systems/EntitySystem.hpp"
     #include "Systems/PlayerMouvementSystem.hpp"
     #include "Systems/PlayerShootSystem.hpp"
+    #include "Systems/EnemyAISystem.hpp"
+    #include "Systems/LevelSystem.hpp"
+    #include "Systems/CollisionSystem.hpp"
+    #include "Systems/EnemyShootSystem.hpp"
+    #include "Systems/BulletCleanupSystem.hpp"
 
     /* Components */
     #include "RType/ECS/Components/InputComponent.hpp"
@@ -41,6 +46,12 @@
     #include "RType/ECS/Components/EntityType.hpp"
     #include "RType/ECS/Components/SimpleWeapon.hpp"
     #include "RType/ECS/Components/Ammo.hpp"
+    #include "RType/ECS/Components/MouvementPattern.hpp"
+    #include "RType/ECS/Components/Health.hpp"
+    #include "RType/ECS/Components/BoundingBox.hpp"
+    #include "RType/ECS/Components/Damage.hpp"
+    #include "RType/ECS/Components/Powerup.hpp"
+    #include "RType/ECS/Components/MovementSpeed.hpp"
 
 /**
  * @namespace rtp::server
@@ -185,6 +196,11 @@ namespace rtp::server
             std::unique_ptr<EntitySystem> _entitySystem;               /**< Entity system for handling entity-related operations */
             std::unique_ptr<PlayerMouvementSystem> _playerMouvementSystem; /**< Player movement system for handling player-specific movement logic */
             std::unique_ptr<PlayerShootSystem> _playerShootSystem;      /**< Player shooting system for handling bullets */
+            std::unique_ptr<EnemyAISystem> _enemyAISystem;              /**< Enemy AI system for movement patterns */
+            std::unique_ptr<LevelSystem> _levelSystem;                  /**< Level system for timed spawns */
+            std::unique_ptr<CollisionSystem> _collisionSystem;          /**< Collision system for pickups/obstacles */
+            std::unique_ptr<EnemyShootSystem> _enemyShootSystem;        /**< Enemy shooting system */
+            std::unique_ptr<BulletCleanupSystem> _bulletCleanupSystem;  /**< Bullet cleanup system */
 
             uint32_t _serverTick = 0;                                  /**< Current server tick for synchronization */
             mutable std::mutex _mutex;                                 /**< Mutex for thread-safe operations */

@@ -41,8 +41,23 @@ namespace rtp::server
     // Public API
     ///////////////////////////////////////////////////////////////////////////
 
-    Room::Room(Registry& registry, NetworkSyncSystem& network, uint32_t id, const std::string &name, uint32_t maxPlayers, float difficulty, float speed, RoomType type, uint32_t creatorSessionId)
-        : _registry(registry), _network(network), _id(id), _name(name), _maxPlayers(maxPlayers), _state(State::Waiting), _type(type), _difficulty(difficulty), _speed(speed), _creatorSessionId(creatorSessionId)
+    Room::Room(Registry& registry, NetworkSyncSystem& network, uint32_t id, const std::string &name,
+               uint32_t maxPlayers, float difficulty, float speed, RoomType type,
+               uint32_t creatorSessionId, uint32_t levelId, uint32_t seed,
+               uint32_t durationMinutes)
+        : _registry(registry)
+        , _network(network)
+        , _id(id)
+        , _name(name)
+        , _maxPlayers(maxPlayers)
+        , _state(State::Waiting)
+        , _type(type)
+        , _creatorSessionId(creatorSessionId)
+        , _levelId(levelId)
+        , _seed(seed)
+        , _difficulty(difficulty)
+        , _speed(speed)
+        , durationMinutes(durationMinutes)
     {
         log::info("Room '{}' (ID: {}) created with max players: {} by session {}",
                   _name, _id, _maxPlayers, creatorSessionId);
@@ -218,6 +233,21 @@ namespace rtp::server
     float Room::getSpeed() const
     {
         return _speed;
+    }
+
+    uint32_t Room::getLevelId() const
+    {
+        return _levelId;
+    }
+
+    uint32_t Room::getSeed() const
+    {
+        return _seed;
+    }
+
+    uint32_t Room::getDurationMinutes() const
+    {
+        return durationMinutes;
     }
 
     Room::PlayerType Room::getPlayerType(uint32_t sessionId) const

@@ -27,13 +27,22 @@ namespace rtp::server
             _registry.zipView<rtp::ecs::components::Transform,
                               rtp::ecs::components::Velocity,
                               rtp::ecs::components::server::InputComponent,
-                              rtp::ecs::components::EntityType>();
+                              rtp::ecs::components::EntityType,
+                              rtp::ecs::components::MovementSpeed>();
 
-        constexpr float speed = 200.f;
-
-        for (auto &&[tf, vel, input, type] : view) {
+        for (auto &&[tf, vel, input, type, speed] : view) {
             if (type.type != rtp::net::EntityType::Player)
                 continue;
+
+            if (speed.boostRemaining > 0.0f) {
+                speed.boostRemaining -= dt;
+                if (speed.boostRemaining <= 0.0f) {
+                    speed.boostRemaining = 0.0f;
+                    speed.multiplier = 1.0f;
+                }
+            }
+
+            const float finalSpeed = speed.baseSpeed * speed.multiplier;
 
             float dx = 0.f, dy = 0.f;
             using Bits =
@@ -54,8 +63,19 @@ namespace rtp::server
                 dy /= len;
             }
 
-            vel.direction.x = dx * speed;
-            vel.direction.y = dy * speed;
+            const float targetX = dx * finalSpeed;
+            const float targetY = dy * finalSpeed;
+
+            constexpr float accel = 8.0f;
+            constexpr float decel = 10.0f;
+
+            if (dx != 0.f || dy != 0.f) {
+                vel.direction.x += (targetX - vel.direction.x) * accel * dt;
+                vel.direction.y += (targetY - vel.direction.y) * accel * dt;
+            } else {
+                vel.direction.x += (0.0f - vel.direction.x) * decel * dt;
+                vel.direction.y += (0.0f - vel.direction.y) * decel * dt;
+            }
         }
     }
 } // namespace rtp::server

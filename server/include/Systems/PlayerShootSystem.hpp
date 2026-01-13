@@ -19,6 +19,8 @@
     #include "RType/ECS/Components/RoomId.hpp"
     #include "RType/ECS/Components/SimpleWeapon.hpp"
     #include "RType/ECS/Components/Ammo.hpp"
+    #include "RType/ECS/Components/BoundingBox.hpp"
+    #include "RType/ECS/Components/Damage.hpp"
 
     #include "Systems/RoomSystem.hpp"
     #include "Systems/NetworkSyncSystem.hpp"
@@ -34,24 +36,45 @@ namespace rtp::server {
      */
     class PlayerShootSystem : public rtp::ecs::ISystem {
         public:
+            /**
+             * @brief Constructor for PlayerShootSystem
+             * @param registry Reference to the entity registry
+             * @param roomSystem Reference to the RoomSystem
+             * @param networkSync Reference to the NetworkSyncSystem
+             */
             PlayerShootSystem(rtp::ecs::Registry& registry,
                               RoomSystem& roomSystem,
                               NetworkSyncSystem& networkSync);
 
+            /**
+             * @brief Update player shoot system logic for one frame
+             * @param dt Time elapsed since last update in seconds
+             */
             void update(float dt) override;
 
         private:
+            /**
+             * @brief Spawn a bullet entity based on the player's transform and room ID
+             * @param tf Transform component of the player
+             * @param roomId RoomId component of the player
+             */
             void spawnBullet(const rtp::ecs::components::Transform& tf,
                              const rtp::ecs::components::RoomId& roomId);
+
+            /**
+             * @brief Send an ammo update to the client for a specific network ID
+             * @param netId Network ID of the entity
+             * @param ammo Ammo component to send
+             */
             void sendAmmoUpdate(uint32_t netId, const rtp::ecs::components::Ammo& ammo);
 
         private:
-            rtp::ecs::Registry& _registry;
-            RoomSystem& _roomSystem;
-            NetworkSyncSystem& _networkSync;
+            rtp::ecs::Registry& _registry;      /**< Reference to the entity registry */
+            RoomSystem& _roomSystem;            /**< Reference to the RoomSystem */
+            NetworkSyncSystem& _networkSync;    /**< Reference to the NetworkSyncSystem */
 
-            float _bulletSpeed = 500.0f;
-            float _spawnOffsetX = 20.0f;
+            float _bulletSpeed = 500.0f;        /**< Speed of the spawned bullets */
+            float _spawnOffsetX = 20.0f;        /**< X offset for bullet spawn position */
     };
 }
 

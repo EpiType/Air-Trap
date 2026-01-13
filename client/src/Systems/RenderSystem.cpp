@@ -76,6 +76,31 @@ void RenderSystem::update(float dt)
             _window.draw(box);
         }
     }
+
+    auto obstacleView = _r.zipView<
+        rtp::ecs::components::Transform,
+        rtp::ecs::components::BoundingBox,
+        rtp::ecs::components::EntityType
+    >();
+
+    for (auto&& [trans, box, type] : obstacleView) {
+        if (type.type != rtp::net::EntityType::Obstacle &&
+            type.type != rtp::net::EntityType::ObstacleSolid) {
+            continue;
+        }
+
+        sf::RectangleShape rect({box.width, box.height});
+        rect.setPosition({trans.position.x, trans.position.y});
+        if (type.type == rtp::net::EntityType::ObstacleSolid) {
+            rect.setFillColor(sf::Color(40, 40, 40, 220));
+            rect.setOutlineColor(sf::Color(90, 90, 90, 240));
+        } else {
+            rect.setFillColor(sf::Color(60, 60, 60, 180));
+            rect.setOutlineColor(sf::Color(120, 120, 120, 220));
+        }
+        rect.setOutlineThickness(1.0f);
+        _window.draw(rect);
+    }
 }
 
 } // namespace rtp::client

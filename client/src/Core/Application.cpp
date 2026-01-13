@@ -114,6 +114,8 @@ namespace rtp::client
         _worldRegistry.registerComponent<rtp::ecs::components::Animation>();
         _worldRegistry.registerComponent<rtp::ecs::components::ParallaxLayer>();
         _worldRegistry.registerComponent<rtp::ecs::components::NetworkId>();
+        _worldRegistry.registerComponent<rtp::ecs::components::EntityType>();
+        _worldRegistry.registerComponent<rtp::ecs::components::BoundingBox>();
         rtp::log::info("OK : World ECS initialized with components");
     }
 

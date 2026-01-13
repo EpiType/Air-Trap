@@ -22,6 +22,8 @@
     /* ECS Components */
     #include "RType/ECS/Components/Transform.hpp"
     #include "RType/ECS/Components/Sprite.hpp"
+    #include "RType/ECS/Components/BoundingBox.hpp"
+    #include "RType/ECS/Components/EntityType.hpp"
 
 namespace rtp::client {
 

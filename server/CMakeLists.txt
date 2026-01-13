@@ -12,6 +12,7 @@ add_executable(r-type_server
     src/Game/GameManager.cpp
     src/Game/Player.cpp
     src/Game/Room.cpp
+    src/Game/LevelData.cpp
     src/Systems/MovementSystem.cpp
     src/Systems/NetworkSyncSystem.cpp
     src/Systems/AuthSystem.cpp
@@ -20,6 +21,11 @@ add_executable(r-type_server
     src/Systems/EntitySystem.cpp
     src/Systems/PlayerMouvementSystem.cpp
     src/Systems/PlayerShootSystem.cpp
+    src/Systems/EnemyAISystem.cpp
+    src/Systems/EnemyShootSystem.cpp
+    src/Systems/LevelSystem.cpp
+    src/Systems/CollisionSystem.cpp
+    src/Systems/BulletCleanupSystem.cpp
 )
 
 target_include_directories(r-type_server PRIVATE
