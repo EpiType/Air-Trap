@@ -52,21 +52,10 @@ namespace rtp::ecs
 
             template <Component T, typename Self>
             [[nodiscard]]
-            auto registerComponent(this Self &self)
+            auto subscribe(this Self &self)
                 -> std::expected<std::reference_wrapper<ConstLike<Self,
                                                                   SparseArray<T>>>,
                                  rtp::Error>;
-
-            template <Component T, typename Self>
-            [[nodiscard]]
-            auto getComponents(this Self &self)
-                -> std::expected<std::reference_wrapper<ConstLike<Self,
-                                                                  SparseArray<T>>>,
-                                 rtp::Error>;
-
-            template <Component T, typename... Args>
-            [[nodiscard]]
-            auto addComponent(Entity entity, Args &&...args);
 
             [[nodiscard]]
             bool isAlive(Entity entity) const noexcept;
