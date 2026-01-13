@@ -14,6 +14,7 @@
 #include "RType/ECS/Components/EntityType.hpp"
 #include "RType/Network/Packet.hpp"
 #include "Game/EntityBuilder.hpp"
+#include "Utils/DebugFlags.hpp"
 
 #include <chrono>
 
@@ -209,6 +210,13 @@ namespace rtp::client {
         return _pingMs;
     }
 
+    bool NetworkSyncSystem::consumeKicked(void)
+    {
+        const bool kicked = _kicked;
+        _kicked = false;
+        return kicked;
+    }
+
     std::string NetworkSyncSystem::getLastChatMessage(void) const
     {
         return _lastChatMessage;
@@ -279,6 +287,17 @@ namespace rtp::client {
             }
             case OpCode::Pong: {
                 onPong(event.packet);
+                break;
+            }
+            case OpCode::DebugModeUpdate: {
+                onDebugModeUpdate(event.packet);
+                break;
+            }
+            case OpCode::Kicked: {
+                _kicked = true;
+                _currentState = State::InLobby;
+                _lastChatMessage.clear();
+                _chatHistory.clear();
                 break;
             }
             default:
@@ -542,5 +561,12 @@ namespace rtp::client {
         if (ms >= static_cast<int64_t>(payload.clientTimeMs)) {
             _pingMs = static_cast<uint32_t>(ms - payload.clientTimeMs);
         }
+    }
+
+    void NetworkSyncSystem::onDebugModeUpdate(rtp::net::Packet& packet)
+    {
+        rtp::net::DebugModePayload payload{};
+        packet >> payload;
+        rtp::client::g_drawDebugBounds = (payload.enabled != 0);
     }
 } // namespace rtp::client

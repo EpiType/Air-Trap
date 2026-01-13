@@ -67,7 +67,10 @@ namespace rtp::server
         {
             std::lock_guard lock(_mutex);
 
-            if (type == PlayerType::Player && _players.size() >= _maxPlayers) {
+            if (_bannedUsers.find(player->getUsername()) != _bannedUsers.end()) {
+                log::warning("Player {} cannot join Room '{}' (ID: {}): banned",
+                            player->getUsername(), _name, _id);
+            } else if (type == PlayerType::Player && _players.size() >= _maxPlayers) {
                 log::warning("Player {} cannot join Room '{}' (ID: {}): Room is full",
                             player->getUsername(), _name, _id);
             } else if (type == PlayerType::Player && _state != State::Waiting) {
@@ -171,6 +174,18 @@ namespace rtp::server
         for (uint32_t sid : sessions) {
             _network.sendPacketToSession(sid, packet, rtp::net::NetworkMode::TCP);
         }
+    }
+
+    void Room::banUser(const std::string &username)
+    {
+        std::lock_guard lock(_mutex);
+        _bannedUsers.insert(username);
+    }
+
+    bool Room::isBanned(const std::string &username) const
+    {
+        std::lock_guard lock(_mutex);
+        return _bannedUsers.find(username) != _bannedUsers.end();
     }
 
     const std::list<PlayerPtr> Room::getPlayers(void) const

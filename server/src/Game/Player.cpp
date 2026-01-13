@@ -95,4 +95,16 @@ namespace rtp::server
         std::lock_guard lock(_mutex);
         return _entityId;
     }
+
+    void Player::setMuted(bool muted)
+    {
+        std::lock_guard lock(_mutex);
+        _isMuted = muted;
+    }
+
+    bool Player::isMuted() const
+    {
+        std::lock_guard lock(_mutex);
+        return _isMuted;
+    }
 } // namespace rtp::server

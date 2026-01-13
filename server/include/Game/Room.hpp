@@ -16,6 +16,7 @@
     #include <memory>
     #include <list>
     #include <algorithm>
+    #include <unordered_set>
     #include "RType/Network/Packet.hpp"
     #include "Systems/NetworkSyncSystem.hpp"
     #include "RType/ECS/Registry.hpp"
@@ -189,6 +190,9 @@ namespace rtp::server
              */
             void broadcastRoomState(uint32_t serverTick);
 
+            void banUser(const std::string &username);
+            bool isBanned(const std::string &username) const;
+
         private:
             void broadcastSystemMessage(const std::string &message);
             NetworkSyncSystem _network;       /**< Reference to the server network manager */
@@ -216,6 +220,7 @@ namespace rtp::server
 
             uint32_t _currentTimeSeconds;     /**< Current time in seconds since the game started */
             mutable std::mutex _mutex;        /**< Mutex to protect access to room state */
+            std::unordered_set<std::string> _bannedUsers; /**< Banned usernames */
     };
 } // namespace rtp::server
 

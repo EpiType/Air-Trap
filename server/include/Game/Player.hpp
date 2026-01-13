@@ -123,6 +123,9 @@ namespace rtp::server
              */
             uint32_t getEntityId() const;
 
+            void setMuted(bool muted);
+            bool isMuted() const;
+
         private:
             uint32_t _sessionId;         /**< Unique player identifier */
             std::string _username;       /**< Player username */

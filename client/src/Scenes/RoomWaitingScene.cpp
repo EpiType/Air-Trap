@@ -129,6 +129,10 @@ namespace rtp::client {
         void RoomWaitingScene::update(float dt)
         {
             (void)dt;
+            if (_network.consumeKicked()) {
+                _changeState(GameState::Menu);
+                return;
+            }
             if (_network.isInGame()) {
                 _changeState(GameState::Playing);
             }

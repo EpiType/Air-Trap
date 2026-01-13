@@ -63,4 +63,14 @@ namespace rtp::server {
         }
         return nullptr;
     }
+
+    PlayerPtr PlayerSystem::getPlayerByUsername(const std::string& username) const
+    {
+        for (const auto& [sid, player] : _players) {
+            if (player && player->getUsername() == username) {
+                return player;
+            }
+        }
+        return nullptr;
+    }
 } // namespace rtp::server

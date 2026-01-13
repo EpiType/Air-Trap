@@ -45,7 +45,7 @@ namespace rtp::client {
             _chatCompactPanel = _uiFactory.createButton(
                 _uiRegistry,
                 {30.0f, 15.0f},
-                {680.0f, 40.0f},
+                {715.0f, 40.0f},
                 "",
                 nullptr
             );
@@ -133,6 +133,10 @@ namespace rtp::client {
 
         void PlayingScene::update(float dt)
         {
+            if (_network.consumeKicked()) {
+                _changeState(GameState::Menu);
+                return;
+            }
             if (!_hudInit) return;
 
             _fpsTimer += dt;
@@ -238,7 +242,7 @@ namespace rtp::client {
             _chatPanel = _uiFactory.createButton(
                 _uiRegistry,
                 {30.0f, 60.0f},
-                {680.0f, 220.0f},
+                {715.0f, 220.0f},
                 "",
                 nullptr
             );
@@ -265,7 +269,7 @@ namespace rtp::client {
             _chatInput = _uiFactory.createTextInput(
                 _uiRegistry,
                 {45.0f, 235.0f},
-                {640.0f, 30.0f},
+                {685.0f, 30.0f},
                 "assets/fonts/main.ttf",
                 18,
                 120,

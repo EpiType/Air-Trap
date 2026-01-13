@@ -467,6 +467,20 @@ namespace rtp::net
         return *this;
     }
 
+    template <>
+    inline auto Packet::operator<<(DebugModePayload data) -> Packet &
+    {
+        *this << data.enabled;
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator>>(DebugModePayload &data) -> Packet &
+    {
+        *this >> data.enabled;
+        return *this;
+    }
+
     // template <>
     // inline auto Packet::operator<<(WorldSnapshotPayload data) -> Packet &
     // {

@@ -68,6 +68,13 @@ namespace rtp::server {
              */
             PlayerPtr getPlayer(uint32_t sessionId) const;
 
+            /**
+             * @brief Get a player by their username
+             * @param username Username to look up
+             * @return Shared pointer to the Player, or nullptr if not found
+             */
+            PlayerPtr getPlayerByUsername(const std::string& username) const;
+
         private:
             ServerNetwork& _network;                  /**< Reference to the server network manager */
             rtp::ecs::Registry& _registry;            /**< Reference to the entity registry */
