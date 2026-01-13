@@ -5,29 +5,17 @@
  * Date   : 11/12/2025
  */
 
-#include "SystemManager.hpp"
-#include "RType/Logger.hpp"
-#include <type_traits>
-
 namespace rtp::ecs
 {
-    template <typename T, typename... Args>
-    T& SystemManager::addSystem(Args&&... args) {
+    template <System T, typename... Args>
+    T &SystemManager::add(Args &&...args)
+    {
+        auto typeName = std::type_index(typeid(T));
         auto system = std::make_unique<T>(std::forward<Args>(args)...);
-        
-        auto& ref = *system;
-        _systems[std::type_index(typeid(T))] = std::move(system);
+        this->_signatures[typeName] = T::getRequiredSignature();
+
+        auto &ref = *system;
+        this->_systems[typeName] = std::move(system);
         return ref;
     }
-    
-    template <typename T>
-    auto SystemManager::getSystem(void) -> T &
-    {
-        auto it = _systems.find(std::type_index(typeid(T)));
-        if (it == _systems.end()) {
-            throw std::runtime_error("System not found");
-        }
-
-        return *static_cast<T*>(it->second.get());
-    }
-} // namespace rtp::ecs
+}
