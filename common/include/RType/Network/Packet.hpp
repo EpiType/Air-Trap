@@ -110,7 +110,9 @@ namespace rtp::net
         EntityDeath = 0x22,             /**< Entity death notification */
         AmmoUpdate = 0x23,              /**< Ammo update notification */
         Ping = 0x24,                    /**< Ping request */
-        Pong = 0x25                     /**< Ping response */
+        Pong = 0x25,                    /**< Ping response */
+        DebugModeUpdate = 0x26,         /**< Debug mode toggle */
+        Kicked = 0x27                   /**< Player kicked notification */
     };
 
     #pragma pack(push, 1)
@@ -356,6 +358,16 @@ namespace rtp::net
      */
     struct PingPayload {
         uint64_t clientTimeMs;          /**< Client timestamp in ms */
+    };
+
+    /**
+     * @struct DebugModePayload
+     * @brief Debug mode toggle data
+     * @callergraph Server
+     * @related DebugModeUpdate OpCode
+     */
+    struct DebugModePayload {
+        uint8_t enabled;                /**< 1 if debug mode enabled */
     };
 
     #pragma pack(pop)

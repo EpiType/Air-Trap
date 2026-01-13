@@ -6,6 +6,7 @@
  */
 
 #include "Systems/RenderSystem.hpp"
+#include "Utils/DebugFlags.hpp"
 
 namespace rtp::client {
 
@@ -65,6 +66,15 @@ void RenderSystem::update(float dt)
 
     for (const auto &item : itemsToDraw) {
         _window.draw(item.sprite);
+        if (rtp::client::g_drawDebugBounds) {
+            sf::FloatRect bounds = item.sprite.getGlobalBounds();
+            sf::RectangleShape box({bounds.size.x, bounds.size.y});
+            box.setPosition({bounds.position.x, bounds.position.y});
+            box.setFillColor(sf::Color::Transparent);
+            box.setOutlineColor(sf::Color(255, 80, 80, 200));
+            box.setOutlineThickness(1.0f);
+            _window.draw(box);
+        }
     }
 }
 

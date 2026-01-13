@@ -164,6 +164,10 @@ namespace rtp::server
             void handlePacket(uint32_t sessionId, const net::Packet &packet);
             void handlePing(uint32_t sessionId, const net::Packet &packet);
 
+            bool handleChatCommand(PlayerPtr player, const std::string& message);
+            void sendChatToSession(uint32_t sessionId, const std::string& message);
+            void sendSystemMessageToRoom(uint32_t roomId, const std::string& message);
+
             void sendEntitySpawnToSessions(const rtp::ecs::Entity& entity,
                                            const std::vector<uint32_t>& sessions);
             void sendRoomEntitySpawnsToSession(uint32_t roomId, uint32_t sessionId);
@@ -184,6 +188,8 @@ namespace rtp::server
 
             uint32_t _serverTick = 0;                                  /**< Current server tick for synchronization */
             mutable std::mutex _mutex;                                 /**< Mutex for thread-safe operations */
+            bool _gamePaused = false;                                  /**< Global game pause flag */
+            float _gameSpeed = 1.0f;                                   /**< Global game speed multiplier */
     };
 }
 

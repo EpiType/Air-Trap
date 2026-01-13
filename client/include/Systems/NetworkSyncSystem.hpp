@@ -184,6 +184,7 @@ namespace rtp::client {
             bool isReloading(void) const;
             float getReloadCooldownRemaining(void) const;
             uint32_t getPingMs(void) const;
+            bool consumeKicked(void);
 
         private:
             ClientNetwork& _network;                                       /**< Reference to the client network manager */
@@ -209,6 +210,7 @@ namespace rtp::client {
             uint32_t _pingMs = 0;                                          /**< Latest ping in ms */
             float _pingTimer = 0.0f;                                       /**< Ping timer accumulator */
             float _pingInterval = 1.0f;                                    /**< Ping interval in seconds */
+            bool _kicked = false;                                          /**< Kicked flag */
         
         private:
             /**
@@ -240,6 +242,8 @@ namespace rtp::client {
             void onAmmoUpdate(rtp::net::Packet& packet);
 
             void onPong(rtp::net::Packet& packet);
+
+            void onDebugModeUpdate(rtp::net::Packet& packet);
 
             // /**
             //  * @brief Disconnect a player based on session ID

@@ -8,6 +8,7 @@
 #include "Game/GameManager.hpp"
 #include "RType/ECS/Components/RoomId.hpp"
 
+#include <cctype>
 #include <cstring>
 
 using namespace rtp::net;
@@ -91,10 +92,13 @@ namespace rtp::server
             processNetworkEvents();
 
             _serverTick++;
-            _roomSystem->update(dt);
-            _playerMouvementSystem->update(dt);
-            _playerShootSystem->update(dt);
-            _movementSystem->update(dt);
+            if (!_gamePaused) {
+                const float scaledDt = dt * _gameSpeed;
+                _roomSystem->update(scaledDt);
+                _playerMouvementSystem->update(scaledDt);
+                _playerShootSystem->update(scaledDt);
+                _movementSystem->update(scaledDt);
+            }
             std::this_thread::sleep_for(std::chrono::milliseconds(16));
         }
     }
@@ -336,6 +340,14 @@ namespace rtp::server
         if (!room)
             return;
 
+        const std::string message(payload.message);
+        if (handleChatCommand(player, message)) {
+            return;
+        }
+        if (player->isMuted()) {
+            return;
+        }
+
         rtp::net::RoomChatReceivedPayload chatPayload{};
         chatPayload.sessionId = sessionId;
         const std::string username = player->getUsername();
@@ -369,6 +381,159 @@ namespace rtp::server
         rtp::net::Packet response(rtp::net::OpCode::Pong);
         response << payload;
         _networkManager.sendPacket(sessionId, response, rtp::net::NetworkMode::UDP);
+    }
+
+    bool GameManager::handleChatCommand(PlayerPtr player, const std::string& message)
+    {
+        if (message.empty() || message[0] != '/')
+            return false;
+
+        const uint32_t roomId = player->getRoomId();
+        if (roomId == 0)
+            return true;
+
+        auto room = _roomSystem->getRoom(roomId);
+        if (!room)
+            return true;
+
+        auto toLower = [](std::string s) {
+            for (char &c : s) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+            return s;
+        };
+
+        const std::string msg = message;
+        const std::string cmd = toLower(msg.substr(0, msg.find(' ')));
+        const std::string arg = msg.find(' ') == std::string::npos
+            ? ""
+            : msg.substr(msg.find(' ') + 1);
+
+        if (cmd == "/help") {
+            sendChatToSession(player->getId(), "Commands: /help, /kick <name>, /ban <name>, /mute <name>,");
+            sendChatToSession(player->getId(), "/stop, /run, /speed <float>, /debug <true|false>");
+            sendChatToSession(player->getId(), "Examples: /speed 0.5 | /debug true | /kick player1");
+            return true;
+        }
+
+        if (cmd == "/stop") {
+            _gamePaused = true;
+            sendSystemMessageToRoom(roomId, "Game paused");
+            return true;
+        }
+        if (cmd == "/run") {
+            _gamePaused = false;
+            sendSystemMessageToRoom(roomId, "Game resumed");
+            return true;
+        }
+        if (cmd == "/speed") {
+            if (arg.empty()) {
+                sendChatToSession(player->getId(), "Usage: /speed <float>");
+                return true;
+            }
+            try {
+                float v = std::stof(arg);
+                if (v < 0.1f) v = 0.1f;
+                if (v > 4.0f) v = 4.0f;
+                _gameSpeed = v;
+                sendSystemMessageToRoom(roomId, "Game speed set to " + std::to_string(v));
+            } catch (...) {
+                sendChatToSession(player->getId(), "Invalid speed value");
+            }
+            return true;
+        }
+        if (cmd == "/debug") {
+            const std::string v = toLower(arg);
+            if (v != "true" && v != "false") {
+                sendChatToSession(player->getId(), "Usage: /debug <true|false>");
+                return true;
+            }
+            const bool enabled = (v == "true");
+            rtp::net::Packet packet(rtp::net::OpCode::DebugModeUpdate);
+            rtp::net::DebugModePayload payload{ static_cast<uint8_t>(enabled ? 1 : 0) };
+            packet << payload;
+            const auto players = room->getPlayers();
+            for (const auto& p : players) {
+                _networkManager.sendPacket(p->getId(), packet, rtp::net::NetworkMode::TCP);
+            }
+            sendSystemMessageToRoom(roomId, std::string("Debug mode ") + (enabled ? "enabled" : "disabled"));
+            return true;
+        }
+
+        if (cmd == "/kick" || cmd == "/mute" || cmd == "/ban") {
+            if (arg.empty()) {
+                sendChatToSession(player->getId(), std::string("Usage: ") + cmd + " <name>");
+                return true;
+            }
+            PlayerPtr target = _playerSystem->getPlayerByUsername(arg);
+            if (!target || target->getRoomId() != roomId) {
+                sendChatToSession(player->getId(), "Player not found in room");
+                return true;
+            }
+            if (cmd == "/kick") {
+                _roomSystem->leaveRoom(target);
+                rtp::net::Packet response(rtp::net::OpCode::LeaveRoom);
+                response << static_cast<uint8_t>(1);
+                _networkManager.sendPacket(target->getId(), response, rtp::net::NetworkMode::TCP);
+                rtp::net::Packet kickedPacket(rtp::net::OpCode::Kicked);
+                _networkManager.sendPacket(target->getId(), kickedPacket, rtp::net::NetworkMode::TCP);
+                sendSystemMessageToRoom(roomId, target->getUsername() + " has been kicked");
+                return true;
+            }
+            if (cmd == "/ban") {
+                room->banUser(arg);
+                _roomSystem->leaveRoom(target);
+                rtp::net::Packet response(rtp::net::OpCode::LeaveRoom);
+                response << static_cast<uint8_t>(1);
+                _networkManager.sendPacket(target->getId(), response, rtp::net::NetworkMode::TCP);
+                rtp::net::Packet kickedPacket(rtp::net::OpCode::Kicked);
+                _networkManager.sendPacket(target->getId(), kickedPacket, rtp::net::NetworkMode::TCP);
+                sendSystemMessageToRoom(roomId, target->getUsername() + " has been banned");
+                return true;
+            }
+            if (cmd == "/mute") {
+                const bool newMuted = !target->isMuted();
+                target->setMuted(newMuted);
+                sendSystemMessageToRoom(roomId,
+                    target->getUsername() + (newMuted ? " has been muted" : " has been unmuted"));
+                return true;
+            }
+        }
+
+        sendChatToSession(player->getId(), "Unknown command. Use /help");
+        return true;
+    }
+
+    void GameManager::sendChatToSession(uint32_t sessionId, const std::string& message)
+    {
+        rtp::net::RoomChatReceivedPayload payload{};
+        payload.sessionId = 0;
+        payload.username[0] = '\0';
+        std::strncpy(payload.message, message.c_str(), sizeof(payload.message) - 1);
+        payload.message[sizeof(payload.message) - 1] = '\0';
+
+        rtp::net::Packet packet(rtp::net::OpCode::RoomChatReceived);
+        packet << payload;
+        _networkManager.sendPacket(sessionId, packet, rtp::net::NetworkMode::TCP);
+    }
+
+    void GameManager::sendSystemMessageToRoom(uint32_t roomId, const std::string& message)
+    {
+        auto room = _roomSystem->getRoom(roomId);
+        if (!room)
+            return;
+        const auto players = room->getPlayers();
+
+        rtp::net::RoomChatReceivedPayload payload{};
+        payload.sessionId = 0;
+        payload.username[0] = '\0';
+        std::strncpy(payload.message, message.c_str(), sizeof(payload.message) - 1);
+        payload.message[sizeof(payload.message) - 1] = '\0';
+
+        rtp::net::Packet packet(rtp::net::OpCode::RoomChatReceived);
+        packet << payload;
+
+        for (const auto& p : players) {
+            _networkManager.sendPacket(p->getId(), packet, rtp::net::NetworkMode::TCP);
+        }
     }
 
     void GameManager::sendEntitySpawnToSessions(const rtp::ecs::Entity& entity,

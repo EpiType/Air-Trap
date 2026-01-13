@@ -83,6 +83,18 @@ namespace rtp::server
 
             room = it->second;
 
+            if (room->isBanned(player->getUsername())) {
+                log::error(
+                    "Failed to join Player {} to Room ID {}. Player is banned.",
+                    player->getId(), roomId);
+                if (room->getType() != Room::RoomType::Lobby) {
+                    rtp::net::Packet response(rtp::net::OpCode::JoinRoom);
+                    response << static_cast<uint8_t>(0);
+                    _network.sendPacket(player->getId(), response, rtp::net::NetworkMode::TCP);
+                }
+                return false;
+            }
+
             if (!asSpectator && room->getState() != Room::State::Waiting) {
                 log::error(
                     "Failed to join Player {} to Room ID {}. Game already started.",
