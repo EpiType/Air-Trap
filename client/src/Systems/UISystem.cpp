@@ -8,12 +8,16 @@
 #include "Systems/UISystem.hpp"
 
 #include "RType/Logger.hpp"
+#include <SFML/Window/Joystick.hpp>
+#include <cmath>
 
 namespace rtp::client
 {
     void UISystem::update(float dt)
     {
-        (void)dt;
+        // Handle gamepad cursor movement
+        updateGamepadCursor(dt);
+        handleGamepadInput();
 
         auto buttonsCheck =
             _registry.getComponents<rtp::ecs::components::ui::Button>();
@@ -21,9 +25,12 @@ namespace rtp::client
             return;
         }
 
-        sf::Vector2i mousePos = sf::Mouse::getPosition(_window);
+        // Use gamepad cursor if in gamepad mode, otherwise mouse
+        sf::Vector2i cursorPos = _gamepadMode 
+            ? sf::Vector2i(static_cast<int>(_gamepadCursorPos.x), static_cast<int>(_gamepadCursorPos.y))
+            : sf::Mouse::getPosition(_window);
 
-        handleMouseMove(mousePos);
+        handleMouseMove(cursorPos);
 
         buttonsCheck =
             _registry.getComponents<rtp::ecs::components::ui::Button>();
@@ -35,7 +42,7 @@ namespace rtp::client
         bool isPressed = sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
 
         if (isPressed && !wasPressed) {
-            handleMouseClick(mousePos);
+            handleMouseClick(cursorPos);
         }
 
         wasPressed = isPressed;
@@ -482,6 +489,97 @@ namespace rtp::client
                 return;
             }
         }
+    }
+
+    void UISystem::updateGamepadCursor(float dt)
+    {
+        if (!_settings.getGamepadEnabled() || !sf::Joystick::isConnected(0))
+            return;
+
+        float deadzone = _settings.getGamepadDeadzone();
+        float speed = _settings.getGamepadCursorSpeed() * 200.0f * dt;
+
+        // Read left stick
+        float axisX = sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::X);
+        float axisY = sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::Y);
+
+        // If stick is being used, enable gamepad mode
+        if (std::abs(axisX) > deadzone || std::abs(axisY) > deadzone) {
+            _gamepadMode = true;
+            
+            if (std::abs(axisX) > deadzone)
+                _gamepadCursorPos.x += (axisX / 100.0f) * speed;
+            if (std::abs(axisY) > deadzone)
+                _gamepadCursorPos.y += (axisY / 100.0f) * speed;
+        }
+
+        // D-pad alternative
+        float povX = sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::PovX);
+        float povY = sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::PovY);
+        
+        if (std::abs(povX) > 50 || std::abs(povY) > 50) {
+            _gamepadMode = true;
+            
+            if (povX < -50)
+                _gamepadCursorPos.x -= speed * 2.0f;
+            if (povX > 50)
+                _gamepadCursorPos.x += speed * 2.0f;
+            if (povY > 50)
+                _gamepadCursorPos.y -= speed * 2.0f;
+            if (povY < -50)
+                _gamepadCursorPos.y += speed * 2.0f;
+        }
+
+        // Clamp to window bounds
+        _gamepadCursorPos.x = std::clamp(_gamepadCursorPos.x, 0.0f, static_cast<float>(_window.getSize().x));
+        _gamepadCursorPos.y = std::clamp(_gamepadCursorPos.y, 0.0f, static_cast<float>(_window.getSize().y));
+
+        // If mouse moves, disable gamepad mode
+        static sf::Vector2i lastMousePos = sf::Mouse::getPosition(_window);
+        sf::Vector2i currentMousePos = sf::Mouse::getPosition(_window);
+        if (currentMousePos != lastMousePos) {
+            _gamepadMode = false;
+        }
+        lastMousePos = currentMousePos;
+    }
+
+    void UISystem::handleGamepadInput()
+    {
+        if (!_settings.getGamepadEnabled() || !sf::Joystick::isConnected(0) || !_gamepadMode)
+            return;
+
+        // Check validate button (A button by default)
+        static bool wasValidatePressed = false;
+        bool isValidatePressed = sf::Joystick::isButtonPressed(0, _settings.getGamepadValidateButton());
+
+        if (isValidatePressed && !wasValidatePressed) {
+            // Simulate a mouse click at gamepad cursor position
+            sf::Vector2i clickPos(static_cast<int>(_gamepadCursorPos.x), static_cast<int>(_gamepadCursorPos.y));
+            handleMouseClick(clickPos);
+        }
+
+        wasValidatePressed = isValidatePressed;
+    }
+
+    void UISystem::renderGamepadCursor(sf::RenderWindow& window)
+    {
+        if (!_gamepadMode || !_settings.getGamepadEnabled())
+            return;
+
+        // Draw a circle cursor
+        sf::CircleShape cursor(12.0f);
+        cursor.setPosition({_gamepadCursorPos.x - 12.0f, _gamepadCursorPos.y - 12.0f});
+        cursor.setFillColor(sf::Color(0, 0, 0, 0));
+        cursor.setOutlineThickness(3.0f);
+        cursor.setOutlineColor(sf::Color(255, 200, 100));
+
+        // Inner dot
+        sf::CircleShape dot(4.0f);
+        dot.setPosition({_gamepadCursorPos.x - 4.0f, _gamepadCursorPos.y - 4.0f});
+        dot.setFillColor(sf::Color(255, 200, 100));
+
+        window.draw(cursor);
+        window.draw(dot);
     }
 
 } // namespace Client::Systems

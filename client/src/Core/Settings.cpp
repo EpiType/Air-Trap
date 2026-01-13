@@ -259,6 +259,15 @@ bool Settings::save(const std::string& filename) {
         
         file << "difficulty=" << static_cast<int>(_difficulty) << "\n";
         
+        // Gamepad
+        file << "gamepad_enabled=" << (_gamepadEnabled ? 1 : 0) << "\n";
+        file << "gamepad_deadzone=" << _gamepadDeadzone << "\n";
+        file << "gamepad_shoot_button=" << _gamepadShootButton << "\n";
+        file << "gamepad_reload_button=" << _gamepadReloadButton << "\n";
+        file << "gamepad_validate_button=" << _gamepadValidateButton << "\n";
+        file << "gamepad_cursor_speed=" << _gamepadCursorSpeed << "\n";
+        file << "gamepad_pause_button=" << _gamepadPauseButton << "\n";
+        
         for (const auto& [action, key] : _keyBindings) {
             file << "key_" << static_cast<int>(action) << "=" << static_cast<int>(key) << "\n";
         }
@@ -297,6 +306,20 @@ bool Settings::save(const std::string& filename) {
                     _highContrast = (std::stoi(value) != 0);
                 } else if (key == "difficulty") {
                     _difficulty = static_cast<Difficulty>(std::stoi(value));
+                } else if (key == "gamepad_enabled") {
+                    _gamepadEnabled = (std::stoi(value) != 0);
+                } else if (key == "gamepad_deadzone") {
+                    _gamepadDeadzone = std::stof(value);
+                } else if (key == "gamepad_shoot_button") {
+                    _gamepadShootButton = std::stoi(value);
+                } else if (key == "gamepad_reload_button") {
+                    _gamepadReloadButton = std::stoi(value);
+                } else if (key == "gamepad_validate_button") {
+                    _gamepadValidateButton = std::stoi(value);
+                } else if (key == "gamepad_cursor_speed") {
+                    _gamepadCursorSpeed = std::stof(value);
+                } else if (key == "gamepad_pause_button") {
+                    _gamepadPauseButton = std::stoi(value);
                 } else if (key.find("key_") == 0) {
                     int actionId = std::stoi(key.substr(4));
                     int keyCode = std::stoi(value);

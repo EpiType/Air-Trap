@@ -39,7 +39,7 @@ namespace rtp::client {
 
             _uiFactory.createText(
                 _uiRegistry,
-                {500.0f, 30.0f},
+                {540.0f, 30.0f},
                 _translationManager.get("settings.title"),
                 "assets/fonts/main.ttf",
                 50,
@@ -49,7 +49,7 @@ namespace rtp::client {
 
             _uiFactory.createText(
                 _uiRegistry,
-                {200.0f, yPos},
+                {240.0f, yPos},
                 _translationManager.get("settings.master_volume"),
                 "assets/fonts/main.ttf",
                 22
@@ -57,7 +57,7 @@ namespace rtp::client {
 
             _uiFactory.createSlider(
                 _uiRegistry,
-                {450.0f, yPos + 5.0f},
+                {540.0f, yPos + 3.0f},
                 {300.0f, 15.0f},
                 0.0f,
                 1.0f,
@@ -71,7 +71,7 @@ namespace rtp::client {
 
             _uiFactory.createText(
                 _uiRegistry,
-                {200.0f, yPos},
+                {240.0f, yPos},
                 _translationManager.get("settings.music_volume"),
                 "assets/fonts/main.ttf",
                 22
@@ -79,7 +79,7 @@ namespace rtp::client {
 
             _uiFactory.createSlider(
                 _uiRegistry,
-                {450.0f, yPos + 5.0f},
+                {540.0f, yPos + 3.0f},
                 {300.0f, 15.0f},
                 0.0f,
                 1.0f,
@@ -93,7 +93,7 @@ namespace rtp::client {
 
             _uiFactory.createText(
                 _uiRegistry,
-                {200.0f, yPos},
+                {290.0f, yPos},
                 _translationManager.get("settings.sfx_volume"),
                 "assets/fonts/main.ttf",
                 22
@@ -101,7 +101,7 @@ namespace rtp::client {
 
             _uiFactory.createSlider(
                 _uiRegistry,
-                {450.0f, yPos + 5.0f},
+                {540.0f, yPos + 3.0f},
                 {300.0f, 15.0f},
                 0.0f,
                 1.0f,
@@ -115,7 +115,7 @@ namespace rtp::client {
 
             _uiFactory.createText(
                 _uiRegistry,
-                {200.0f, yPos},
+                {240.0f, yPos},
                 _translationManager.get("settings.language"),
                 "assets/fonts/main.ttf",
                 22
@@ -123,15 +123,14 @@ namespace rtp::client {
 
             _uiFactory.createDropdown(
                 _uiRegistry,
-                {450.0f, yPos},
+                {540.0f, yPos},
                 {300.0f, 35.0f},
                 std::vector<std::string>{"English", "Français", "Español", "Deutsch", "Italiano"},
                 static_cast<int>(_settings.getLanguage()),
                 [this](int index) {
-                    _settings.setLanguage(
-                        static_cast<Language>(index));
-                    _translationManager.loadLanguage(_settings.getLanguage());
-                    rtp::log::info("Language changed - please restart or return to menu to see changes");
+                    _settings.setLanguage(static_cast<Language>(index));
+                    // Don't reload language here - it will destroy UI while callback is executing
+                    rtp::log::info("Language changed to: {}. Changes will apply on next scene load.", index);
                 }
             );
 
@@ -139,7 +138,7 @@ namespace rtp::client {
 
             _uiFactory.createText(
                 _uiRegistry,
-                {200.0f, yPos},
+                {240.0f, yPos},
                 _translationManager.get("settings.colorblind_mode"),
                 "assets/fonts/main.ttf",
                 22
@@ -154,11 +153,11 @@ namespace rtp::client {
 
             _uiFactory.createDropdown(
                 _uiRegistry,
-                {450.0f, yPos},
+                {540.0f, yPos},
                 {300.0f, 35.0f},
                 colorblindOptions,
                 static_cast<int>(_settings.getColorBlindMode()),
-                [this, colorblindOptions](int index) {
+                [this, colorblindOptions = colorblindOptions](int index) {
                     _settings.setColorBlindMode(
                         static_cast<ColorBlindMode>(index));
                 }
@@ -168,7 +167,7 @@ namespace rtp::client {
 
             _uiFactory.createText(
                 _uiRegistry,
-                {200.0f, yPos},
+                {240.0f, yPos},
                 _translationManager.get("settings.difficulty"),
                 "assets/fonts/main.ttf",
                 22
@@ -182,7 +181,7 @@ namespace rtp::client {
             };
             _uiFactory.createDropdown(
                 _uiRegistry,
-                {450.0f, yPos},
+                {540.0f, yPos},
                 {300.0f, 35.0f},
                 difficultyOptions,
                 static_cast<int>(_settings.getDifficulty()),
@@ -204,6 +203,17 @@ namespace rtp::client {
                 }
             );
 
+            // Petit bouton carré pour les settings gamepad à droite du bouton Key Bindings
+            _uiFactory.createButton(
+                _uiRegistry,
+                {810.0f, yPos},
+                {60.0f, 50.0f},
+                "[GP]", // Gamepad
+                [this]() {
+                    _changeState(GameState::GamepadSettings);
+                }
+            );
+
             yPos += 65.0f;
 
             _uiFactory.createButton(
@@ -213,6 +223,7 @@ namespace rtp::client {
                 _translationManager.get("settings.back"),
                 [this]() {
                     _settings.save();
+                    _translationManager.loadLanguage(_settings.getLanguage());
                     _changeState(GameState::Menu);
                 }
             );
@@ -220,6 +231,8 @@ namespace rtp::client {
 
         void SettingsScene::onExit(void)
         {
+            // Reload language when exiting settings to apply changes
+            _translationManager.loadLanguage(_settings.getLanguage());
         }
 
         void SettingsScene::handleEvent(const sf::Event& e)
