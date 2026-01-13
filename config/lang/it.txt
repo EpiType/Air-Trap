@@ -30,6 +30,7 @@ keybindings.move_down=Muovi Giù
 keybindings.move_left=Muovi Sinistra
 keybindings.move_right=Muovi Destra
 keybindings.shoot=Spara
+keybindings.reload=Ricarica
 keybindings.pause=Pausa
 
 # Game

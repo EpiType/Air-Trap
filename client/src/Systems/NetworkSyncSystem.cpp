@@ -15,6 +15,8 @@
 #include "RType/Network/Packet.hpp"
 #include "Game/EntityBuilder.hpp"
 
+#include <chrono>
+
 using namespace rtp::net;
 
 namespace rtp::client {
@@ -27,7 +29,21 @@ namespace rtp::client {
 
     void NetworkSyncSystem::update(float dt)
     {
-        (void)dt;
+        if (_ammoReloading && _ammoReloadRemaining > 0.0f) {
+            _ammoReloadRemaining -= dt;
+            if (_ammoReloadRemaining < 0.0f)
+                _ammoReloadRemaining = 0.0f;
+        }
+        _pingTimer += dt;
+        if (_pingTimer >= _pingInterval) {
+            _pingTimer = 0.0f;
+            const auto now = std::chrono::steady_clock::now();
+            const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+            rtp::net::PingPayload payload{ static_cast<uint64_t>(ms) };
+            rtp::net::Packet packet(rtp::net::OpCode::Ping);
+            packet << payload;
+            _network.sendPacket(packet, rtp::net::NetworkMode::UDP);
+        }
         while (auto eventOpt = _network.pollEvent()) {
             handleEvent(*eventOpt);
         }
@@ -85,11 +101,14 @@ namespace rtp::client {
         _network.sendPacket(packet, rtp::net::NetworkMode::TCP);
     }
 
-    void NetworkSyncSystem::tryJoinRoom(uint32_t roomId)
+    void NetworkSyncSystem::tryJoinRoom(uint32_t roomId, bool asSpectator)
     {
         _currentState = State::JoiningRoom;
         rtp::net::Packet packet(rtp::net::OpCode::JoinRoom);
-        packet << roomId;
+        rtp::net::JoinRoomPayload payload{};
+        payload.roomId = roomId;
+        payload.isSpectator = static_cast<uint8_t>(asSpectator ? 1 : 0);
+        packet << payload;
 
         _network.sendPacket(packet, rtp::net::NetworkMode::TCP);
     }
@@ -113,7 +132,10 @@ namespace rtp::client {
     void NetworkSyncSystem::trySendMessage(const std::string& message) const
     {
         rtp::net::Packet packet(rtp::net::OpCode::RoomChatSended);
-        packet << message;
+        rtp::net::RoomChatPayload payload{};
+        std::strncpy(payload.message, message.c_str(), sizeof(payload.message) - 1);
+        payload.message[sizeof(payload.message) - 1] = '\0';
+        packet << payload;
 
         _network.sendPacket(packet, rtp::net::NetworkMode::TCP);
     }
@@ -160,6 +182,41 @@ namespace rtp::client {
     NetworkSyncSystem::State NetworkSyncSystem::getState(void) const
     {
         return _currentState;
+    }
+
+    uint16_t NetworkSyncSystem::getAmmoCurrent(void) const
+    {
+        return _ammoCurrent;
+    }
+
+    uint16_t NetworkSyncSystem::getAmmoMax(void) const
+    {
+        return _ammoMax;
+    }
+
+    bool NetworkSyncSystem::isReloading(void) const
+    {
+        return _ammoReloading;
+    }
+
+    float NetworkSyncSystem::getReloadCooldownRemaining(void) const
+    {
+        return _ammoReloadRemaining;
+    }
+
+    uint32_t NetworkSyncSystem::getPingMs(void) const
+    {
+        return _pingMs;
+    }
+
+    std::string NetworkSyncSystem::getLastChatMessage(void) const
+    {
+        return _lastChatMessage;
+    }
+
+    const std::deque<std::string>& NetworkSyncSystem::getChatHistory(void) const
+    {
+        return _chatHistory;
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -212,6 +269,18 @@ namespace rtp::client {
             case OpCode::RoomUpdate:
                 onRoomUpdate(event.packet);
                 break;
+            case OpCode::RoomChatReceived: {
+                onRoomChatReceived(event.packet);
+                break;
+            }
+            case OpCode::AmmoUpdate: {
+                onAmmoUpdate(event.packet);
+                break;
+            }
+            case OpCode::Pong: {
+                onPong(event.packet);
+                break;
+            }
             default:
                 rtp::log::warning("Unhandled OpCode received: {}", static_cast<uint8_t>(event.packet.header.opCode));
                 break;
@@ -336,6 +405,8 @@ namespace rtp::client {
         if (success) {
             rtp::log::info("Successfully left the room.");
             _currentState = State::InLobby;
+            _lastChatMessage.clear();
+            _chatHistory.clear();
         } else {
             rtp::log::warning("Failed to leave the room.");
         }
@@ -361,6 +432,10 @@ namespace rtp::client {
                 t = EntityTemplate::rt1_1(pos);
                 break;
 
+            case rtp::net::EntityType::Bullet:
+                t = EntityTemplate::createBulletEnemy(pos);
+                break;
+
             default:
                 rtp::log::warning("Unknown entity type {}, fallback template", (int)payload.type);
                 t = EntityTemplate::rt2_2(pos);
@@ -378,6 +453,15 @@ namespace rtp::client {
         _registry.addComponent<rtp::ecs::components::NetworkId>(
             e, rtp::ecs::components::NetworkId{payload.netId}
         );
+
+        if (static_cast<rtp::net::EntityType>(payload.type) == rtp::net::EntityType::Bullet) {
+            if (auto transformsOpt = _registry.getComponents<rtp::ecs::components::Transform>(); transformsOpt) {
+                auto &transforms = transformsOpt.value().get();
+                if (transforms.has(e)) {
+                    transforms[e].rotation = 180.0f;
+                }
+            }
+        }
 
         _netIdToEntity[payload.netId] = e;
     }
@@ -410,6 +494,53 @@ namespace rtp::client {
             transforms[e].position.x = snap.position.x;
             transforms[e].position.y = snap.position.y;
             transforms[e].rotation   = snap.rotation;
+        }
+    }
+
+    void NetworkSyncSystem::onRoomChatReceived(rtp::net::Packet& packet)
+    {
+        rtp::net::RoomChatReceivedPayload payload{};
+        packet >> payload;
+
+        std::string username(payload.username);
+        std::string message(payload.message);
+        const std::string line = username.empty()
+            ? message
+            : (username + ": " + message);
+
+        pushChatMessage(line);
+    }
+
+    void NetworkSyncSystem::pushChatMessage(const std::string& message)
+    {
+        _lastChatMessage = message;
+        if (message.empty())
+            return;
+        _chatHistory.push_back(message);
+        while (_chatHistory.size() > _chatHistoryLimit) {
+            _chatHistory.pop_front();
+        }
+    }
+
+    void NetworkSyncSystem::onAmmoUpdate(rtp::net::Packet& packet)
+    {
+        rtp::net::AmmoUpdatePayload payload{};
+        packet >> payload;
+
+        _ammoCurrent = payload.current;
+        _ammoMax = payload.max;
+        _ammoReloading = payload.isReloading != 0;
+        _ammoReloadRemaining = payload.cooldownRemaining;
+    }
+
+    void NetworkSyncSystem::onPong(rtp::net::Packet& packet)
+    {
+        rtp::net::PingPayload payload{};
+        packet >> payload;
+        const auto now = std::chrono::steady_clock::now();
+        const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+        if (ms >= static_cast<int64_t>(payload.clientTimeMs)) {
+            _pingMs = static_cast<uint32_t>(ms - payload.clientTimeMs);
         }
     }
 } // namespace rtp::client

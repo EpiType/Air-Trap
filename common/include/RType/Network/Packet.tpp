@@ -286,6 +286,7 @@ namespace rtp::net
     inline auto Packet::operator<<(JoinRoomPayload data) -> Packet &
     {
         *this << data.roomId;
+        *this << data.isSpectator;
         return *this;
     }
 
@@ -293,6 +294,7 @@ namespace rtp::net
     inline auto Packet::operator>>(JoinRoomPayload &data) -> Packet &
     {
         *this >> data.roomId;
+        *this >> data.isSpectator;
         return *this;
     }
 
@@ -428,6 +430,40 @@ namespace rtp::net
         *this >> data.type;
         *this >> data.position.x;
         *this >> data.position.y;
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator<<(AmmoUpdatePayload data) -> Packet &
+    {
+        *this << data.current;
+        *this << data.max;
+        *this << data.isReloading;
+        *this << data.cooldownRemaining;
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator>>(AmmoUpdatePayload &data) -> Packet &
+    {
+        *this >> data.current;
+        *this >> data.max;
+        *this >> data.isReloading;
+        *this >> data.cooldownRemaining;
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator<<(PingPayload data) -> Packet &
+    {
+        *this << data.clientTimeMs;
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator>>(PingPayload &data) -> Packet &
+    {
+        *this >> data.clientTimeMs;
         return *this;
     }
 

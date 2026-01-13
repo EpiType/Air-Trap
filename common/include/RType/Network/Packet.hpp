@@ -108,6 +108,9 @@ namespace rtp::net
         // RoomUpdate = 0x20,             /**< Entity state snapshot */
         EntitySpawn = 0x21,             /**< Entity spawn notification */
         EntityDeath = 0x22,             /**< Entity death notification */
+        AmmoUpdate = 0x23,              /**< Ammo update notification */
+        Ping = 0x24,                    /**< Ping request */
+        Pong = 0x25                     /**< Ping response */
     };
 
     #pragma pack(push, 1)
@@ -250,6 +253,7 @@ namespace rtp::net
      */
     struct JoinRoomPayload {
         uint32_t roomId;                /**< Room identifier to join */
+        uint8_t isSpectator;            /**< 1 if joining as spectator */
     };
 
     /**
@@ -329,6 +333,29 @@ namespace rtp::net
         uint32_t netId;                 /**< Network entity identifier */
         uint8_t type;                   /**< Entity type */
         Vec2f position;                 /**< Death position */
+    };
+
+    /**
+     * @struct AmmoUpdatePayload
+     * @brief Ammo update notification data
+     * @callergraph Server
+     * @related AmmoUpdate OpCode
+     */
+    struct AmmoUpdatePayload {
+        uint16_t current;               /**< Current ammo */
+        uint16_t max;                   /**< Max ammo */
+        uint8_t isReloading;            /**< 1 if reloading */
+        float cooldownRemaining;        /**< Remaining reload time */
+    };
+
+    /**
+     * @struct PingPayload
+     * @brief Ping request/response payload
+     * @callergraph Client/Server
+     * @related Ping/Pong OpCodes
+     */
+    struct PingPayload {
+        uint64_t clientTimeMs;          /**< Client timestamp in ms */
     };
 
     #pragma pack(pop)

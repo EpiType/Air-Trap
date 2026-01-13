@@ -153,7 +153,9 @@ namespace rtp::client {
         void CreateRoomScene::update(float dt)
         {
             (void)dt;
-            if (_network.getState() == NetworkSyncSystem::State::InRoom) {
+            if (_network.getState() == NetworkSyncSystem::State::InGame) {
+                _changeState(GameState::Playing);
+            } else if (_network.getState() == NetworkSyncSystem::State::InRoom) {
                 _changeState(GameState::RoomWaiting);
             }
         }

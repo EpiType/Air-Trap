@@ -9,6 +9,8 @@
 #include "RType/Logger.hpp"
 #include "RType/ECS/Components/RoomId.hpp"
 
+#include <cstring>
+
 using namespace rtp::ecs;
 
 #ifdef DEBUG
@@ -57,17 +59,18 @@ namespace rtp::server
         return _players.size() < _maxPlayers;
     }
 
-    bool Room::addPlayer(const PlayerPtr &player)
+    bool Room::addPlayer(const PlayerPtr &player, PlayerType type)
     {
         const uint32_t sessionId = player->getId();
         bool added = false;
+        std::string username;
         {
             std::lock_guard lock(_mutex);
 
-            if (_players.size() >= _maxPlayers) {
+            if (type == PlayerType::Player && _players.size() >= _maxPlayers) {
                 log::warning("Player {} cannot join Room '{}' (ID: {}): Room is full",
                             player->getUsername(), _name, _id);
-            } else if (_state != State::Waiting) {
+            } else if (type == PlayerType::Player && _state != State::Waiting) {
                 log::warning("Player {} cannot join Room '{}' (ID: {}): Game already started",
                             player->getUsername(), _name, _id);
             } else {
@@ -78,9 +81,10 @@ namespace rtp::server
                     log::warning("Player {} already in Room '{}' (ID: {})",
                                 player->getUsername(), _name, _id);
                 } else {
-                    _players.emplace_back(player, PlayerType::Player);
+                    _players.emplace_back(player, type);
                     log::info("Player {} joined Room '{}' (ID: {})",
                             player->getUsername(), _name, _id);
+                    username = player->getUsername();
                     added = true;
                 }
             }
@@ -93,24 +97,79 @@ namespace rtp::server
             _network.sendPacketToSession(sessionId, response, rtp::net::NetworkMode::TCP);
         }
 
+        if (added && _type != RoomType::Lobby) {
+            if (type == PlayerType::Spectator) {
+                broadcastSystemMessage(username + " (spectator) has joined");
+            } else {
+                broadcastSystemMessage(username + " has joined the room");
+            }
+        }
+
         return added;
     }
 
-    void Room::removePlayer(uint32_t sessionId)
+    void Room::removePlayer(uint32_t sessionId, bool disconnected)
     {
-        std::lock_guard lock(_mutex);
+        bool removed = false;
+        std::string username;
+        PlayerType type = PlayerType::None;
+        {
+            std::lock_guard lock(_mutex);
 
-        auto before = _players.size();
-        _players.remove_if([sessionId](const auto &entry) {
-            return entry.first->getId() == sessionId;
-        });
+            auto before = _players.size();
+            for (const auto &entry : _players) {
+                if (entry.first->getId() == sessionId) {
+                    username = entry.first->getUsername();
+                    type = entry.second;
+                    break;
+                }
+            }
+            _players.remove_if([sessionId](const auto &entry) {
+                return entry.first->getId() == sessionId;
+            });
 
-        if (_players.size() != before) {
-            log::info("Player with Session ID {} removed from Room '{}' (ID: {})",
-                    sessionId, _name, _id);
-        } else {
-            log::warning("Player with Session ID {} not found in Room '{}' (ID: {})",
+            if (_players.size() != before) {
+                removed = true;
+                log::info("Player with Session ID {} removed from Room '{}' (ID: {})",
                         sessionId, _name, _id);
+            } else {
+                log::warning("Player with Session ID {} not found in Room '{}' (ID: {})",
+                            sessionId, _name, _id);
+            }
+        }
+
+        if (removed && _type != RoomType::Lobby) {
+            const std::string suffix = (type == PlayerType::Spectator) ? " (spectator)" : "";
+            if (disconnected) {
+                broadcastSystemMessage(username + suffix + " has disconnected");
+            } else {
+                broadcastSystemMessage(username + suffix + " has left the room");
+            }
+        }
+    }
+
+    void Room::broadcastSystemMessage(const std::string &message)
+    {
+        std::vector<uint32_t> sessions;
+        {
+            std::lock_guard lock(_mutex);
+            sessions.reserve(_players.size());
+            for (const auto &entry : _players) {
+                sessions.push_back(entry.first->getId());
+            }
+        }
+
+        rtp::net::RoomChatReceivedPayload payload{};
+        payload.sessionId = 0;
+        payload.username[0] = '\0';
+        std::strncpy(payload.message, message.c_str(), sizeof(payload.message) - 1);
+        payload.message[sizeof(payload.message) - 1] = '\0';
+
+        rtp::net::Packet packet(rtp::net::OpCode::RoomChatReceived);
+        packet << payload;
+
+        for (uint32_t sid : sessions) {
+            _network.sendPacketToSession(sid, packet, rtp::net::NetworkMode::TCP);
         }
     }
 

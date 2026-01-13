@@ -31,6 +31,7 @@
     #include "Systems/PlayerSystem.hpp"
     #include "Systems/EntitySystem.hpp"
     #include "Systems/PlayerMouvementSystem.hpp"
+    #include "Systems/PlayerShootSystem.hpp"
 
     /* Components */
     #include "RType/ECS/Components/InputComponent.hpp"
@@ -38,6 +39,8 @@
     #include "RType/ECS/Components/Velocity.hpp"
     #include "RType/ECS/Components/NetworkId.hpp"
     #include "RType/ECS/Components/EntityType.hpp"
+    #include "RType/ECS/Components/SimpleWeapon.hpp"
+    #include "RType/ECS/Components/Ammo.hpp"
 
 /**
  * @namespace rtp::server
@@ -159,6 +162,7 @@ namespace rtp::server
              * @param packet Reference to the received Packet
              */
             void handlePacket(uint32_t sessionId, const net::Packet &packet);
+            void handlePing(uint32_t sessionId, const net::Packet &packet);
 
             void sendEntitySpawnToSessions(const rtp::ecs::Entity& entity,
                                            const std::vector<uint32_t>& sessions);
@@ -176,6 +180,7 @@ namespace rtp::server
             std::unique_ptr<PlayerSystem> _playerSystem;               /**< Player system for handling player-related operations */
             std::unique_ptr<EntitySystem> _entitySystem;               /**< Entity system for handling entity-related operations */
             std::unique_ptr<PlayerMouvementSystem> _playerMouvementSystem; /**< Player movement system for handling player-specific movement logic */
+            std::unique_ptr<PlayerShootSystem> _playerShootSystem;      /**< Player shooting system for handling bullets */
 
             uint32_t _serverTick = 0;                                  /**< Current server tick for synchronization */
             mutable std::mutex _mutex;                                 /**< Mutex for thread-safe operations */

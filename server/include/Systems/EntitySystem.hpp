@@ -25,6 +25,8 @@
     #include "RType/ECS/Components/MouvementPattern.hpp"
     #include "RType/ECS/Components/IABehavior.hpp"
     #include "RType/ECS/Components/RoomId.hpp"
+    #include "RType/ECS/Components/SimpleWeapon.hpp"
+    #include "RType/ECS/Components/Ammo.hpp"
 
 /**
  * @namespace rtp::server

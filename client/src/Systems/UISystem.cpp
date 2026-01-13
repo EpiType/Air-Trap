@@ -199,6 +199,9 @@ namespace rtp::client
                 buttonCallbacks;
             for (const auto &entity : buttons.getEntities()) {
                 auto &button = buttons[entity];
+                if (!button.onClick && button.text.empty()) {
+                    continue;
+                }
                 if (isMouseOverButton(button, mousePos)) {
                     button.state =
                         rtp::ecs::components::ui::ButtonState::Pressed;

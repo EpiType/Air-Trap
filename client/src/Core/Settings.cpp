@@ -26,6 +26,7 @@ namespace rtp::client {
         _keyBindings[KeyAction::MoveLeft] = sf::Keyboard::Key::Q;
         _keyBindings[KeyAction::MoveRight] = sf::Keyboard::Key::D;
         _keyBindings[KeyAction::Shoot] = sf::Keyboard::Key::Space;
+        _keyBindings[KeyAction::Reload] = sf::Keyboard::Key::R;
         _keyBindings[KeyAction::Pause] = sf::Keyboard::Key::Escape;
         _keyBindings[KeyAction::Menu] = sf::Keyboard::Key::Tab;
     }
@@ -97,7 +98,7 @@ namespace rtp::client {
                 parseKeyBinding("\"moveLeft\"", KeyAction::MoveLeft);
                 parseKeyBinding("\"moveRight\"", KeyAction::MoveRight);
                 parseKeyBinding("\"shoot\"", KeyAction::Shoot);
-                parseKeyBinding("\"pause\"", KeyAction::Pause);
+                parseKeyBinding("\"reload\"", KeyAction::Reload);
             }
         }
         

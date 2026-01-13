@@ -40,6 +40,16 @@ namespace rtp::server {
             rtp::ecs::components::Velocity{ {0.f, 0.f}, 0.f }
         );
 
+        _registry.addComponent<rtp::ecs::components::SimpleWeapon>(
+            entity,
+            rtp::ecs::components::SimpleWeapon{ 6.0f, 0.0f, 10 }
+        );
+
+        _registry.addComponent<rtp::ecs::components::Ammo>(
+            entity,
+            rtp::ecs::components::Ammo{ 100, 100, 2.0f, 0.0f, false, true }
+        );
+
         _registry.addComponent<rtp::ecs::components::NetworkId>(
             entity,
             rtp::ecs::components::NetworkId{ (uint32_t)entity }

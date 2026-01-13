@@ -58,12 +58,13 @@ namespace rtp::server
         return newId;
     }
 
-    bool RoomSystem::joinRoom(PlayerPtr player, uint32_t roomId)
+    bool RoomSystem::joinRoom(PlayerPtr player, uint32_t roomId, bool asSpectator)
     {
         std::shared_ptr<Room> room;
         rtp::log::info(
-            "Player {} (Session ID {}) attempting to join Room ID {}",
-            player->getUsername(), player->getId(), roomId);
+            "Player {} (Session ID {}) attempting to join Room ID {}{}",
+            player->getUsername(), player->getId(), roomId,
+            asSpectator ? " as spectator" : "");
         {
             std::lock_guard lock(_mutex);
 
@@ -82,7 +83,19 @@ namespace rtp::server
 
             room = it->second;
 
-            if (!room->canJoin()) {
+            if (!asSpectator && room->getState() != Room::State::Waiting) {
+                log::error(
+                    "Failed to join Player {} to Room ID {}. Game already started.",
+                    player->getId(), roomId);
+                if (room->getType() != Room::RoomType::Lobby) {
+                    rtp::net::Packet response(rtp::net::OpCode::JoinRoom);
+                    response << static_cast<uint8_t>(0);
+                    _network.sendPacket(player->getId(), response, rtp::net::NetworkMode::TCP);
+                }
+                return false;
+            }
+
+            if (!asSpectator && !room->canJoin()) {
                 log::error(
                     "Failed to join Player {} to Room ID {}. Room is full.",
                     player->getId(), roomId);
@@ -100,7 +113,10 @@ namespace rtp::server
                     player->getId(), roomId);
             }
 
-            if (!room->addPlayer(player)) {
+            const Room::PlayerType joinType = asSpectator
+                ? Room::PlayerType::Spectator
+                : Room::PlayerType::Player;
+            if (!room->addPlayer(player, joinType)) {
                 log::error(
                     "Failed to join Player {} to Room ID {}. Could not add to new room.",
                     player->getId(), roomId);
@@ -109,7 +125,7 @@ namespace rtp::server
 
             _playerRoomMap[player->getId()] = room->getId();
             player->setRoomId(room->getId());
-            if (room->getState() == Room::State::InGame) {
+            if (room->getState() == Room::State::InGame || asSpectator) {
                 player->setReady(true);
                 player->setState(PlayerState::InGame);
             } else {
@@ -125,7 +141,7 @@ namespace rtp::server
 
     bool RoomSystem::joinLobby(PlayerPtr player)
     {
-        return joinRoom(player, _lobbyId);
+        return joinRoom(player, _lobbyId, false);
     }
 
     bool RoomSystem::leaveRoom(PlayerPtr player)
@@ -135,7 +151,7 @@ namespace rtp::server
                 uint32_t previousRoomId = _playerRoomMap[player->getId()];
                 auto prevIt = _rooms.find(previousRoomId);
                 if (prevIt != _rooms.end()) {
-                    prevIt->second->removePlayer(player->getId());
+                    prevIt->second->removePlayer(player->getId(), false);
                     // sendRoomUpdate(*prevIt->second);
                     return true;
                 }
@@ -157,7 +173,7 @@ namespace rtp::server
             uint32_t roomId = it->second;
             auto roomIt = _rooms.find(roomId);
             if (roomIt != _rooms.end()) {
-                roomIt->second->removePlayer(sessionId);
+                roomIt->second->removePlayer(sessionId, true);
                 // sendRoomUpdate(*roomIt->second);
             }
             _playerRoomMap.erase(it);

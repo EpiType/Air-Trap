@@ -31,6 +31,7 @@ class InputSystem : public rtp::ecs::ISystem
          * @param window Reference to the SFML render window
          */
         explicit InputSystem(rtp::ecs::Registry& r,
+                            rtp::ecs::Registry& uiRegistry,
                             Settings& settings,
                             ClientNetwork& net,
                             sf::RenderWindow& window);
@@ -46,10 +47,13 @@ class InputSystem : public rtp::ecs::ISystem
             MoveUp    = 1 << 0,
             MoveDown  = 1 << 1,
             MoveLeft  = 1 << 2,
-            MoveRight = 1 << 3
+            MoveRight = 1 << 3,
+            Shoot     = 1 << 4,
+            Reload    = 1 << 5
         };
 
         rtp::ecs::Registry& _r;                 /**< Reference to the entity registry */
+        rtp::ecs::Registry& _uiRegistry;        /**< Reference to the UI registry */
         Settings& _settings;                    /**< Reference to the client settings */
         ClientNetwork& _net;                    /**< Reference to the client network manager */
         sf::RenderWindow& _window;              /**< Reference to the SFML render window */

@@ -6,6 +6,7 @@
  */
 
 #include "Systems/InputSystem.hpp"
+#include "RType/ECS/Components/UI/TextInput.hpp"
 #include <SFML/Graphics.hpp>
 
 namespace rtp::client {
@@ -15,10 +16,11 @@ namespace rtp::client {
     //////////////////////////////////////////////////////////////////////////
 
     InputSystem::InputSystem(rtp::ecs::Registry& r,
+                         rtp::ecs::Registry& uiRegistry,
                          Settings& settings,
                          ClientNetwork& net,
                          sf::RenderWindow& window)
-        : _r(r), _settings(settings), _net(net), _window(window) {}
+        : _r(r), _uiRegistry(uiRegistry), _settings(settings), _net(net), _window(window) {}
 
     void InputSystem::update(float)
     {
@@ -26,6 +28,22 @@ namespace rtp::client {
             return;
         if (!_net.isUdpReady())
             return;
+
+        if (auto inputsOpt = _uiRegistry.getComponents<rtp::ecs::components::ui::TextInput>()) {
+            auto &inputs = inputsOpt.value().get();
+            for (const auto &e : inputs.getEntities()) {
+                if (inputs[e].isFocused) {
+                    if (_lastMask != 0) {
+                        rtp::net::Packet p(rtp::net::OpCode::InputTick);
+                        rtp::net::InputPayload payload{0};
+                        p << payload;
+                        _net.sendPacket(p, rtp::net::NetworkMode::UDP);
+                        _lastMask = 0;
+                    }
+                    return;
+                }
+            }
+        }
 
         uint8_t mask = 0;
 
@@ -37,6 +55,10 @@ namespace rtp::client {
             mask |= InputBits::MoveLeft;
         if (sf::Keyboard::isKeyPressed(_settings.getKey(KeyAction::MoveRight)))
             mask |= InputBits::MoveRight;
+        if (sf::Keyboard::isKeyPressed(_settings.getKey(KeyAction::Shoot)))
+            mask |= InputBits::Shoot;
+        if (sf::Keyboard::isKeyPressed(_settings.getKey(KeyAction::Reload)))
+            mask |= InputBits::Reload;
 
         if (mask == _lastMask)
             return;
