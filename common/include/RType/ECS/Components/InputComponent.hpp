@@ -34,7 +34,9 @@ namespace rtp::ecs::components::server
             Reload    = 1 << 5
         };
         uint8_t mask = 0;                          /**< Input mask for filtering input types */
+        uint8_t lastMask = 0;                      /**< Previous input mask for edge detection */
         uint32_t lastProcessedTick = 0;            /**< Last processed server tick for input */
+        float chargeTime = 0.0f;                   /**< Accumulated charge time for shoot */
     };
 } // namespace rtp::ecs::components::server
 

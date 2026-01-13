@@ -62,6 +62,16 @@ namespace rtp::server {
                              const rtp::ecs::components::RoomId& roomId);
 
             /**
+             * @brief Spawn a charged bullet based on the player's transform and room ID
+             * @param tf Transform component of the player
+             * @param roomId RoomId component of the player
+             * @param chargeRatio Charge ratio in [0, 1]
+             */
+            void spawnChargedBullet(const rtp::ecs::components::Transform& tf,
+                                    const rtp::ecs::components::RoomId& roomId,
+                                    float chargeRatio);
+
+            /**
              * @brief Send an ammo update to the client for a specific network ID
              * @param netId Network ID of the entity
              * @param ammo Ammo component to send
@@ -74,6 +84,7 @@ namespace rtp::server {
             NetworkSyncSystem& _networkSync;    /**< Reference to the NetworkSyncSystem */
 
             float _bulletSpeed = 500.0f;        /**< Speed of the spawned bullets */
+            float _chargedBulletSpeed = 280.0f; /**< Speed of the charged bullets */
             float _spawnOffsetX = 20.0f;        /**< X offset for bullet spawn position */
     };
 }

@@ -145,7 +145,8 @@ namespace rtp::net
         PowerupSpeed = 7,
         Obstacle = 8,
         EnemyBullet = 9,
-        ObstacleSolid = 10
+        ObstacleSolid = 10,
+        ChargedBullet = 11
     };
 
     //////////////////////////////////////////////////////////////////////////

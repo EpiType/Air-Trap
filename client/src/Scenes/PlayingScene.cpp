@@ -7,8 +7,11 @@
 
 #include "Scenes/PlayingScene.hpp"
 #include "RType/ECS/Components/UI/Button.hpp"
+#include "RType/ECS/Components/UI/Slider.hpp"
 #include "RType/ECS/Components/UI/Text.hpp"
 #include "RType/ECS/Components/UI/TextInput.hpp"
+
+#include <algorithm>
 
 namespace rtp::client {
     namespace Scenes {
@@ -92,13 +95,35 @@ namespace rtp::client {
             _hudEntities = makeHudText({1020.0f, 680.0f}, 14);
             _hudAmmo     = makeHudText({1020.0f, 700.0f}, 14);
 
+            _hudChargeBar = _uiFactory.createSlider(
+                _uiRegistry,
+                {520.0f, 700.0f},
+                {240.0f, 6.0f},
+                0.0f,
+                1.0f,
+                0.0f,
+                nullptr
+            );
+            if (auto slidersOpt = _uiRegistry.getComponents<rtp::ecs::components::ui::Slider>()) {
+                auto &sliders = slidersOpt.value().get();
+                if (sliders.has(_hudChargeBar)) {
+                    auto &slider = sliders[_hudChargeBar];
+                    slider.trackColor[0] = 25; slider.trackColor[1] = 25; slider.trackColor[2] = 25;
+                    slider.fillColor[0] = 180; slider.fillColor[1] = 120; slider.fillColor[2] = 60;
+                    slider.handleColor[0] = 25; slider.handleColor[1] = 25; slider.handleColor[2] = 25;
+                    slider.zIndex = 999;
+                }
+            }
+
             _hudInit = true;
+            _chargeTime = 0.0f;
         }
 
         void PlayingScene::onExit(void)
         {
             _hudInit = false;
             closeChat();
+            _chargeTime = 0.0f;
         }
 
 
@@ -179,6 +204,34 @@ namespace rtp::client {
 
             if (_chatOpen) {
                 updateChatHistoryText();
+            }
+
+            auto slidersOpt = _uiRegistry.getComponents<rtp::ecs::components::ui::Slider>();
+            if (slidersOpt && slidersOpt->get().has(_hudChargeBar)) {
+                constexpr float kChargeMax = 2.0f;
+                bool canCharge = !_network.isReloading() && _network.getAmmoCurrent() > 0;
+
+                if (canCharge) {
+                    auto inputsOpt = _uiRegistry.getComponents<rtp::ecs::components::ui::TextInput>();
+                    if (inputsOpt) {
+                        auto &inputs = inputsOpt.value().get();
+                        for (const auto &e : inputs.getEntities()) {
+                            if (inputs[e].isFocused) {
+                                canCharge = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (canCharge && sf::Keyboard::isKeyPressed(_settings.getKey(KeyAction::Shoot))) {
+                    _chargeTime = std::min(_chargeTime + dt, kChargeMax);
+                } else {
+                    _chargeTime = 0.0f;
+                }
+
+                auto &slider = slidersOpt->get()[_hudChargeBar];
+                slider.currentValue = (_chargeTime > 0.0f) ? (_chargeTime / kChargeMax) : 0.0f;
             }
         }
 

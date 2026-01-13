@@ -10,6 +10,8 @@
 #include "Systems/PlayerShootSystem.hpp"
 #include "RType/Logger.hpp"
 
+#include <algorithm>
+#include <tuple>
 #include <vector>
 
 namespace rtp::server
@@ -29,6 +31,12 @@ namespace rtp::server
     {
         std::vector<std::pair<rtp::ecs::components::Transform,
                               rtp::ecs::components::RoomId>> pendingSpawns;
+        std::vector<std::tuple<rtp::ecs::components::Transform,
+                               rtp::ecs::components::RoomId,
+                               float>> pendingChargedSpawns;
+
+        constexpr float kChargeMax = 2.0f;
+        constexpr float kChargeMin = 0.2f;
 
         auto view =
             _registry.zipView<rtp::ecs::components::Transform,
@@ -63,20 +71,44 @@ namespace rtp::server
                 ammo.dirty = true;
             }
 
-            if ((input.mask & Bits::Shoot) && !ammo.isReloading && ammo.current > 0) {
-                const float fireInterval = (weapon.fireRate > 0.0f)
-                    ? (1.0f / weapon.fireRate)
-                    : 0.0f;
+            const bool shootPressed = (input.mask & Bits::Shoot);
+            const bool shootWasPressed = (input.lastMask & Bits::Shoot);
 
-                if (weapon.lastShotTime >= fireInterval) {
-                    weapon.lastShotTime = 0.0f;
-                    pendingSpawns.emplace_back(tf, roomId);
-                    if (ammo.current > 0) {
+            if (ammo.isReloading || ammo.current == 0) {
+                input.chargeTime = 0.0f;
+            }
+
+            if (shootPressed && !ammo.isReloading && ammo.current > 0) {
+                input.chargeTime = std::min(input.chargeTime + dt, kChargeMax);
+            }
+
+            if (!shootPressed && shootWasPressed) {
+                if (!ammo.isReloading && ammo.current > 0) {
+                    const float fireInterval = (weapon.fireRate > 0.0f)
+                        ? (1.0f / weapon.fireRate)
+                        : 0.0f;
+
+                    if (input.chargeTime >= kChargeMin) {
+                        const float ratio = std::clamp(input.chargeTime / kChargeMax, 0.0f, 1.0f);
+                        pendingChargedSpawns.emplace_back(tf, roomId, ratio);
                         ammo.current -= 1;
                         ammo.dirty = true;
+                        weapon.lastShotTime = 0.0f;
+                    } else if (weapon.lastShotTime >= fireInterval) {
+                        pendingSpawns.emplace_back(tf, roomId);
+                        ammo.current -= 1;
+                        ammo.dirty = true;
+                        weapon.lastShotTime = 0.0f;
                     }
                 }
+                input.chargeTime = 0.0f;
             }
+
+            if (!shootPressed && !shootWasPressed) {
+                input.chargeTime = 0.0f;
+            }
+
+            input.lastMask = input.mask;
 
             if (ammo.dirty) {
                 sendAmmoUpdate(net.id, ammo);
@@ -86,6 +118,10 @@ namespace rtp::server
 
         for (const auto& [tf, roomId] : pendingSpawns) {
             spawnBullet(tf, roomId);
+        }
+
+        for (const auto& [tf, roomId, ratio] : pendingChargedSpawns) {
+            spawnChargedBullet(tf, roomId, ratio);
         }
     }
 
@@ -162,6 +198,91 @@ namespace rtp::server
             static_cast<uint8_t>(rtp::net::EntityType::Bullet),
             x,
             y
+        };
+        packet << payload;
+        _networkSync.sendPacketToSessions(sessions, packet, rtp::net::NetworkMode::TCP);
+    }
+
+    void PlayerShootSystem::spawnChargedBullet(
+        const rtp::ecs::components::Transform& tf,
+        const rtp::ecs::components::RoomId& roomId,
+        float chargeRatio)
+    {
+        auto entityRes = _registry.spawnEntity();
+        if (!entityRes) {
+            rtp::log::error("Failed to spawn charged bullet entity: {}", entityRes.error().message());
+            return;
+        }
+
+        rtp::ecs::Entity bullet = entityRes.value();
+
+        const float x = tf.position.x + _spawnOffsetX;
+        const float y = tf.position.y;
+        const float ratio = std::clamp(chargeRatio, 0.0f, 1.0f);
+
+        const float scale = (ratio < 0.34f) ? 0.5f : (ratio < 0.67f ? 1.0f : 2.0f);
+        const float sizeX = 8.0f * scale;
+        const float sizeY = 4.0f * scale;
+        const int minDamage = 25;
+        const int maxDamage = 120;
+        const int damage = static_cast<int>(minDamage + (maxDamage - minDamage) * ratio);
+
+        _registry.addComponent<rtp::ecs::components::Transform>(
+            bullet,
+            rtp::ecs::components::Transform{ {x, y}, 0.f, {1.f, 1.f} }
+        );
+
+        _registry.addComponent<rtp::ecs::components::Velocity>(
+            bullet,
+            rtp::ecs::components::Velocity{ {_chargedBulletSpeed, 0.f}, 0.f }
+        );
+
+        _registry.addComponent<rtp::ecs::components::BoundingBox>(
+            bullet,
+            rtp::ecs::components::BoundingBox{ sizeX, sizeY }
+        );
+
+        _registry.addComponent<rtp::ecs::components::Damage>(
+            bullet,
+            rtp::ecs::components::Damage{ damage, rtp::ecs::NullEntity }
+        );
+
+        _registry.addComponent<rtp::ecs::components::NetworkId>(
+            bullet,
+            rtp::ecs::components::NetworkId{ static_cast<uint32_t>(bullet.index()) }
+        );
+
+        _registry.addComponent<rtp::ecs::components::EntityType>(
+            bullet,
+            rtp::ecs::components::EntityType{ rtp::net::EntityType::ChargedBullet }
+        );
+
+        _registry.addComponent<rtp::ecs::components::RoomId>(
+            bullet,
+            rtp::ecs::components::RoomId{ roomId.id }
+        );
+
+        auto room = _roomSystem.getRoom(roomId.id);
+        if (!room)
+            return;
+        if (room->getState() != Room::State::InGame)
+            return;
+
+        const auto players = room->getPlayers();
+        std::vector<uint32_t> sessions;
+        sessions.reserve(players.size());
+        for (const auto& player : players) {
+            sessions.push_back(player->getId());
+        }
+
+        rtp::net::Packet packet(rtp::net::OpCode::EntitySpawn);
+        rtp::net::EntitySpawnPayload payload = {
+            static_cast<uint32_t>(bullet.index()),
+            static_cast<uint8_t>(rtp::net::EntityType::ChargedBullet),
+            x,
+            y,
+            sizeX,
+            sizeY
         };
         packet << payload;
         _networkSync.sendPacketToSessions(sessions, packet, rtp::net::NetworkMode::TCP);

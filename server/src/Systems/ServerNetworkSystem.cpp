@@ -39,9 +39,18 @@ namespace rtp::server {
         uint32_t entityIndex = _sessionToEntity[sessionId];
         rtp::ecs::Entity entity(entityIndex, 0);
 
-        rtp::ecs::components::server::InputComponent inputData;
-        inputData.mask = payload.inputMask;
+        auto inputsRes = _registry.getComponents<rtp::ecs::components::server::InputComponent>();
+        if (inputsRes) {
+            auto &inputs = inputsRes->get();
+            if (inputs.has(entity)) {
+                inputs[entity].lastMask = inputs[entity].mask;
+                inputs[entity].mask = payload.inputMask;
+                return;
+            }
+        }
 
+        rtp::ecs::components::server::InputComponent inputData{};
+        inputData.mask = payload.inputMask;
         _registry.addComponent<rtp::ecs::components::server::InputComponent>(entity, inputData);
     }
 
