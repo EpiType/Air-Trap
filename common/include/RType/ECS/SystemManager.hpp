@@ -43,6 +43,7 @@
     #define RTYPE_SYSTEMMANAGER_HPP_
 
     #include "RType/ECS/ISystem.hpp"
+    #include "RType/ECS/SystemConcept.hpp"
     #include "RType/ECS/Registry.hpp"
     #include "RType/ECS/Signature.hpp"
     #include <memory>
@@ -57,12 +58,9 @@ namespace rtp::ecs
         public:
             explicit SystemManager(Registry &registry);
 
-            template <typename T, typename... Args>
-            T& addSystem(Args&&... args);
+            template <System T, typename... Args>
+            T &add(Args &&...args);
 
-            template <typename T>
-            T &getSystem(void);
-            
             void update(float dt);
 
         private:
@@ -73,6 +71,6 @@ namespace rtp::ecs
     };
 }
 
-#include "SystemManager.tpp"
+    #include "SystemManager.tpp"
 
 #endif
