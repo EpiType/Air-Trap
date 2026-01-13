@@ -70,7 +70,7 @@ namespace rtp::client {
             );
 
             auto makeHudText = [&](const rtp::Vec2f& pos, unsigned size) -> rtp::ecs::Entity {
-                auto eRes = _uiRegistry.spawnEntity();
+                auto eRes = _uiRegistry.spawn();
                 if (!eRes) return {};
 
                 auto e = eRes.value();
@@ -82,7 +82,7 @@ namespace rtp::client {
                 t.red = 255; t.green = 255; t.blue = 255;
                 t.alpha = 255;
                 t.zIndex = 999;
-                _uiRegistry.addComponent<rtp::ecs::components::ui::Text>(e, t);
+                _uiRegistry.add<rtp::ecs::components::ui::Text>(e, t);
                 return e;
             };
 
@@ -297,9 +297,9 @@ namespace rtp::client {
                 return;
 
             _chatOpen = false;
-            if (!_chatPanel.isNull()) _uiRegistry.killEntity(_chatPanel);
-            if (!_chatHistoryText.isNull()) _uiRegistry.killEntity(_chatHistoryText);
-            if (!_chatInput.isNull()) _uiRegistry.killEntity(_chatInput);
+            if (!_chatPanel.isNull()) _uiRegistry.kill(_chatPanel);
+            if (!_chatHistoryText.isNull()) _uiRegistry.kill(_chatHistoryText);
+            if (!_chatInput.isNull()) _uiRegistry.kill(_chatInput);
             _chatPanel = {};
             _chatHistoryText = {};
             _chatInput = {};

@@ -18,27 +18,29 @@ protected:
 };
 
 TEST_F(RegistryTest, SpawnEntity) {
-    auto result = registry->spawnEntity();
+    auto result = registry->spawn();
     ASSERT_TRUE(result.has_value());
 }
 
 TEST_F(RegistryTest, KillEntity) {
-    auto entity = registry->spawnEntity();
+    auto entity = registry->spawn();
     ASSERT_TRUE(entity.has_value());
-    ASSERT_NO_THROW(registry->killEntity(entity.value()));
+    ASSERT_NO_THROW(registry->kill(entity.value()));
 }
 
 TEST_F(RegistryTest, RegisterComponent) {
-    ASSERT_NO_THROW(registry->registerComponent<Transform>());
+    auto result = registry->registerComponent<Transform>();
+    ASSERT_TRUE(result.has_value());
 }
 
-TEST_F(RegistryTest, AddComponent) {
-    registry->registerComponent<Transform>();
+TEST_F(RegistryTest, add) {
+    auto regResult = registry->registerComponent<Transform>();
+    ASSERT_TRUE(regResult.has_value());
     
-    auto entity = registry->spawnEntity();
+    auto entity = registry->spawn();
     ASSERT_TRUE(entity.has_value());
     
-    auto result = registry->addComponent<Transform>(entity.value());
+    auto result = registry->add<Transform>(entity.value());
     ASSERT_TRUE(result.has_value());
 }
 
@@ -49,14 +51,18 @@ TEST_F(RegistryTest, GetComponentsNotRegisteredReturnsError) {
 }
 
 TEST_F(RegistryTest, RegisterComponentIsIdempotent) {
-    auto &a = registry->registerComponent<Health>();
-    auto &b = registry->registerComponent<Health>();
-    EXPECT_EQ(&a, &b);
+    auto first = registry->registerComponent<Health>();
+    ASSERT_TRUE(first.has_value());
+    auto second = registry->registerComponent<Health>();
+    EXPECT_FALSE(second.has_value());
+    EXPECT_EQ(second.error().code(), rtp::ErrorCode::InternalRuntimeError);
 }
 
 TEST_F(RegistryTest, ClearEmptiesArraysAndAllowsRespawn) {
-    auto &ts = registry->registerComponent<Transform>();
-    auto e1 = registry->spawnEntity();
+    auto tsResult = registry->registerComponent<Transform>();
+    ASSERT_TRUE(tsResult.has_value());
+    auto &ts = tsResult->get();
+    auto e1 = registry->spawn();
     ASSERT_TRUE(e1.has_value());
     ts.emplace(e1.value(), Transform{});
 
@@ -64,17 +70,23 @@ TEST_F(RegistryTest, ClearEmptiesArraysAndAllowsRespawn) {
     registry->clear();
     EXPECT_EQ(ts.size(), 0u);
 
-    auto e2 = registry->spawnEntity();
+    auto e2 = registry->spawn();
     ASSERT_TRUE(e2.has_value());
 }
 
 TEST_F(RegistryTest, ZipViewThreeComponentsAlign) {
-    auto &ts = registry->registerComponent<Transform>();
-    auto &vs = registry->registerComponent<Velocity>();
-    auto &hs = registry->registerComponent<Health>();
+    auto tsResult = registry->registerComponent<Transform>();
+    auto vsResult = registry->registerComponent<Velocity>();
+    auto hsResult = registry->registerComponent<Health>();
+    ASSERT_TRUE(tsResult.has_value());
+    ASSERT_TRUE(vsResult.has_value());
+    ASSERT_TRUE(hsResult.has_value());
+    auto &ts = tsResult->get();
+    auto &vs = vsResult->get();
+    auto &hs = hsResult->get();
 
-    auto e1 = registry->spawnEntity(); // has T,V,H
-    auto e2 = registry->spawnEntity(); // has T only
+    auto e1 = registry->spawn(); // has T,V,H
+    auto e2 = registry->spawn(); // has T only
     ASSERT_TRUE(e1.has_value());
     ASSERT_TRUE(e2.has_value());
 

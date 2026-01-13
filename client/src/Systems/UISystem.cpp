@@ -59,7 +59,7 @@ namespace rtp::client
             return;
 
         auto &buttons = buttonsResult.value().get();
-        for (const auto &entity : buttons.getEntities()) {
+        for (const auto &entity : buttons.entities()) {
             auto &button = buttons[entity];
 
             if (isMouseOverButton(button, mousePos)) {
@@ -77,7 +77,7 @@ namespace rtp::client
         if (dropdownsResult) {
             auto &dropdowns = dropdownsResult.value().get();
 
-            for (const auto &entity : dropdowns.getEntities()) {
+            for (const auto &entity : dropdowns.entities()) {
                 auto &dropdown = dropdowns[entity];
 
                 if (dropdown.isOpen) {
@@ -98,7 +98,7 @@ namespace rtp::client
                 }
             }
 
-            for (const auto &entity : dropdowns.getEntities()) {
+            for (const auto &entity : dropdowns.entities()) {
                 auto &dropdown = dropdowns[entity];
 
                 if (isMouseOverDropdown(dropdown, mousePos)) {
@@ -106,7 +106,7 @@ namespace rtp::client
                     rtp::log::info("Dropdown toggled: {}",
                                    dropdown.isOpen ? "open" : "closed");
 
-                    for (const auto &otherEntity : dropdowns.getEntities()) {
+                    for (const auto &otherEntity : dropdowns.entities()) {
                         if (otherEntity != entity) {
                             dropdowns[otherEntity].isOpen = false;
                         }
@@ -116,7 +116,7 @@ namespace rtp::client
             }
 
             bool hadOpenDropdown = false;
-            for (const auto &entity : dropdowns.getEntities()) {
+            for (const auto &entity : dropdowns.entities()) {
                 if (dropdowns[entity].isOpen) {
                     dropdowns[entity].isOpen = false;
                     hadOpenDropdown = true;
@@ -149,7 +149,7 @@ namespace rtp::client
 
                 bool clickedOnAnyInput = false;
 
-                for (const auto &entity : inputs.getEntities()) {
+                for (const auto &entity : inputs.entities()) {
                     if (isMouseOverTextInput(inputs[entity])) {
                         clickedOnAnyInput = true;
                         break;
@@ -157,7 +157,7 @@ namespace rtp::client
                 }
 
                 if (clickedOnAnyInput) {
-                    for (const auto &entity : inputs.getEntities()) {
+                    for (const auto &entity : inputs.entities()) {
                         auto &in = inputs[entity];
                         const bool over = isMouseOverTextInput(in);
                         in.isFocused = over;
@@ -175,7 +175,7 @@ namespace rtp::client
                     return;
                 } else {
                     bool hadFocus = false;
-                    for (const auto &entity : inputs.getEntities()) {
+                    for (const auto &entity : inputs.entities()) {
                         auto &in = inputs[entity];
                         if (in.isFocused)
                             hadFocus = true;
@@ -197,7 +197,7 @@ namespace rtp::client
 
             std::vector<std::pair<rtp::ecs::Entity, std::function<void()>>>
                 buttonCallbacks;
-            for (const auto &entity : buttons.getEntities()) {
+            for (const auto &entity : buttons.entities()) {
                 auto &button = buttons[entity];
                 if (!button.onClick && button.text.empty()) {
                     continue;
@@ -226,7 +226,7 @@ namespace rtp::client
             _registry.getComponents<rtp::ecs::components::ui::Slider>();
         if (slidersResult) {
             auto &sliders = slidersResult.value().get();
-            for (const auto &entity : sliders.getEntities()) {
+            for (const auto &entity : sliders.entities()) {
                 auto &slider = sliders[entity];
 
                 if (isMouseOverSlider(slider, mousePos)) {
@@ -353,7 +353,7 @@ namespace rtp::client
             return;
 
         auto &inputs = inputsResult.value().get();
-        for (const auto &e : inputs.getEntities()) {
+        for (const auto &e : inputs.entities()) {
             inputs[e].isFocused = false;
             inputs[e].showCursor = false;
             inputs[e].blinkTimer = 0.0f;
@@ -370,7 +370,7 @@ namespace rtp::client
         auto &inputs = inputsResult.value().get();
 
         bool focusedOne = false;
-        for (const auto &e : inputs.getEntities()) {
+        for (const auto &e : inputs.entities()) {
             auto &in = inputs[e];
             if (!focusedOne && isMouseOverTextInput(in, mousePos)) {
                 in.isFocused = true;
@@ -395,7 +395,7 @@ namespace rtp::client
         auto &inputs = inputsResult.value().get();
 
         if (unicode == 8) {
-            for (const auto &e : inputs.getEntities()) {
+            for (const auto &e : inputs.entities()) {
                 auto &in = inputs[e];
                 if (!in.isFocused)
                     continue;
@@ -408,7 +408,7 @@ namespace rtp::client
             return;
         }
         if (unicode == 13) {
-            for (const auto &e : inputs.getEntities()) {
+            for (const auto &e : inputs.entities()) {
                 auto &in = inputs[e];
                 if (!in.isFocused)
                     continue;
@@ -427,7 +427,7 @@ namespace rtp::client
 
         const char c = static_cast<char>(unicode);
 
-        for (const auto &e : inputs.getEntities()) {
+        for (const auto &e : inputs.entities()) {
             auto &in = inputs[e];
             if (!in.isFocused)
                 continue;
@@ -457,7 +457,7 @@ namespace rtp::client
         }
 
         if (key == sf::Keyboard::Key::Backspace) {
-            for (const auto &e : inputs.getEntities()) {
+            for (const auto &e : inputs.entities()) {
                 auto &in = inputs[e];
                 if (!in.isFocused)
                     continue;
@@ -472,7 +472,7 @@ namespace rtp::client
         }
 
         if (key == sf::Keyboard::Key::Enter) {
-            for (const auto &e : inputs.getEntities()) {
+            for (const auto &e : inputs.entities()) {
                 auto &in = inputs[e];
                 if (!in.isFocused)
                     continue;

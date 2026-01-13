@@ -620,7 +620,7 @@ namespace rtp::server
             auto netRes = _registry.getComponents<rtp::ecs::components::NetworkId>();
             if (netRes) {
                 auto &nets = netRes->get();
-                for (auto e : nets.getEntities()) {
+                for (auto e : nets.entities()) {
                     netToEntity[nets[e].id] = e;
                 }
             }
