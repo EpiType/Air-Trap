@@ -94,7 +94,7 @@ namespace rtp::client {
             /**
              * @brief Construct a new Application object
              */
-            Application();
+            Application(const std::string& serverIp, uint16_t serverPort);
 
             /**
              * @brief Run the main application loop
