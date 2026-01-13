@@ -30,6 +30,7 @@ keybindings.move_down=Bas
 keybindings.move_left=Gauche
 keybindings.move_right=Droite
 keybindings.shoot=Tirer
+keybindings.reload=Recharger
 keybindings.pause=Pause
 
 # Game

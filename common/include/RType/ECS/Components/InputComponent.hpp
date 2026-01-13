@@ -29,7 +29,9 @@ namespace rtp::ecs::components::server
             MoveUp    = 1 << 0,
             MoveDown  = 1 << 1,
             MoveLeft  = 1 << 2,
-            MoveRight = 1 << 3
+            MoveRight = 1 << 3,
+            Shoot     = 1 << 4,
+            Reload    = 1 << 5
         };
         uint8_t mask = 0;                          /**< Input mask for filtering input types */
         uint32_t lastProcessedTick = 0;            /**< Last processed server tick for input */

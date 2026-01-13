@@ -1,39 +1,358 @@
 {
     "level_id": 1,
     "name": "The Deep Space Entry",
-
     "game_metadata": {
         "level_width_in_pixels": 32000,
-        "player_start_position": {"x": 100, "y": 450},
-        "tileset_path": "assets/levels/geometry/level_01_tiles.json"
+        "player_start_position": {
+            "x": 100,
+            "y": 450
+        },
+        "tileset_path": "common/assets/levels/geometry/level_01_tiles.json"
     },
-
     "theme_data": {
         "background_texture": "assets/textures/backgrounds/nebula_01.png",
         "scroll_speed_factor": 0.5,
         "music_track": "assets/audio/music/theme_A.ogg"
     },
-    
     "spawn_triggers": [
         {
-            "at_position": 500, 
+            "at_time": 3.0,
+            "entity_type": "scout",
             "template_path": "templates/enemy/fighter_01.json",
-            "start_position": {"x": 1280, "y": 250},
+            "start_position": {
+                "x": 1280,
+                "y": 200
+            },
+            "count": 4,
+            "delay_between_spawn": 0.6,
+            "pattern": "sine",
+            "speed": 140.0
+        },
+        {
+            "at_time": 10.0,
+            "entity_type": "scout",
+            "template_path": "templates/enemy/fighter_01.json",
+            "start_position": {
+                "x": 1280,
+                "y": 350
+            },
             "count": 5,
-            "delay_between_spawn": 0.3
+            "delay_between_spawn": 0.55,
+            "pattern": "straight",
+            "speed": 160.0
         },
         {
-            "at_position": 1500,
+            "at_time": 18.0,
+            "entity_type": "tank",
             "template_path": "templates/enemy/fighter_01.json",
-            "start_position": {"x": 1280, "y": 600},
-            "count": 8,
-            "delay_between_spawn": 0.2
+            "start_position": {
+                "x": 1280,
+                "y": 520
+            },
+            "count": 3,
+            "delay_between_spawn": 0.75,
+            "pattern": "sine",
+            "speed": 120.0
         },
         {
-            "at_position": 30000,
-            "template_path": "templates/boss/boss_01.json",
-            "start_position": {"x": 1200, "y": 450},
-            "count": 1
+            "at_time": 27.0,
+            "entity_type": "scout",
+            "template_path": "templates/enemy/fighter_01.json",
+            "start_position": {
+                "x": 1280,
+                "y": 150
+            },
+            "count": 6,
+            "delay_between_spawn": 0.5,
+            "pattern": "sine",
+            "speed": 170.0
+        },
+        {
+            "at_time": 36.0,
+            "entity_type": "boss",
+            "template_path": "templates/enemy/boss/boss_01.json",
+            "start_position": {
+                "x": 1200,
+                "y": 450
+            },
+            "count": 1,
+            "pattern": "static",
+            "speed": 0.0
+        },
+        {
+            "at_time": 52.0,
+            "entity_type": "scout",
+            "template_path": "templates/enemy/fighter_01.json",
+            "start_position": {
+                "x": 1280,
+                "y": 220
+            },
+            "count": 4,
+            "delay_between_spawn": 0.6,
+            "pattern": "sine",
+            "speed": 140.0
+        },
+        {
+            "at_time": 59.0,
+            "entity_type": "scout",
+            "template_path": "templates/enemy/fighter_01.json",
+            "start_position": {
+                "x": 1280,
+                "y": 360
+            },
+            "count": 5,
+            "delay_between_spawn": 0.55,
+            "pattern": "straight",
+            "speed": 160.0
+        },
+        {
+            "at_time": 67.0,
+            "entity_type": "tank",
+            "template_path": "templates/enemy/fighter_01.json",
+            "start_position": {
+                "x": 1280,
+                "y": 520
+            },
+            "count": 3,
+            "delay_between_spawn": 0.75,
+            "pattern": "sine",
+            "speed": 120.0
+        },
+        {
+            "at_time": 76.0,
+            "entity_type": "scout",
+            "template_path": "templates/enemy/fighter_01.json",
+            "start_position": {
+                "x": 1280,
+                "y": 160
+            },
+            "count": 6,
+            "delay_between_spawn": 0.5,
+            "pattern": "sine",
+            "speed": 170.0
+        },
+        {
+            "at_time": 85.0,
+            "entity_type": "boss",
+            "template_path": "templates/enemy/boss/boss_01.json",
+            "start_position": {
+                "x": 1200,
+                "y": 450
+            },
+            "count": 1,
+            "pattern": "static",
+            "speed": 0.0
+        },
+        {
+            "at_time": 101.0,
+            "entity_type": "scout",
+            "template_path": "templates/enemy/fighter_01.json",
+            "start_position": {
+                "x": 1280,
+                "y": 210
+            },
+            "count": 4,
+            "delay_between_spawn": 0.6,
+            "pattern": "sine",
+            "speed": 140.0
+        },
+        {
+            "at_time": 108.0,
+            "entity_type": "scout",
+            "template_path": "templates/enemy/fighter_01.json",
+            "start_position": {
+                "x": 1280,
+                "y": 340
+            },
+            "count": 5,
+            "delay_between_spawn": 0.55,
+            "pattern": "straight",
+            "speed": 160.0
+        },
+        {
+            "at_time": 116.0,
+            "entity_type": "tank",
+            "template_path": "templates/enemy/fighter_01.json",
+            "start_position": {
+                "x": 1280,
+                "y": 520
+            },
+            "count": 3,
+            "delay_between_spawn": 0.75,
+            "pattern": "sine",
+            "speed": 120.0
+        },
+        {
+            "at_time": 125.0,
+            "entity_type": "scout",
+            "template_path": "templates/enemy/fighter_01.json",
+            "start_position": {
+                "x": 1280,
+                "y": 180
+            },
+            "count": 6,
+            "delay_between_spawn": 0.5,
+            "pattern": "sine",
+            "speed": 170.0
+        },
+        {
+            "at_time": 134.0,
+            "entity_type": "boss",
+            "template_path": "templates/enemy/boss/boss_01.json",
+            "start_position": {
+                "x": 1200,
+                "y": 450
+            },
+            "count": 1,
+            "pattern": "static",
+            "speed": 0.0
+        },
+        {
+            "at_time": 150.0,
+            "entity_type": "scout",
+            "template_path": "templates/enemy/fighter_01.json",
+            "start_position": {
+                "x": 1280,
+                "y": 230
+            },
+            "count": 4,
+            "delay_between_spawn": 0.6,
+            "pattern": "sine",
+            "speed": 140.0
+        },
+        {
+            "at_time": 157.0,
+            "entity_type": "scout",
+            "template_path": "templates/enemy/fighter_01.json",
+            "start_position": {
+                "x": 1280,
+                "y": 370
+            },
+            "count": 5,
+            "delay_between_spawn": 0.55,
+            "pattern": "straight",
+            "speed": 160.0
+        },
+        {
+            "at_time": 165.0,
+            "entity_type": "tank",
+            "template_path": "templates/enemy/fighter_01.json",
+            "start_position": {
+                "x": 1280,
+                "y": 520
+            },
+            "count": 3,
+            "delay_between_spawn": 0.75,
+            "pattern": "sine",
+            "speed": 120.0
+        },
+        {
+            "at_time": 174.0,
+            "entity_type": "scout",
+            "template_path": "templates/enemy/fighter_01.json",
+            "start_position": {
+                "x": 1280,
+                "y": 170
+            },
+            "count": 6,
+            "delay_between_spawn": 0.5,
+            "pattern": "sine",
+            "speed": 170.0
+        },
+        {
+            "at_time": 183.0,
+            "entity_type": "boss",
+            "template_path": "templates/enemy/boss/boss_01.json",
+            "start_position": {
+                "x": 1200,
+                "y": 450
+            },
+            "count": 1,
+            "pattern": "static",
+            "speed": 0.0
         }
-    ]
+    ],
+    "powerup_triggers": [
+        {
+            "at_time": 12.0,
+            "type": "heal",
+            "position": {
+                "x": 900,
+                "y": 300
+            },
+            "value": 25.0,
+            "duration": 0.0
+        },
+        {
+            "at_time": 20.0,
+            "type": "speed",
+            "position": {
+                "x": 900,
+                "y": 500
+            },
+            "value": 1.5,
+            "duration": 5.0
+        },
+        {
+            "at_time": 64.0,
+            "type": "heal",
+            "position": {
+                "x": 900,
+                "y": 300
+            },
+            "value": 25.0,
+            "duration": 0.0
+        },
+        {
+            "at_time": 72.0,
+            "type": "speed",
+            "position": {
+                "x": 900,
+                "y": 500
+            },
+            "value": 1.5,
+            "duration": 5.0
+        },
+        {
+            "at_time": 113.0,
+            "type": "heal",
+            "position": {
+                "x": 900,
+                "y": 300
+            },
+            "value": 25.0,
+            "duration": 0.0
+        },
+        {
+            "at_time": 121.0,
+            "type": "speed",
+            "position": {
+                "x": 900,
+                "y": 500
+            },
+            "value": 1.5,
+            "duration": 5.0
+        },
+        {
+            "at_time": 162.0,
+            "type": "heal",
+            "position": {
+                "x": 900,
+                "y": 300
+            },
+            "value": 25.0,
+            "duration": 0.0
+        },
+        {
+            "at_time": 170.0,
+            "type": "speed",
+            "position": {
+                "x": 900,
+                "y": 500
+            },
+            "value": 1.5,
+            "duration": 5.0
+        }
+    ],
+    "obstacle_triggers": []
 }

@@ -30,6 +30,7 @@ keybindings.move_down=Move Down
 keybindings.move_left=Move Left
 keybindings.move_right=Move Right
 keybindings.shoot=Shoot
+keybindings.reload=Reload
 keybindings.pause=Pause
 
 # Game

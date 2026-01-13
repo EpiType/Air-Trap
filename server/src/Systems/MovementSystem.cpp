@@ -20,24 +20,36 @@ namespace rtp::server
     {
         auto view = _registry.zipView<
             rtp::ecs::components::Transform,
-            rtp::ecs::components::server::InputComponent
+            rtp::ecs::components::Velocity
         >();
 
-        constexpr float speed = 200.f;
+        for (auto&& [tf, vel] : view) {
+            tf.position.x += vel.direction.x * dt;
+            tf.position.y += vel.direction.y * dt;
+        }
 
-        for (auto&& [tf, input] : view) {
-            float dx = 0.f;
-            float dy = 0.f;
+        auto playerView = _registry.zipView<
+            rtp::ecs::components::Transform,
+            rtp::ecs::components::BoundingBox,
+            rtp::ecs::components::EntityType
+        >();
 
-            using Bits = rtp::ecs::components::server::InputComponent::InputBits;
+        constexpr float kWindowWidth = 1280.0f;
+        constexpr float kWindowHeight = 720.0f;
 
-            if (input.mask & Bits::MoveUp)    dy -= 1.f; /* Up */
-            if (input.mask & Bits::MoveDown)  dy += 1.f; /* Down */
-            if (input.mask & Bits::MoveLeft)  dx -= 1.f; /* Left */
-            if (input.mask & Bits::MoveRight) dx += 1.f; /* Right */
+        for (auto&& [tf, box, type] : playerView) {
+            if (type.type != rtp::net::EntityType::Player) {
+                continue;
+            }
 
-            tf.position.x += dx * speed * dt;
-            tf.position.y += dy * speed * dt;
+            if (tf.position.x < 0.0f) tf.position.x = 0.0f;
+            if (tf.position.y < 0.0f) tf.position.y = 0.0f;
+
+            const float maxX = kWindowWidth - box.width;
+            const float maxY = kWindowHeight - box.height;
+
+            if (tf.position.x > maxX) tf.position.x = maxX;
+            if (tf.position.y > maxY) tf.position.y = maxY;
         }
     }
 } // namespace rtp::server

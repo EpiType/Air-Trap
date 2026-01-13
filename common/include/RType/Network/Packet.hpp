@@ -36,6 +36,11 @@
  */
 namespace rtp::net
 {
+
+    //////////////////////////////////////////////////////////////////////////
+    // Constants and Enums
+    //////////////////////////////////////////////////////////////////////////
+
     /**
      * @brief Native endianness of the machine
      */
@@ -52,36 +57,62 @@ namespace rtp::net
     constexpr size_t MTU_SIZE = 1400;
 
     /**
+     * @brief Maximum sizes for strings, vectors, and packet bodies
+     */
+    constexpr uint32_t MAX_STRING_SIZE = 2048;
+
+    /**
+     * @brief Maximum size for serialized vectors
+     */
+    constexpr uint32_t MAX_VECTOR_SIZE = 8192;
+
+    /**
+     * @brief Maximum size for packet body
+     */
+    constexpr uint32_t MAX_BODY_SIZE   = 64 * 1024;
+
+    /**
      * @enum OpCode
      * @brief Operation codes for different packet types
      */
     enum class OpCode : uint8_t {
-        None = 0x00,           /**< No operation */
+        None = 0x00,                    /**< No operation */
 
         // Connection Management
-        Hello = 0x01,          /**< Client hello packet */
-        Welcome = 0x02,        /**< Server welcome response */
-        Disconnect = 0x03,     /**< Disconnect notification */
+        Hello = 0x01,                   /**< Client hello packet */
+        Welcome = 0x02,                 /**< Server welcome response */
+        Disconnect = 0x03,              /**< Disconnect notification */
+
+        // Authentication
+        LoginRequest = 0x1A,            /**< Client login request */
+        RegisterRequest = 0x1B,         /**< Server login response */
+        LoginResponse = 0x9A,           /**< Successful connection notification */
+        RegisterResponse = 0x9B,        /**< Incorrect password notification */
 
         // Lobby Management
-        ListRooms = 0x04,     /**< Request for room list */
-        RoomList = 0x05,      /**< Response with room list */
-        CreateRoom = 0x06,    /**< Request to create a room */
-        JoinRoom = 0x07,      /**< Request to join a room */
-        LeaveRoom = 0x08,     /**< Request to leave a room */
-        RoomUpdate = 0x09,   /**< Notification of room update */
-        SetReady = 0x0A,      /**< Set player readiness status */
+        ListRooms = 0x04,               /**< Request for room list */
+        RoomList = 0x05,                /**< Response with room list */
+        CreateRoom = 0x06,              /**< Request to create a room */
+        JoinRoom = 0x07,                /**< Request to join a room */
+        LeaveRoom = 0x08,               /**< Request to leave a room */
+        RoomUpdate = 0x09,              /**< Notification of room update */
+        SetReady = 0x0A,                /**< Set player readiness status */
+        RoomChatSended = 0x0B,          /**< Chat message in room */
+        RoomChatReceived = 0x0C,        /**< Chat message received in room */
+        StartGame = 0x0D,               /**< Notification to start the game */
 
         // Gameplay (C -> S)
-        InputTick = 0x10,      /**< Client input state */
+        InputTick = 0x10,               /**< Client input state */
 
         // Game State (S -> C)
-        WorldUpdate = 0x20, /**< Entity state snapshot */
-        EntitySpawn = 0x21,    /**< Entity spawn notification */
-        EntityDeath = 0x22,     /**< Entity death notification */
-
-        // Game Control
-        StartGame = 0x30      /**< Notification to start the game */
+        // RoomUpdate = 0x20,             /**< Entity state snapshot */
+        EntitySpawn = 0x21,             /**< Entity spawn notification */
+        EntityDeath = 0x22,             /**< Entity death notification */
+        AmmoUpdate = 0x23,              /**< Ammo update notification */
+        Ping = 0x24,                    /**< Ping request */
+        Pong = 0x25,                    /**< Ping response */
+        DebugModeUpdate = 0x26,         /**< Debug mode toggle */
+        Kicked = 0x27                   /**< Player kicked notification */
     };
 
     #pragma pack(push, 1)
@@ -97,7 +128,7 @@ namespace rtp::net
         uint16_t ackId = 0;             /**< Last acknowledged packet */
         OpCode opCode = OpCode::None;   /**< Operation code */
         uint8_t reserved = 0;           /**< Reserved for future use */
-        uint32_t sessionId;             /**< Session identifier */
+        uint32_t sessionId = 0;         /**< Session identifier */
     };
 
     /**
@@ -109,27 +140,185 @@ namespace rtp::net
         Scout  = 2,
         Tank   = 3,
         Boss   = 4,
-        Bullet = 5
+        Bullet = 5,
+        PowerupHeal = 6,
+        PowerupSpeed = 7,
+        Obstacle = 8,
+        EnemyBullet = 9,
+        ObstacleSolid = 10
     };
 
+    //////////////////////////////////////////////////////////////////////////
+    // Payload Structures
+    //////////////////////////////////////////////////////////////////////////
+
+    /***** Connection Management *****/
+    /**
+     * @struct ConnectPayload
+     * @brief Player connection data sended
+     * @callergraph Client
+     * @related Hello OpCode
+     */
+    struct ConnectPayload {
+        uint32_t sessionId;             /**< Session identifier */
+    };
+
+    /**
+     * @struct BooleanPayload
+     * @brief Generic boolean response payload
+     */
+    struct BooleanPayload {
+        uint8_t status;                 /**< Status code */
+    };
+
+    /***** Authentication *****/
+    /**
+     * @struct PlayerLoginPayload
+     * @brief Player login data sended
+     * @callergraph Client
+     * @related LoginRequest OpCode
+     */
+    struct LoginPayload {
+        char username[32];              /**< Player username */
+        char password[32];              /**< Player password */
+    };
+
+    /**
+     * @struct RegisterPayload
+     * @brief Player registration data sended by client
+     * @callergraph Client
+     * @related RegisterRequest OpCode
+     */
+    struct RegisterPayload {
+        char username[32];              /**< Player username */
+        char password[32];              /**< Player password */
+    };
+
+    /**
+     * @struct LoginResponsePayload
+     * @brief Login response data sent by server for LoginResponse
+     * @callergraph Server
+     * @related LoginResponse OpCode
+     */
+    struct LoginResponsePayload {
+        uint8_t success;                /**< Login success flag */
+        char username[32];              /**< Player username */
+    };
+
+    /**
+     * @struct RegisterResponsePayload
+     * @brief Registration response data sent by server for RegisterResponse
+     * @callergraph Server
+     * @related RegisterResponse OpCode
+     */
+    struct RegisterResponsePayload {
+        uint8_t success;                /**< Registration success flag */
+        char username[32];              /**< Player username */
+    };
+
+    /***** Lobby Management *****/
+    /**
+     * @struct RoomInfo
+     * @brief Information about a game room
+     * @callergraph Server
+     * @related RoomList OpCode
+     */
+    struct RoomInfo {
+        uint32_t roomId;                /**< Room identifier */
+        char roomName[64];              /**< Room name */
+        uint32_t currentPlayers;        /**< Current number of players */
+        uint32_t maxPlayers;            /**< Maximum number of players */
+        uint8_t inGame;                 /**< Is the game in progress */
+        float difficulty;               /**< Difficulty level */
+        float speed;                    /**< Speed multiplier */
+        uint32_t duration;              /**< Duration of the game session */
+        uint32_t seed;                  /**< Seed for random generation */
+        uint32_t levelId;               /**< Level identifier */
+    };
+
+    /**
+     * @struct CreateRoomPayload
+     * @brief Data for creating a new room
+     * @callergraph Client
+     * @related CreateRoom OpCode
+     */
+    struct CreateRoomPayload {
+        char roomName[64];              /**< Desired room name */
+        uint32_t maxPlayers;            /**< Maximum number of players */
+        float difficulty;               /**< Difficulty level */
+        float speed;                    /**< Speed multiplier */
+        uint32_t levelId;               /**< Level identifier */ // not used
+        uint32_t seed;                  /**< Seed for random generation */ // not used
+        uint32_t duration;              /**< Duration of the game session */ // not used
+    };
+
+    /**
+     * @struct JoinRoomPayload
+     * @brief Data for joining an existing room
+     * @callergraph Client
+     * @related JoinRoom OpCode
+     */
+    struct JoinRoomPayload {
+        uint32_t roomId;                /**< Room identifier to join */
+        uint8_t isSpectator;            /**< 1 if joining as spectator */
+    };
+
+    /**
+     * @struct RoomUpdatePayload
+     * @brief Data for room update notifications
+     * @callergraph Server
+     * @related RoomUpdate OpCode
+     */
+    struct RoomSnapshotPayload {
+        uint32_t roomId;                /**< Room identifier */
+        uint32_t currentPlayers;        /**< Current number of players */
+        uint32_t serverTick;            /**< Network entity identifier */
+        uint16_t entityCount;           /**< Entity position */
+        uint8_t inGame;                 /**< Is the game in progress */
+    };
+
+    /**
+     * @struct SetReadyPayload
+     * @brief Data for setting player readiness status
+     * @callergraph Client
+     * @related SetReady OpCode
+     */
+    struct SetReadyPayload {
+        uint8_t isReady;                /**< Player readiness status */
+    };
+
+    /**
+     * @struct RoomChatPayload
+     * @brief Data for sending chat messages in a room
+     * @callergraph Client
+     * @related RoomChatSended OpCode
+     */
+    struct RoomChatPayload {
+        char message[256];              /**< Chat message content */
+    };
+
+    /**
+     * @struct RoomChatReceivedPayload
+     * @brief Data for receiving chat messages in a room
+     * @callergraph Server
+     * @related RoomChatReceived OpCode
+     */
+    struct RoomChatReceivedPayload {
+        uint32_t sessionId;             /**< Sender's session identifier */
+        char username[32];              /**< Sender's username */
+        char message[256];              /**< Chat message content */
+    };
+
+    /***** Gameplay *****/
     /**
      * @struct EntitySnapshotPayload
      * @brief Entity state snapshot data
      */
     struct EntitySnapshotPayload {
-        uint32_t netId;         /**< Network entity identifier */
-        Vec2f position;         /**< Entity position */
-        Vec2f velocity;         /**< Entity velocity */
-        float rotation;         /**< Entity rotation */
-    };
-
-    /**
-     * @struct WorldSnapshotPayload
-     * @brief World state snapshot data
-     */
-    struct WorldSnapshotPayload {
-        uint32_t serverTick;    /**< Network entity identifier */
-        uint16_t entityCount;   /**< Entity position */
+        uint32_t netId;                 /**< Network entity identifier */
+        Vec2f position;                 /**< Entity position */
+        Vec2f velocity;                 /**< Entity velocity */
+        float rotation;                 /**< Entity rotation */
     };
 
     /**
@@ -137,10 +326,12 @@ namespace rtp::net
      * @brief Entity spawn notification data
      */
     struct EntitySpawnPayload {
-        uint32_t netId;         /**< Network entity identifier */
-        uint8_t type;           /**< Entity type */
-        Vec2f position;         /**< Spawn position */
-        EntityType entityType;  /**< Type of the entity */
+        uint32_t netId;                 /**< Network entity identifier */
+        uint8_t type;                   /**< Entity type from EntityType */
+        float posX;                     /**< Spawn X position */
+        float posY;                     /**< Spawn Y position */
+        float sizeX{0.0f};              /**< Optional width for static entities */
+        float sizeY{0.0f};              /**< Optional height for static entities */
     };
 
     /**
@@ -148,12 +339,49 @@ namespace rtp::net
      * @brief Entity death notification data
      */
     struct EntityDeathPayload {
-        uint32_t netId;         /**< Network entity identifier */
-        uint8_t type;           /**< Entity type */
-        Vec2f position;         /**< Death position */
+        uint32_t netId;                 /**< Network entity identifier */
+        uint8_t type;                   /**< Entity type */
+        Vec2f position;                 /**< Death position */
+    };
+
+    /**
+     * @struct AmmoUpdatePayload
+     * @brief Ammo update notification data
+     * @callergraph Server
+     * @related AmmoUpdate OpCode
+     */
+    struct AmmoUpdatePayload {
+        uint16_t current;               /**< Current ammo */
+        uint16_t max;                   /**< Max ammo */
+        uint8_t isReloading;            /**< 1 if reloading */
+        float cooldownRemaining;        /**< Remaining reload time */
+    };
+
+    /**
+     * @struct PingPayload
+     * @brief Ping request/response payload
+     * @callergraph Client/Server
+     * @related Ping/Pong OpCodes
+     */
+    struct PingPayload {
+        uint64_t clientTimeMs;          /**< Client timestamp in ms */
+    };
+
+    /**
+     * @struct DebugModePayload
+     * @brief Debug mode toggle data
+     * @callergraph Server
+     * @related DebugModeUpdate OpCode
+     */
+    struct DebugModePayload {
+        uint8_t enabled;                /**< 1 if debug mode enabled */
     };
 
     #pragma pack(pop)
+
+    //////////////////////////////////////////////////////////////////////
+    // Packet Class
+    //////////////////////////////////////////////////////////////////////
 
     /**
      * @using BufferSequence
@@ -170,7 +398,7 @@ namespace rtp::net
      * @brief Client input state data
      */
     struct InputPayload {
-        uint8_t inputMask;      /**< Bitmask of input states */
+        uint8_t inputMask;              /**< Bitmask of input states */
     };
 
     /**
@@ -214,14 +442,25 @@ namespace rtp::net
              * @return The value in network endianness format.
              */
             template <typename T>
-            static inline T to_network(T value) {
-                if constexpr (std::is_integral_v<T>) {
-                    if constexpr (sizeof(T) > 1 && NATIVE_ENDIAN == std::endian::little) {
-                        return std::byteswap(value); 
+            static inline T to_network(T v)
+            {
+                if constexpr (std::is_enum_v<T>) {
+                    using U = std::underlying_type_t<T>;
+                    return static_cast<T>(to_network(static_cast<U>(v)));
+                } else if constexpr (std::is_integral_v<T>) {
+                    if constexpr (sizeof(T) > 1 && NATIVE_ENDIAN == std::endian::little)
+                        return std::byteswap(v);
+                    return v;
+                } else if constexpr (std::is_same_v<T, float>) {
+                    if constexpr (NATIVE_ENDIAN == std::endian::little) {
+                        uint32_t u = std::bit_cast<uint32_t>(v);
+                        u = std::byteswap(u);
+                        return std::bit_cast<float>(u);
                     }
+                    return v;
                 }
-                return value;
-            };
+                return v;
+            }
 
             /**
              * @brief Converts a primitive type (integer, float) from Big-Endian (network) to machine endianness.
@@ -285,6 +524,8 @@ namespace rtp::net
             auto operator>>(std::string &str) -> Packet &;
 
         private:
+            void _bumpBodySizeOrThrow(); /**< Increment body size and check for overflow */
+            
             size_t _readPos = 0;         /**< Current read position in body */
 
             mutable Header _cacheHeader; /**< Cached header with network endianness */

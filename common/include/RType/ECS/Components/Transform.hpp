@@ -15,7 +15,7 @@
  * @brief ECS components for R-Type protocol
  */
 namespace rtp::ecs::components {
-
+    
     /**
      * @struct Transform
      * @brief Component representing position, rotation, and scale of an entity.

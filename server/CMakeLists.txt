@@ -12,14 +12,27 @@ add_executable(r-type_server
     src/Game/GameManager.cpp
     src/Game/Player.cpp
     src/Game/Room.cpp
+    src/Game/LevelData.cpp
     src/Systems/MovementSystem.cpp
-    src/Systems/ServerNetworkSystem.cpp
+    src/Systems/NetworkSyncSystem.cpp
+    src/Systems/AuthSystem.cpp
+    src/Systems/RoomSystem.cpp
+    src/Systems/PlayerSystem.cpp
+    src/Systems/EntitySystem.cpp
+    src/Systems/PlayerMouvementSystem.cpp
+    src/Systems/PlayerShootSystem.cpp
+    src/Systems/EnemyAISystem.cpp
+    src/Systems/EnemyShootSystem.cpp
+    src/Systems/LevelSystem.cpp
+    src/Systems/CollisionSystem.cpp
+    src/Systems/BulletCleanupSystem.cpp
 )
 
 target_include_directories(r-type_server PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include/ServerNetwork
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Game
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Systems
 )
 
 target_link_libraries(r-type_server PRIVATE
