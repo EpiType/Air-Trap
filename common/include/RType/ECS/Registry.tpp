@@ -14,7 +14,7 @@ namespace rtp::ecs
     ///////////////////////////////////////////////////////////////////////////
 
     template <Component T, typename Self>
-    auto Registry::registerComponent(this Self &self)
+    auto Registry::subscribe(this Self &self)
         -> std::expected<std::reference_wrapper<ConstLike<Self,
                                                           SparseArray<T>>>,
                          rtp::Error>
