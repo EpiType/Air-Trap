@@ -8,6 +8,7 @@
 #include "Systems/InputSystem.hpp"
 #include "RType/ECS/Components/UI/TextInput.hpp"
 #include <SFML/Graphics.hpp>
+#include <SFML/Window/Joystick.hpp>
 
 namespace rtp::client {
 
@@ -47,6 +48,7 @@ namespace rtp::client {
 
         uint8_t mask = 0;
 
+        // Keyboard input
         if (sf::Keyboard::isKeyPressed(_settings.getKey(KeyAction::MoveUp)))
             mask |= InputBits::MoveUp;
         if (sf::Keyboard::isKeyPressed(_settings.getKey(KeyAction::MoveDown)))
@@ -59,6 +61,43 @@ namespace rtp::client {
             mask |= InputBits::Shoot;
         if (sf::Keyboard::isKeyPressed(_settings.getKey(KeyAction::Reload)))
             mask |= InputBits::Reload;
+
+        // Gamepad input (if enabled)
+        if (_settings.getGamepadEnabled() && sf::Joystick::isConnected(0)) {
+            float deadzone = _settings.getGamepadDeadzone();
+            
+            // Left stick for movement (axes X and Y)
+            float axisX = sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::X);
+            float axisY = sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::Y);
+            
+            if (axisY < -deadzone)
+                mask |= InputBits::MoveUp;
+            if (axisY > deadzone)
+                mask |= InputBits::MoveDown;
+            if (axisX < -deadzone)
+                mask |= InputBits::MoveLeft;
+            if (axisX > deadzone)
+                mask |= InputBits::MoveRight;
+            
+            // D-pad for movement (PovX and PovY)
+            float povX = sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::PovX);
+            float povY = sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::PovY);
+            
+            if (povY > 50)
+                mask |= InputBits::MoveUp;
+            if (povY < -50)
+                mask |= InputBits::MoveDown;
+            if (povX < -50)
+                mask |= InputBits::MoveLeft;
+            if (povX > 50)
+                mask |= InputBits::MoveRight;
+            
+            // Buttons: Configurable
+            if (sf::Joystick::isButtonPressed(0, _settings.getGamepadShootButton()))
+                mask |= InputBits::Shoot;
+            if (sf::Joystick::isButtonPressed(0, _settings.getGamepadReloadButton()))
+                mask |= InputBits::Reload;
+        }
 
         if (mask == _lastMask)
             return;
