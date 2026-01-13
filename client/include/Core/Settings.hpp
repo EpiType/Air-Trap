@@ -158,6 +158,76 @@ namespace rtp::client
 
             std::string getDifficultyName(Difficulty difficulty) const;
 
+            bool getGamepadEnabled() const
+            {
+                return _gamepadEnabled;
+            }
+
+            void setGamepadEnabled(bool enabled)
+            {
+                _gamepadEnabled = enabled;
+            }
+
+            float getGamepadDeadzone() const
+            {
+                return _gamepadDeadzone;
+            }
+
+            void setGamepadDeadzone(float deadzone)
+            {
+                _gamepadDeadzone = std::clamp(deadzone, 0.0f, 100.0f);
+            }
+
+            unsigned int getGamepadShootButton() const
+            {
+                return _gamepadShootButton;
+            }
+
+            void setGamepadShootButton(unsigned int button)
+            {
+                _gamepadShootButton = button;
+            }
+
+            unsigned int getGamepadReloadButton() const
+            {
+                return _gamepadReloadButton;
+            }
+
+            void setGamepadReloadButton(unsigned int button)
+            {
+                _gamepadReloadButton = button;
+            }
+
+            unsigned int getGamepadValidateButton() const
+            {
+                return _gamepadValidateButton;
+            }
+
+            void setGamepadValidateButton(unsigned int button)
+            {
+                _gamepadValidateButton = button;
+            }
+
+            float getGamepadCursorSpeed() const
+            {
+                return _gamepadCursorSpeed;
+            }
+
+            void setGamepadCursorSpeed(float speed)
+            {
+                _gamepadCursorSpeed = std::clamp(speed, 1.0f, 20.0f);
+            }
+
+            unsigned int getGamepadPauseButton() const
+            {
+                return _gamepadPauseButton;
+            }
+
+            void setGamepadPauseButton(unsigned int button)
+            {
+                _gamepadPauseButton = button;
+            }
+
             bool save(const std::string &filename = "config/settings.cfg");
             bool load(const std::string &filename = "config/settings.cfg");
 
@@ -177,6 +247,15 @@ namespace rtp::client
             ColorBlindMode _colorBlindMode{ColorBlindMode::None};
             bool _highContrast{false};
             Difficulty _difficulty{Difficulty::Normal};
+
+            // Gamepad settings
+            bool _gamepadEnabled{true};
+            float _gamepadDeadzone{15.0f}; // Percentage (0-100)
+            unsigned int _gamepadShootButton{0};   // Button A (Xbox) / X (PlayStation)
+            unsigned int _gamepadReloadButton{2};  // Button X (Xbox) / Square (PlayStation)
+            unsigned int _gamepadValidateButton{0}; // Button A for menu navigation
+            float _gamepadCursorSpeed{8.0f};       // Cursor speed for menu navigation (1-20)
+            unsigned int _gamepadPauseButton{7};   // Button Start/Menu (Xbox/generic)
 
             std::vector<VolumeCallback> _onMasterVolumeChanged;
             std::vector<VolumeCallback> _onMusicVolumeChanged;

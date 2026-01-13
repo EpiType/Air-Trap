@@ -94,7 +94,7 @@ namespace rtp::client
 
     void Application::initUiSystems(void)
     {
-        _uiSystemManager.addSystem<rtp::client::UISystem>(_uiRegistry, _window);
+        _uiSystemManager.addSystem<rtp::client::UISystem>(_uiRegistry, _window, _settings);
         // _uiSystemManager.addSystem<Client::Systems::SettingsMenuSystem>(_uiRegistry, _window, _settings);
         _uiSystemManager.addSystem<Client::Systems::UIRenderSystem>(_uiRegistry, _window);
         rtp::log::info("OK : UI systems initialized");
@@ -149,6 +149,9 @@ namespace rtp::client
             _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
         );
         _scenes[GameState::KeyBindings] = std::make_unique<rtp::client::Scenes::KeyBindingScene>(
+            _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
+        );
+        _scenes[GameState::GamepadSettings] = std::make_unique<rtp::client::Scenes::GamepadSettingsScene>(
             _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
         );
         _scenes[GameState::Paused] = std::make_unique<rtp::client::Scenes::PauseScene>(
@@ -277,6 +280,11 @@ namespace rtp::client
         }
 
         _uiSystemManager.getSystem<Client::Systems::UIRenderSystem>().update(_lastDt);
+        
+        // Only show gamepad cursor in menus, not in-game (Playing state)
+        if (_currentState != GameState::Playing) {
+            _uiSystemManager.getSystem<UISystem>().renderGamepadCursor(_window);
+        }
 
         _window.display();
     }

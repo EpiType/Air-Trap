@@ -19,6 +19,12 @@ settings.easy=Facile
 settings.normal=Normale
 settings.hard=Difficile
 settings.infernal=Infernale
+settings.gamepad=Supporto Gamepad
+settings.gamepad_settings=IMPOSTAZIONI GAMEPAD
+settings.gamepad_deadzone=Zona morta dello stick
+settings.enabled=Abilitato
+settings.disabled=Disabilitato
+settings.close=CHIUDI
 settings.back=INDIETRO
 settings.key_bindings=CONFIGURAZIONE TASTI
 
