@@ -99,7 +99,7 @@ namespace rtp::ecs
     T &SparseArray<T>::emplace(Entity entity, Args &&...args)
     {
         if (entity.index() >= this->_sparse.size())
-            this->_sparse.resize(entity + 1, NullIndex);
+            this->_sparse.resize(entity.index() + 1, NullIndex);
 
         size_t index = this->_sparse[entity.index()];
         if (index != NullIndex) {

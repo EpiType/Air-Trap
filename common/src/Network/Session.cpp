@@ -5,7 +5,7 @@
  * Date   : 11/12/2025
  */
 
-#include "RType/Network/Core/Session.hpp"
+#include "RType/Network/Session.hpp"
 #include "RType/Logger.hpp"
 
 namespace rtp::net

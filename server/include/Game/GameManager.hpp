@@ -14,15 +14,29 @@
     #include <memory>
     #include <map>
     #include <mutex>
+    #include <thread>
+    #include <chrono>
     
+    #include "RType/Logger.hpp"
     #include "Game/Room.hpp"
     #include "Game/Player.hpp"
     #include "ServerNetwork/ServerNetwork.hpp"
     #include "RType/ECS/Registry.hpp"
 
     /* Systems */
-    #include "Systems/ServerNetworkSystem.hpp"
+    #include "Systems/NetworkSyncSystem.hpp"
     #include "Systems/MovementSystem.hpp"
+    #include "Systems/AuthSystem.hpp"
+    #include "Systems/RoomSystem.hpp"
+    #include "Systems/PlayerSystem.hpp"
+    #include "Systems/EntitySystem.hpp"
+    #include "Systems/PlayerMouvementSystem.hpp"
+    #include "Systems/PlayerShootSystem.hpp"
+    #include "Systems/EnemyAISystem.hpp"
+    #include "Systems/LevelSystem.hpp"
+    #include "Systems/CollisionSystem.hpp"
+    #include "Systems/EnemyShootSystem.hpp"
+    #include "Systems/BulletCleanupSystem.hpp"
 
     /* Components */
     #include "RType/ECS/Components/InputComponent.hpp"
@@ -30,6 +44,14 @@
     #include "RType/ECS/Components/Velocity.hpp"
     #include "RType/ECS/Components/NetworkId.hpp"
     #include "RType/ECS/Components/EntityType.hpp"
+    #include "RType/ECS/Components/SimpleWeapon.hpp"
+    #include "RType/ECS/Components/Ammo.hpp"
+    #include "RType/ECS/Components/MouvementPattern.hpp"
+    #include "RType/ECS/Components/Health.hpp"
+    #include "RType/ECS/Components/BoundingBox.hpp"
+    #include "RType/ECS/Components/Damage.hpp"
+    #include "RType/ECS/Components/Powerup.hpp"
+    #include "RType/ECS/Components/MovementSpeed.hpp"
 
 /**
  * @namespace rtp::server
@@ -90,54 +112,100 @@ namespace rtp::server
             void handlePlayerDisconnect(uint32_t sessionId);
 
             /**
+             * @brief Handle player login with provided username if successful then join the lobby
+             * @param sessionId Unique identifier of the player
+             * @param username Player's username
+             */
+            void handlePlayerLoginAuth(uint32_t sessionId, const net::Packet &packet);
+
+            /**
+             * @brief Handle player registration with provided username
+             * @param sessionId Unique identifier of the player
+             * @param username Player's username
+             */
+            void handlePlayerRegisterAuth(uint32_t sessionId, const net::Packet &packet);
+
+            /**
+             * @brief Handle a request to list available rooms
+             * @param sessionId Unique identifier of the player requesting the room list
+             * @param packet Reference to the received Packet
+             */
+            void handleListRooms(uint32_t sessionId);
+
+            /**
+             * @brief Handle a generic incoming packet from a player
+             * @param sessionId Unique identifier of the player sending the packet
+             * @param packet Reference to the received Packet
+             */
+            void handleCreateRoom(uint32_t sessionId, const net::Packet &packet);
+
+            /**
+             * @brief Handle a generic incoming packet from a player
+             * @param sessionId Unique identifier of the player sending the packet
+             * @param packet Reference to the received Packet
+             */
+            void handleJoinRoom(uint32_t sessionId, const net::Packet &packet);
+
+            /**
+             * @brief Handle a generic incoming packet from a player
+             * @param sessionId Unique identifier of the player sending the packet
+             * @param packet Reference to the received Packet
+             */
+            void handleLeaveRoom(uint32_t sessionId, const net::Packet &packet);
+
+            /**
+             * @brief Handle a generic incoming packet from a player
+             * @param sessionId Unique identifier of the player sending the packet
+             * @param packet Reference to the received Packet
+             */
+            void handleSetReady(uint32_t sessionId, const net::Packet &packet);
+
+            /**
+             * @brief Handle a generic incoming packet from a player
+             * @param sessionId Unique identifier of the player sending the packet
+             * @param packet Reference to the received Packet
+             */
+            void handleRoomChatSended(uint32_t sessionId, const net::Packet &packet);
+
+            /**
              * @brief Handle an incoming packet from a player
              * @param sessionId Unique identifier of the player sending the packet
              * @param packet Reference to the received Packet
              */
             void handlePacket(uint32_t sessionId, const net::Packet &packet);
-            
-            ////////////////////////////////////////////////////////////////////////////
-            // Room and Player Management
-            ////////////////////////////////////////////////////////////////////////////
-            
-            /**
-             * @brief Attempt to join a player to a lobby or specified room
-             * @param player Shared pointer to the Player attempting to join
-             * @param roomId Optional room ID to join; defaults to 0 (lobby)
-             */
-            void tryJoinLobby(PlayerPtr player, uint32_t roomId = 0);
+            void handlePing(uint32_t sessionId, const net::Packet &packet);
 
-            /**
-             * @brief Send a lobby update to all players in the room
-             * @param room Reference to the Room to update
-             */
-            void sendLobbyUpdate(const Room &room);
+            bool handleChatCommand(PlayerPtr player, const std::string& message);
+            void sendChatToSession(uint32_t sessionId, const std::string& message);
+            void sendSystemMessageToRoom(uint32_t roomId, const std::string& message);
 
-            /**
-             * @brief Spawn an entity for the player in the ECS
-             * @param player Shared pointer to the Player for whom to spawn the entity
-             */
-            void spawnPlayerEntity(PlayerPtr player);
-
-            /**
-             * @brief Spawn an enemy entity at the specified position
-             * @param position Position where the enemy will be spawned
-             */
-            void spawnEnemyEntity(const Vec2f &position);
+            void sendEntitySpawnToSessions(const rtp::ecs::Entity& entity,
+                                           const std::vector<uint32_t>& sessions);
+            void sendRoomEntitySpawnsToSession(uint32_t roomId, uint32_t sessionId);
 
         private:
             ServerNetwork &_networkManager;                            /**< Reference to the ServerNetwork instance */
-            std::map<uint32_t, std::shared_ptr<Room>> _rooms;          /**< Map of room ID to Room instances */
-            std::map<uint32_t, uint32_t> _playerRoomMap;               /**< Map of player session ID to room ID */
-            std::map<uint32_t, PlayerPtr> _players;                    /**< Map of session ID to Player instances */
-            uint32_t _nextRoomId = 1;                                  /**< Next available room ID */
-    
+
             rtp::ecs::Registry _registry;                              /**< ECS Registry for managing entities and components */
-            std::unique_ptr<ServerNetworkSystem> _serverNetworkSystem; /**< Server network system for handling network-related ECS operations */
+
+            std::unique_ptr<NetworkSyncSystem> _networkSyncSystem; /**< Server network system for handling network-related ECS operations */
             std::unique_ptr<MovementSystem> _movementSystem;           /**< Movement system for updating entity positions */
+            std::unique_ptr<AuthSystem> _authSystem;                   /**< Authentication system for handling player logins */
+            std::unique_ptr<RoomSystem> _roomSystem;                   /**< Room system for handling room management */
+            std::unique_ptr<PlayerSystem> _playerSystem;               /**< Player system for handling player-related operations */
+            std::unique_ptr<EntitySystem> _entitySystem;               /**< Entity system for handling entity-related operations */
+            std::unique_ptr<PlayerMouvementSystem> _playerMouvementSystem; /**< Player movement system for handling player-specific movement logic */
+            std::unique_ptr<PlayerShootSystem> _playerShootSystem;      /**< Player shooting system for handling bullets */
+            std::unique_ptr<EnemyAISystem> _enemyAISystem;              /**< Enemy AI system for movement patterns */
+            std::unique_ptr<LevelSystem> _levelSystem;                  /**< Level system for timed spawns */
+            std::unique_ptr<CollisionSystem> _collisionSystem;          /**< Collision system for pickups/obstacles */
+            std::unique_ptr<EnemyShootSystem> _enemyShootSystem;        /**< Enemy shooting system */
+            std::unique_ptr<BulletCleanupSystem> _bulletCleanupSystem;  /**< Bullet cleanup system */
 
             uint32_t _serverTick = 0;                                  /**< Current server tick for synchronization */
             mutable std::mutex _mutex;                                 /**< Mutex for thread-safe operations */
+            bool _gamePaused = false;                                  /**< Global game pause flag */
+            float _gameSpeed = 1.0f;                                   /**< Global game speed multiplier */
     };
 }
 
