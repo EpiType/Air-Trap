@@ -49,6 +49,17 @@ namespace rtp::client
     };
 
     /**
+     * @enum Difficulty
+     * @brief Game difficulty levels (solo mode only)
+     */
+    enum class Difficulty {
+        Easy,
+        Normal,
+        Hard,
+        Infernal
+    };
+
+    /**
      * @class Settings
      * @brief Manages game settings and preferences
      */
@@ -135,6 +146,18 @@ namespace rtp::client
                 _highContrast = enabled;
             }
 
+            Difficulty getDifficulty() const
+            {
+                return _difficulty;
+            }
+
+            void setDifficulty(Difficulty difficulty)
+            {
+                _difficulty = difficulty;
+            }
+
+            std::string getDifficultyName(Difficulty difficulty) const;
+
             bool save(const std::string &filename = "config/settings.cfg");
             bool load(const std::string &filename = "config/settings.cfg");
 
@@ -153,6 +176,7 @@ namespace rtp::client
 
             ColorBlindMode _colorBlindMode{ColorBlindMode::None};
             bool _highContrast{false};
+            Difficulty _difficulty{Difficulty::Normal};
 
             std::vector<VolumeCallback> _onMasterVolumeChanged;
             std::vector<VolumeCallback> _onMusicVolumeChanged;

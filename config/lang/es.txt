@@ -13,6 +13,11 @@ settings.music_volume=Volumen de Música
 settings.sfx_volume=Volumen de Efectos
 settings.language=Idioma
 settings.colorblind_mode=Modo Daltonismo
+settings.difficulty=Dificultad Individual
+settings.easy=Fácil
+settings.normal=Normal
+settings.hard=Difícil
+settings.infernal=Infernal
 settings.back=ATRÁS
 settings.key_bindings=ASIGNACIÓN DE TECLAS
 
