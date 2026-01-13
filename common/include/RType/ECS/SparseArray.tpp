@@ -39,7 +39,7 @@
  * with O(1) access by entity ID.
  */
 
- #include <algorithm>
+#include <algorithm>
 
 namespace rtp::ecs
 {
@@ -111,35 +111,29 @@ namespace rtp::ecs
         this->_sparse[entity.index()] = index;
         this->_dense.push_back(entity);
         
-        return _data.emplace_back(std::forward<Args>(args)...);
+        return this->_data.emplace_back(std::forward<Args>(args)...);
     }
 
     template <Component T>
     template <typename Self>
-    auto &&SparseArray<T>::getData(this Self &&self) noexcept
+    auto SparseArray<T>::data(this Self &&self) noexcept
     {
-        return std::forward_like<Self>(self)._data;   
+        if constexpr (std::is_const_v<std::remove_reference_t<Self>>) {
+            return std::span<const T>{self._data};
+        } else {
+            return std::span<T>{self._data};
+        }
     }
 
     template <Component T>
     template <typename Self>
-    auto &&SparseArray<T>::getEntities(this Self &&self) noexcept
+    auto SparseArray<T>::entities(this Self &&self) noexcept
     {
-        return std::forward_like<Self>(self)._dense;
-    }
-
-    template <Component T>
-    template <typename Self>
-    auto SparseArray<T>::begin(this Self &&self) noexcept
-    {
-        return std::forward_like<Self>(self)._data.begin();
-    }
-
-    template <Component T>
-    template <typename Self>
-    auto SparseArray<T>::end(this Self &&self) noexcept
-    {
-        return std::forward_like<Self>(self)._data.end();
+        if constexpr (std::is_const_v<std::remove_reference_t<Self>>) {
+            return std::span<const Entity>{self._dense};
+        } else {
+            return std::span<Entity>{self._dense};
+        }
     }
 
     template <Component T>
