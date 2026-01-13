@@ -15,7 +15,7 @@ namespace rtp::client
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
-    Application::Application()
+    Application::Application(const std::string& serverIp, uint16_t serverPort)
         : _window(sf::VideoMode(
                       {static_cast<unsigned int>(UIConstants::WINDOW_WIDTH),
                        static_cast<unsigned int>(UIConstants::WINDOW_HEIGHT)}),
@@ -24,7 +24,7 @@ namespace rtp::client
         , _worldSystemManager(_worldRegistry)
         , _uiEntityBuilder(_uiRegistry)
         , _worldEntityBuilder(_worldRegistry)
-        , _clientNetwork("127.0.0.1", 5000)
+        , _clientNetwork(serverIp, serverPort)
     {
         _window.setFramerateLimit(60);
 
@@ -52,7 +52,12 @@ namespace rtp::client
         // _audioManager.setMusicVolume(_settings.getMusicVolume());
         // _audioManager.setSfxVolume(_settings.getSfxVolume());
 
-        _clientNetwork.start();
+        try {
+            _clientNetwork.start();
+        } catch (const std::exception& e) {
+            throw std::runtime_error(
+                std::string("Failed to start client network: ") + e.what());
+        }
         initUiSystems();
         initWorldSystems();
         initUiECS();
