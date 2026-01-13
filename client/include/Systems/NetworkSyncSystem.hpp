@@ -233,6 +233,8 @@ namespace rtp::client {
 
             void onSpawnEntityFromServer(rtp::net::Packet& packet);
 
+            void onEntityDeath(rtp::net::Packet& packet);
+
             void onRoomUpdate(rtp::net::Packet& packet);
 
             void onRoomChatReceived(rtp::net::Packet& packet);
@@ -244,36 +246,6 @@ namespace rtp::client {
             void onPong(rtp::net::Packet& packet);
 
             void onDebugModeUpdate(rtp::net::Packet& packet);
-
-            // /**
-            //  * @brief Disconnect a player based on session ID
-            //  * @param sessionId ID of the session to disconnect
-            //  */
-            // void disconnectPlayer(uint32_t sessionId);
-
-            // /**
-            //  * @brief Apply a world update from a network packet
-            //  * @param packet Reference to the network packet containing the world update
-            //  */
-            // void applyWorldUpdate(rtp::net::Packet& packet);
-
-            // /**
-            //  * @brief Spawn a new entity based on a snapshot payload
-            //  * @param snap Reference to the entity snapshot payload
-            //  */
-            // void spawnEntity(const rtp::net::EntitySnapshotPayload& snap);
-
-            // /**
-            //  * @brief Spawn an entity based on server spawn payload
-            //  * @param payload Reference to the entity spawn payload
-            //  */
-            // void spawnEntityFromServer(const rtp::net::EntitySpawnPayload& payload);
-
-            // /**
-            //  * @brief Add sprite component for scout entity
-            //  * @param entity Entity to which the sprite component will be added
-            //  */
-            // void addScoutSprite(rtp::ecs::Entity entity);
     };
 }
 

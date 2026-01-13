@@ -400,6 +400,8 @@ namespace rtp::net
         *this << data.type;
         *this << data.posX;
         *this << data.posY;
+        *this << data.sizeX;
+        *this << data.sizeY;
         return *this;
     }
 
@@ -410,6 +412,8 @@ namespace rtp::net
         *this >> data.type;
         *this >> data.posX;
         *this >> data.posY;
+        *this >> data.sizeX;
+        *this >> data.sizeY;
         return *this;
     }
 

@@ -7,6 +7,10 @@
 
 #include "Systems/EnemyAISystem.hpp"
 
+#include <algorithm>
+#include <cmath>
+#include <unordered_map>
+
 namespace rtp::server
 {
     //////////////////////////////////////////////////////////////////////////
@@ -19,35 +23,70 @@ namespace rtp::server
     void EnemyAISystem::update(float dt)
     {
         _time += dt;
-        
+
+        std::unordered_map<uint32_t, float> frontX;
+        {
+            auto players = _registry.zipView<
+                rtp::ecs::components::Transform,
+                rtp::ecs::components::EntityType,
+                rtp::ecs::components::RoomId
+            >();
+            for (auto&& [tf, type, room] : players) {
+                if (type.type != rtp::net::EntityType::Player) {
+                    continue;
+                }
+                auto it = frontX.find(room.id);
+                if (it == frontX.end() || tf.position.x > it->second) {
+                    frontX[room.id] = tf.position.x;
+                }
+            }
+        }
+
         auto view = _registry.zipView<
+            rtp::ecs::components::Transform,
             rtp::ecs::components::Velocity,
             rtp::ecs::components::MouvementPattern,
-            rtp::ecs::components::EntityType
+            rtp::ecs::components::EntityType,
+            rtp::ecs::components::RoomId
         >();
 
-        for (auto&& [vel, pat, type] : view) {
-            if (type.type != rtp::net::EntityType::Scout)
+        constexpr float minAhead = 250.0f;
+        constexpr float anchorX = 900.0f;
+        constexpr float followGain = 2.0f;
+
+        for (auto&& [tf, vel, pat, type, room] : view) {
+            if (type.type != rtp::net::EntityType::Scout &&
+                type.type != rtp::net::EntityType::Tank &&
+                type.type != rtp::net::EntityType::Boss) {
                 continue;
+            }
+
+            float targetX = anchorX;
+            auto it = frontX.find(room.id);
+            if (it != frontX.end()) {
+                targetX = std::max(anchorX, it->second + minAhead);
+            }
+
+            const float dx = targetX - tf.position.x;
+            const float maxXSpeed = std::max(60.0f, pat.speed);
+            const float desiredX = std::clamp(dx * followGain, -maxXSpeed, maxXSpeed);
+
+            vel.direction.x = desiredX;
 
             switch (pat.pattern) {
                 case rtp::ecs::components::Patterns::StraightLine:
-                    vel.velocity.x = -pat.speed;
-                    vel.velocity.y = 0.f;
+                    vel.direction.y = 0.f;
                     break;
 
                 case rtp::ecs::components::Patterns::SineWave:
-                    vel.velocity.x = -pat.speed;
-                    vel.velocity.y = pat.amplitude * std::sin(_time * pat.frequency);
+                    vel.direction.y = pat.amplitude * std::sin(_time * pat.frequency);
                     break;
 
                 case rtp::ecs::components::Patterns::Static:
-                    vel.velocity.x = 0.f;
-                    vel.velocity.y = 0.f;
+                    vel.direction.y = 0.f;
                     break;
 
                 default:
-                    // after
                     break;
             }
         }

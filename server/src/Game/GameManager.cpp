@@ -10,6 +10,7 @@
 
 #include <cctype>
 #include <cstring>
+#include <unordered_map>
 
 using namespace rtp::net;
 
@@ -30,6 +31,12 @@ namespace rtp::server
         _registry.registerComponent<rtp::ecs::components::RoomId>();
         _registry.registerComponent<rtp::ecs::components::SimpleWeapon>();
         _registry.registerComponent<rtp::ecs::components::Ammo>();
+        _registry.registerComponent<rtp::ecs::components::MouvementPattern>();
+        _registry.registerComponent<rtp::ecs::components::Health>();
+        _registry.registerComponent<rtp::ecs::components::BoundingBox>();
+        _registry.registerComponent<rtp::ecs::components::Damage>();
+        _registry.registerComponent<rtp::ecs::components::Powerup>();
+        _registry.registerComponent<rtp::ecs::components::MovementSpeed>();
 
         _networkSyncSystem = std::make_unique<NetworkSyncSystem>(_networkManager, _registry);
         _movementSystem = std::make_unique<MovementSystem>(_registry);
@@ -39,6 +46,13 @@ namespace rtp::server
         _entitySystem = std::make_unique<EntitySystem>(_registry, _networkManager, *_networkSyncSystem);
         _playerMouvementSystem = std::make_unique<PlayerMouvementSystem>(_registry);
         _playerShootSystem = std::make_unique<PlayerShootSystem>(_registry, *_roomSystem, *_networkSyncSystem);
+        _enemyAISystem = std::make_unique<EnemyAISystem>(_registry);
+        _levelSystem = std::make_unique<LevelSystem>(_registry, *_entitySystem, *_roomSystem, *_networkSyncSystem);
+        _collisionSystem = std::make_unique<CollisionSystem>(_registry, *_roomSystem, *_networkSyncSystem);
+        _enemyShootSystem = std::make_unique<EnemyShootSystem>(_registry, *_roomSystem, *_networkSyncSystem);
+        _bulletCleanupSystem = std::make_unique<BulletCleanupSystem>(_registry, *_roomSystem, *_networkSyncSystem);
+
+        _levelSystem->registerLevelPath(1, "common/assets/levels/level_01.json");
 
         _roomSystem->setOnRoomStarted(
             [this](uint32_t roomId) {
@@ -48,6 +62,8 @@ namespace rtp::server
                     return;
                 }
 
+                _levelSystem->startLevelForRoom(roomId, room->getLevelId());
+
                 const auto players = room->getPlayers();
                 std::vector<uint32_t> sessions;
                 sessions.reserve(players.size());
@@ -55,19 +71,17 @@ namespace rtp::server
                     sessions.push_back(player->getId());
                 }
 
+                const LevelData* level = _levelSystem->getLevelData(roomId);
+                const rtp::Vec2f spawnPos = level
+                    ? level->playerStart
+                    : rtp::Vec2f{100.f, 100.f};
+
                 for (auto& player : players) {
-                    auto entity = _entitySystem->createPlayerEntity(player);
+                    auto entity = _entitySystem->createPlayerEntity(player, spawnPos);
                     uint32_t entityId = static_cast<uint32_t>(entity.index());
                     player->setEntityId(entityId);
                     rtp::log::info("Spawned Entity {} for Player {}", entity.index(), player->getId());
                     _networkSyncSystem->bindSessionToEntity(player->getId(), entityId);
-                    sendEntitySpawnToSessions(entity, sessions);
-                }
-
-                for (int i = 0; i < 5; ++i) {
-                    auto entity = _entitySystem->creaetEnemyEntity(roomId, {120.f + i * 15.f, 200.f + i * 8.f}, 
-                        rtp::ecs::components::Patterns::SineWave, 200.0f, 40.0f, 2.0f);
-                    rtp::log::info("Spawned Enemy Entity {} in room {}", entity.index(), roomId);
                     sendEntitySpawnToSessions(entity, sessions);
                 }
             }
@@ -95,9 +109,14 @@ namespace rtp::server
             if (!_gamePaused) {
                 const float scaledDt = dt * _gameSpeed;
                 _roomSystem->update(scaledDt);
+                _levelSystem->update(scaledDt);
+                _enemyAISystem->update(scaledDt);
                 _playerMouvementSystem->update(scaledDt);
                 _playerShootSystem->update(scaledDt);
+                _enemyShootSystem->update(scaledDt);
                 _movementSystem->update(scaledDt);
+                _collisionSystem->update(scaledDt);
+                _bulletCleanupSystem->update(scaledDt);
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(16));
         }
@@ -249,7 +268,10 @@ namespace rtp::server
                 static_cast<uint8_t>(payload.maxPlayers),
                 payload.difficulty,
                 payload.speed,
-                Room::RoomType::Public
+                Room::RoomType::Public,
+                payload.levelId,
+                payload.seed,
+                payload.duration
             );
             success = (newId != 0) ? 1 : 0;
         }
@@ -545,6 +567,7 @@ namespace rtp::server
         auto transformRes = _registry.getComponents<rtp::ecs::components::Transform>();
         auto typeRes = _registry.getComponents<rtp::ecs::components::EntityType>();
         auto netRes = _registry.getComponents<rtp::ecs::components::NetworkId>();
+        auto boxRes = _registry.getComponents<rtp::ecs::components::BoundingBox>();
         if (!transformRes || !typeRes || !netRes) {
             rtp::log::error("Missing component array for EntitySpawn");
             return;
@@ -553,6 +576,7 @@ namespace rtp::server
         auto &transforms = transformRes->get();
         auto &types = typeRes->get();
         auto &nets = netRes->get();
+        auto *boxes = boxRes ? &boxRes->get() : nullptr;
         if (!transforms.has(entity) || !types.has(entity) || !nets.has(entity)) {
             rtp::log::error("Entity {} missing Transform/EntityType/NetworkId", entity.index());
             return;
@@ -561,12 +585,21 @@ namespace rtp::server
         const auto &transform = transforms[entity];
         const auto &type = types[entity];
         const auto &net = nets[entity];
+        float sizeX = 0.0f;
+        float sizeY = 0.0f;
+        if (boxes && boxes->has(entity)) {
+            const auto &box = (*boxes)[entity];
+            sizeX = box.width;
+            sizeY = box.height;
+        }
         rtp::net::Packet packet(rtp::net::OpCode::EntitySpawn);
         rtp::net::EntitySpawnPayload payload = {
             net.id,
             static_cast<uint8_t>(type.type),
             transform.position.x,
-            transform.position.y
+            transform.position.y,
+            sizeX,
+            sizeY
         };
         packet << payload;
         _networkSyncSystem->sendPacketToSessions(sessions, packet, rtp::net::NetworkMode::TCP);
@@ -580,17 +613,42 @@ namespace rtp::server
             rtp::ecs::components::EntityType,
             rtp::ecs::components::RoomId
         >();
+        auto boxRes = _registry.getComponents<rtp::ecs::components::BoundingBox>();
+        auto *boxes = boxRes ? &boxRes->get() : nullptr;
+        std::unordered_map<uint32_t, rtp::ecs::Entity> netToEntity;
+        if (boxes) {
+            auto netRes = _registry.getComponents<rtp::ecs::components::NetworkId>();
+            if (netRes) {
+                auto &nets = netRes->get();
+                for (auto e : nets.getEntities()) {
+                    netToEntity[nets[e].id] = e;
+                }
+            }
+        }
 
         for (auto&& [tf, net, type, room] : view) {
             if (room.id != roomId)
                 continue;
+
+            float sizeX = 0.0f;
+            float sizeY = 0.0f;
+            if (boxes) {
+                auto it = netToEntity.find(net.id);
+                if (it != netToEntity.end() && boxes->has(it->second)) {
+                    const auto &box = (*boxes)[it->second];
+                    sizeX = box.width;
+                    sizeY = box.height;
+                }
+            }
 
             rtp::net::Packet packet(rtp::net::OpCode::EntitySpawn);
             rtp::net::EntitySpawnPayload payload = {
                 net.id,
                 static_cast<uint8_t>(type.type),
                 tf.position.x,
-                tf.position.y
+                tf.position.y,
+                sizeX,
+                sizeY
             };
             packet << payload;
             _networkSyncSystem->sendPacketToSession(sessionId, packet, rtp::net::NetworkMode::TCP);

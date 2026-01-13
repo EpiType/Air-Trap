@@ -26,13 +26,13 @@ namespace rtp::client {
                                     EntityBuilder& worldBuilder,
                                     std::function<void(GameState)> changeState)
             : _uiRegistry(uiRegistry),
-              _worldRegistry(worldRegistry),
               _settings(settings),
               _translationManager(translationManager),
               _network(network),
               _uiFactory(uiFactory),
-              _worldBuilder(worldBuilder),
-              _changeState(changeState)
+              _changeState(changeState),
+              _worldRegistry(worldRegistry),
+              _worldBuilder(worldBuilder)
         {
         }
 

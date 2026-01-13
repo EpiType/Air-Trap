@@ -71,7 +71,10 @@ namespace rtp::server
              * @param name Name of the room
              * @param maxPlayers Maximum number of players allowed in the room
              */
-            Room(rtp::ecs::Registry& registry, NetworkSyncSystem& network, uint32_t id, const std::string &name, uint32_t maxPlayers, float difficulty, float speed, RoomType type, uint32_t creatorSessionId = 0);
+            Room(rtp::ecs::Registry& registry, NetworkSyncSystem& network, uint32_t id, const std::string &name,
+                 uint32_t maxPlayers, float difficulty, float speed, RoomType type,
+                 uint32_t creatorSessionId = 0, uint32_t levelId = 1, uint32_t seed = 0,
+                 uint32_t durationMinutes = 0);
 
             /**
              * @brief Destructor for Room
@@ -127,6 +130,24 @@ namespace rtp::server
              * @return Current speed multiplier
              */
             float getSpeed(void) const;
+
+            /**
+             * @brief Get the level identifier of the room
+             * @return Level ID
+             */
+            uint32_t getLevelId(void) const;
+
+            /**
+             * @brief Get the random seed of the room
+             * @return Seed value
+             */
+            uint32_t getSeed(void) const;
+
+            /**
+             * @brief Get the duration in minutes of the room
+             * @return Duration in minutes
+             */
+            uint32_t getDurationMinutes(void) const;
 
             /**
              * @brief Get the type of a player in the room

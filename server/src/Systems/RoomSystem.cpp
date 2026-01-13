@@ -25,7 +25,7 @@ namespace rtp::server
         , _networkSync(networkSync)
     {
         auto lobby = std::make_shared<Room>(_registry, _networkSync, _nextRoomId++, "Global Lobby", 9999,
-                                            0, 0, Room::RoomType::Lobby);
+                                            0, 0, Room::RoomType::Lobby, 0, 0, 0, 0);
         _rooms[lobby->getId()] = lobby;
         _lobbyId = lobby->getId();
         log::info("Default Lobby created with ID {}", lobby->getId());
@@ -43,14 +43,17 @@ namespace rtp::server
     uint32_t RoomSystem::createRoom(uint32_t sessionId,
                                     const std::string &roomName,
                                     uint8_t maxPlayers, float difficulty,
-                                    float speed, Room::RoomType type)
+                                    float speed, Room::RoomType type,
+                                    uint32_t levelId, uint32_t seed,
+                                    uint32_t durationMinutes)
     {
         uint32_t newId = 0;
 
         newId = _nextRoomId++;
 
         auto room = std::make_shared<Room>(_registry, _networkSync, newId, roomName, maxPlayers,
-                                           difficulty, speed, type, sessionId);
+                                           difficulty, speed, type, sessionId,
+                                           levelId, seed, durationMinutes);
         _rooms.emplace(newId, room);
 
         log::info("Room '{}' created with ID {} by session {}", roomName, newId,
@@ -225,6 +228,10 @@ namespace rtp::server
             roomInfo.maxPlayers = roomPtr->getMaxPlayers();
             roomInfo.difficulty = roomPtr->getDifficulty();
             roomInfo.speed = roomPtr->getSpeed();
+            roomInfo.inGame = (roomPtr->getState() == Room::State::InGame) ? 1 : 0;
+            roomInfo.duration = roomPtr->getDurationMinutes();
+            roomInfo.seed = roomPtr->getSeed();
+            roomInfo.levelId = roomPtr->getLevelId();
 
             responsePacket << roomInfo;
 

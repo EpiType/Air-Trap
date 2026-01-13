@@ -33,25 +33,16 @@ namespace rtp::server {
     class RoomSystem : public rtp::ecs::ISystem
     {
         public:
-            //////////////////////////////////////////////////////////////////////////
-            // Recived data structures
-            //////////////////////////////////////////////////////////////////////////
-
-            struct JoinRoomData {
-                uint32_t roomId;
-            };
-
-            struct CreateRoomData {
-                char roomName[32];
-                uint8_t maxPlayers;
-                float difficulty;
-                float speed;
-            };
-
-        public:
-            
+            /**
+             * @typedef RoomStartedCb
+             * @brief Callback type for when a room starts
+             */
             using RoomStartedCb = std::function<void(uint32_t roomId)>;
 
+            /**
+             * @brief Set the callback to be invoked when a room starts
+             * @param cb Callback function
+             */
             void setOnRoomStarted(RoomStartedCb cb) { _onRoomStarted = std::move(cb); }
 
             /** 
@@ -71,10 +62,19 @@ namespace rtp::server {
             /**
              * @brief Create a new room based on client request
              * @param sessionId ID of the network session
-             * @param packet Packet containing the room creation data
+             * @param roomName Name of the room
+             * @param maxPlayers Maximum number of players allowed in the room
+             * @param difficulty Difficulty setting for the room
+             * @param speed Speed setting for the room
+             * @param type Type of the room (Public/Private)
+             * @param levelId ID of the level to be played in the room
+             * @param seed Seed for level generation
+             * @param durationMinutes Duration of the game in minutes
+             * @return ID of the newly created room
              */
             uint32_t createRoom(uint32_t sessionId, const std::string &roomName, uint8_t maxPlayers,
-                            float difficulty, float speed, Room::RoomType type);
+                            float difficulty, float speed, Room::RoomType type,
+                            uint32_t levelId, uint32_t seed, uint32_t durationMinutes);
 
             /**
              * @brief Join an existing room based on client request

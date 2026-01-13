@@ -1,13 +1,11 @@
 /**
- * File   : PlayerShootSystem.cpp
+ * File   : EnemyShootSystem.cpp
  * License: MIT
  * Author : Elias
- * Josué HAJJAR LLAUQUEN <elias-josue.hajjar-llauquen@epitech.eu>
- * Date   :
- * 11/12/2025
+ * Date   : 11/12/2025
  */
 
-#include "Systems/PlayerShootSystem.hpp"
+#include "Systems/EnemyShootSystem.hpp"
 #include "RType/Logger.hpp"
 
 #include <vector>
@@ -18,69 +16,41 @@ namespace rtp::server
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
-    PlayerShootSystem::PlayerShootSystem(rtp::ecs::Registry& registry,
-                                         RoomSystem& roomSystem,
-                                         NetworkSyncSystem& networkSync)
+    EnemyShootSystem::EnemyShootSystem(rtp::ecs::Registry& registry,
+                                       RoomSystem& roomSystem,
+                                       NetworkSyncSystem& networkSync)
         : _registry(registry), _roomSystem(roomSystem), _networkSync(networkSync)
     {
     }
 
-    void PlayerShootSystem::update(float dt)
+    void EnemyShootSystem::update(float dt)
     {
         std::vector<std::pair<rtp::ecs::components::Transform,
                               rtp::ecs::components::RoomId>> pendingSpawns;
 
         auto view =
             _registry.zipView<rtp::ecs::components::Transform,
-                              rtp::ecs::components::server::InputComponent,
                               rtp::ecs::components::EntityType,
                               rtp::ecs::components::RoomId,
-                              rtp::ecs::components::SimpleWeapon,
-                              rtp::ecs::components::NetworkId,
-                              rtp::ecs::components::Ammo>();
+                              rtp::ecs::components::SimpleWeapon>();
 
-        for (auto &&[tf, input, type, roomId, weapon, net, ammo] : view) {
-            if (type.type != rtp::net::EntityType::Player)
+        for (auto &&[tf, type, roomId, weapon] : view) {
+            if (type.type != rtp::net::EntityType::Scout &&
+                type.type != rtp::net::EntityType::Tank &&
+                type.type != rtp::net::EntityType::Boss) {
                 continue;
+            }
+
+            if (weapon.fireRate <= 0.0f) {
+                continue;
+            }
 
             weapon.lastShotTime += dt;
-            if (ammo.isReloading) {
-                ammo.reloadTimer += dt;
-                if (ammo.reloadTimer >= ammo.reloadCooldown) {
-                    ammo.current = ammo.max;
-                    ammo.isReloading = false;
-                    ammo.reloadTimer = 0.0f;
-                    ammo.dirty = true;
-                }
-            }
+            const float fireInterval = (1.0f / weapon.fireRate);
 
-            using Bits =
-                rtp::ecs::components::server::InputComponent::InputBits;
-
-            if ((input.mask & Bits::Reload) && !ammo.isReloading && ammo.current < ammo.max) {
-                ammo.isReloading = true;
-                ammo.reloadTimer = 0.0f;
-                ammo.dirty = true;
-            }
-
-            if ((input.mask & Bits::Shoot) && !ammo.isReloading && ammo.current > 0) {
-                const float fireInterval = (weapon.fireRate > 0.0f)
-                    ? (1.0f / weapon.fireRate)
-                    : 0.0f;
-
-                if (weapon.lastShotTime >= fireInterval) {
-                    weapon.lastShotTime = 0.0f;
-                    pendingSpawns.emplace_back(tf, roomId);
-                    if (ammo.current > 0) {
-                        ammo.current -= 1;
-                        ammo.dirty = true;
-                    }
-                }
-            }
-
-            if (ammo.dirty) {
-                sendAmmoUpdate(net.id, ammo);
-                ammo.dirty = false;
+            if (weapon.lastShotTime >= fireInterval) {
+                weapon.lastShotTime = 0.0f;
+                pendingSpawns.emplace_back(tf, roomId);
             }
         }
 
@@ -93,13 +63,13 @@ namespace rtp::server
     // Private API
     //////////////////////////////////////////////////////////////////////////
 
-    void PlayerShootSystem::spawnBullet(
+    void EnemyShootSystem::spawnBullet(
         const rtp::ecs::components::Transform& tf,
         const rtp::ecs::components::RoomId& roomId)
     {
         auto entityRes = _registry.spawnEntity();
         if (!entityRes) {
-            rtp::log::error("Failed to spawn bullet entity: {}", entityRes.error().message());
+            rtp::log::error("Failed to spawn enemy bullet entity: {}", entityRes.error().message());
             return;
         }
 
@@ -125,7 +95,7 @@ namespace rtp::server
 
         _registry.addComponent<rtp::ecs::components::Damage>(
             bullet,
-            rtp::ecs::components::Damage{ 25, rtp::ecs::NullEntity }
+            rtp::ecs::components::Damage{ 10, rtp::ecs::NullEntity }
         );
 
         _registry.addComponent<rtp::ecs::components::NetworkId>(
@@ -135,7 +105,7 @@ namespace rtp::server
 
         _registry.addComponent<rtp::ecs::components::EntityType>(
             bullet,
-            rtp::ecs::components::EntityType{ rtp::net::EntityType::Bullet }
+            rtp::ecs::components::EntityType{ rtp::net::EntityType::EnemyBullet }
         );
 
         _registry.addComponent<rtp::ecs::components::RoomId>(
@@ -159,25 +129,11 @@ namespace rtp::server
         rtp::net::Packet packet(rtp::net::OpCode::EntitySpawn);
         rtp::net::EntitySpawnPayload payload = {
             static_cast<uint32_t>(bullet.index()),
-            static_cast<uint8_t>(rtp::net::EntityType::Bullet),
+            static_cast<uint8_t>(rtp::net::EntityType::EnemyBullet),
             x,
             y
         };
         packet << payload;
         _networkSync.sendPacketToSessions(sessions, packet, rtp::net::NetworkMode::TCP);
-    }
-
-    void PlayerShootSystem::sendAmmoUpdate(uint32_t netId, const rtp::ecs::components::Ammo& ammo)
-    {
-        rtp::net::Packet packet(rtp::net::OpCode::AmmoUpdate);
-        rtp::net::AmmoUpdatePayload payload{};
-        payload.current = ammo.current;
-        payload.max = ammo.max;
-        payload.isReloading = static_cast<uint8_t>(ammo.isReloading ? 1 : 0);
-        payload.cooldownRemaining = ammo.isReloading
-            ? (ammo.reloadCooldown - ammo.reloadTimer)
-            : 0.0f;
-        packet << payload;
-        _networkSync.sendPacketToEntity(netId, packet, rtp::net::NetworkMode::TCP);
     }
 } // namespace rtp::server
