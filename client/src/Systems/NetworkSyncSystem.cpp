@@ -453,6 +453,18 @@ namespace rtp::client {
             case rtp::net::EntityType::Bullet:
                 t = EntityTemplate::createBulletEnemy(pos);
                 break;
+            case rtp::net::EntityType::ChargedBullet:
+                t = EntityTemplate::createBulletEnemy(pos);
+                if (payload.sizeX > 0.0f) {
+                    float scale = 1.0f;
+                    if (payload.sizeX <= 6.0f) {
+                        scale = 0.5f;
+                    } else if (payload.sizeX >= 12.0f) {
+                        scale = 2.0f;
+                    }
+                    t.scale = {scale, scale};
+                }
+                break;
             case rtp::net::EntityType::EnemyBullet:
                 t = EntityTemplate::createBulletEnemy(pos);
                 break;
@@ -506,7 +518,8 @@ namespace rtp::client {
             );
         }
 
-        if (entityType == rtp::net::EntityType::Bullet) {
+        if (entityType == rtp::net::EntityType::Bullet ||
+            entityType == rtp::net::EntityType::ChargedBullet) {
             if (auto transformsOpt = _registry.getComponents<rtp::ecs::components::Transform>(); transformsOpt) {
                 auto &transforms = transformsOpt.value().get();
                 if (transforms.has(e)) {

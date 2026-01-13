@@ -85,6 +85,7 @@ namespace rtp::server
             }
             const auto etype = types[entity].type;
             if (etype != rtp::net::EntityType::Bullet &&
+                etype != rtp::net::EntityType::ChargedBullet &&
                 etype != rtp::net::EntityType::EnemyBullet &&
                 etype != rtp::net::EntityType::Scout &&
                 etype != rtp::net::EntityType::Tank &&

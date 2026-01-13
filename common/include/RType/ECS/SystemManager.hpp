@@ -61,7 +61,7 @@ namespace rtp::ecs
 
             template <typename T>
             T &getSystem(void);
-            
+
             void update(float dt);
 
         private:

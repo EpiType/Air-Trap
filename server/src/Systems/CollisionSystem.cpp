@@ -94,7 +94,8 @@ namespace rtp::server
                     healths.has(entity)) {
                     obstacles.push_back(entity);
                 }
-            } else if (type == rtp::net::EntityType::Bullet) {
+            } else if (type == rtp::net::EntityType::Bullet ||
+                       type == rtp::net::EntityType::ChargedBullet) {
                 if (transforms.has(entity) && boxes.has(entity) && rooms.has(entity) &&
                     damages.has(entity)) {
                     bullets.push_back(entity);
