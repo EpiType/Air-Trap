@@ -35,6 +35,7 @@
 #include "RType/ECS/Components/UI/Dropdown.hpp"
 #include "RType/ECS/Components/UI/Slider.hpp"
 #include "RType/ECS/Components/UI/Text.hpp"
+#include "RType/ECS/Components/UI/SpritePreview.hpp"
 #include "RType/ECS/Components/Velocity.hpp"
 
 /* Utils */
@@ -63,6 +64,7 @@
 #include "Scenes/LobbyScene.hpp"
 #include "Scenes/LoginScene.hpp"
 #include "Scenes/MenuScene.hpp"
+#include "Scenes/ModMenuScene.hpp"
 #include "Scenes/PauseScene.hpp"
 #include "Scenes/PlayingScene.hpp"
 #include "Scenes/RoomWaitingScene.hpp"

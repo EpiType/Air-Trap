@@ -7,6 +7,7 @@
 */
 
 #include "Core/Application.hpp"
+#include "Game/SpriteCustomizer.hpp"
 
 namespace rtp::client
 {
@@ -87,8 +88,13 @@ namespace rtp::client
         _worldSystemManager.addSystem<rtp::client::InputSystem>(_worldRegistry, _uiRegistry, _settings, _clientNetwork, _window);
         _worldSystemManager.addSystem<rtp::client::ParallaxSystem>(_worldRegistry);
         _worldSystemManager.addSystem<rtp::client::AnimationSystem>(_worldRegistry);
-        _worldSystemManager.addSystem<rtp::client::RenderSystem>(_worldRegistry, _window);
+        auto& worldRenderSystem = _worldSystemManager.addSystem<rtp::client::RenderSystem>(_worldRegistry, _window);
         _worldSystemManager.addSystem<rtp::client::ParallaxSystem>(_worldRegistry);
+        
+        // Update SpriteCustomizer with both render systems for cache clearing
+        auto& uiRenderSystem = _uiSystemManager.getSystem<Client::Systems::UIRenderSystem>();
+        SpriteCustomizer::setRenderSystems(&worldRenderSystem, &uiRenderSystem);
+        
         rtp::log::info("OK : World systems initialized");
     }
 
@@ -96,7 +102,11 @@ namespace rtp::client
     {
         _uiSystemManager.addSystem<rtp::client::UISystem>(_uiRegistry, _window, _settings);
         // _uiSystemManager.addSystem<Client::Systems::SettingsMenuSystem>(_uiRegistry, _window, _settings);
-        _uiSystemManager.addSystem<Client::Systems::UIRenderSystem>(_uiRegistry, _window);
+        auto& uiRenderSystem = _uiSystemManager.addSystem<Client::Systems::UIRenderSystem>(_uiRegistry, _window);
+        
+        // Register UI render system with SpriteCustomizer for cache clearing
+        SpriteCustomizer::setRenderSystems(nullptr, &uiRenderSystem);
+        
         rtp::log::info("OK : UI systems initialized");
     }
 
@@ -107,6 +117,7 @@ namespace rtp::client
         _uiRegistry.registerComponent<rtp::ecs::components::ui::Slider>();
         _uiRegistry.registerComponent<rtp::ecs::components::ui::Dropdown>();
         _uiRegistry.registerComponent<rtp::ecs::components::ui::TextInput>();
+        _uiRegistry.registerComponent<rtp::ecs::components::ui::SpritePreview>();
         rtp::log::info("OK : UI ECS initialized with components");
     }
 
@@ -154,6 +165,9 @@ namespace rtp::client
         _scenes[GameState::GamepadSettings] = std::make_unique<rtp::client::Scenes::GamepadSettingsScene>(
             _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
         );
+        _scenes[GameState::ModMenu] = std::make_unique<rtp::client::Scenes::ModMenuScene>(
+            _uiRegistry, _settings, _translations, _uiFactory, changeStateCb
+        );
         _scenes[GameState::Paused] = std::make_unique<rtp::client::Scenes::PauseScene>(
             _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
         );
@@ -184,6 +198,14 @@ namespace rtp::client
         
         if (newState != GameState::Playing && newState != GameState::Paused) {
             _worldRegistry.clear();
+        }
+
+        // Clear texture caches when leaving ModMenu or entering Playing
+        // This ensures custom sprite changes (including resets) are applied immediately
+        if (_currentState == GameState::ModMenu || newState == GameState::Playing) {
+            rtp::log::info("Clearing texture caches to apply sprite changes");
+            _worldSystemManager.getSystem<rtp::client::RenderSystem>().clearTextureCache();
+            _uiSystemManager.getSystem<Client::Systems::UIRenderSystem>().clearTextureCache();
         }
 
         auto it = _scenes.find(newState);
