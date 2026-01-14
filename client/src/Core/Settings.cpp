@@ -219,17 +219,27 @@ namespace rtp::client {
         }
     }
 
-    std::string Settings::getColorBlindModeName(ColorBlindMode mode) const {
-        switch (mode) {
-            case ColorBlindMode::None: return "None";
-            case ColorBlindMode::Protanopia: return "Protanopia (Red-blind)";
-            case ColorBlindMode::Deuteranopia: return "Deuteranopia (Green-blind)";
-            case ColorBlindMode::Tritanopia: return "Tritanopia (Blue-blind)";
-            default: return "Unknown";
-        }
+std::string Settings::getColorBlindModeName(ColorBlindMode mode) const {
+    switch (mode) {
+        case ColorBlindMode::None: return "None";
+        case ColorBlindMode::Protanopia: return "Protanopia (Red-blind)";
+        case ColorBlindMode::Deuteranopia: return "Deuteranopia (Green-blind)";
+        case ColorBlindMode::Tritanopia: return "Tritanopia (Blue-blind)";
+        default: return "Unknown";
     }
+}
 
-    bool Settings::save(const std::string& filename) {
+std::string Settings::getDifficultyName(Difficulty difficulty) const {
+    switch (difficulty) {
+        case Difficulty::Easy: return "Easy";
+        case Difficulty::Normal: return "Normal";
+        case Difficulty::Hard: return "Hard";
+        case Difficulty::Infernal: return "Infernal";
+        default: return "Unknown";
+    }
+}
+
+bool Settings::save(const std::string& filename) {
         std::filesystem::create_directories("config");
         
         std::ofstream file(filename);
@@ -246,6 +256,17 @@ namespace rtp::client {
         
         file << "colorblind_mode=" << static_cast<int>(_colorBlindMode) << "\n";
         file << "high_contrast=" << (_highContrast ? 1 : 0) << "\n";
+        
+        file << "difficulty=" << static_cast<int>(_difficulty) << "\n";
+        
+        // Gamepad
+        file << "gamepad_enabled=" << (_gamepadEnabled ? 1 : 0) << "\n";
+        file << "gamepad_deadzone=" << _gamepadDeadzone << "\n";
+        file << "gamepad_shoot_button=" << _gamepadShootButton << "\n";
+        file << "gamepad_reload_button=" << _gamepadReloadButton << "\n";
+        file << "gamepad_validate_button=" << _gamepadValidateButton << "\n";
+        file << "gamepad_cursor_speed=" << _gamepadCursorSpeed << "\n";
+        file << "gamepad_pause_button=" << _gamepadPauseButton << "\n";
         
         for (const auto& [action, key] : _keyBindings) {
             file << "key_" << static_cast<int>(action) << "=" << static_cast<int>(key) << "\n";
@@ -283,6 +304,22 @@ namespace rtp::client {
                     _colorBlindMode = static_cast<ColorBlindMode>(std::stoi(value));
                 } else if (key == "high_contrast") {
                     _highContrast = (std::stoi(value) != 0);
+                } else if (key == "difficulty") {
+                    _difficulty = static_cast<Difficulty>(std::stoi(value));
+                } else if (key == "gamepad_enabled") {
+                    _gamepadEnabled = (std::stoi(value) != 0);
+                } else if (key == "gamepad_deadzone") {
+                    _gamepadDeadzone = std::stof(value);
+                } else if (key == "gamepad_shoot_button") {
+                    _gamepadShootButton = std::stoi(value);
+                } else if (key == "gamepad_reload_button") {
+                    _gamepadReloadButton = std::stoi(value);
+                } else if (key == "gamepad_validate_button") {
+                    _gamepadValidateButton = std::stoi(value);
+                } else if (key == "gamepad_cursor_speed") {
+                    _gamepadCursorSpeed = std::stof(value);
+                } else if (key == "gamepad_pause_button") {
+                    _gamepadPauseButton = std::stoi(value);
                 } else if (key.find("key_") == 0) {
                     int actionId = std::stoi(key.substr(4));
                     int keyCode = std::stoi(value);
