@@ -77,6 +77,8 @@ struct EntityTemplate {
         float parallaxSpeed;
         float textureWidth;
         rtp::Vec2f scale{2.0f, 2.0f};
+        int rectWidth{1280};
+        int rectHeight{720};
     };
 
     // Helper: build an EntityTemplate from a SpriteAnimDef
@@ -127,8 +129,8 @@ struct EntityTemplate {
         t.sprite.texturePath = p.texturePath;
         t.sprite.rectLeft = 0;
         t.sprite.rectTop = 0;
-        t.sprite.rectWidth = 1280;
-        t.sprite.rectHeight = 720;
+        t.sprite.rectWidth = p.rectWidth;
+        t.sprite.rectHeight = p.rectHeight;
         t.sprite.zIndex = -1000;
         t.sprite.red = 255;
         t.sprite.opacity = p.opacity;
@@ -140,29 +142,29 @@ struct EntityTemplate {
     }
 
     // Data tables
-    static constexpr ParallaxDef kParallaxLvl1_1{ "assets/backgrounds/lvl1/stars_far.png", 10.0f, {-50.0f, 0.0f}, 200, 100.0f, 1280.0f, {2.0f, 2.0f} };
-    static constexpr ParallaxDef kParallaxLvl1_2{ "assets/backgrounds/lvl1/stars_near.png", 20.0f, {-50.0f, 0.0f}, 255, 300.0f, 1280.0f, {2.0f, 2.0f} };
-    static constexpr ParallaxDef kParallaxLvl2_1{ "assets/backgrounds/lvl2/moon_back.png", 15.0f, {-30.0f, 0.0f}, 200, 80.0f, 1280.0f, {2.0f, 2.0f} };
-    static constexpr ParallaxDef kParallaxLvl2_2{ "assets/backgrounds/lvl2/moon_earth.png", 25.0f, {-30.0f, 0.0f}, 255, 150.0f, 1280.0f, {2.0f, 2.0f} };
-    static constexpr ParallaxDef kParallaxLvl2_3{ "assets/backgrounds/lvl2/moon_floor.png", 12.0f, {-20.0f, 0.0f}, 200, 60.0f, 1280.0f, {2.0f, 2.0f} };
-    static constexpr ParallaxDef kParallaxLvl2_4{ "assets/backgrounds/lvl2/moon_front.png", 18.0f, {-40.0f, 0.0f}, 200, 90.0f, 1280.0f, {2.0f, 2.0f} };
-    static constexpr ParallaxDef kParallaxLvl2_5{ "assets/backgrounds/lvl2/moon_mid.png", 20.0f, {-25.0f, 0.0f}, 255, 70.0f, 1280.0f, {2.0f, 2.0f} };
-    static constexpr ParallaxDef kParallaxLvl2_6{ "assets/backgrounds/lvl2/moon_sky.png", 10.0f, {-15.0f, 0.0f}, 200, 50.0f, 1280.0f, {2.0f, 2.0f} };
-    static constexpr ParallaxDef kParallaxLvl3_1{ "assets/backgrounds/lvl3/Sky_back_mountain.png", 15.0f, {-20.0f, 0.0f}, 255, 60.0f, 1280.0f, {2.0f, 2.0f} };
-    static constexpr ParallaxDef kParallaxLvl3_2{ "assets/backgrounds/lvl3/sky_cloud_floor_2.png", 22.0f, {-35.0f, 0.0f}, 200, 85.0f, 1280.0f, {2.0f, 2.0f} };
-    static constexpr ParallaxDef kParallaxLvl3_3{ "assets/backgrounds/lvl3/sky_cloud_floor.png", 18.0f, {-25.0f, 0.0f}, 255, 70.0f, 1280.0f, {2.0f, 2.0f} };
-    static constexpr ParallaxDef kParallaxLvl3_4{ "assets/backgrounds/lvl3/Sky_cloud_single.png", 20.0f, {-30.0f, 0.0f}, 255, 90.0f, 1280.0f, {2.0f, 2.0f} };
-    static constexpr ParallaxDef kParallaxLvl3_5{ "assets/backgrounds/lvl3/sky_clouds.png", 12.0f, {-15.0f, 0.0f}, 200, 55.0f, 1280.0f, {2.0f, 2.0f} };
-    static constexpr ParallaxDef kParallaxLvl3_6{ "assets/backgrounds/lvl3/Sky_front_cloud.png", 12.0f, {-15.0f, 0.0f}, 200, 55.0f, 1280.0f, {2.0f, 2.0f} };
-    static constexpr ParallaxDef kParallaxLvl3_7{ "assets/backgrounds/lvl3/sky_front_mountain.png", 12.0f, {-15.0f, 0.0f}, 200, 55.0f, 1280.0f, {2.0f, 2.0f} };
-    static constexpr ParallaxDef kParallaxLvl3_8{ "assets/backgrounds/lvl3/sky_moon.png", 12.0f, {-15.0f, 0.0f}, 200, 55.0f, 1280.0f, {2.0f, 2.0f} };
-    static constexpr ParallaxDef kParallaxLvl3_9{ "assets/backgrounds/lvl3/Sky_sky.png", 12.0f, {-15.0f, 0.0f}, 200, 55.0f, 1280.0f, {2.0f, 2.0f} };
-    static constexpr ParallaxDef kParallaxLvl4_1{ "assets/backgrounds/lvl4/desert_cloud.png", 15.0f, {-30.0f, 0.0f}, 200, 80.0f, 1280.0f, {2.0f, 2.0f} };
-    static constexpr ParallaxDef kParallaxLvl4_2{ "assets/backgrounds/lvl4/desert_dunefrontt.png", 25.0f, {-30.0f, 0.0f}, 255, 150.0f, 1280.0f, {2.0f, 2.0f} };
-    static constexpr ParallaxDef kParallaxLvl4_3{ "assets/backgrounds/lvl4/desert_dunemid.png", 12.0f, {-20.0f, 0.0f}, 200, 60.0f, 1280.0f, {2.0f, 2.0f} };
-    static constexpr ParallaxDef kParallaxLvl4_4{ "assets/backgrounds/lvl4/desert_moon.png", 18.0f, {-40.0f, 0.0f}, 200, 90.0f, 1280.0f, {2.0f, 2.0f} };
-    static constexpr ParallaxDef kParallaxLvl4_5{ "assets/backgrounds/lvl4/desert_mountain.png", 20.0f, {-25.0f, 0.0f}, 255, 70.0f, 1280.0f, {2.0f, 2.0f} };
-    static constexpr ParallaxDef kParallaxLvl4_6{ "assets/backgrounds/lvl4/desert_sky.png", 10.0f, {-15.0f, 0.0f}, 200, 50.0f, 1280.0f, {2.0f, 2.0f} };
+    static constexpr ParallaxDef kParallaxLvl1_1{ "assets/backgrounds/lvl1/stars_far.png", 10.0f, {-50.0f, 0.0f}, 200, 100.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl1_2{ "assets/backgrounds/lvl1/stars_near.png", 20.0f, {-50.0f, 0.0f}, 255, 300.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl2_1{ "assets/backgrounds/lvl2/moon_back.png", 10.0f, {0.0f, 0.0f}, 200, 80.0f, 1200.0f, {1.0f, 1.0f}, 1300, 720 };
+    static constexpr ParallaxDef kParallaxLvl2_2{ "assets/backgrounds/lvl2/moon_earth.png", 25.0f, {-30.0f, 0.0f}, 255, 150.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl2_3{ "assets/backgrounds/lvl2/moon_floor.png", 12.0f, {-20.0f, 0.0f}, 200, 60.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl2_4{ "assets/backgrounds/lvl2/moon_front.png", 18.0f, {-40.0f, 0.0f}, 200, 90.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl2_5{ "assets/backgrounds/lvl2/moon_mid.png", 20.0f, {-25.0f, 0.0f}, 255, 70.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl2_6{ "assets/backgrounds/lvl2/moon_sky.png", 10.0f, {-15.0f, 0.0f}, 200, 50.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl3_1{ "assets/backgrounds/lvl3/Sky_back_mountain.png", 15.0f, {-20.0f, 0.0f}, 255, 60.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl3_2{ "assets/backgrounds/lvl3/sky_cloud_floor_2.png", 22.0f, {-35.0f, 0.0f}, 200, 85.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl3_3{ "assets/backgrounds/lvl3/sky_cloud_floor.png", 18.0f, {-25.0f, 0.0f}, 255, 70.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl3_4{ "assets/backgrounds/lvl3/Sky_cloud_single.png", 20.0f, {-30.0f, 0.0f}, 255, 90.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl3_5{ "assets/backgrounds/lvl3/sky_clouds.png", 12.0f, {-15.0f, 0.0f}, 200, 55.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl3_6{ "assets/backgrounds/lvl3/Sky_front_cloud.png", 12.0f, {-15.0f, 0.0f}, 200, 55.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl3_7{ "assets/backgrounds/lvl3/sky_front_mountain.png", 12.0f, {-15.0f, 0.0f}, 200, 55.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl3_8{ "assets/backgrounds/lvl3/sky_moon.png", 12.0f, {-15.0f, 0.0f}, 200, 55.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl3_9{ "assets/backgrounds/lvl3/Sky_sky.png", 12.0f, {-15.0f, 0.0f}, 200, 55.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl4_1{ "assets/backgrounds/lvl4/desert_cloud.png", 15.0f, {-30.0f, 0.0f}, 200, 80.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl4_2{ "assets/backgrounds/lvl4/desert_dunefrontt.png", 25.0f, {-30.0f, 0.0f}, 255, 150.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl4_3{ "assets/backgrounds/lvl4/desert_dunemid.png", 12.0f, {-20.0f, 0.0f}, 200, 60.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl4_4{ "assets/backgrounds/lvl4/desert_moon.png", 18.0f, {-40.0f, 0.0f}, 200, 90.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl4_5{ "assets/backgrounds/lvl4/desert_mountain.png", 20.0f, {-25.0f, 0.0f}, 255, 70.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl4_6{ "assets/backgrounds/lvl4/desert_sky.png", 10.0f, {-15.0f, 0.0f}, 200, 50.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
 
     static constexpr SpriteAnimDef k_rt1_1{ "rt1_1", "assets/sprites/r-typesheet1.gif", 101, 3, 33, 14, 5, 255, true, 33, 14, 101, 3, 5, 2.0f, {-1.0f, 0.0f}, {1.0f, 1.0f} };
     static constexpr SpriteAnimDef k_rt1_2{ "rt1_2", "assets/sprites/r-typesheet1.gif", 134, 18, 33, 32, 5, 255, true, 33, 32, 134, 18, 4, 2.0f, {-1.0f, 0.0f}, {1.0f, 1.0f} };
@@ -190,6 +192,111 @@ struct EntityTemplate {
     static EntityTemplate createParrallaxLvl1_2()
     {
         return makeParallax(kParallaxLvl1_2);
+    }
+
+    static EntityTemplate createParallaxLvl2_1()
+    {
+        return makeParallax(kParallaxLvl2_1);
+    }
+
+    static EntityTemplate createParallaxLvl2_2()
+    {
+        return makeParallax(kParallaxLvl2_2);
+    }
+
+    static EntityTemplate createParallaxLvl2_3()
+    {
+        return makeParallax(kParallaxLvl2_3);
+    }
+
+    static EntityTemplate createParallaxLvl2_4()
+    {
+        return makeParallax(kParallaxLvl2_4);
+    }
+
+    static EntityTemplate createParallaxLvl2_5()
+    {
+        return makeParallax(kParallaxLvl2_5);
+    }
+
+    static EntityTemplate createParallaxLvl2_6()
+    {
+        return makeParallax(kParallaxLvl2_6);
+    }
+
+    static EntityTemplate createParallaxLvl3_1()
+    {
+        return makeParallax(kParallaxLvl3_1);
+    }
+
+    static EntityTemplate createParallaxLvl3_2()
+    {
+        return makeParallax(kParallaxLvl3_2);
+    }
+
+    static EntityTemplate createParallaxLvl3_3()
+    {
+        return makeParallax(kParallaxLvl3_3);
+    }
+
+    static EntityTemplate createParallaxLvl3_4()
+    {
+        return makeParallax(kParallaxLvl3_4);
+    }
+
+    static EntityTemplate createParallaxLvl3_5()
+    {
+        return makeParallax(kParallaxLvl3_5);
+    }
+
+    static EntityTemplate createParallaxLvl3_6()
+    {
+        return makeParallax(kParallaxLvl3_6);
+    }
+
+    static EntityTemplate createParallaxLvl3_7()
+    {
+        return makeParallax(kParallaxLvl3_7);
+    }
+
+    static EntityTemplate createParallaxLvl3_8()
+    {
+        return makeParallax(kParallaxLvl3_8);
+    }
+
+    static EntityTemplate createParallaxLvl3_9()
+    {
+        return makeParallax(kParallaxLvl3_9);
+    }
+
+    static EntityTemplate createParallaxLvl4_1()
+    {
+        return makeParallax(kParallaxLvl4_1);
+    }
+
+    static EntityTemplate createParallaxLvl4_2()
+    {
+        return makeParallax(kParallaxLvl4_2);
+    }
+
+    static EntityTemplate createParallaxLvl4_3()
+    {
+        return makeParallax(kParallaxLvl4_3);
+    }
+
+    static EntityTemplate createParallaxLvl4_4()
+    {
+        return makeParallax(kParallaxLvl4_4);
+    }
+
+    static EntityTemplate createParallaxLvl4_5()
+    {
+        return makeParallax(kParallaxLvl4_5);
+    }
+
+    static EntityTemplate createParallaxLvl4_6()
+    {
+        return makeParallax(kParallaxLvl4_6);
     }
 
     static EntityTemplate rt1_1(const rtp::Vec2f& initialPos)

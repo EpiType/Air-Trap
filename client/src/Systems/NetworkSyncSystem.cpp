@@ -88,6 +88,7 @@ namespace rtp::client {
     {
         rtp::log::info("Attempting to create room '{}' on server...", roomName);
         _currentState = State::CreatingRoom;
+        _currentLevelId = levelId;
         rtp::net::CreateRoomPayload payload;
         std::strncpy(payload.roomName, roomName.c_str(), sizeof(payload.roomName) - 1);
         payload.maxPlayers = maxPlayers;
@@ -106,6 +107,13 @@ namespace rtp::client {
     void NetworkSyncSystem::tryJoinRoom(uint32_t roomId, bool asSpectator)
     {
         _currentState = State::JoiningRoom;
+        // Try to infer the level id from the latest room list
+        for (const auto& r : _availableRooms) {
+            if (r.roomId == roomId) {
+                _currentLevelId = r.levelId;
+                break;
+            }
+        }
         rtp::net::Packet packet(rtp::net::OpCode::JoinRoom);
         rtp::net::JoinRoomPayload payload{};
         payload.roomId = roomId;
@@ -216,6 +224,11 @@ namespace rtp::client {
         const bool kicked = _kicked;
         _kicked = false;
         return kicked;
+    }
+
+    uint32_t NetworkSyncSystem::getCurrentLevelId(void) const
+    {
+        return _currentLevelId;
     }
 
     std::string NetworkSyncSystem::getLastChatMessage(void) const
