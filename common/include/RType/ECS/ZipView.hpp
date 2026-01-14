@@ -13,6 +13,7 @@
 #include <vector>
 #include <algorithm>
 #include <iterator>
+#include <span>
 
 namespace rtp::ecs {
 
@@ -41,8 +42,8 @@ namespace rtp::ecs {
             using pointer = void;
             using reference = value_type;
 
-            Iterator(tuple_arrays_t& arrays, 
-                     const std::vector<Entity>* entities, 
+            Iterator(tuple_arrays_t& arrays,
+                     std::span<const Entity> entities,
                      size_t index)
                 : _arrays(arrays), _entities(entities), _index(index)
             {
@@ -71,7 +72,7 @@ namespace rtp::ecs {
 
             [[nodiscard]]
             reference operator*() {
-                Entity e = (*_entities)[_index];
+                Entity e = _entities[_index];
                 return std::apply([e](auto&&... args) {
                     return std::forward_as_tuple(args[e]...);
                 }, _arrays);
@@ -79,15 +80,15 @@ namespace rtp::ecs {
 
         private:
             tuple_arrays_t& _arrays;                /**< Tuple of references to SparseArrays */
-            const std::vector<Entity>* _entities;   /**< Pointer to the entity list of the leader SparseArray */
+            std::span<const Entity> _entities;      /**< Entities of the leader SparseArray */
             size_t _index;                          /**< Current index in the entity list */
 
             /** 
              * @brief Skip to the next valid entity that has all components
              */
             void skipInvalid() {
-                while (_index < _entities->size()) {
-                    Entity e = (*_entities)[_index];
+                while (_index < _entities.size()) {
+                    Entity e = _entities[_index];
                     
                     bool all_present = std::apply([e](auto&&... args) {
                         return (... && args.has(e)); 
@@ -117,8 +118,8 @@ namespace rtp::ecs {
          * @return Iterator to the first valid entity with all components
          */
         Iterator begin() {
-            const auto& entities = getEntitiesFromSmallest(_smallest_idx);
-            return Iterator(_arrays, &entities, 0);
+            const auto entities = getEntitiesFromSmallest(_smallest_idx);
+            return Iterator(_arrays, entities, 0);
         }
 
         /**
@@ -126,8 +127,8 @@ namespace rtp::ecs {
          * @return Iterator past the last entity
          */
         Iterator end() {
-            const auto& entities = getEntitiesFromSmallest(_smallest_idx);
-            return Iterator(_arrays, &entities, entities.size());
+            const auto entities = getEntitiesFromSmallest(_smallest_idx);
+            return Iterator(_arrays, entities, entities.size());
         }
 
     private:
@@ -156,15 +157,15 @@ namespace rtp::ecs {
          * @param index Index of the SparseArray in the tuple
          * @return Reference to the vector of entities
          */
-        const std::vector<Entity>& getEntitiesFromSmallest(size_t index) {
-            const std::vector<Entity>* result = nullptr;
+        std::span<const Entity> getEntitiesFromSmallest(size_t index) {
+            std::span<const Entity> result{};
             size_t current = 0;
             
             std::apply([&](auto&&... args) {
-                ((current++ == index ? result = &args.getEntities() : nullptr), ...);
+                ((current++ == index ? result = args.entities() : std::span<const Entity>{}), ...);
             }, _arrays);
             
-            return *result;
+            return result;
         }
     };
 }

@@ -154,7 +154,7 @@ namespace rtp::ecs
              */
             template <typename Self>
             [[nodiscard]]
-            auto &&getData(this Self &&self) noexcept;
+            auto data(this Self &&self) noexcept;
 
             /**
              * @brief Get the entity array corresponding to components
@@ -163,25 +163,7 @@ namespace rtp::ecs
              */
             template <typename Self>
             [[nodiscard]]
-            auto &&getEntities(this Self &&self) noexcept;
-
-            /**
-             * @brief Get iterator to the beginning of components
-             * @tparam Self Deduced self type (const or non-const)
-             * @return Iterator to the first component
-             */
-            template <typename Self>
-            [[nodiscard]]
-            auto begin(this Self &&self) noexcept;
-
-            /**
-             * @brief Get iterator to the end of components
-             * @tparam Self Deduced self type (const or non-const)
-             * @return Iterator past the last component
-             */
-            template <typename Self>
-            [[nodiscard]]
-            auto end(this Self &&self) noexcept;
+            auto entities(this Self &&self) noexcept;
 
             /**
              * @brief Get the number of components stored

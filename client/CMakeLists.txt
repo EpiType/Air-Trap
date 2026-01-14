@@ -24,6 +24,7 @@ set(SRC_CLIENT
     src/Systems/NetworkSyncSystem.cpp
     # Scenes
     src/Scenes/CreateRoomScene.cpp
+    src/Scenes/GamepadSettingsScene.cpp
     src/Scenes/KeyBindingScene.cpp
     src/Scenes/LoginScene.cpp
     src/Scenes/LobbyScene.cpp

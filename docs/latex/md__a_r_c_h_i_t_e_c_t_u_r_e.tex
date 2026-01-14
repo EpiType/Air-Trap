@@ -153,8 +153,8 @@ Le {\ttfamily Registry} est le cœur de l\textquotesingle{}ECS \+:
 \DoxyCodeLine{Entity\ player\ =\ registry.createEntity();}
 \DoxyCodeLine{}
 \DoxyCodeLine{\textcolor{comment}{//\ Ajouter\ des\ composants}}
-\DoxyCodeLine{registry.addComponent(player,\ PositionComponent\{100.0f,\ 200.0f\});}
-\DoxyCodeLine{registry.addComponent(player,\ VelocityComponent\{5.0f,\ 0.0f\});}
+\DoxyCodeLine{registry.add(player,\ PositionComponent\{100.0f,\ 200.0f\});}
+\DoxyCodeLine{registry.add(player,\ VelocityComponent\{5.0f,\ 0.0f\});}
 \DoxyCodeLine{}
 \DoxyCodeLine{\textcolor{comment}{//\ Récupérer\ un\ composant}}
 \DoxyCodeLine{\textcolor{keyword}{auto}\&\ pos\ =\ registry.getComponent<PositionComponent>(player);}

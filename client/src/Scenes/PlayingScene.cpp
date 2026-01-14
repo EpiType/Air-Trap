@@ -10,6 +10,7 @@
 #include "RType/ECS/Components/UI/Slider.hpp"
 #include "RType/ECS/Components/UI/Text.hpp"
 #include "RType/ECS/Components/UI/TextInput.hpp"
+#include <SFML/Window/Joystick.hpp>
 
 #include <algorithm>
 
@@ -73,7 +74,7 @@ namespace rtp::client {
             );
 
             auto makeHudText = [&](const rtp::Vec2f& pos, unsigned size) -> rtp::ecs::Entity {
-                auto eRes = _uiRegistry.spawnEntity();
+                auto eRes = _uiRegistry.spawn();
                 if (!eRes) return {};
 
                 auto e = eRes.value();
@@ -85,7 +86,7 @@ namespace rtp::client {
                 t.red = 255; t.green = 255; t.blue = 255;
                 t.alpha = 255;
                 t.zIndex = 999;
-                _uiRegistry.addComponent<rtp::ecs::components::ui::Text>(e, t);
+                _uiRegistry.add<rtp::ecs::components::ui::Text>(e, t);
                 return e;
             };
 
@@ -129,6 +130,24 @@ namespace rtp::client {
 
         void PlayingScene::handleEvent(const sf::Event& e)
         {
+            // Check gamepad pause button
+            if (_settings.getGamepadEnabled() && sf::Joystick::isConnected(0)) {
+                static bool wasPausePressed = false;
+                bool isPausePressed = sf::Joystick::isButtonPressed(0, _settings.getGamepadPauseButton());
+                
+                if (isPausePressed && !wasPausePressed) {
+                    if (_chatOpen) {
+                        closeChat();
+                        wasPausePressed = true;
+                        return;
+                    }
+                    _changeState(GameState::Paused);
+                    wasPausePressed = true;
+                    return;
+                }
+                wasPausePressed = isPausePressed;
+            }
+            
             if (const auto* kp = e.getIf<sf::Event::KeyPressed>()) {
                 if (kp->code == sf::Keyboard::Key::Enter) {
                     if (!_chatOpen) {
@@ -215,7 +234,7 @@ namespace rtp::client {
                     auto inputsOpt = _uiRegistry.getComponents<rtp::ecs::components::ui::TextInput>();
                     if (inputsOpt) {
                         auto &inputs = inputsOpt.value().get();
-                        for (const auto &e : inputs.getEntities()) {
+                        for (const auto &e : inputs.entities()) {
                             if (inputs[e].isFocused) {
                                 canCharge = false;
                                 break;
@@ -350,9 +369,9 @@ namespace rtp::client {
                 return;
 
             _chatOpen = false;
-            if (!_chatPanel.isNull()) _uiRegistry.killEntity(_chatPanel);
-            if (!_chatHistoryText.isNull()) _uiRegistry.killEntity(_chatHistoryText);
-            if (!_chatInput.isNull()) _uiRegistry.killEntity(_chatInput);
+            if (!_chatPanel.isNull()) _uiRegistry.kill(_chatPanel);
+            if (!_chatHistoryText.isNull()) _uiRegistry.kill(_chatHistoryText);
+            if (!_chatInput.isNull()) _uiRegistry.kill(_chatInput);
             _chatPanel = {};
             _chatHistoryText = {};
             _chatInput = {};

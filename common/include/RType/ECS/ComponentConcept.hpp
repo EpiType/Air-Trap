@@ -43,6 +43,7 @@
 
     #include <concepts>
     #include <type_traits>
+    #include <cstddef>
 
 namespace rtp::ecs
 {
@@ -76,6 +77,19 @@ namespace rtp::ecs
     concept Serializable = Component<T> &&
                            std::is_standard_layout_v<T> &&
                            std::is_trivially_copyable_v<T>;
+
+    inline std::size_t nextComponentID() {
+        static std::size_t counter = 0;
+        return counter++;
+    }
+
+    template <typename T>
+    std::size_t getStaticComponentID() {
+        // Cette variable 'id' est unique pour CHAQUE type T.
+        // Elle n'est initialisée qu'une seule fois au premier appel de getStaticComponentID<T>().
+        static std::size_t id = nextComponentID();
+        return id;
+   }
 }
 
 #endif /* !RTYPE_COMPONENTCONCEPT_HPP_ */

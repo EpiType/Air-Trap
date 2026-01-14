@@ -51,7 +51,7 @@ namespace rtp::server {
 
         rtp::ecs::components::server::InputComponent inputData{};
         inputData.mask = payload.inputMask;
-        _registry.addComponent<rtp::ecs::components::server::InputComponent>(entity, inputData);
+        _registry.add<rtp::ecs::components::server::InputComponent>(entity, inputData);
     }
 
     void NetworkSyncSystem::handleDisconnect(uint32_t sessionId) {

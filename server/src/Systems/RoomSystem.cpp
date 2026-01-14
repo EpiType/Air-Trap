@@ -68,6 +68,11 @@ namespace rtp::server
             "Player {} (Session ID {}) attempting to join Room ID {}{}",
             player->getUsername(), player->getId(), roomId,
             asSpectator ? " as spectator" : "");
+        if (!leaveRoom(player)) {
+            log::warning(
+                " Could not leave previous room, maybe first connection ?. Player {} (Session ID {})",
+                player->getId(), roomId);
+        }
         {
             std::lock_guard lock(_mutex);
 
@@ -122,12 +127,6 @@ namespace rtp::server
                 return false;
             }
 
-            if (!leaveRoom(player)) {
-                log::warning(
-                    " Could not leave previous room, maybe first connection ?. Player {} (Session ID {})",
-                    player->getId(), roomId);
-            }
-
             const Room::PlayerType joinType = asSpectator
                 ? Room::PlayerType::Spectator
                 : Room::PlayerType::Player;
@@ -150,6 +149,11 @@ namespace rtp::server
 
             log::info("Player {} (Session ID {}) joined Room ID {}",
                       player->getUsername(), player->getId(), room->getId());
+        }
+        if (room->getType() != Room::RoomType::Lobby) {
+            rtp::net::Packet response(rtp::net::OpCode::JoinRoom);
+            response << static_cast<uint8_t>(1);
+            _network.sendPacket(player->getId(), response, rtp::net::NetworkMode::TCP);
         }
         return true;
     }

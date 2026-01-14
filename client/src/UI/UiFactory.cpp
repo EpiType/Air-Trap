@@ -21,7 +21,7 @@ namespace rtp::client {
             const std::string& label,
             std::function<void()> onClick)
         {
-            auto entityRes = registry.spawnEntity();
+            auto entityRes = registry.spawn();
             if (!entityRes) {
                 rtp::log::error("Failed to spawn button entity: {}", entityRes.error().message());
                 throw std::runtime_error(std::string("Failed to spawn button entity: ") + std::string(entityRes.error().message()));
@@ -35,7 +35,7 @@ namespace rtp::client {
             button.text = label;
             button.onClick = onClick;
 
-            registry.addComponent<rtp::ecs::components::ui::Button>(entity, button);
+            registry.add<rtp::ecs::components::ui::Button>(entity, button);
 
             return entity;
         }
@@ -49,7 +49,7 @@ namespace rtp::client {
             const std::uint8_t zIndex,
             const color& textColor)
         {
-            auto entityRes = registry.spawnEntity();
+            auto entityRes = registry.spawn();
             if (!entityRes) {
                 rtp::log::error("Failed to spawn text entity: {}", entityRes.error().message());
                 throw std::runtime_error(std::string("Failed to spawn text entity: ") + std::string(entityRes.error().message()));
@@ -67,7 +67,7 @@ namespace rtp::client {
             text.green = textColor.g;
             text.blue = textColor.b;
 
-            registry.addComponent<rtp::ecs::components::ui::Text>(entity, text);
+            registry.add<rtp::ecs::components::ui::Text>(entity, text);
 
             return entity;
         }
@@ -81,7 +81,7 @@ namespace rtp::client {
             float initialValue,
             std::function<void(float)> onChange)
         {
-            auto entityRes = registry.spawnEntity();
+            auto entityRes = registry.spawn();
             if (!entityRes) {
                 rtp::log::error("Failed to spawn slider entity: {}", entityRes.error().message());
                 throw std::runtime_error(std::string("Failed to spawn slider entity: ") + std::string(entityRes.error().message()));
@@ -98,7 +98,7 @@ namespace rtp::client {
             slider.currentValue = initialValue;
             slider.onChange = onChange;
 
-            registry.addComponent<rtp::ecs::components::ui::Slider>(entity, slider);
+            registry.add<rtp::ecs::components::ui::Slider>(entity, slider);
 
             return entity;
         }
@@ -111,7 +111,7 @@ namespace rtp::client {
             const int selectedIndex,
             std::function<void(int index)> onSelect)
         {
-            auto entityRes = registry.spawnEntity();
+            auto entityRes = registry.spawn();
             if (!entityRes) {
                 rtp::log::error("Failed to spawn dropdown entity: {}", entityRes.error().message());
                 throw std::runtime_error(std::string("Failed to spawn dropdown entity: ") + std::string(entityRes.error().message()));
@@ -135,7 +135,7 @@ namespace rtp::client {
                 }
             };
 
-            registry.addComponent<rtp::ecs::components::ui::Dropdown>(entity, dropdown);
+            registry.add<rtp::ecs::components::ui::Dropdown>(entity, dropdown);
             return entity;
         }
 
@@ -150,7 +150,7 @@ namespace rtp::client {
             std::function<void(const std::string&)> onSubmit,
             std::function<void(const std::string&)> onChange)
         {
-            auto entityRes = registry.spawnEntity();
+            auto entityRes = registry.spawn();
             if (!entityRes) {
                 rtp::log::error("Failed to spawn text input entity: {}", entityRes.error().message());
                 throw std::runtime_error(std::string("Failed to spawn text input entity: ") + std::string(entityRes.error().message()));
@@ -169,7 +169,7 @@ namespace rtp::client {
             textInput.onSubmit = onSubmit;
             textInput.onChange = onChange;
 
-            registry.addComponent<rtp::ecs::components::ui::TextInput>(entity, textInput);
+            registry.add<rtp::ecs::components::ui::TextInput>(entity, textInput);
 
             return entity;
         }

@@ -29,7 +29,7 @@ void UIRenderSystem::renderButtons() {
     if (!buttonsResult) return;
     
     auto& buttons = buttonsResult.value().get();
-    for (const auto& entity : buttons.getEntities()) {
+    for (const auto& entity : buttons.entities()) {
         auto& button = buttons[entity];
         
         sf::RectangleShape rect(sf::Vector2f(button.size.x, button.size.y));
@@ -74,7 +74,7 @@ void UIRenderSystem::renderTexts() {
     if (!textsResult) return;
     
     auto& texts = textsResult.value().get();
-    for (const auto& entity : texts.getEntities()) {
+    for (const auto& entity : texts.entities()) {
         auto& textComp = texts[entity];
         
         try {
@@ -114,7 +114,7 @@ void UIRenderSystem::renderSliders() {
     if (!slidersResult) return;
     
     auto& sliders = slidersResult.value().get();
-    for (const auto& entity : sliders.getEntities()) {
+    for (const auto& entity : sliders.entities()) {
         auto& slider = sliders[entity];
         
         sf::RectangleShape track(sf::Vector2f(slider.size.x, slider.size.y));
@@ -142,7 +142,7 @@ void UIRenderSystem::renderDropdowns() {
     
     auto& dropdowns = dropdownsResult.value().get();
     
-    for (const auto& entity : dropdowns.getEntities()) {
+    for (const auto& entity : dropdowns.entities()) {
         auto& dropdown = dropdowns[entity];
         
         sf::RectangleShape button(sf::Vector2f(dropdown.size.x, dropdown.size.y));
@@ -173,7 +173,7 @@ void UIRenderSystem::renderDropdowns() {
         }
     }
     
-    for (const auto& entity : dropdowns.getEntities()) {
+    for (const auto& entity : dropdowns.entities()) {
         auto& dropdown = dropdowns[entity];
         
         if (dropdown.isOpen) {
@@ -217,7 +217,7 @@ void UIRenderSystem::renderTextInputs(float dt)
 
     auto& inputs = inputsResult.value().get();
 
-    for (const auto& entity : inputs.getEntities()) {
+    for (const auto& entity : inputs.entities()) {
         auto& input = inputs[entity];
 
         if (input.isFocused) {

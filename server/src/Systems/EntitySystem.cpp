@@ -27,7 +27,7 @@ namespace rtp::server {
 
     rtp::ecs::Entity EntitySystem::createPlayerEntity(PlayerPtr player, const rtp::Vec2f& spawnPos)
     {
-        auto entityRes = _registry.spawnEntity();
+        auto entityRes = _registry.spawn();
         if (!entityRes) {
             rtp::log::error("Failed to spawn player entity: {}", entityRes.error().message());
             throw std::runtime_error(std::string("Failed to spawn player entity: ") + std::string(entityRes.error().message()));
@@ -35,57 +35,57 @@ namespace rtp::server {
 
         rtp::ecs::Entity entity = entityRes.value();
 
-        _registry.addComponent<rtp::ecs::components::Transform>(
+        _registry.add<rtp::ecs::components::Transform>(
             entity,
             rtp::ecs::components::Transform{ {spawnPos.x, spawnPos.y}, 0.f, {1.f, 1.f} }
         );
 
-        _registry.addComponent<rtp::ecs::components::Velocity>(
+        _registry.add<rtp::ecs::components::Velocity>(
             entity,
             rtp::ecs::components::Velocity{ {0.f, 0.f}, 0.f }
         );
 
-        _registry.addComponent<rtp::ecs::components::SimpleWeapon>(
+        _registry.add<rtp::ecs::components::SimpleWeapon>(
             entity,
             rtp::ecs::components::SimpleWeapon{ 6.0f, 0.0f, 10 }
         );
 
-        _registry.addComponent<rtp::ecs::components::Ammo>(
+        _registry.add<rtp::ecs::components::Ammo>(
             entity,
             rtp::ecs::components::Ammo{ 100, 100, 2.0f, 0.0f, false, true }
         );
 
-        _registry.addComponent<rtp::ecs::components::MovementSpeed>(
+        _registry.add<rtp::ecs::components::MovementSpeed>(
             entity,
             rtp::ecs::components::MovementSpeed{ 200.0f, 1.0f, 0.0f }
         );
 
-        _registry.addComponent<rtp::ecs::components::NetworkId>(
+        _registry.add<rtp::ecs::components::NetworkId>(
             entity,
             rtp::ecs::components::NetworkId{ (uint32_t)entity }
         );
 
-        _registry.addComponent<rtp::ecs::components::server::InputComponent>(
+        _registry.add<rtp::ecs::components::server::InputComponent>(
             entity, 
             rtp::ecs::components::server::InputComponent{}
         );
 
-        _registry.addComponent<rtp::ecs::components::EntityType>(
+        _registry.add<rtp::ecs::components::EntityType>(
             entity,
             rtp::ecs::components::EntityType{ rtp::net::EntityType::Player }
         );
 
-        _registry.addComponent<rtp::ecs::components::Health>(
+        _registry.add<rtp::ecs::components::Health>(
             entity,
             rtp::ecs::components::Health{ 100, 100 }
         );
 
-        _registry.addComponent<rtp::ecs::components::BoundingBox>(
+        _registry.add<rtp::ecs::components::BoundingBox>(
             entity,
             rtp::ecs::components::BoundingBox{ 32.0f, 16.0f }
         );
 
-        _registry.addComponent<rtp::ecs::components::RoomId>(
+        _registry.add<rtp::ecs::components::RoomId>(
             entity,
             rtp::ecs::components::RoomId{ player->getRoomId() }
         );
@@ -103,7 +103,7 @@ namespace rtp::server {
         rtp::net::EntityType type
     )
     {
-        auto entityRes = _registry.spawnEntity();
+        auto entityRes = _registry.spawn();
         if (!entityRes) {
             rtp::log::error("Failed to spawn enemy entity: {}", entityRes.error().message());
             throw std::runtime_error(std::string("Failed to spawn enemy entity: ") + std::string(entityRes.error().message()));
@@ -111,22 +111,22 @@ namespace rtp::server {
 
         rtp::ecs::Entity entity = entityRes.value();
 
-        _registry.addComponent<rtp::ecs::components::Transform>(
+        _registry.add<rtp::ecs::components::Transform>(
             entity,
             rtp::ecs::components::Transform{ {pos.x, pos.y}, 0.f, {1.f, 1.f} }
         );
 
-        _registry.addComponent<rtp::ecs::components::NetworkId>(
+        _registry.add<rtp::ecs::components::NetworkId>(
             entity,
             rtp::ecs::components::NetworkId{ static_cast<uint32_t>(entity.index()) }
         );
 
-        _registry.addComponent<rtp::ecs::components::EntityType>(
+        _registry.add<rtp::ecs::components::EntityType>(
             entity,
             rtp::ecs::components::EntityType{ type }
         );
 
-        _registry.addComponent<rtp::ecs::components::RoomId>(
+        _registry.add<rtp::ecs::components::RoomId>(
             entity,
             rtp::ecs::components::RoomId{ roomId }
         );
@@ -137,17 +137,17 @@ namespace rtp::server {
         } else if (type == rtp::net::EntityType::Boss) {
             maxHealth = 200;
         }
-        _registry.addComponent<rtp::ecs::components::Health>(
+        _registry.add<rtp::ecs::components::Health>(
             entity,
             rtp::ecs::components::Health{ maxHealth, maxHealth }
         );
 
-        _registry.addComponent<rtp::ecs::components::Velocity>(
+        _registry.add<rtp::ecs::components::Velocity>(
             entity,
             rtp::ecs::components::Velocity{ {0.f, 0.f}, 0.f }
         );
 
-        _registry.addComponent<rtp::ecs::components::MouvementPattern>(
+        _registry.add<rtp::ecs::components::MouvementPattern>(
             entity,
             rtp::ecs::components::MouvementPattern{ pattern, speed, amplitude, frequency }
         );
@@ -158,17 +158,17 @@ namespace rtp::server {
         } else if (type == rtp::net::EntityType::Boss) {
             fireRate = 1.2f;
         }
-        _registry.addComponent<rtp::ecs::components::SimpleWeapon>(
+        _registry.add<rtp::ecs::components::SimpleWeapon>(
             entity,
             rtp::ecs::components::SimpleWeapon{ fireRate, 0.0f, 0 }
         );
 
-        _registry.addComponent<rtp::ecs::components::BoundingBox>(
+        _registry.add<rtp::ecs::components::BoundingBox>(
             entity,
             rtp::ecs::components::BoundingBox{ 30.0f, 18.0f }
         );
 
-        // _registry.addComponent<rtp::ecs::components::IABehaviorComponent>(
+        // _registry.add<rtp::ecs::components::IABehaviorComponent>(
         //     entity,
         //     rtp::ecs::components::IABehaviorComponent{ rtp::ecs::components::IABehavior::Passive, 500.0 }
         // );
@@ -196,7 +196,7 @@ namespace rtp::server {
         float duration
     )
     {
-        auto entityRes = _registry.spawnEntity();
+        auto entityRes = _registry.spawn();
         if (!entityRes) {
             rtp::log::error("Failed to spawn powerup entity: {}", entityRes.error().message());
             throw std::runtime_error(std::string("Failed to spawn powerup entity: ") + std::string(entityRes.error().message()));
@@ -204,7 +204,7 @@ namespace rtp::server {
 
         rtp::ecs::Entity entity = entityRes.value();
 
-        _registry.addComponent<rtp::ecs::components::Transform>(
+        _registry.add<rtp::ecs::components::Transform>(
             entity,
             rtp::ecs::components::Transform{ {pos.x, pos.y}, 0.f, {1.f, 1.f} }
         );
@@ -213,27 +213,27 @@ namespace rtp::server {
             ? rtp::net::EntityType::PowerupSpeed
             : rtp::net::EntityType::PowerupHeal;
 
-        _registry.addComponent<rtp::ecs::components::EntityType>(
+        _registry.add<rtp::ecs::components::EntityType>(
             entity,
             rtp::ecs::components::EntityType{ netType }
         );
 
-        _registry.addComponent<rtp::ecs::components::Powerup>(
+        _registry.add<rtp::ecs::components::Powerup>(
             entity,
             rtp::ecs::components::Powerup{ type, value, duration }
         );
 
-        _registry.addComponent<rtp::ecs::components::BoundingBox>(
+        _registry.add<rtp::ecs::components::BoundingBox>(
             entity,
             rtp::ecs::components::BoundingBox{ 16.0f, 16.0f }
         );
 
-        _registry.addComponent<rtp::ecs::components::NetworkId>(
+        _registry.add<rtp::ecs::components::NetworkId>(
             entity,
             rtp::ecs::components::NetworkId{ static_cast<uint32_t>(entity.index()) }
         );
 
-        _registry.addComponent<rtp::ecs::components::RoomId>(
+        _registry.add<rtp::ecs::components::RoomId>(
             entity,
             rtp::ecs::components::RoomId{ roomId }
         );
@@ -249,7 +249,7 @@ namespace rtp::server {
         rtp::net::EntityType type
     )
     {
-        auto entityRes = _registry.spawnEntity();
+        auto entityRes = _registry.spawn();
         if (!entityRes) {
             rtp::log::error("Failed to spawn obstacle entity: {}", entityRes.error().message());
             throw std::runtime_error(std::string("Failed to spawn obstacle entity: ") + std::string(entityRes.error().message()));
@@ -257,32 +257,32 @@ namespace rtp::server {
 
         rtp::ecs::Entity entity = entityRes.value();
 
-        _registry.addComponent<rtp::ecs::components::Transform>(
+        _registry.add<rtp::ecs::components::Transform>(
             entity,
             rtp::ecs::components::Transform{ {pos.x, pos.y}, 0.f, {1.f, 1.f} }
         );
 
-        _registry.addComponent<rtp::ecs::components::EntityType>(
+        _registry.add<rtp::ecs::components::EntityType>(
             entity,
             rtp::ecs::components::EntityType{ type }
         );
 
-        _registry.addComponent<rtp::ecs::components::Health>(
+        _registry.add<rtp::ecs::components::Health>(
             entity,
             rtp::ecs::components::Health{ health, health }
         );
 
-        _registry.addComponent<rtp::ecs::components::BoundingBox>(
+        _registry.add<rtp::ecs::components::BoundingBox>(
             entity,
             rtp::ecs::components::BoundingBox{ size.x, size.y }
         );
 
-        _registry.addComponent<rtp::ecs::components::NetworkId>(
+        _registry.add<rtp::ecs::components::NetworkId>(
             entity,
             rtp::ecs::components::NetworkId{ static_cast<uint32_t>(entity.index()) }
         );
 
-        _registry.addComponent<rtp::ecs::components::RoomId>(
+        _registry.add<rtp::ecs::components::RoomId>(
             entity,
             rtp::ecs::components::RoomId{ roomId }
         );
