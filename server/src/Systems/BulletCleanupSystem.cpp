@@ -18,9 +18,9 @@ namespace rtp::server
 
     void BulletCleanupSystem::despawn(const rtp::ecs::Entity& entity, uint32_t roomId)
     {
-        auto transformRes = _registry.getComponents<rtp::ecs::components::Transform>();
-        auto typeRes = _registry.getComponents<rtp::ecs::components::EntityType>();
-        auto netRes = _registry.getComponents<rtp::ecs::components::NetworkId>();
+        auto transformRes = _registry.get<rtp::ecs::components::Transform>();
+        auto typeRes = _registry.get<rtp::ecs::components::EntityType>();
+        auto netRes = _registry.get<rtp::ecs::components::NetworkId>();
         if (!transformRes || !typeRes || !netRes) {
             return;
         }
@@ -65,9 +65,9 @@ namespace rtp::server
     void BulletCleanupSystem::update(float dt)
     {
         (void)dt;
-        auto transformsRes = _registry.getComponents<rtp::ecs::components::Transform>();
-        auto typesRes = _registry.getComponents<rtp::ecs::components::EntityType>();
-        auto roomsRes = _registry.getComponents<rtp::ecs::components::RoomId>();
+        auto transformsRes = _registry.get<rtp::ecs::components::Transform>();
+        auto typesRes = _registry.get<rtp::ecs::components::EntityType>();
+        auto roomsRes = _registry.get<rtp::ecs::components::RoomId>();
 
         if (!transformsRes || !typesRes || !roomsRes) {
             return;

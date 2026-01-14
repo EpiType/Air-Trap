@@ -53,7 +53,7 @@ namespace rtp::client {
                 "",
                 nullptr
             );
-            if (auto buttonsOpt = _uiRegistry.getComponents<rtp::ecs::components::ui::Button>()) {
+            if (auto buttonsOpt = _uiRegistry.get<rtp::ecs::components::ui::Button>()) {
                 auto &buttons = buttonsOpt.value().get();
                 if (buttons.has(_chatCompactPanel)) {
                     auto &panel = buttons[_chatCompactPanel];
@@ -105,7 +105,7 @@ namespace rtp::client {
                 0.0f,
                 nullptr
             );
-            if (auto slidersOpt = _uiRegistry.getComponents<rtp::ecs::components::ui::Slider>()) {
+            if (auto slidersOpt = _uiRegistry.get<rtp::ecs::components::ui::Slider>()) {
                 auto &sliders = slidersOpt.value().get();
                 if (sliders.has(_hudChargeBar)) {
                     auto &slider = sliders[_hudChargeBar];
@@ -153,7 +153,7 @@ namespace rtp::client {
                     if (!_chatOpen) {
                         openChat();
                     } else {
-                        auto inputsOpt = _uiRegistry.getComponents<rtp::ecs::components::ui::TextInput>();
+                        auto inputsOpt = _uiRegistry.get<rtp::ecs::components::ui::TextInput>();
                         bool focused = false;
                         if (inputsOpt) {
                             auto &inputs = inputsOpt.value().get();
@@ -192,7 +192,7 @@ namespace rtp::client {
             }
             _uiPing = _network.getPingMs();
 
-            auto textsOpt = _uiRegistry.getComponents<rtp::ecs::components::ui::Text>();
+            auto textsOpt = _uiRegistry.get<rtp::ecs::components::ui::Text>();
             if (!textsOpt) return;
             auto& texts = textsOpt.value().get();
 
@@ -200,7 +200,7 @@ namespace rtp::client {
             if (texts.has(_hudFps))      texts[_hudFps].content  = "FPS: "  + std::to_string(_uiFps);
             if (texts.has(_hudScore))    texts[_hudScore].content = "Score: " + std::to_string(_uiScore);
 
-            auto spritesOpt = _worldRegistry.getComponents<rtp::ecs::components::Sprite>();
+            auto spritesOpt = _worldRegistry.get<rtp::ecs::components::Sprite>();
             if (spritesOpt && texts.has(_hudEntities)) {
                 const std::size_t count = spritesOpt.value().get().size();
                 texts[_hudEntities].content = "Entities: " + std::to_string(count + 2);
@@ -225,13 +225,13 @@ namespace rtp::client {
                 updateChatHistoryText();
             }
 
-            auto slidersOpt = _uiRegistry.getComponents<rtp::ecs::components::ui::Slider>();
+            auto slidersOpt = _uiRegistry.get<rtp::ecs::components::ui::Slider>();
             if (slidersOpt && slidersOpt->get().has(_hudChargeBar)) {
                 constexpr float kChargeMax = 2.0f;
                 bool canCharge = !_network.isReloading() && _network.getAmmoCurrent() > 0;
 
                 if (canCharge) {
-                    auto inputsOpt = _uiRegistry.getComponents<rtp::ecs::components::ui::TextInput>();
+                    auto inputsOpt = _uiRegistry.get<rtp::ecs::components::ui::TextInput>();
                     if (inputsOpt) {
                         auto &inputs = inputsOpt.value().get();
                         for (const auto &e : inputs.entities()) {
@@ -286,7 +286,7 @@ namespace rtp::client {
 
         void PlayingScene::sendChatMessage(void)
         {
-            auto inputsOpt = _uiRegistry.getComponents<rtp::ecs::components::ui::TextInput>();
+            auto inputsOpt = _uiRegistry.get<rtp::ecs::components::ui::TextInput>();
             if (!inputsOpt)
                 return;
 
@@ -318,7 +318,7 @@ namespace rtp::client {
                 "",
                 nullptr
             );
-            if (auto buttonsOpt = _uiRegistry.getComponents<rtp::ecs::components::ui::Button>()) {
+            if (auto buttonsOpt = _uiRegistry.get<rtp::ecs::components::ui::Button>()) {
                 auto &buttons = buttonsOpt.value().get();
                 if (buttons.has(_chatPanel)) {
                     auto &panel = buttons[_chatPanel];
@@ -349,7 +349,7 @@ namespace rtp::client {
                 nullptr,
                 nullptr
             );
-            if (auto inputsOpt = _uiRegistry.getComponents<rtp::ecs::components::ui::TextInput>()) {
+            if (auto inputsOpt = _uiRegistry.get<rtp::ecs::components::ui::TextInput>()) {
                 auto &inputs = inputsOpt.value().get();
                 if (inputs.has(_chatInput)) {
                     inputs[_chatInput].onSubmit = [this](const std::string&) {
@@ -379,7 +379,7 @@ namespace rtp::client {
 
         void PlayingScene::updateChatHistoryText(void)
         {
-            auto textsOpt = _uiRegistry.getComponents<rtp::ecs::components::ui::Text>();
+            auto textsOpt = _uiRegistry.get<rtp::ecs::components::ui::Text>();
             if (!textsOpt)
                 return;
             auto &texts = textsOpt.value().get();

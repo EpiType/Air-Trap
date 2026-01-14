@@ -43,7 +43,7 @@ namespace rtp::server {
         uint32_t entityIndex = _sessionToEntity[sessionId];
         rtp::ecs::Entity entity(entityIndex, 0);
 
-        auto inputsRes = _registry.getComponents<rtp::ecs::components::server::InputComponent>();
+        auto inputsRes = _registry.get<rtp::ecs::components::server::InputComponent>();
         if (inputsRes) {
             auto &inputs = inputsRes->get();
             if (inputs.has(entity)) {

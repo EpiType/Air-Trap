@@ -28,13 +28,13 @@ TEST_F(RegistryTest, KillEntity) {
     ASSERT_NO_THROW(registry->kill(entity.value()));
 }
 
-TEST_F(RegistryTest, RegisterComponent) {
-    auto result = registry->registerComponent<Transform>();
+TEST_F(RegistryTest, subscribe) {
+    auto result = registry->subscribe<Transform>();
     ASSERT_TRUE(result.has_value());
 }
 
 TEST_F(RegistryTest, add) {
-    auto regResult = registry->registerComponent<Transform>();
+    auto regResult = registry->subscribe<Transform>();
     ASSERT_TRUE(regResult.has_value());
     
     auto entity = registry->spawn();
@@ -44,22 +44,22 @@ TEST_F(RegistryTest, add) {
     ASSERT_TRUE(result.has_value());
 }
 
-TEST_F(RegistryTest, GetComponentsNotRegisteredReturnsError) {
-    auto res = registry->getComponents<Velocity>();
+TEST_F(RegistryTest, getNotRegisteredReturnsError) {
+    auto res = registry->get<Velocity>();
     ASSERT_FALSE(res.has_value());
     EXPECT_EQ(res.error().code(), rtp::ErrorCode::ComponentMissing);
 }
 
-TEST_F(RegistryTest, RegisterComponentIsIdempotent) {
-    auto first = registry->registerComponent<Health>();
+TEST_F(RegistryTest, subscribeIsIdempotent) {
+    auto first = registry->subscribe<Health>();
     ASSERT_TRUE(first.has_value());
-    auto second = registry->registerComponent<Health>();
+    auto second = registry->subscribe<Health>();
     EXPECT_FALSE(second.has_value());
     EXPECT_EQ(second.error().code(), rtp::ErrorCode::InternalRuntimeError);
 }
 
 TEST_F(RegistryTest, ClearEmptiesArraysAndAllowsRespawn) {
-    auto tsResult = registry->registerComponent<Transform>();
+    auto tsResult = registry->subscribe<Transform>();
     ASSERT_TRUE(tsResult.has_value());
     auto &ts = tsResult->get();
     auto e1 = registry->spawn();
@@ -75,9 +75,9 @@ TEST_F(RegistryTest, ClearEmptiesArraysAndAllowsRespawn) {
 }
 
 TEST_F(RegistryTest, ZipViewThreeComponentsAlign) {
-    auto tsResult = registry->registerComponent<Transform>();
-    auto vsResult = registry->registerComponent<Velocity>();
-    auto hsResult = registry->registerComponent<Health>();
+    auto tsResult = registry->subscribe<Transform>();
+    auto vsResult = registry->subscribe<Velocity>();
+    auto hsResult = registry->subscribe<Health>();
     ASSERT_TRUE(tsResult.has_value());
     ASSERT_TRUE(vsResult.has_value());
     ASSERT_TRUE(hsResult.has_value());

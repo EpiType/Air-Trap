@@ -23,20 +23,20 @@ namespace rtp::server
     GameManager::GameManager(ServerNetwork &networkManager)
         : _networkManager(networkManager)
     {        
-        _registry.registerComponent<rtp::ecs::components::Transform>();
-        _registry.registerComponent<rtp::ecs::components::Velocity>();
-        _registry.registerComponent<rtp::ecs::components::NetworkId>();
-        _registry.registerComponent<rtp::ecs::components::server::InputComponent>();
-        _registry.registerComponent<rtp::ecs::components::EntityType>();
-        _registry.registerComponent<rtp::ecs::components::RoomId>();
-        _registry.registerComponent<rtp::ecs::components::SimpleWeapon>();
-        _registry.registerComponent<rtp::ecs::components::Ammo>();
-        _registry.registerComponent<rtp::ecs::components::MouvementPattern>();
-        _registry.registerComponent<rtp::ecs::components::Health>();
-        _registry.registerComponent<rtp::ecs::components::BoundingBox>();
-        _registry.registerComponent<rtp::ecs::components::Damage>();
-        _registry.registerComponent<rtp::ecs::components::Powerup>();
-        _registry.registerComponent<rtp::ecs::components::MovementSpeed>();
+        _registry.subscribe<rtp::ecs::components::Transform>();
+        _registry.subscribe<rtp::ecs::components::Velocity>();
+        _registry.subscribe<rtp::ecs::components::NetworkId>();
+        _registry.subscribe<rtp::ecs::components::server::InputComponent>();
+        _registry.subscribe<rtp::ecs::components::EntityType>();
+        _registry.subscribe<rtp::ecs::components::RoomId>();
+        _registry.subscribe<rtp::ecs::components::SimpleWeapon>();
+        _registry.subscribe<rtp::ecs::components::Ammo>();
+        _registry.subscribe<rtp::ecs::components::MouvementPattern>();
+        _registry.subscribe<rtp::ecs::components::Health>();
+        _registry.subscribe<rtp::ecs::components::BoundingBox>();
+        _registry.subscribe<rtp::ecs::components::Damage>();
+        _registry.subscribe<rtp::ecs::components::Powerup>();
+        _registry.subscribe<rtp::ecs::components::MovementSpeed>();
 
         _networkSyncSystem = std::make_unique<NetworkSyncSystem>(_networkManager, _registry);
         _movementSystem = std::make_unique<MovementSystem>(_registry);
@@ -200,10 +200,10 @@ namespace rtp::server
 
         if (entityId != 0) {
             rtp::ecs::Entity entity(entityId, 0);
-            auto transformsRes = _registry.getComponents<rtp::ecs::components::Transform>();
-            auto typesRes = _registry.getComponents<rtp::ecs::components::EntityType>();
-            auto netsRes = _registry.getComponents<rtp::ecs::components::NetworkId>();
-            auto roomsRes = _registry.getComponents<rtp::ecs::components::RoomId>();
+            auto transformsRes = _registry.get<rtp::ecs::components::Transform>();
+            auto typesRes = _registry.get<rtp::ecs::components::EntityType>();
+            auto netsRes = _registry.get<rtp::ecs::components::NetworkId>();
+            auto roomsRes = _registry.get<rtp::ecs::components::RoomId>();
 
             if (transformsRes && typesRes && netsRes && roomsRes) {
                 auto &transforms = transformsRes->get();
@@ -603,10 +603,10 @@ namespace rtp::server
         if (sessions.empty())
             return;
 
-        auto transformRes = _registry.getComponents<rtp::ecs::components::Transform>();
-        auto typeRes = _registry.getComponents<rtp::ecs::components::EntityType>();
-        auto netRes = _registry.getComponents<rtp::ecs::components::NetworkId>();
-        auto boxRes = _registry.getComponents<rtp::ecs::components::BoundingBox>();
+        auto transformRes = _registry.get<rtp::ecs::components::Transform>();
+        auto typeRes = _registry.get<rtp::ecs::components::EntityType>();
+        auto netRes = _registry.get<rtp::ecs::components::NetworkId>();
+        auto boxRes = _registry.get<rtp::ecs::components::BoundingBox>();
         if (!transformRes || !typeRes || !netRes) {
             rtp::log::error("Missing component array for EntitySpawn");
             return;
@@ -652,11 +652,11 @@ namespace rtp::server
             rtp::ecs::components::EntityType,
             rtp::ecs::components::RoomId
         >();
-        auto boxRes = _registry.getComponents<rtp::ecs::components::BoundingBox>();
+        auto boxRes = _registry.get<rtp::ecs::components::BoundingBox>();
         auto *boxes = boxRes ? &boxRes->get() : nullptr;
         std::unordered_map<uint32_t, rtp::ecs::Entity> netToEntity;
         if (boxes) {
-            auto netRes = _registry.getComponents<rtp::ecs::components::NetworkId>();
+            auto netRes = _registry.get<rtp::ecs::components::NetworkId>();
             if (netRes) {
                 auto &nets = netRes->get();
                 for (auto e : nets.entities()) {

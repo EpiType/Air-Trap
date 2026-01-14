@@ -29,15 +29,15 @@ namespace rtp::server
     void CollisionSystem::update(float dt)
     {
         (void)dt;
-        auto transformsRes = _registry.getComponents<rtp::ecs::components::Transform>();
-        auto boxesRes = _registry.getComponents<rtp::ecs::components::BoundingBox>();
-        auto typesRes = _registry.getComponents<rtp::ecs::components::EntityType>();
-        auto roomsRes = _registry.getComponents<rtp::ecs::components::RoomId>();
-        auto healthRes = _registry.getComponents<rtp::ecs::components::Health>();
-        auto speedRes = _registry.getComponents<rtp::ecs::components::MovementSpeed>();
-        auto powerupRes = _registry.getComponents<rtp::ecs::components::Powerup>();
-        auto damageRes = _registry.getComponents<rtp::ecs::components::Damage>();
-        auto velocityRes = _registry.getComponents<rtp::ecs::components::Velocity>();
+        auto transformsRes = _registry.get<rtp::ecs::components::Transform>();
+        auto boxesRes = _registry.get<rtp::ecs::components::BoundingBox>();
+        auto typesRes = _registry.get<rtp::ecs::components::EntityType>();
+        auto roomsRes = _registry.get<rtp::ecs::components::RoomId>();
+        auto healthRes = _registry.get<rtp::ecs::components::Health>();
+        auto speedRes = _registry.get<rtp::ecs::components::MovementSpeed>();
+        auto powerupRes = _registry.get<rtp::ecs::components::Powerup>();
+        auto damageRes = _registry.get<rtp::ecs::components::Damage>();
+        auto velocityRes = _registry.get<rtp::ecs::components::Velocity>();
 
         if (!transformsRes || !boxesRes || !typesRes || !roomsRes ||
             !healthRes || !speedRes || !powerupRes || !damageRes || !velocityRes) {
@@ -307,9 +307,9 @@ namespace rtp::server
 
     void CollisionSystem::despawn(const rtp::ecs::Entity& entity, uint32_t roomId)
     {
-        auto transformRes = _registry.getComponents<rtp::ecs::components::Transform>();
-        auto typeRes = _registry.getComponents<rtp::ecs::components::EntityType>();
-        auto netRes = _registry.getComponents<rtp::ecs::components::NetworkId>();
+        auto transformRes = _registry.get<rtp::ecs::components::Transform>();
+        auto typeRes = _registry.get<rtp::ecs::components::EntityType>();
+        auto netRes = _registry.get<rtp::ecs::components::NetworkId>();
         if (!transformRes || !typeRes || !netRes) {
             return;
         }

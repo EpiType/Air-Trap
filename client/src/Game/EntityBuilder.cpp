@@ -47,7 +47,7 @@ namespace rtp::client {
 
     void EntityBuilder::update(rtp::ecs::Entity entity, const EntityTemplate &t)
     {
-        if (auto arr = _registry.getComponents<rtp::ecs::components::Transform>(); arr) {
+        if (auto arr = _registry.get<rtp::ecs::components::Transform>(); arr) {
             auto &sa = arr->get();
             if (entity < sa.size() && sa.has(entity)) {
                 auto &tr = sa[entity];
@@ -58,7 +58,7 @@ namespace rtp::client {
         }
 
         if (t.withVelocity) {
-            if (auto arr = _registry.getComponents<rtp::ecs::components::Velocity>(); arr) {
+            if (auto arr = _registry.get<rtp::ecs::components::Velocity>(); arr) {
                 auto &sa = arr->get();
                 if (entity < sa.size() && sa.has(entity)) {
                     sa[entity] = t.velocity;
@@ -66,7 +66,7 @@ namespace rtp::client {
             }
         }
 
-        if (auto arr = _registry.getComponents<rtp::ecs::components::Sprite>(); arr) {
+        if (auto arr = _registry.get<rtp::ecs::components::Sprite>(); arr) {
             auto &sa = arr->get();
             if (entity < sa.size() && sa.has(entity)) {
                 sa[entity] = t.sprite;
@@ -74,7 +74,7 @@ namespace rtp::client {
         }
 
         if (t.withAnimation) {
-            if (auto arr = _registry.getComponents<rtp::ecs::components::Animation>(); arr) {
+            if (auto arr = _registry.get<rtp::ecs::components::Animation>(); arr) {
                 auto &sa = arr->get();
                 if (entity < sa.size() && sa.has(entity)) {
                     sa[entity] = t.animation;

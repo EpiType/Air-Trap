@@ -520,14 +520,14 @@ namespace rtp::client {
 
         if (entityType == rtp::net::EntityType::Bullet ||
             entityType == rtp::net::EntityType::ChargedBullet) {
-            if (auto transformsOpt = _registry.getComponents<rtp::ecs::components::Transform>(); transformsOpt) {
+            if (auto transformsOpt = _registry.get<rtp::ecs::components::Transform>(); transformsOpt) {
                 auto &transforms = transformsOpt.value().get();
                 if (transforms.has(e)) {
                     transforms[e].rotation = 180.0f;
                 }
             }
         } else if (entityType == rtp::net::EntityType::EnemyBullet) {
-            if (auto transformsOpt = _registry.getComponents<rtp::ecs::components::Transform>(); transformsOpt) {
+            if (auto transformsOpt = _registry.get<rtp::ecs::components::Transform>(); transformsOpt) {
                 auto &transforms = transformsOpt.value().get();
                 if (transforms.has(e)) {
                     transforms[e].rotation = 0.0f;
@@ -568,7 +568,7 @@ namespace rtp::client {
 
             const rtp::ecs::Entity e = it->second;
 
-            auto transformsOpt = _registry.getComponents<rtp::ecs::components::Transform>();
+            auto transformsOpt = _registry.get<rtp::ecs::components::Transform>();
             if (!transformsOpt)
                 continue;
 

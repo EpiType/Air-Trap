@@ -52,13 +52,7 @@ namespace rtp::ecs
             void kill(Entity entity);
 
             template <Component T, typename Self>
-            auto registerComponent(this Self &self)
-                -> std::expected<std::reference_wrapper<ConstLike<Self,
-                                                                  SparseArray<T>>>,
-                                 rtp::Error>;
-
-            template <Component T, typename Self>
-            auto getComponents(this Self &self)
+            auto subscribe(this Self &self)
                 -> std::expected<std::reference_wrapper<ConstLike<Self,
                                                                   SparseArray<T>>>,
                                  rtp::Error>;
@@ -72,7 +66,7 @@ namespace rtp::ecs
 
             template <Component T, typename Self>
             [[nodiscard]]
-            auto get(this Self &self)
+            auto get(this const Self &self)
                 -> std::expected<std::reference_wrapper<ConstLike<Self,
                                                                   SparseArray<T>>>,
                                  rtp::Error>;
