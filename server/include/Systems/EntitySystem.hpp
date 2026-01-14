@@ -33,7 +33,7 @@
     #include "RType/ECS/Components/MovementSpeed.hpp"
 
 /**
- * @namespace rtp::server
+ * @namespace server
  * @brief Systems for R-Type server
  */
 namespace rtp::server {
@@ -41,13 +41,13 @@ namespace rtp::server {
      * @class EntitySystem
      * @brief Base class for systems that operate on entities in the ECS.
      */
-    class EntitySystem : public rtp::ecs::ISystem {
+    class EntitySystem : public ecs::ISystem {
         public:
             /**
              * @brief Constructor for EntitySystem
              * @param registry Reference to the entity registry
              */
-            EntitySystem(rtp::ecs::Registry& registry, ServerNetwork& network, NetworkSyncSystem& networkSync);
+            EntitySystem(ecs::Registry& registry, ServerNetwork& network, NetworkSyncSystem& networkSync);
 
             /**
              * @brief Update movement system logic for one frame
@@ -59,21 +59,21 @@ namespace rtp::server {
              * @brief Create a new player entity in the ECS
              * @return The ID of the created player entity
              */
-            rtp::ecs::Entity createPlayerEntity(PlayerPtr player);
-            rtp::ecs::Entity createPlayerEntity(PlayerPtr player, const rtp::Vec2f& spawnPos);
+            ecs::Entity createPlayerEntity(PlayerPtr player);
+            ecs::Entity createPlayerEntity(PlayerPtr player, const Vec2f& spawnPos);
 
             /**
              * @brief Create a new enemy entity in the ECS
              * @return The ID of the created enemy entity
              */
-            rtp::ecs::Entity createEnemyEntity(
+            ecs::Entity createEnemyEntity(
                 uint32_t roomId,
-                const rtp::Vec2f& pos,
-                rtp::ecs::components::Patterns pattern,
+                const Vec2f& pos,
+                ecs::components::Patterns pattern,
                 float speed,
                 float amplitude,
                 float frequency,
-                rtp::net::EntityType type = rtp::net::EntityType::Scout
+                net::EntityType type = net::EntityType::Scout
             );
 
             /**
@@ -86,10 +86,10 @@ namespace rtp::server {
              * @param frequency Frequency for movement patterns that require it
              * @return The ID of the created enemy entity
              */
-            rtp::ecs::Entity creaetEnemyEntity(
+            ecs::Entity creaetEnemyEntity(
                 uint32_t roomId,
-                const rtp::Vec2f& pos,
-                rtp::ecs::components::Patterns pattern,
+                const Vec2f& pos,
+                ecs::components::Patterns pattern,
                 float speed,
                 float amplitude,
                 float frequency
@@ -104,10 +104,10 @@ namespace rtp::server {
              * @param duration Duration the powerup effect lasts
              * @return The ID of the created powerup entity
              */
-            rtp::ecs::Entity createPowerupEntity(
+            ecs::Entity createPowerupEntity(
                 uint32_t roomId,
-                const rtp::Vec2f& pos,
-                rtp::ecs::components::PowerupType type,
+                const Vec2f& pos,
+                ecs::components::PowerupType type,
                 float value,
                 float duration
             );
@@ -121,16 +121,16 @@ namespace rtp::server {
              * @param type Type of the obstacle entity
              * @return The ID of the created obstacle entity
              */
-            rtp::ecs::Entity createObstacleEntity(
+            ecs::Entity createObstacleEntity(
                 uint32_t roomId,
-                const rtp::Vec2f& pos,
-                const rtp::Vec2f& size,
+                const Vec2f& pos,
+                const Vec2f& size,
                 int health,
-                rtp::net::EntityType type = rtp::net::EntityType::Obstacle
+                net::EntityType type = net::EntityType::Obstacle
             );
 
         protected:
-            rtp::ecs::Registry& _registry;   /**< Reference to the entity registry */
+            ecs::Registry& _registry;   /**< Reference to the entity registry */
             ServerNetwork& _network;         /**< Reference to the server network manager */
             NetworkSyncSystem& _networkSync; /**< Reference to the network sync system */
     };
