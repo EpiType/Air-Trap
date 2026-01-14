@@ -173,5 +173,40 @@ namespace rtp::client {
 
             return entity;
         }
+
+        rtp::ecs::Entity UiFactory::createSpritePreview(
+            rtp::ecs::Registry& registry,
+            const position& position,
+            const std::string& texturePath,
+            int rectLeft,
+            int rectTop,
+            int rectWidth,
+            int rectHeight,
+            float scale,
+            int zIndex)
+        {
+            auto entityRes = registry.spawn();
+            if (!entityRes) {
+                rtp::log::error("Failed to spawn sprite preview entity: {}", entityRes.error().message());
+                throw std::runtime_error(std::string("Failed to spawn sprite preview entity: ") + std::string(entityRes.error().message()));
+            }
+
+            rtp::ecs::Entity entity = entityRes.value();
+
+            rtp::ecs::components::ui::SpritePreview spritePreview;
+            spritePreview.texturePath = texturePath;
+            spritePreview.x = position.x;
+            spritePreview.y = position.y;
+            spritePreview.scale = scale;
+            spritePreview.rectLeft = rectLeft;
+            spritePreview.rectTop = rectTop;
+            spritePreview.rectWidth = rectWidth;
+            spritePreview.rectHeight = rectHeight;
+            spritePreview.zIndex = zIndex;
+
+            registry.add<rtp::ecs::components::ui::SpritePreview>(entity, spritePreview);
+
+            return entity;
+        }
     } // namespace graphics
 } // namespace rtp::client
