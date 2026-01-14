@@ -27,6 +27,10 @@ namespace rtp::server {
         _sessionToEntity[sessionId] = entityId;
     }
 
+    void NetworkSyncSystem::unbindSession(uint32_t sessionId) {
+        _sessionToEntity.erase(sessionId);
+    }
+
     void NetworkSyncSystem::handleInput(uint32_t sessionId, const rtp::net::Packet& packet) {
         rtp::net::InputPayload payload;
         rtp::net::Packet tempPacket = packet;

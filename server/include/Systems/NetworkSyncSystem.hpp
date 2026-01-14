@@ -54,6 +54,7 @@ namespace rtp::server {
              * @param entityId ID of the entity to bind
              */
             void bindSessionToEntity(uint32_t sessionId, uint32_t entityId);
+            void unbindSession(uint32_t sessionId);
 
             /**
              * @brief Handle input received from a client
