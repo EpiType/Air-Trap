@@ -227,8 +227,8 @@ namespace rtp::client {
                 }
             };
 
-            spawnLayer(EntityTemplate::createParrallaxLayer1());
-            spawnLayer(EntityTemplate::createParrallaxLayer2());
+            spawnLayer(EntityTemplate::createParrallaxLvl1_1());
+            spawnLayer(EntityTemplate::createParrallaxLvl1_2());
         }
 
         void PlayingScene::sendChatMessage(void)
