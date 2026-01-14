@@ -27,16 +27,21 @@
 
 namespace rtp::client {
 
+    class ModManager;
+
     class RenderSystem : public rtp::ecs::ISystem {
         public:
             RenderSystem(rtp::ecs::Registry& r, sf::RenderWindow& window) 
-                : _r(r), _window(window) {}
+                : _r(r), _window(window), _modManager(nullptr) {}
+
+            void setModManager(ModManager* modManager) { _modManager = modManager; }
 
         void update(float dt) override;
 
     private:
         rtp::ecs::Registry& _r;
         sf::RenderWindow& _window;
+        ModManager* _modManager;
         
         std::unordered_map<std::string, sf::Texture> _textureCache;
     };

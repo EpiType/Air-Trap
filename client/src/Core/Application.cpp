@@ -58,6 +58,10 @@ namespace rtp::client
             throw std::runtime_error(
                 std::string("Failed to start client network: ") + e.what());
         }
+        
+        // Load mods configuration
+        _modManager.loadConfig("config/mods.cfg");
+        
         initUiSystems();
         initWorldSystems();
         initUiECS();
@@ -89,6 +93,11 @@ namespace rtp::client
         _worldSystemManager.addSystem<rtp::client::AnimationSystem>(_worldRegistry);
         _worldSystemManager.addSystem<rtp::client::RenderSystem>(_worldRegistry, _window);
         _worldSystemManager.addSystem<rtp::client::ParallaxSystem>(_worldRegistry);
+        
+        // Inject ModManager into RenderSystem
+        auto& renderSystem = _worldSystemManager.getSystem<rtp::client::RenderSystem>();
+        renderSystem.setModManager(&_modManager);
+        
         rtp::log::info("OK : World systems initialized");
     }
 
@@ -156,6 +165,9 @@ namespace rtp::client
         );
         _scenes[GameState::Paused] = std::make_unique<rtp::client::Scenes::PauseScene>(
             _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
+        );
+        _scenes[GameState::Mods] = std::make_unique<rtp::client::Scenes::ModMenuScene>(
+            _modManager, _uiRegistry, _uiFactory, [this]() { this->changeState(GameState::Menu); }
         );
         _scenes[GameState::Playing] = std::make_unique<rtp::client::Scenes::PlayingScene>(
             _worldRegistry, _uiRegistry, _settings, _translations, net, _uiFactory, _worldEntityBuilder, changeStateCb

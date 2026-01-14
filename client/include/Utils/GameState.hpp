@@ -28,7 +28,8 @@ namespace rtp::client {
         Settings,      /**< Settings menu state */
         KeyBindings,   /**< Key bindings configuration state */
         GamepadSettings, /**< Gamepad settings configuration state */
-        Paused         /**< Game paused state */
+        Paused,        /**< Game paused state */
+        Mods           /**< Mods management state */
     };
 } // namespace rtp::client
 

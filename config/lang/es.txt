@@ -4,6 +4,7 @@
 menu.title=AIR-TRAP
 menu.play=JUGAR
 menu.settings=CONFIGURACIÓN
+menu.mods=MODS
 menu.exit=SALIR
 # Configuración
 settings.title=CONFIGURACIÓN

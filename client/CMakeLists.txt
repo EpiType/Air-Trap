@@ -18,6 +18,7 @@ set(SRC_CLIENT
     src/Systems/UIRenderSystem.cpp
     src/Systems/RenderSystem.cpp
     src/Game/EntityBuilder.cpp
+    src/Mod/ModManager.cpp
     # src/Systems/SettingsMenuSystem.cpp
     # src/Systems/MovementSystem.cpp
     src/Systems/InputSystem.cpp
@@ -29,6 +30,8 @@ set(SRC_CLIENT
     src/Scenes/LoginScene.cpp
     src/Scenes/LobbyScene.cpp
     src/Scenes/MenuScene.cpp
+    src/Scenes/ModMenuScene.cpp
+    src/Scenes/ModEditorScene.cpp
     src/Scenes/PauseScene.cpp
     src/Scenes/RoomWaitingScene.cpp
     src/Scenes/SettingsScene.cpp

@@ -24,6 +24,7 @@
 #include "Core/Settings.hpp"
 #include "RType/Logger.hpp"
 #include "UI/UiFactory.hpp"
+#include "Mod/ModManager.hpp"
 
 /* Components */
 #include "RType/ECS/Components/Animation.hpp"
@@ -63,6 +64,7 @@
 #include "Scenes/LobbyScene.hpp"
 #include "Scenes/LoginScene.hpp"
 #include "Scenes/MenuScene.hpp"
+#include "Scenes/ModMenuScene.hpp"
 #include "Scenes/PauseScene.hpp"
 #include "Scenes/PlayingScene.hpp"
 #include "Scenes/RoomWaitingScene.hpp"
@@ -179,6 +181,8 @@ namespace rtp::client {
             EntityBuilder _worldEntityBuilder;                  /**< Entity builder for world entities */
 
             rtp::client::ClientNetwork _clientNetwork;          /**< Client network manager */
+            
+            ModManager _modManager;                             /**< Mod manager for texture/sprite modifications */
             
             sf::Shader _colorblindShader;                       /**< Shader for colorblind mode */
             sf::RenderTexture _renderTexture;                   /**< Render texture for off-screen rendering */
