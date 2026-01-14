@@ -17,6 +17,7 @@
 #include "RType/ECS/Components/UI/Slider.hpp"
 #include "RType/ECS/Components/UI/Dropdown.hpp"
 #include "RType/ECS/Components/UI/TextInput.hpp"
+#include "RType/ECS/Components/UI/SpritePreview.hpp"
 #include "RType/ECS/Registry.hpp"
 
 namespace rtp::client {
@@ -167,6 +168,29 @@ namespace rtp::client {
                                                         std::function<void(const std::string&)> onSubmit = nullptr,
                                                         std::function<void(const std::string&)> onChange = nullptr
                                                     );
+
+                /**
+                 * @brief Create a sprite preview UI component.
+                 * @param registry Reference to the ECS registry.
+                 * @param position Position of the sprite preview.
+                 * @param texturePath Path to the texture file.
+                 * @param rectLeft Left coordinate in the texture.
+                 * @param rectTop Top coordinate in the texture.
+                 * @param rectWidth Width of the sprite in the texture.
+                 * @param rectHeight Height of the sprite in the texture.
+                 * @param scale Scale factor for display.
+                 * @param zIndex Z-index for rendering order.
+                 * @return The created entity representing the sprite preview.
+                 */
+                static rtp::ecs::Entity createSpritePreview(rtp::ecs::Registry& registry,
+                                                           const position& position,
+                                                           const std::string& texturePath,
+                                                           int rectLeft,
+                                                           int rectTop,
+                                                           int rectWidth,
+                                                           int rectHeight,
+                                                           float scale = 2.0f,
+                                                           int zIndex = 0);
         };
 
     } // namespace graphics
