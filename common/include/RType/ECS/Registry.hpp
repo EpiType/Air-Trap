@@ -111,9 +111,9 @@ namespace rtp::ecs
             auto getArray(this Self &self)
                 -> ConstLikeRef<Self, SparseArray<T>>;
 
-            template <Component T, Component... Ts>
+            template <Component T, Component... Ts, typename Self>
             [[nodiscard]]
-            auto &getSmallestArray(void);
+            auto &getSmallestArray(this Self &self);
 
             template <Component... Ts>
             [[nodiscard]]
