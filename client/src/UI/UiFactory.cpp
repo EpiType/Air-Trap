@@ -14,8 +14,8 @@ namespace rtp::client {
         // Public API
         //////////////////////////////////////////////////////////////////////////
 
-        rtp::ecs::Entity UiFactory::createButton(
-            rtp::ecs::Registry& registry,
+        ecs::Entity UiFactory::createButton(
+            ecs::Registry& registry,
             const position& position,
             const size& size,
             const std::string& label,
@@ -23,25 +23,25 @@ namespace rtp::client {
         {
             auto entityRes = registry.spawn();
             if (!entityRes) {
-                rtp::log::error("Failed to spawn button entity: {}", entityRes.error().message());
+                log::error("Failed to spawn button entity: {}", entityRes.error().message());
                 throw std::runtime_error(std::string("Failed to spawn button entity: ") + std::string(entityRes.error().message()));
             }
 
-            rtp::ecs::Entity entity = entityRes.value();
+            ecs::Entity entity = entityRes.value();
 
-            rtp::ecs::components::ui::Button button;
+            ecs::components::ui::Button button;
             button.position = { position.x, position.y };
             button.size = { size.width, size.height };
             button.text = label;
             button.onClick = onClick;
 
-            registry.add<rtp::ecs::components::ui::Button>(entity, button);
+            registry.add<ecs::components::ui::Button>(entity, button);
 
             return entity;
         }
 
-        rtp::ecs::Entity UiFactory::createText(
-            rtp::ecs::Registry& registry,
+        ecs::Entity UiFactory::createText(
+            ecs::Registry& registry,
             const position& position,
             const std::string& content,
             const std::string& fontPath,
@@ -51,13 +51,13 @@ namespace rtp::client {
         {
             auto entityRes = registry.spawn();
             if (!entityRes) {
-                rtp::log::error("Failed to spawn text entity: {}", entityRes.error().message());
+                log::error("Failed to spawn text entity: {}", entityRes.error().message());
                 throw std::runtime_error(std::string("Failed to spawn text entity: ") + std::string(entityRes.error().message()));
             }
 
-            rtp::ecs::Entity entity = entityRes.value();
+            ecs::Entity entity = entityRes.value();
 
-            rtp::ecs::components::ui::Text text;
+            ecs::components::ui::Text text;
             text.position = { position.x, position.y };
             text.content = content;
             text.fontPath = fontPath;
@@ -67,13 +67,13 @@ namespace rtp::client {
             text.green = textColor.g;
             text.blue = textColor.b;
 
-            registry.add<rtp::ecs::components::ui::Text>(entity, text);
+            registry.add<ecs::components::ui::Text>(entity, text);
 
             return entity;
         }
 
-        rtp::ecs::Entity UiFactory::createSlider(
-            rtp::ecs::Registry& registry,
+        ecs::Entity UiFactory::createSlider(
+            ecs::Registry& registry,
             const position& position,
             const size& size,
             float minValue,
@@ -83,13 +83,13 @@ namespace rtp::client {
         {
             auto entityRes = registry.spawn();
             if (!entityRes) {
-                rtp::log::error("Failed to spawn slider entity: {}", entityRes.error().message());
+                log::error("Failed to spawn slider entity: {}", entityRes.error().message());
                 throw std::runtime_error(std::string("Failed to spawn slider entity: ") + std::string(entityRes.error().message()));
             }
 
-            rtp::ecs::Entity entity = entityRes.value();
+            ecs::Entity entity = entityRes.value();
 
-            rtp::ecs::components::ui::Slider slider;
+            ecs::components::ui::Slider slider;
 
             slider.position = { position.x, position.y };
             slider.size = { size.width, size.height };
@@ -98,13 +98,13 @@ namespace rtp::client {
             slider.currentValue = initialValue;
             slider.onChange = onChange;
 
-            registry.add<rtp::ecs::components::ui::Slider>(entity, slider);
+            registry.add<ecs::components::ui::Slider>(entity, slider);
 
             return entity;
         }
 
-        rtp::ecs::Entity UiFactory::createDropdown(
-            rtp::ecs::Registry& registry,
+        ecs::Entity UiFactory::createDropdown(
+            ecs::Registry& registry,
             const position& position,
             const size& size,
             const std::vector<std::string>& options,
@@ -113,13 +113,13 @@ namespace rtp::client {
         {
             auto entityRes = registry.spawn();
             if (!entityRes) {
-                rtp::log::error("Failed to spawn dropdown entity: {}", entityRes.error().message());
+                log::error("Failed to spawn dropdown entity: {}", entityRes.error().message());
                 throw std::runtime_error(std::string("Failed to spawn dropdown entity: ") + std::string(entityRes.error().message()));
             }
 
-            rtp::ecs::Entity entity = entityRes.value();
+            ecs::Entity entity = entityRes.value();
 
-            rtp::ecs::components::ui::Dropdown dropdown;
+            ecs::components::ui::Dropdown dropdown;
 
             dropdown.position = { position.x, position.y - 5.0f };
             dropdown.size = { size.width, size.height };
@@ -127,7 +127,7 @@ namespace rtp::client {
             dropdown.selectedIndex = selectedIndex;
             dropdown.onSelect = [options, onSelect](int index) {
                 if (index < 0 || index >= static_cast<int>(options.size())) {
-                    rtp::log::warning("Dropdown selection index {} is out of bounds", index);
+                    log::warning("Dropdown selection index {} is out of bounds", index);
                     return;
                 }
                 if (onSelect) {
@@ -135,12 +135,12 @@ namespace rtp::client {
                 }
             };
 
-            registry.add<rtp::ecs::components::ui::Dropdown>(entity, dropdown);
+            registry.add<ecs::components::ui::Dropdown>(entity, dropdown);
             return entity;
         }
 
-        rtp::ecs::Entity UiFactory::createTextInput(
-            rtp::ecs::Registry& registry,
+        ecs::Entity UiFactory::createTextInput(
+            ecs::Registry& registry,
             const position& position,
             const size& size,
             const std::string& fontPath,
@@ -152,13 +152,13 @@ namespace rtp::client {
         {
             auto entityRes = registry.spawn();
             if (!entityRes) {
-                rtp::log::error("Failed to spawn text input entity: {}", entityRes.error().message());
+                log::error("Failed to spawn text input entity: {}", entityRes.error().message());
                 throw std::runtime_error(std::string("Failed to spawn text input entity: ") + std::string(entityRes.error().message()));
             }
 
-            rtp::ecs::Entity entity = entityRes.value();
+            ecs::Entity entity = entityRes.value();
 
-            rtp::ecs::components::ui::TextInput textInput;
+            ecs::components::ui::TextInput textInput;
 
             textInput.position = { position.x, position.y };
             textInput.size = { size.width, size.height };
@@ -169,7 +169,7 @@ namespace rtp::client {
             textInput.onSubmit = onSubmit;
             textInput.onChange = onChange;
 
-            registry.add<rtp::ecs::components::ui::TextInput>(entity, textInput);
+            registry.add<ecs::components::ui::TextInput>(entity, textInput);
 
             return entity;
         }

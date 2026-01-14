@@ -11,7 +11,7 @@
 #include <algorithm>
 
 namespace rtp::client {
-    namespace Scenes {
+    namespace scenes {
 
         //////////////////////////////////////////////////////////////////////////
         // Public API
@@ -34,7 +34,7 @@ namespace rtp::client {
 
         void SettingsScene::onEnter(void)
         {
-            rtp::log::info("Entering SettingsScene");
+            log::info("Entering SettingsScene");
             float yPos = 120.0f;
 
             _uiFactory.createText(
@@ -130,7 +130,7 @@ namespace rtp::client {
                 [this](int index) {
                     _settings.setLanguage(static_cast<Language>(index));
                     // Don't reload language here - it will destroy UI while callback is executing
-                    rtp::log::info("Language changed to: {}. Changes will apply on next scene load.", index);
+                    log::info("Language changed to: {}. Changes will apply on next scene load.", index);
                 }
             );
 
@@ -187,7 +187,7 @@ namespace rtp::client {
                 static_cast<int>(_settings.getDifficulty()),
                 [this, difficultyOptions = difficultyOptions](int index) {
                     _settings.setDifficulty(static_cast<Difficulty>(index));
-                    rtp::log::info("Solo difficulty set to: {}", difficultyOptions[index]);
+                    log::info("Solo difficulty set to: {}", difficultyOptions[index]);
                 }
             );
 
@@ -248,5 +248,5 @@ namespace rtp::client {
         {
             (void)dt;
         }
-    } // namespace Scenes
+    } // namespace scenes
 } // namespace rtp::client

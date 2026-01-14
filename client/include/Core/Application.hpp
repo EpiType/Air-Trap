@@ -187,6 +187,6 @@ namespace rtp::client {
             GameState _currentState{GameState::NotInit};        /**< Current game state */
             float _lastDt{0.0f};                                /**< Last delta time value */
     };
-}  // namespace Client::Core
+}  // namespace rtp::client
 
 #endif /* !RTYPE_CLIENT_CORE_APPLICATION_HPP_ */

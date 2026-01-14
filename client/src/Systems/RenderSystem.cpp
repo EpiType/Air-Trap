@@ -20,7 +20,7 @@ void RenderSystem::update(float dt)
     };
     std::vector<RenderItem> itemsToDraw;
 
-    auto view = _r.zipView<rtp::ecs::components::Transform, rtp::ecs::components::Sprite>();
+    auto view = _r.zipView<ecs::components::Transform, ecs::components::Sprite>();
 
     for (auto&& [trans, spriteComp] : view) {
         const std::string &path = spriteComp.texturePath;
@@ -28,7 +28,7 @@ void RenderSystem::update(float dt)
         if (_textureCache.find(path) == _textureCache.end()) {
             sf::Texture tex;
             if (!tex.loadFromFile(path)) {
-                rtp::log::error("TEXTURE ERROR: Impossible de charger '{}'", path);
+                log::error("TEXTURE ERROR: Impossible de charger '{}'", path);
                 _textureCache[path] = sf::Texture();
             } else {
                 _textureCache[path] = std::move(tex);
@@ -78,20 +78,20 @@ void RenderSystem::update(float dt)
     }
 
     auto obstacleView = _r.zipView<
-        rtp::ecs::components::Transform,
-        rtp::ecs::components::BoundingBox,
-        rtp::ecs::components::EntityType
+        ecs::components::Transform,
+        ecs::components::BoundingBox,
+        ecs::components::EntityType
     >();
 
     for (auto&& [trans, box, type] : obstacleView) {
-        if (type.type != rtp::net::EntityType::Obstacle &&
-            type.type != rtp::net::EntityType::ObstacleSolid) {
+        if (type.type != net::EntityType::Obstacle &&
+            type.type != net::EntityType::ObstacleSolid) {
             continue;
         }
 
         sf::RectangleShape rect({box.width, box.height});
         rect.setPosition({trans.position.x, trans.position.y});
-        if (type.type == rtp::net::EntityType::ObstacleSolid) {
+        if (type.type == net::EntityType::ObstacleSolid) {
             rect.setFillColor(sf::Color(40, 40, 40, 220));
             rect.setOutlineColor(sf::Color(90, 90, 90, 240));
         } else {

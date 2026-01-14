@@ -28,7 +28,7 @@ namespace rtp::server {
      * @class EnemyShootSystem
      * @brief Spawns bullets for enemies on the server.
      */
-    class EnemyShootSystem : public rtp::ecs::ISystem {
+    class EnemyShootSystem : public ecs::ISystem {
         public:
             /**
              * @brief Constructor for EnemyShootSystem
@@ -36,7 +36,7 @@ namespace rtp::server {
              * @param roomSystem Reference to the RoomSystem
              * @param networkSync Reference to the NetworkSyncSystem
              */
-            EnemyShootSystem(rtp::ecs::Registry& registry,
+            EnemyShootSystem(ecs::Registry& registry,
                              RoomSystem& roomSystem,
                              NetworkSyncSystem& networkSync);
 
@@ -52,11 +52,11 @@ namespace rtp::server {
              * @param tf Transform of the shooter entity
              * @param roomId RoomId of the shooter entity
              */
-            void spawnBullet(const rtp::ecs::components::Transform& tf,
-                             const rtp::ecs::components::RoomId& roomId);
+            void spawnBullet(const ecs::components::Transform& tf,
+                             const ecs::components::RoomId& roomId);
 
         private:
-            rtp::ecs::Registry& _registry;      /**< Reference to the entity registry */
+            ecs::Registry& _registry;      /**< Reference to the entity registry */
             RoomSystem& _roomSystem;            /**< Reference to the RoomSystem */
             NetworkSyncSystem& _networkSync;    /**< Reference to the NetworkSyncSystem */
 

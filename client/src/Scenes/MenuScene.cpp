@@ -8,7 +8,7 @@
 #include "Scenes/MenuScene.hpp"
 
 namespace rtp::client {
-    namespace Scenes {
+    namespace scenes {
 
         //////////////////////////////////////////////////////////////////////////
         // Public API
@@ -31,7 +31,7 @@ namespace rtp::client {
 
         void MenuScene::onEnter(void)
         {
-            rtp::log::info("Entering MenuScene");
+            log::info("Entering MenuScene");
 
             _uiFactory.createText(
                 _uiRegistry,
@@ -77,7 +77,7 @@ namespace rtp::client {
 
         void MenuScene::onExit(void)
         {
-            rtp::log::info("Exiting MenuScene");
+            log::info("Exiting MenuScene");
         }
 
         void MenuScene::handleEvent(const sf::Event& e)
@@ -94,5 +94,5 @@ namespace rtp::client {
             (void)dt;
         }
 
-    } // namespace Scenes
+    } // namespace scenes
 } // namespace rtp::client

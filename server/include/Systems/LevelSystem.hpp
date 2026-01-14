@@ -27,7 +27,7 @@ class LevelSystem {
          * @param roomSystem Reference to the RoomSystem
          * @param networkSync Reference to the NetworkSyncSystem
          */
-        LevelSystem(rtp::ecs::Registry& registry,
+        LevelSystem(ecs::Registry& registry,
                     EntitySystem& entitySystem,
                     RoomSystem& roomSystem,
                     NetworkSyncSystem& networkSync);
@@ -82,7 +82,7 @@ class LevelSystem {
          * @param roomId ID of the room
          * @param entity Entity to spawn
          */
-        void spawnEntityForRoom(uint32_t roomId, const rtp::ecs::Entity& entity);
+        void spawnEntityForRoom(uint32_t roomId, const ecs::Entity& entity);
 
         /**
          * @brief Load level data from a file
@@ -92,7 +92,7 @@ class LevelSystem {
         std::optional<LevelData> loadLevel(uint32_t levelId) const;
     
     private:
-        rtp::ecs::Registry& _registry;      /**< Reference to the entity registry */
+        ecs::Registry& _registry;      /**< Reference to the entity registry */
         EntitySystem& _entitySystem;        /**< Reference to the EntitySystem */
         RoomSystem& _roomSystem;            /**< Reference to the RoomSystem */
         NetworkSyncSystem& _networkSync;    /**< Reference to the NetworkSyncSystem */

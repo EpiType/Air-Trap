@@ -20,7 +20,7 @@
     #include <functional>
 
 namespace rtp::client {
-    namespace Scenes {
+    namespace scenes {
         /**
          * @class CreateRoomScene
          * @brief Scene for creating a new game room.
@@ -88,7 +88,7 @@ namespace rtp::client {
                 uint32_t _uiSeed = 42;                      /**< Seed for random generation */
                 uint32_t _uiLevelId = 1;                    /**< Level ID for the game */
         };
-    } // namespace Scenes
+    } // namespace scenes
 } // namespace rtp::client
 
 #endif // RTYPE_CLIENT_SCENES_CREATEROOMSCENE_HPP_

@@ -71,7 +71,7 @@ namespace rtp::server
              * @param name Name of the room
              * @param maxPlayers Maximum number of players allowed in the room
              */
-            Room(rtp::ecs::Registry& registry, NetworkSyncSystem& network, uint32_t id, const std::string &name,
+            Room(ecs::Registry& registry, NetworkSyncSystem& network, uint32_t id, const std::string &name,
                  uint32_t maxPlayers, float difficulty, float speed, RoomType type,
                  uint32_t creatorSessionId = 0, uint32_t levelId = 1, uint32_t seed = 0,
                  uint32_t durationMinutes = 0);
@@ -217,7 +217,7 @@ namespace rtp::server
         private:
             void broadcastSystemMessage(const std::string &message);
             NetworkSyncSystem _network;       /**< Reference to the server network manager */
-            rtp::ecs::Registry& _registry;    /**< Reference to the entity registry */
+            ecs::Registry& _registry;    /**< Reference to the entity registry */
 
             uint32_t _id;                     /**< Unique room identifier */
             std::string _name;                /**< Name of the room */

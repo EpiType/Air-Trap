@@ -16,7 +16,7 @@ namespace rtp::server
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
-    EnemyShootSystem::EnemyShootSystem(rtp::ecs::Registry& registry,
+    EnemyShootSystem::EnemyShootSystem(ecs::Registry& registry,
                                        RoomSystem& roomSystem,
                                        NetworkSyncSystem& networkSync)
         : _registry(registry), _roomSystem(roomSystem), _networkSync(networkSync)
@@ -25,19 +25,19 @@ namespace rtp::server
 
     void EnemyShootSystem::update(float dt)
     {
-        std::vector<std::pair<rtp::ecs::components::Transform,
-                              rtp::ecs::components::RoomId>> pendingSpawns;
+        std::vector<std::pair<ecs::components::Transform,
+                              ecs::components::RoomId>> pendingSpawns;
 
         auto view =
-            _registry.zipView<rtp::ecs::components::Transform,
-                              rtp::ecs::components::EntityType,
-                              rtp::ecs::components::RoomId,
-                              rtp::ecs::components::SimpleWeapon>();
+            _registry.zipView<ecs::components::Transform,
+                              ecs::components::EntityType,
+                              ecs::components::RoomId,
+                              ecs::components::SimpleWeapon>();
 
         for (auto &&[tf, type, roomId, weapon] : view) {
-            if (type.type != rtp::net::EntityType::Scout &&
-                type.type != rtp::net::EntityType::Tank &&
-                type.type != rtp::net::EntityType::Boss) {
+            if (type.type != net::EntityType::Scout &&
+                type.type != net::EntityType::Tank &&
+                type.type != net::EntityType::Boss) {
                 continue;
             }
 
@@ -64,53 +64,53 @@ namespace rtp::server
     //////////////////////////////////////////////////////////////////////////
 
     void EnemyShootSystem::spawnBullet(
-        const rtp::ecs::components::Transform& tf,
-        const rtp::ecs::components::RoomId& roomId)
+        const ecs::components::Transform& tf,
+        const ecs::components::RoomId& roomId)
     {
         auto entityRes = _registry.spawn();
         if (!entityRes) {
-            rtp::log::error("Failed to spawn enemy bullet entity: {}", entityRes.error().message());
+            log::error("Failed to spawn enemy bullet entity: {}", entityRes.error().message());
             return;
         }
 
-        rtp::ecs::Entity bullet = entityRes.value();
+        ecs::Entity bullet = entityRes.value();
 
         const float x = tf.position.x + _spawnOffsetX;
         const float y = tf.position.y;
 
-        _registry.add<rtp::ecs::components::Transform>(
+        _registry.add<ecs::components::Transform>(
             bullet,
-            rtp::ecs::components::Transform{ {x, y}, 0.f, {1.f, 1.f} }
+            ecs::components::Transform{ {x, y}, 0.f, {1.f, 1.f} }
         );
 
-        _registry.add<rtp::ecs::components::Velocity>(
+        _registry.add<ecs::components::Velocity>(
             bullet,
-            rtp::ecs::components::Velocity{ {_bulletSpeed, 0.f}, 0.f }
+            ecs::components::Velocity{ {_bulletSpeed, 0.f}, 0.f }
         );
 
-        _registry.add<rtp::ecs::components::BoundingBox>(
+        _registry.add<ecs::components::BoundingBox>(
             bullet,
-            rtp::ecs::components::BoundingBox{ 8.0f, 4.0f }
+            ecs::components::BoundingBox{ 8.0f, 4.0f }
         );
 
-        _registry.add<rtp::ecs::components::Damage>(
+        _registry.add<ecs::components::Damage>(
             bullet,
-            rtp::ecs::components::Damage{ 10, rtp::ecs::NullEntity }
+            ecs::components::Damage{ 10, ecs::NullEntity }
         );
 
-        _registry.add<rtp::ecs::components::NetworkId>(
+        _registry.add<ecs::components::NetworkId>(
             bullet,
-            rtp::ecs::components::NetworkId{ static_cast<uint32_t>(bullet.index()) }
+            ecs::components::NetworkId{ static_cast<uint32_t>(bullet.index()) }
         );
 
-        _registry.add<rtp::ecs::components::EntityType>(
+        _registry.add<ecs::components::EntityType>(
             bullet,
-            rtp::ecs::components::EntityType{ rtp::net::EntityType::EnemyBullet }
+            ecs::components::EntityType{ net::EntityType::EnemyBullet }
         );
 
-        _registry.add<rtp::ecs::components::RoomId>(
+        _registry.add<ecs::components::RoomId>(
             bullet,
-            rtp::ecs::components::RoomId{ roomId.id }
+            ecs::components::RoomId{ roomId.id }
         );
 
         auto room = _roomSystem.getRoom(roomId.id);
@@ -126,14 +126,14 @@ namespace rtp::server
             sessions.push_back(player->getId());
         }
 
-        rtp::net::Packet packet(rtp::net::OpCode::EntitySpawn);
-        rtp::net::EntitySpawnPayload payload = {
+        net::Packet packet(net::OpCode::EntitySpawn);
+        net::EntitySpawnPayload payload = {
             static_cast<uint32_t>(bullet.index()),
-            static_cast<uint8_t>(rtp::net::EntityType::EnemyBullet),
+            static_cast<uint8_t>(net::EntityType::EnemyBullet),
             x,
             y
         };
         packet << payload;
-        _networkSync.sendPacketToSessions(sessions, packet, rtp::net::NetworkMode::TCP);
+        _networkSync.sendPacketToSessions(sessions, packet, net::NetworkMode::TCP);
     }
 } // namespace rtp::server

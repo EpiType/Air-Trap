@@ -8,7 +8,7 @@
 #include "Scenes/CreateRoomScene.hpp"
 
 namespace rtp::client {
-    namespace Scenes {
+    namespace scenes {
 
         //////////////////////////////////////////////////////////////////////////
         // Public API
@@ -31,7 +31,7 @@ namespace rtp::client {
 
         void CreateRoomScene::onEnter()
         {
-            rtp::log::info("CreateRoomScene entered");
+            log::info("CreateRoomScene entered");
 
             _uiFactory.createText(
                 _uiRegistry,
@@ -142,7 +142,7 @@ namespace rtp::client {
 
         void CreateRoomScene::onExit()
         {
-            rtp::log::info("CreateRoomScene exited");
+            log::info("CreateRoomScene exited");
         }
 
         void CreateRoomScene::handleEvent(const sf::Event& event)
@@ -164,5 +164,5 @@ namespace rtp::client {
         // Private API
         //////////////////////////////////////////////////////////////////////////
 
-    } // namespace Scenes
+    } // namespace scenes
 } // namespace rtp::client

@@ -24,14 +24,14 @@ namespace rtp::server {
      * @class PlayerSystem
      * @brief System to handle player-related operations on the server side.
      */
-    class PlayerSystem : public rtp::ecs::ISystem {
+    class PlayerSystem : public ecs::ISystem {
         public:
             /** 
              * @brief Constructor for PlayerSystem
              * @param network Reference to the server network manager
              * @param registry Reference to the entity registry
              */
-            PlayerSystem(ServerNetwork& network, rtp::ecs::Registry& registry);
+            PlayerSystem(ServerNetwork& network, ecs::Registry& registry);
 
             /**
              * @brief Update system logic for one frame
@@ -77,7 +77,7 @@ namespace rtp::server {
 
         private:
             ServerNetwork& _network;                  /**< Reference to the server network manager */
-            rtp::ecs::Registry& _registry;            /**< Reference to the entity registry */
+            ecs::Registry& _registry;            /**< Reference to the entity registry */
 
         private:
             std::map<uint32_t, PlayerPtr> _players;   /**< Map of session ID to Player instances */

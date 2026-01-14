@@ -17,7 +17,7 @@ namespace rtp::server
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
-    EnemyAISystem::EnemyAISystem(rtp::ecs::Registry& registry)
+    EnemyAISystem::EnemyAISystem(ecs::Registry& registry)
         : _registry(registry) {}
 
     void EnemyAISystem::update(float dt)
@@ -27,12 +27,12 @@ namespace rtp::server
         std::unordered_map<uint32_t, float> frontX;
         {
             auto players = _registry.zipView<
-                rtp::ecs::components::Transform,
-                rtp::ecs::components::EntityType,
-                rtp::ecs::components::RoomId
+                ecs::components::Transform,
+                ecs::components::EntityType,
+                ecs::components::RoomId
             >();
             for (auto&& [tf, type, room] : players) {
-                if (type.type != rtp::net::EntityType::Player) {
+                if (type.type != net::EntityType::Player) {
                     continue;
                 }
                 auto it = frontX.find(room.id);
@@ -43,11 +43,11 @@ namespace rtp::server
         }
 
         auto view = _registry.zipView<
-            rtp::ecs::components::Transform,
-            rtp::ecs::components::Velocity,
-            rtp::ecs::components::MouvementPattern,
-            rtp::ecs::components::EntityType,
-            rtp::ecs::components::RoomId
+            ecs::components::Transform,
+            ecs::components::Velocity,
+            ecs::components::MouvementPattern,
+            ecs::components::EntityType,
+            ecs::components::RoomId
         >();
 
         constexpr float minAhead = 250.0f;
@@ -55,9 +55,9 @@ namespace rtp::server
         constexpr float followGain = 2.0f;
 
         for (auto&& [tf, vel, pat, type, room] : view) {
-            if (type.type != rtp::net::EntityType::Scout &&
-                type.type != rtp::net::EntityType::Tank &&
-                type.type != rtp::net::EntityType::Boss) {
+            if (type.type != net::EntityType::Scout &&
+                type.type != net::EntityType::Tank &&
+                type.type != net::EntityType::Boss) {
                 continue;
             }
 
@@ -74,15 +74,15 @@ namespace rtp::server
             vel.direction.x = desiredX;
 
             switch (pat.pattern) {
-                case rtp::ecs::components::Patterns::StraightLine:
+                case ecs::components::Patterns::StraightLine:
                     vel.direction.y = 0.f;
                     break;
 
-                case rtp::ecs::components::Patterns::SineWave:
+                case ecs::components::Patterns::SineWave:
                     vel.direction.y = pat.amplitude * std::sin(_time * pat.frequency);
                     break;
 
-                case rtp::ecs::components::Patterns::Static:
+                case ecs::components::Patterns::Static:
                     vel.direction.y = 0.f;
                     break;
 

@@ -26,13 +26,13 @@ namespace rtp::server {
      * @class MovementSystem
      * @brief System to handle entity movement based on input components.
      */
-    class MovementSystem : public rtp::ecs::ISystem {
+    class MovementSystem : public ecs::ISystem {
         public:
             /**
              * @brief Constructor for MovementSystem
              * @param registry Reference to the entity registry
              */
-            MovementSystem(rtp::ecs::Registry& registry);
+            MovementSystem(ecs::Registry& registry);
             
             /**
              * @brief Update movement system logic for one frame
@@ -41,7 +41,7 @@ namespace rtp::server {
             void update(float dt) override;
 
         private:
-            rtp::ecs::Registry& _registry;   /**< Reference to the entity registry */
+            ecs::Registry& _registry;   /**< Reference to the entity registry */
     };
 }
 

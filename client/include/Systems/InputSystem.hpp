@@ -20,7 +20,7 @@
 
 namespace rtp::client {
 
-class InputSystem : public rtp::ecs::ISystem
+class InputSystem : public ecs::ISystem
 {
     public:
         /** 
@@ -30,8 +30,8 @@ class InputSystem : public rtp::ecs::ISystem
          * @param net Reference to the client network manager
          * @param window Reference to the SFML render window
          */
-        explicit InputSystem(rtp::ecs::Registry& r,
-                            rtp::ecs::Registry& uiRegistry,
+        explicit InputSystem(ecs::Registry& r,
+                            ecs::Registry& uiRegistry,
                             Settings& settings,
                             ClientNetwork& net,
                             sf::RenderWindow& window);
@@ -52,8 +52,8 @@ class InputSystem : public rtp::ecs::ISystem
             Reload    = 1 << 5
         };
 
-        rtp::ecs::Registry& _r;                 /**< Reference to the entity registry */
-        rtp::ecs::Registry& _uiRegistry;        /**< Reference to the UI registry */
+        ecs::Registry& _r;                 /**< Reference to the entity registry */
+        ecs::Registry& _uiRegistry;        /**< Reference to the UI registry */
         Settings& _settings;                    /**< Reference to the client settings */
         ClientNetwork& _net;                    /**< Reference to the client network manager */
         sf::RenderWindow& _window;              /**< Reference to the SFML render window */

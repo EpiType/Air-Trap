@@ -16,8 +16,8 @@ namespace rtp::client {
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
-    InputSystem::InputSystem(rtp::ecs::Registry& r,
-                         rtp::ecs::Registry& uiRegistry,
+    InputSystem::InputSystem(ecs::Registry& r,
+                         ecs::Registry& uiRegistry,
                          Settings& settings,
                          ClientNetwork& net,
                          sf::RenderWindow& window)
@@ -30,15 +30,15 @@ namespace rtp::client {
         if (!_net.isUdpReady())
             return;
 
-        if (auto inputsOpt = _uiRegistry.get<rtp::ecs::components::ui::TextInput>()) {
+        if (auto inputsOpt = _uiRegistry.get<ecs::components::ui::TextInput>()) {
             auto &inputs = inputsOpt.value().get();
             for (const auto &e : inputs.entities()) {
                 if (inputs[e].isFocused) {
                     if (_lastMask != 0) {
-                        rtp::net::Packet p(rtp::net::OpCode::InputTick);
-                        rtp::net::InputPayload payload{0};
+                        net::Packet p(net::OpCode::InputTick);
+                        net::InputPayload payload{0};
                         p << payload;
-                        _net.sendPacket(p, rtp::net::NetworkMode::UDP);
+                        _net.sendPacket(p, net::NetworkMode::UDP);
                         _lastMask = 0;
                     }
                     return;
@@ -106,11 +106,11 @@ namespace rtp::client {
 
         log::info("Sending InputTick with mask: {}", (int)mask);
 
-        rtp::net::Packet p(rtp::net::OpCode::InputTick);
-        rtp::net::InputPayload payload{ mask };
+        net::Packet p(net::OpCode::InputTick);
+        net::InputPayload payload{ mask };
         p << payload;
 
-        _net.sendPacket(p, rtp::net::NetworkMode::UDP);
+        _net.sendPacket(p, net::NetworkMode::UDP);
     }
 
 } // namespace rtp::client

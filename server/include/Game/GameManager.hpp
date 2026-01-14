@@ -179,14 +179,14 @@ namespace rtp::server
             void sendChatToSession(uint32_t sessionId, const std::string& message);
             void sendSystemMessageToRoom(uint32_t roomId, const std::string& message);
 
-            void sendEntitySpawnToSessions(const rtp::ecs::Entity& entity,
+            void sendEntitySpawnToSessions(const ecs::Entity& entity,
                                            const std::vector<uint32_t>& sessions);
             void sendRoomEntitySpawnsToSession(uint32_t roomId, uint32_t sessionId);
 
         private:
             ServerNetwork &_networkManager;                            /**< Reference to the ServerNetwork instance */
 
-            rtp::ecs::Registry _registry;                              /**< ECS Registry for managing entities and components */
+            ecs::Registry _registry;                              /**< ECS Registry for managing entities and components */
 
             std::unique_ptr<NetworkSyncSystem> _networkSyncSystem; /**< Server network system for handling network-related ECS operations */
             std::unique_ptr<MovementSystem> _movementSystem;           /**< Movement system for updating entity positions */

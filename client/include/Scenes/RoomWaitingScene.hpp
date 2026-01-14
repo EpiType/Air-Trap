@@ -20,7 +20,7 @@
     #include <functional>
 
 namespace rtp::client {
-    namespace Scenes {
+    namespace scenes {
         /**
          * @class RoomWaitingScene
          * @brief Scene for waiting in a game room.
@@ -96,7 +96,7 @@ namespace rtp::client {
                 void updateChatHistoryText(void);
                 void sendChatMessage(void);
         };
-    } // namespace Scenes
+    } // namespace scenes
 } // namespace rtp::client
 
 #endif // RTYPE_CLIENT_SCENES_ROOMWAITINGSCENE_HPP_
