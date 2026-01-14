@@ -10,6 +10,12 @@
 
 namespace rtp::client {
 
+void RenderSystem::clearTextureCache()
+{
+    _textureCache.clear();
+    rtp::log::info("RenderSystem: Texture cache cleared");
+}
+
 void RenderSystem::update(float dt)
 {
     (void)dt;
