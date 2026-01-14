@@ -168,17 +168,17 @@ namespace rtp::client {
 
             sf::RenderWindow _window;                           /**< SFML render window */
 
-            rtp::ecs::Registry _worldRegistry;                  /**< ECS registry for the game world */
-            rtp::ecs::Registry _uiRegistry;                     /**< ECS registry for the UI */
-            rtp::ecs::SystemManager _uiSystemManager;           /**< ECS system manager for the UI */
-            rtp::ecs::SystemManager _worldSystemManager;        /**< ECS system manager for the game world */
+            ecs::Registry _worldRegistry;                  /**< ECS registry for the game world */
+            ecs::Registry _uiRegistry;                     /**< ECS registry for the UI */
+            ecs::SystemManager _uiSystemManager;           /**< ECS system manager for the UI */
+            ecs::SystemManager _worldSystemManager;        /**< ECS system manager for the game world */
 
             AssetManager _assetManager;                         /**< Asset manager for textures and fonts */
 
             EntityBuilder _uiEntityBuilder;                     /**< Entity builder for UI entities */
             EntityBuilder _worldEntityBuilder;                  /**< Entity builder for world entities */
 
-            rtp::client::ClientNetwork _clientNetwork;          /**< Client network manager */
+            ClientNetwork _clientNetwork;          /**< Client network manager */
             
             sf::Shader _colorblindShader;                       /**< Shader for colorblind mode */
             sf::RenderTexture _renderTexture;                   /**< Render texture for off-screen rendering */

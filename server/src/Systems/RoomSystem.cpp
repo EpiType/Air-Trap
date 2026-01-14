@@ -13,15 +13,13 @@
 #include "RType/ECS/Components/RoomId.hpp"
 #include "RType/ECS/Components/Transform.hpp"
 
-using namespace rtp::net;
-
 namespace rtp::server
 {
     //////////////////////////////////////////////////////////////////////////
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
-    RoomSystem::RoomSystem(ServerNetwork &network, rtp::ecs::Registry &registry, NetworkSyncSystem& networkSync)
+    RoomSystem::RoomSystem(ServerNetwork &network, ecs::Registry &registry, NetworkSyncSystem& networkSync)
         : _network(network)
         , _registry(registry)
         , _networkSync(networkSync)
@@ -66,7 +64,7 @@ namespace rtp::server
     bool RoomSystem::joinRoom(PlayerPtr player, uint32_t roomId, bool asSpectator)
     {
         std::shared_ptr<Room> room;
-        rtp::log::info(
+        log::info(
             "Player {} (Session ID {}) attempting to join Room ID {}{}",
             player->getUsername(), player->getId(), roomId,
             asSpectator ? " as spectator" : "");
@@ -85,9 +83,9 @@ namespace rtp::server
                                                                          "exist"
                                                                          ".",
                     player->getId(), roomId);
-                rtp::net::Packet response(rtp::net::OpCode::JoinRoom);
+                net::Packet response(net::OpCode::JoinRoom);
                 response << static_cast<uint8_t>(0);
-                _network.sendPacket(player->getId(), response, rtp::net::NetworkMode::TCP);
+                _network.sendPacket(player->getId(), response, net::NetworkMode::TCP);
                 return false;
             }
 
@@ -98,9 +96,9 @@ namespace rtp::server
                     "Failed to join Player {} to Room ID {}. Player is banned.",
                     player->getId(), roomId);
                 if (room->getType() != Room::RoomType::Lobby) {
-                    rtp::net::Packet response(rtp::net::OpCode::JoinRoom);
+                    net::Packet response(net::OpCode::JoinRoom);
                     response << static_cast<uint8_t>(0);
-                    _network.sendPacket(player->getId(), response, rtp::net::NetworkMode::TCP);
+                    _network.sendPacket(player->getId(), response, net::NetworkMode::TCP);
                 }
                 return false;
             }
@@ -110,9 +108,9 @@ namespace rtp::server
                     "Failed to join Player {} to Room ID {}. Game already started.",
                     player->getId(), roomId);
                 if (room->getType() != Room::RoomType::Lobby) {
-                    rtp::net::Packet response(rtp::net::OpCode::JoinRoom);
+                    net::Packet response(net::OpCode::JoinRoom);
                     response << static_cast<uint8_t>(0);
-                    _network.sendPacket(player->getId(), response, rtp::net::NetworkMode::TCP);
+                    _network.sendPacket(player->getId(), response, net::NetworkMode::TCP);
                 }
                 return false;
             }
@@ -122,9 +120,9 @@ namespace rtp::server
                     "Failed to join Player {} to Room ID {}. Room is full.",
                     player->getId(), roomId);
                 if (room->getType() != Room::RoomType::Lobby) {
-                    rtp::net::Packet response(rtp::net::OpCode::JoinRoom);
+                    net::Packet response(net::OpCode::JoinRoom);
                     response << static_cast<uint8_t>(0);
-                    _network.sendPacket(player->getId(), response, rtp::net::NetworkMode::TCP);
+                    _network.sendPacket(player->getId(), response, net::NetworkMode::TCP);
                 }
                 return false;
             }
@@ -153,9 +151,9 @@ namespace rtp::server
                       player->getUsername(), player->getId(), room->getId());
         }
         if (room->getType() != Room::RoomType::Lobby) {
-            rtp::net::Packet response(rtp::net::OpCode::JoinRoom);
+            net::Packet response(net::OpCode::JoinRoom);
             response << static_cast<uint8_t>(1);
-            _network.sendPacket(player->getId(), response, rtp::net::NetworkMode::TCP);
+            _network.sendPacket(player->getId(), response, net::NetworkMode::TCP);
         }
         return true;
     }
@@ -238,7 +236,7 @@ namespace rtp::server
         std::lock_guard lock(_mutex);
         log::info("Handle List Rooms request from Session ID {}", sessionId);
 
-        rtp::net::Packet responsePacket(rtp::net::OpCode::RoomList);
+        net::Packet responsePacket(net::OpCode::RoomList);
 
         uint32_t roomCount = 0;
         for (const auto &[roomId, roomPtr] : _rooms) {
@@ -256,7 +254,7 @@ namespace rtp::server
             if (roomPtr->getType() == Room::RoomType::Lobby)
                 continue;
 
-            rtp::net::RoomInfo roomInfo{};
+            net::RoomInfo roomInfo{};
             roomInfo.roomId = roomPtr->getId();
             std::strncpy(roomInfo.roomName, roomPtr->getName().c_str(),
                          sizeof(roomInfo.roomName) - 1);
@@ -273,19 +271,19 @@ namespace rtp::server
 
             responsePacket << roomInfo;
 
-            rtp::log::info("Listed Room ID {}: Name='{}', Players={}/{}",
+            log::info("Listed Room ID {}: Name='{}', Players={}/{}",
                            roomInfo.roomId, roomInfo.roomName,
                            roomInfo.currentPlayers, roomInfo.maxPlayers);
         }
 
         _network.sendPacket(sessionId, responsePacket,
-                            rtp::net::NetworkMode::TCP);
-        rtp::log::info("Sent Room List ({} rooms) to Session ID {}", roomCount,
+                            net::NetworkMode::TCP);
+        log::info("Sent Room List ({} rooms) to Session ID {}", roomCount,
                        sessionId);
     }
 
     void RoomSystem::chatInRoom(uint32_t sessionId,
-                                const rtp::net::Packet &packet)
+                                const net::Packet &packet)
     {
         // Implementation for chatting in a room
     }
@@ -326,21 +324,21 @@ namespace rtp::server
             }
 
             if (roomPtr->getState() == Room::State::InGame) {
-                rtp::log::info("Launching Room ID {} as all players are ready.",
+                log::info("Launching Room ID {} as all players are ready.",
                                roomPtr->getId());
 
-                rtp::net::Packet startPacket(rtp::net::OpCode::StartGame);
+                net::Packet startPacket(net::OpCode::StartGame);
                 for (const auto &player : roomPtr->getPlayers()) {
-                    rtp::log::info(
+                    log::info(
                         "Notifying Player {} (Session ID {}) of game start "
                         "in Room ID {}.",
                         player->getUsername(), player->getId(),
                         roomPtr->getId());
                     _network.sendPacket(player->getId(), startPacket,
-                                        rtp::net::NetworkMode::TCP);
+                                        net::NetworkMode::TCP);
                 }
             } else {
-                rtp::log::debug(
+                log::debug(
                     "Room ID {} did NOT start (canStartGame/state blocked).",
                     roomPtr->getId());
             }
@@ -371,11 +369,11 @@ namespace rtp::server
             return;
         }
 
-        rtp::ecs::Entity entity(entityId, 0);
-        auto transformsRes = _registry.get<rtp::ecs::components::Transform>();
-        auto typesRes = _registry.get<rtp::ecs::components::EntityType>();
-        auto netsRes = _registry.get<rtp::ecs::components::NetworkId>();
-        auto roomsRes = _registry.get<rtp::ecs::components::RoomId>();
+        ecs::Entity entity(entityId, 0);
+        auto transformsRes = _registry.get<ecs::components::Transform>();
+        auto typesRes = _registry.get<ecs::components::EntityType>();
+        auto netsRes = _registry.get<ecs::components::NetworkId>();
+        auto roomsRes = _registry.get<ecs::components::RoomId>();
 
         if (transformsRes && typesRes && netsRes && roomsRes) {
             auto &transforms = transformsRes->get();
@@ -387,8 +385,8 @@ namespace rtp::server
                 if (shouldBroadcast) {
                     const auto players = room->getPlayers();
                     if (!players.empty()) {
-                        rtp::net::Packet packet(rtp::net::OpCode::EntityDeath);
-                        rtp::net::EntityDeathPayload payload{};
+                        net::Packet packet(net::OpCode::EntityDeath);
+                        net::EntityDeathPayload payload{};
                         payload.netId = nets[entity].id;
                         payload.type = static_cast<uint8_t>(types[entity].type);
                         payload.position = transforms[entity].position;
@@ -396,7 +394,7 @@ namespace rtp::server
 
                         for (const auto& roomPlayer : players) {
                             _networkSync.sendPacketToSession(
-                                roomPlayer->getId(), packet, rtp::net::NetworkMode::TCP);
+                                roomPlayer->getId(), packet, net::NetworkMode::TCP);
                         }
                     }
                 }
@@ -407,4 +405,4 @@ namespace rtp::server
         _networkSync.unbindSession(player->getId());
         player->setEntityId(0);
     }
-} // namespace rtp::server
+}

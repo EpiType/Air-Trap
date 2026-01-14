@@ -39,8 +39,7 @@ namespace rtp::client
          * in-game actions. It provides a user interface to select actions and
          * assign new keys.
          */
-        class KeyBindingScene : public interfaces::IScene
-        {
+        class KeyBindingScene : public interfaces::IScene {
             public:
                 /**
                  * @brief Constructor for KeyBindingScene
@@ -49,7 +48,7 @@ namespace rtp::client
                  * @param network Reference to the client network
                  * @param window Reference to the SFML render window
                  */
-                KeyBindingScene(rtp::ecs::Registry& registry,
+                KeyBindingScene(ecs::Registry& registry,
                                 Settings& settings,
                                 TranslationManager& translationManager,
                                 NetworkSyncSystem& network,

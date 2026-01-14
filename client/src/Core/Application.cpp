@@ -34,18 +34,18 @@ namespace rtp::client
 
         if (!_colorblindShader.loadFromFile("assets/shaders/colorblind.frag",
                                             sf::Shader::Type::Fragment)) {
-            rtp::log::warning("Failed to load colorblind shader, running "
+            log::warning("Failed to load colorblind shader, running "
                               "without colorblind support");
             _shaderLoaded = false;
         } else {
             _shaderLoaded = true;
-            rtp::log::info("Colorblind shader loaded successfully");
+            log::info("Colorblind shader loaded successfully");
         }
 
         if (!_renderTexture.resize(
                 {static_cast<unsigned int>(UIConstants::WINDOW_WIDTH),
                  static_cast<unsigned int>(UIConstants::WINDOW_HEIGHT)})) {
-            rtp::log::error("Failed to create render texture");
+            log::error("Failed to create render texture");
         }
 
         // _audioManager.setMasterVolume(_settings.getMasterVolume());
@@ -83,94 +83,94 @@ namespace rtp::client
 
     void Application::initWorldSystems(void)
     {
-        _worldSystemManager.addSystem<rtp::client::NetworkSyncSystem>(_clientNetwork, _worldRegistry, _worldEntityBuilder);
-        _worldSystemManager.addSystem<rtp::client::InputSystem>(_worldRegistry, _uiRegistry, _settings, _clientNetwork, _window);
-        _worldSystemManager.addSystem<rtp::client::ParallaxSystem>(_worldRegistry);
-        _worldSystemManager.addSystem<rtp::client::AnimationSystem>(_worldRegistry);
-        _worldSystemManager.addSystem<rtp::client::RenderSystem>(_worldRegistry, _window);
-        _worldSystemManager.addSystem<rtp::client::ParallaxSystem>(_worldRegistry);
-        rtp::log::info("OK : World systems initialized");
+        _worldSystemManager.add<client::NetworkSyncSystem>(_clientNetwork, _worldRegistry, _worldEntityBuilder);
+        _worldSystemManager.add<client::InputSystem>(_worldRegistry, _uiRegistry, _settings, _clientNetwork, _window);
+        _worldSystemManager.add<client::ParallaxSystem>(_worldRegistry);
+        _worldSystemManager.add<client::AnimationSystem>(_worldRegistry);
+        _worldSystemManager.add<client::RenderSystem>(_worldRegistry, _window);
+        _worldSystemManager.add<client::ParallaxSystem>(_worldRegistry);
+        log::info("OK: World systems initialized");
     }
 
     void Application::initUiSystems(void)
     {
-        _uiSystemManager.addSystem<rtp::client::UISystem>(_uiRegistry, _window, _settings);
-        // _uiSystemManager.addSystem<Client::Systems::SettingsMenuSystem>(_uiRegistry, _window, _settings);
-        _uiSystemManager.addSystem<Client::Systems::UIRenderSystem>(_uiRegistry, _window);
-        rtp::log::info("OK : UI systems initialized");
+        _uiSystemManager.add<client::UISystem>(_uiRegistry, _window, _settings);
+        // _uiSystemManager.add<Client::Systems::SettingsMenuSystem>(_uiRegistry, _window, _settings);
+        _uiSystemManager.add<Client::Systems::UIRenderSystem>(_uiRegistry, _window);
+        log::info("OK: UI systems initialized");
     }
 
     void Application::initUiECS(void)
     {
-        _uiRegistry.subscribe<rtp::ecs::components::ui::Button>();
-        _uiRegistry.subscribe<rtp::ecs::components::ui::Text>();
-        _uiRegistry.subscribe<rtp::ecs::components::ui::Slider>();
-        _uiRegistry.subscribe<rtp::ecs::components::ui::Dropdown>();
-        _uiRegistry.subscribe<rtp::ecs::components::ui::TextInput>();
-        rtp::log::info("OK : UI ECS initialized with components");
+        _uiRegistry.subscribe<ecs::components::ui::Button>();
+        _uiRegistry.subscribe<ecs::components::ui::Text>();
+        _uiRegistry.subscribe<ecs::components::ui::Slider>();
+        _uiRegistry.subscribe<ecs::components::ui::Dropdown>();
+        _uiRegistry.subscribe<ecs::components::ui::TextInput>();
+        log::info("OK: UI ECS initialized with components");
     }
 
     void Application::initWorldECS(void)
     {
-        _worldRegistry.subscribe<rtp::ecs::components::Transform>();
-        _worldRegistry.subscribe<rtp::ecs::components::Velocity>();
-        _worldRegistry.subscribe<rtp::ecs::components::Controllable>();
-        _worldRegistry.subscribe<rtp::ecs::components::Sprite>();
-        _worldRegistry.subscribe<rtp::ecs::components::Animation>();
-        _worldRegistry.subscribe<rtp::ecs::components::ParallaxLayer>();
-        _worldRegistry.subscribe<rtp::ecs::components::NetworkId>();
-        _worldRegistry.subscribe<rtp::ecs::components::EntityType>();
-        _worldRegistry.subscribe<rtp::ecs::components::BoundingBox>();
-        rtp::log::info("OK : World ECS initialized with components");
+        _worldRegistry.subscribe<ecs::components::Transform>();
+        _worldRegistry.subscribe<ecs::components::Velocity>();
+        _worldRegistry.subscribe<ecs::components::Controllable>();
+        _worldRegistry.subscribe<ecs::components::Sprite>();
+        _worldRegistry.subscribe<ecs::components::Animation>();
+        _worldRegistry.subscribe<ecs::components::ParallaxLayer>();
+        _worldRegistry.subscribe<ecs::components::NetworkId>();
+        _worldRegistry.subscribe<ecs::components::EntityType>();
+        _worldRegistry.subscribe<ecs::components::BoundingBox>();
+        log::info("OK: World ECS initialized with components");
     }
 
     void Application::initScenes()
     {
         auto changeStateCb = [this](GameState s) { this->changeState(s); };
         try {
-            auto& net = _worldSystemManager.getSystem<rtp::client::NetworkSyncSystem>();
+            auto& net = _worldSystemManager.getSystem<client::NetworkSyncSystem>();
 
-        _scenes[GameState::Login] = std::make_unique<rtp::client::Scenes::LoginScene>(
+        _scenes[GameState::Login] = std::make_unique<client::Scenes::LoginScene>(
             _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
         );
-        _scenes[GameState::Menu] = std::make_unique<rtp::client::Scenes::MenuScene>(
+        _scenes[GameState::Menu] = std::make_unique<client::Scenes::MenuScene>(
             _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
         );
-        _scenes[GameState::Lobby] = std::make_unique<rtp::client::Scenes::LobbyScene>(
+        _scenes[GameState::Lobby] = std::make_unique<client::Scenes::LobbyScene>(
             _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
         );
-        _scenes[GameState::CreateRoom] = std::make_unique<rtp::client::Scenes::CreateRoomScene>(
+        _scenes[GameState::CreateRoom] = std::make_unique<client::Scenes::CreateRoomScene>(
             _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
         );
-        _scenes[GameState::RoomWaiting] = std::make_unique<rtp::client::Scenes::RoomWaitingScene>(
+        _scenes[GameState::RoomWaiting] = std::make_unique<client::Scenes::RoomWaitingScene>(
             _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
         );
-        _scenes[GameState::Settings] = std::make_unique<rtp::client::Scenes::SettingsScene>(
+        _scenes[GameState::Settings] = std::make_unique<client::Scenes::SettingsScene>(
             _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
         );
-        _scenes[GameState::KeyBindings] = std::make_unique<rtp::client::Scenes::KeyBindingScene>(
+        _scenes[GameState::KeyBindings] = std::make_unique<client::Scenes::KeyBindingScene>(
             _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
         );
-        _scenes[GameState::GamepadSettings] = std::make_unique<rtp::client::Scenes::GamepadSettingsScene>(
+        _scenes[GameState::GamepadSettings] = std::make_unique<client::Scenes::GamepadSettingsScene>(
             _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
         );
-        _scenes[GameState::Paused] = std::make_unique<rtp::client::Scenes::PauseScene>(
+        _scenes[GameState::Paused] = std::make_unique<client::Scenes::PauseScene>(
             _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
         );
-        _scenes[GameState::Playing] = std::make_unique<rtp::client::Scenes::PlayingScene>(
+        _scenes[GameState::Playing] = std::make_unique<client::Scenes::PlayingScene>(
             _worldRegistry, _uiRegistry, _settings, _translations, net, _uiFactory, _worldEntityBuilder, changeStateCb
         );
         } catch (const std::exception& e) {
-            rtp::log::error("Failed to get NetworkSyncSystem: {}", e.what());
+            log::error("Failed to get NetworkSyncSystem: {}", e.what());
             throw;
         }
 
-        rtp::log::info("OK: Scenes initialized");
+        log::info("OK: Scenes initialized");
     }
 
     void Application::changeState(GameState newState)
     {
-        rtp::log::info("Changing state from {} to {}",
+        log::info("Changing state from {} to {}",
                     static_cast<int>(_currentState),
                     static_cast<int>(newState));
 
@@ -191,7 +191,7 @@ namespace rtp::client
             _activeScene = it->second.get();
             _activeScene->onEnter();
         } else {
-            rtp::log::warning("No scene found for state {}, cannot change state",
+            log::warning("No scene found for state {}, cannot change state",
                             static_cast<int>(newState));
             return;
         }
@@ -234,22 +234,22 @@ namespace rtp::client
     void Application::setupSettingsCallbacks()
     {
         _settings.onMasterVolumeChanged([this](float volume) {
-            rtp::log::info("Master volume changed to: {:.2f}", volume);
+            log::info("Master volume changed to: {:.2f}", volume);
             // TODO: Appliquer au AudioManager quand il sera implémenté
         });
 
         _settings.onMusicVolumeChanged([this](float volume) {
-            rtp::log::info("Music volume changed to: {:.2f}", volume);
+            log::info("Music volume changed to: {:.2f}", volume);
             // TODO: Appliquer au AudioManager quand il sera implémenté
         });
 
         _settings.onSfxVolumeChanged([this](float volume) {
-            rtp::log::info("SFX volume changed to: {:.2f}", volume);
+            log::info("SFX volume changed to: {:.2f}", volume);
             // TODO: Appliquer au AudioManager quand il sera implémenté
         });
 
         _settings.onLanguageChanged([this](Language lang) {
-            rtp::log::info("Language changed to: {}", static_cast<int>(lang));
+            log::info("Language changed to: {}", static_cast<int>(lang));
 
             _translations.loadLanguage(lang);
 
@@ -264,7 +264,7 @@ namespace rtp::client
     {
         _window.clear(sf::Color::Black);
 
-        _worldSystemManager.getSystem<rtp::client::RenderSystem>().update(_lastDt);
+        _worldSystemManager.getSystem<client::RenderSystem>().update(_lastDt);
 
         if (_shaderLoaded && _settings.getColorBlindMode() != ColorBlindMode::None) {
             sf::RectangleShape overlay({UIConstants::WINDOW_WIDTH, UIConstants::WINDOW_HEIGHT});
