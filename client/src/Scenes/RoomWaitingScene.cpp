@@ -6,6 +6,7 @@
  */
 
 #include "Scenes/RoomWaitingScene.hpp"
+#include "Game/SpriteCustomizer.hpp"
 #include "RType/ECS/Components/UI/Button.hpp"
 #include "RType/ECS/Components/UI/Text.hpp"
 #include "RType/ECS/Components/UI/TextInput.hpp"

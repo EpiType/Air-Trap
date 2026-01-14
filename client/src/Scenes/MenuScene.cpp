@@ -68,6 +68,16 @@ namespace rtp::client {
                 _uiRegistry,
                 {490.0f, 460.0f},
                 {300.0f, 60.0f},
+                _translationManager.get("menu.mods"),
+                [this]() {
+                    _changeState(GameState::ModMenu);
+                }
+            );
+
+            _uiFactory.createButton(
+                _uiRegistry,
+                {490.0f, 540.0f},
+                {300.0f, 60.0f},
                 _translationManager.get("menu.exit"),
                 [this]() {
                     std::exit(0);
