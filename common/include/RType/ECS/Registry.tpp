@@ -14,7 +14,7 @@ namespace rtp::ecs
     ///////////////////////////////////////////////////////////////////////////
 
     template <Component T, typename Self>
-    auto Registry::registerComponent(this Self &self)
+    auto Registry::subscribe(this Self &self)
         -> std::expected<std::reference_wrapper<ConstLike<Self,
                                                           SparseArray<T>>>,
                          rtp::Error>
@@ -52,7 +52,7 @@ namespace rtp::ecs
     }
 
     template <Component T, typename Self>
-    auto Registry::get(this Self &self)
+    auto Registry::get(this const Self &self)
         -> std::expected<std::reference_wrapper<ConstLike<Self,
                                                           SparseArray<T>>>,
                          rtp::Error>
@@ -69,15 +69,6 @@ namespace rtp::ecs
         auto *rawPtr = static_cast<SparseArray<T> *>(ptr.get());
 
         return std::ref(*rawPtr);
-    }
-
-    template <Component T, typename Self>
-    auto Registry::getComponents(this Self &self)
-        -> std::expected<std::reference_wrapper<ConstLike<Self,
-                                                          SparseArray<T>>>,
-                         rtp::Error>
-    {
-        return self.template get<T>();
     }
 
     template <Component T>

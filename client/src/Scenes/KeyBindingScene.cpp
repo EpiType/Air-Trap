@@ -149,7 +149,7 @@ namespace rtp::client {
             const sf::Keyboard::Key key = _settings.getKey(action);
             const std::string keyName = _settings.getKeyName(key);
 
-            auto buttonsRes = _uiRegistry.getComponents<rtp::ecs::components::ui::Button>();
+            auto buttonsRes = _uiRegistry.get<rtp::ecs::components::ui::Button>();
             if (!buttonsRes) {
                 rtp::log::error("Failed to get Button components");
                 return;

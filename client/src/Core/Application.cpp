@@ -102,25 +102,25 @@ namespace rtp::client
 
     void Application::initUiECS(void)
     {
-        _uiRegistry.registerComponent<rtp::ecs::components::ui::Button>();
-        _uiRegistry.registerComponent<rtp::ecs::components::ui::Text>();
-        _uiRegistry.registerComponent<rtp::ecs::components::ui::Slider>();
-        _uiRegistry.registerComponent<rtp::ecs::components::ui::Dropdown>();
-        _uiRegistry.registerComponent<rtp::ecs::components::ui::TextInput>();
+        _uiRegistry.subscribe<rtp::ecs::components::ui::Button>();
+        _uiRegistry.subscribe<rtp::ecs::components::ui::Text>();
+        _uiRegistry.subscribe<rtp::ecs::components::ui::Slider>();
+        _uiRegistry.subscribe<rtp::ecs::components::ui::Dropdown>();
+        _uiRegistry.subscribe<rtp::ecs::components::ui::TextInput>();
         rtp::log::info("OK : UI ECS initialized with components");
     }
 
     void Application::initWorldECS(void)
     {
-        _worldRegistry.registerComponent<rtp::ecs::components::Transform>();
-        _worldRegistry.registerComponent<rtp::ecs::components::Velocity>();
-        _worldRegistry.registerComponent<rtp::ecs::components::Controllable>();
-        _worldRegistry.registerComponent<rtp::ecs::components::Sprite>();
-        _worldRegistry.registerComponent<rtp::ecs::components::Animation>();
-        _worldRegistry.registerComponent<rtp::ecs::components::ParallaxLayer>();
-        _worldRegistry.registerComponent<rtp::ecs::components::NetworkId>();
-        _worldRegistry.registerComponent<rtp::ecs::components::EntityType>();
-        _worldRegistry.registerComponent<rtp::ecs::components::BoundingBox>();
+        _worldRegistry.subscribe<rtp::ecs::components::Transform>();
+        _worldRegistry.subscribe<rtp::ecs::components::Velocity>();
+        _worldRegistry.subscribe<rtp::ecs::components::Controllable>();
+        _worldRegistry.subscribe<rtp::ecs::components::Sprite>();
+        _worldRegistry.subscribe<rtp::ecs::components::Animation>();
+        _worldRegistry.subscribe<rtp::ecs::components::ParallaxLayer>();
+        _worldRegistry.subscribe<rtp::ecs::components::NetworkId>();
+        _worldRegistry.subscribe<rtp::ecs::components::EntityType>();
+        _worldRegistry.subscribe<rtp::ecs::components::BoundingBox>();
         rtp::log::info("OK : World ECS initialized with components");
     }
 

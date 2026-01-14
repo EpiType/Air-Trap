@@ -25,7 +25,7 @@ void UIRenderSystem::update(float dt) {
 }
 
 void UIRenderSystem::renderButtons() {
-    auto buttonsResult = _registry.getComponents<rtp::ecs::components::ui::Button>();
+    auto buttonsResult = _registry.get<rtp::ecs::components::ui::Button>();
     if (!buttonsResult) return;
     
     auto& buttons = buttonsResult.value().get();
@@ -70,7 +70,7 @@ void UIRenderSystem::renderButtons() {
 }
 
 void UIRenderSystem::renderTexts() {
-    auto textsResult = _registry.getComponents<rtp::ecs::components::ui::Text>();
+    auto textsResult = _registry.get<rtp::ecs::components::ui::Text>();
     if (!textsResult) return;
     
     auto& texts = textsResult.value().get();
@@ -110,7 +110,7 @@ sf::Font& UIRenderSystem::loadFont(const std::string& fontPath) {
 }
 
 void UIRenderSystem::renderSliders() {
-    auto slidersResult = _registry.getComponents<rtp::ecs::components::ui::Slider>();
+    auto slidersResult = _registry.get<rtp::ecs::components::ui::Slider>();
     if (!slidersResult) return;
     
     auto& sliders = slidersResult.value().get();
@@ -137,7 +137,7 @@ void UIRenderSystem::renderSliders() {
 }
 
 void UIRenderSystem::renderDropdowns() {
-    auto dropdownsResult = _registry.getComponents<rtp::ecs::components::ui::Dropdown>();
+    auto dropdownsResult = _registry.get<rtp::ecs::components::ui::Dropdown>();
     if (!dropdownsResult) return;
     
     auto& dropdowns = dropdownsResult.value().get();
@@ -212,7 +212,7 @@ void UIRenderSystem::renderDropdowns() {
 
 void UIRenderSystem::renderTextInputs(float dt)
 {
-    auto inputsResult = _registry.getComponents<rtp::ecs::components::ui::TextInput>();
+    auto inputsResult = _registry.get<rtp::ecs::components::ui::TextInput>();
     if (!inputsResult) return;
 
     auto& inputs = inputsResult.value().get();

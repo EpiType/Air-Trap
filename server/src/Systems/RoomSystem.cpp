@@ -372,10 +372,10 @@ namespace rtp::server
         }
 
         rtp::ecs::Entity entity(entityId, 0);
-        auto transformsRes = _registry.getComponents<rtp::ecs::components::Transform>();
-        auto typesRes = _registry.getComponents<rtp::ecs::components::EntityType>();
-        auto netsRes = _registry.getComponents<rtp::ecs::components::NetworkId>();
-        auto roomsRes = _registry.getComponents<rtp::ecs::components::RoomId>();
+        auto transformsRes = _registry.get<rtp::ecs::components::Transform>();
+        auto typesRes = _registry.get<rtp::ecs::components::EntityType>();
+        auto netsRes = _registry.get<rtp::ecs::components::NetworkId>();
+        auto roomsRes = _registry.get<rtp::ecs::components::RoomId>();
 
         if (transformsRes && typesRes && netsRes && roomsRes) {
             auto &transforms = transformsRes->get();

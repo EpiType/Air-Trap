@@ -281,7 +281,7 @@ namespace rtp::client {
 
             const std::string buttonName = _isWaitingForButton ? "Press button..." : getButtonName(button);
 
-            auto buttonsRes = _uiRegistry.getComponents<rtp::ecs::components::ui::Button>();
+            auto buttonsRes = _uiRegistry.get<rtp::ecs::components::ui::Button>();
             if (!buttonsRes) {
                 rtp::log::error("Failed to get Button components");
                 return;

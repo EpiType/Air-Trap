@@ -43,7 +43,7 @@ namespace rtp::client {
                 "",
                 nullptr
             );
-            if (auto buttonsOpt = _uiRegistry.getComponents<rtp::ecs::components::ui::Button>()) {
+            if (auto buttonsOpt = _uiRegistry.get<rtp::ecs::components::ui::Button>()) {
                 auto &buttons = buttonsOpt.value().get();
                 if (buttons.has(_chatCompactPanel)) {
                     auto &panel = buttons[_chatCompactPanel];
@@ -137,7 +137,7 @@ namespace rtp::client {
                 _changeState(GameState::Playing);
             }
 
-            auto textsOpt = _uiRegistry.getComponents<rtp::ecs::components::ui::Text>();
+            auto textsOpt = _uiRegistry.get<rtp::ecs::components::ui::Text>();
             if (textsOpt) {
                 auto &texts = textsOpt.value().get();
                 if (texts.has(_chatCompactText)) {
@@ -164,7 +164,7 @@ namespace rtp::client {
                 "",
                 nullptr
             );
-            if (auto buttonsOpt = _uiRegistry.getComponents<rtp::ecs::components::ui::Button>()) {
+            if (auto buttonsOpt = _uiRegistry.get<rtp::ecs::components::ui::Button>()) {
                 auto &buttons = buttonsOpt.value().get();
                 if (buttons.has(_chatPanel)) {
                     auto &panel = buttons[_chatPanel];
@@ -195,7 +195,7 @@ namespace rtp::client {
                 nullptr,
                 nullptr
             );
-            if (auto inputsOpt = _uiRegistry.getComponents<rtp::ecs::components::ui::TextInput>()) {
+            if (auto inputsOpt = _uiRegistry.get<rtp::ecs::components::ui::TextInput>()) {
                 auto &inputs = inputsOpt.value().get();
                 if (inputs.has(_chatInput)) {
                     inputs[_chatInput].onSubmit = [this](const std::string&) {
@@ -225,7 +225,7 @@ namespace rtp::client {
 
         void RoomWaitingScene::updateChatHistoryText(void)
         {
-            auto textsOpt = _uiRegistry.getComponents<rtp::ecs::components::ui::Text>();
+            auto textsOpt = _uiRegistry.get<rtp::ecs::components::ui::Text>();
             if (!textsOpt)
                 return;
             auto &texts = textsOpt.value().get();
@@ -244,7 +244,7 @@ namespace rtp::client {
 
         void RoomWaitingScene::sendChatMessage(void)
         {
-            auto inputsOpt = _uiRegistry.getComponents<rtp::ecs::components::ui::TextInput>();
+            auto inputsOpt = _uiRegistry.get<rtp::ecs::components::ui::TextInput>();
             if (!inputsOpt)
                 return;
 

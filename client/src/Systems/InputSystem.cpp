@@ -30,7 +30,7 @@ namespace rtp::client {
         if (!_net.isUdpReady())
             return;
 
-        if (auto inputsOpt = _uiRegistry.getComponents<rtp::ecs::components::ui::TextInput>()) {
+        if (auto inputsOpt = _uiRegistry.get<rtp::ecs::components::ui::TextInput>()) {
             auto &inputs = inputsOpt.value().get();
             for (const auto &e : inputs.entities()) {
                 if (inputs[e].isFocused) {

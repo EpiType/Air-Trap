@@ -20,7 +20,7 @@ namespace rtp::client
         handleGamepadInput();
 
         auto buttonsCheck =
-            _registry.getComponents<rtp::ecs::components::ui::Button>();
+            _registry.get<rtp::ecs::components::ui::Button>();
         if (!buttonsCheck) {
             return;
         }
@@ -33,7 +33,7 @@ namespace rtp::client
         handleMouseMove(cursorPos);
 
         buttonsCheck =
-            _registry.getComponents<rtp::ecs::components::ui::Button>();
+            _registry.get<rtp::ecs::components::ui::Button>();
         if (!buttonsCheck) {
             return;
         }
@@ -61,7 +61,7 @@ namespace rtp::client
     void UISystem::handleMouseMove(const sf::Vector2i &mousePos)
     {
         auto buttonsResult =
-            _registry.getComponents<rtp::ecs::components::ui::Button>();
+            _registry.get<rtp::ecs::components::ui::Button>();
         if (!buttonsResult)
             return;
 
@@ -80,7 +80,7 @@ namespace rtp::client
     void UISystem::handleMouseClick(const sf::Vector2i &mousePos)
     {
         auto dropdownsResult =
-            _registry.getComponents<rtp::ecs::components::ui::Dropdown>();
+            _registry.get<rtp::ecs::components::ui::Dropdown>();
         if (dropdownsResult) {
             auto &dropdowns = dropdownsResult.value().get();
 
@@ -136,7 +136,7 @@ namespace rtp::client
 
         {
             auto inputsResult =
-                _registry.getComponents<rtp::ecs::components::ui::TextInput>();
+                _registry.get<rtp::ecs::components::ui::TextInput>();
             if (inputsResult) {
                 auto &inputs = inputsResult.value().get();
 
@@ -198,7 +198,7 @@ namespace rtp::client
         }
 
         auto buttonsResult =
-            _registry.getComponents<rtp::ecs::components::ui::Button>();
+            _registry.get<rtp::ecs::components::ui::Button>();
         if (buttonsResult) {
             auto &buttons = buttonsResult.value().get();
 
@@ -230,7 +230,7 @@ namespace rtp::client
         }
 
         auto slidersResult =
-            _registry.getComponents<rtp::ecs::components::ui::Slider>();
+            _registry.get<rtp::ecs::components::ui::Slider>();
         if (slidersResult) {
             auto &sliders = slidersResult.value().get();
             for (const auto &entity : sliders.entities()) {
@@ -355,7 +355,7 @@ namespace rtp::client
     void UISystem::clearAllTextInputFocus()
     {
         auto inputsResult =
-            _registry.getComponents<rtp::ecs::components::ui::TextInput>();
+            _registry.get<rtp::ecs::components::ui::TextInput>();
         if (!inputsResult)
             return;
 
@@ -370,7 +370,7 @@ namespace rtp::client
     void UISystem::focusTextInputAt(const sf::Vector2i &mousePos)
     {
         auto inputsResult =
-            _registry.getComponents<rtp::ecs::components::ui::TextInput>();
+            _registry.get<rtp::ecs::components::ui::TextInput>();
         if (!inputsResult)
             return;
 
@@ -395,7 +395,7 @@ namespace rtp::client
     void UISystem::handleTextEntered(std::uint32_t unicode)
     {
         auto inputsResult =
-            _registry.getComponents<rtp::ecs::components::ui::TextInput>();
+            _registry.get<rtp::ecs::components::ui::TextInput>();
         if (!inputsResult)
             return;
 
@@ -452,7 +452,7 @@ namespace rtp::client
     void UISystem::handleKeyPressed(sf::Keyboard::Key key)
     {
         auto inputsResult =
-            _registry.getComponents<rtp::ecs::components::ui::TextInput>();
+            _registry.get<rtp::ecs::components::ui::TextInput>();
         if (!inputsResult)
             return;
 

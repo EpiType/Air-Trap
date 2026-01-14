@@ -167,10 +167,10 @@ namespace rtp::server {
             sessions.push_back(player->getId());
         }
 
-        auto transformRes = _registry.getComponents<rtp::ecs::components::Transform>();
-        auto typeRes = _registry.getComponents<rtp::ecs::components::EntityType>();
-        auto netRes = _registry.getComponents<rtp::ecs::components::NetworkId>();
-        auto boxRes = _registry.getComponents<rtp::ecs::components::BoundingBox>();
+        auto transformRes = _registry.get<rtp::ecs::components::Transform>();
+        auto typeRes = _registry.get<rtp::ecs::components::EntityType>();
+        auto netRes = _registry.get<rtp::ecs::components::NetworkId>();
+        auto boxRes = _registry.get<rtp::ecs::components::BoundingBox>();
         if (!transformRes || !typeRes || !netRes) {
             rtp::log::error("Missing component array for level spawn");
             return;
