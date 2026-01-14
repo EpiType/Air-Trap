@@ -129,6 +129,8 @@ namespace rtp::server {
             std::shared_ptr<Room> getRoom(uint32_t roomId);
         
         private:
+            void despawnPlayerEntity(const PlayerPtr& player,
+                                     const std::shared_ptr<Room>& room);
             ServerNetwork& _network;                          /**< Reference to the server network manager */
             NetworkSyncSystem& _networkSync;                  /**< Reference to the network sync system */
             rtp::ecs::Registry& _registry;                    /**< Reference to the entity registry */
