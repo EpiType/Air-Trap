@@ -27,6 +27,7 @@ namespace rtp::client {
         Playing,       /**< In-game playing state */
         Settings,      /**< Settings menu state */
         KeyBindings,   /**< Key bindings configuration state */
+        GamepadSettings, /**< Gamepad settings configuration state */
         Paused         /**< Game paused state */
     };
 } // namespace rtp::client

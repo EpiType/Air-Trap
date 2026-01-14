@@ -9,6 +9,7 @@
 #include "RType/ECS/Components/UI/Button.hpp"
 #include "RType/ECS/Components/UI/Text.hpp"
 #include "RType/ECS/Components/UI/TextInput.hpp"
+#include <SFML/Window/Joystick.hpp>
 
 namespace rtp::client {
     namespace Scenes {
@@ -104,6 +105,24 @@ namespace rtp::client {
 
         void PlayingScene::handleEvent(const sf::Event& e)
         {
+            // Check gamepad pause button
+            if (_settings.getGamepadEnabled() && sf::Joystick::isConnected(0)) {
+                static bool wasPausePressed = false;
+                bool isPausePressed = sf::Joystick::isButtonPressed(0, _settings.getGamepadPauseButton());
+                
+                if (isPausePressed && !wasPausePressed) {
+                    if (_chatOpen) {
+                        closeChat();
+                        wasPausePressed = true;
+                        return;
+                    }
+                    _changeState(GameState::Paused);
+                    wasPausePressed = true;
+                    return;
+                }
+                wasPausePressed = isPausePressed;
+            }
+            
             if (const auto* kp = e.getIf<sf::Event::KeyPressed>()) {
                 if (kp->code == sf::Keyboard::Key::Enter) {
                     if (!_chatOpen) {

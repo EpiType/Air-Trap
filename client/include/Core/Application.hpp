@@ -58,6 +58,7 @@
 /* Scenes */
 #include "Interfaces/IScene.hpp"
 #include "Scenes/CreateRoomScene.hpp"
+#include "Scenes/GamepadSettingsScene.hpp"
 #include "Scenes/KeyBindingScene.hpp"
 #include "Scenes/LobbyScene.hpp"
 #include "Scenes/LoginScene.hpp"
