@@ -29,7 +29,7 @@ namespace rtp::client
         std::ifstream file(filePath);
         
         if (!file.is_open()) {
-            rtp::log::error("Failed to load language file: {}", filePath);
+            log::error("Failed to load language file: {}", filePath);
             return false;
         }
         
@@ -51,7 +51,7 @@ namespace rtp::client
             _translations[key] = value;
         }
         
-        rtp::log::info("Loaded {} translations for language: {}", 
+        log::info("Loaded {} translations for language: {}", 
                     _translations.size(), static_cast<int>(language));
         return true;
     }
@@ -62,7 +62,7 @@ namespace rtp::client
             return it->second;
         }
         
-        rtp::log::warning("Translation key not found: {}", key);
+        log::warning("Translation key not found: {}", key);
         return key;
     }
-}  // namespace Client::Core
+}  // namespace rtp::client

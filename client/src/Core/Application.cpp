@@ -83,20 +83,20 @@ namespace rtp::client
 
     void Application::initWorldSystems(void)
     {
-        _worldSystemManager.add<client::NetworkSyncSystem>(_clientNetwork, _worldRegistry, _worldEntityBuilder);
-        _worldSystemManager.add<client::InputSystem>(_worldRegistry, _uiRegistry, _settings, _clientNetwork, _window);
-        _worldSystemManager.add<client::ParallaxSystem>(_worldRegistry);
-        _worldSystemManager.add<client::AnimationSystem>(_worldRegistry);
-        _worldSystemManager.add<client::RenderSystem>(_worldRegistry, _window);
-        _worldSystemManager.add<client::ParallaxSystem>(_worldRegistry);
+        _worldSystemManager.add<NetworkSyncSystem>(_clientNetwork, _worldRegistry, _worldEntityBuilder);
+        _worldSystemManager.add<InputSystem>(_worldRegistry, _uiRegistry, _settings, _clientNetwork, _window);
+        _worldSystemManager.add<ParallaxSystem>(_worldRegistry);
+        _worldSystemManager.add<AnimationSystem>(_worldRegistry);
+        _worldSystemManager.add<RenderSystem>(_worldRegistry, _window);
+        _worldSystemManager.add<ParallaxSystem>(_worldRegistry);
         log::info("OK: World systems initialized");
     }
 
     void Application::initUiSystems(void)
     {
-        _uiSystemManager.add<client::UISystem>(_uiRegistry, _window, _settings);
-        // _uiSystemManager.add<Client::Systems::SettingsMenuSystem>(_uiRegistry, _window, _settings);
-        _uiSystemManager.add<Client::Systems::UIRenderSystem>(_uiRegistry, _window);
+        _uiSystemManager.add<UISystem>(_uiRegistry, _window, _settings);
+        // _uiSystemManager.add<systems::SettingsMenuSystem>(_uiRegistry, _window, _settings);
+        _uiSystemManager.add<systems::UIRenderSystem>(_uiRegistry, _window);
         log::info("OK: UI systems initialized");
     }
 
@@ -128,36 +128,36 @@ namespace rtp::client
     {
         auto changeStateCb = [this](GameState s) { this->changeState(s); };
         try {
-            auto& net = _worldSystemManager.getSystem<client::NetworkSyncSystem>();
+            auto& net = _worldSystemManager.getSystem<NetworkSyncSystem>();
 
-        _scenes[GameState::Login] = std::make_unique<client::Scenes::LoginScene>(
+        _scenes[GameState::Login] = std::make_unique<scenes::LoginScene>(
             _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
         );
-        _scenes[GameState::Menu] = std::make_unique<client::Scenes::MenuScene>(
+        _scenes[GameState::Menu] = std::make_unique<scenes::MenuScene>(
             _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
         );
-        _scenes[GameState::Lobby] = std::make_unique<client::Scenes::LobbyScene>(
+        _scenes[GameState::Lobby] = std::make_unique<scenes::LobbyScene>(
             _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
         );
-        _scenes[GameState::CreateRoom] = std::make_unique<client::Scenes::CreateRoomScene>(
+        _scenes[GameState::CreateRoom] = std::make_unique<scenes::CreateRoomScene>(
             _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
         );
-        _scenes[GameState::RoomWaiting] = std::make_unique<client::Scenes::RoomWaitingScene>(
+        _scenes[GameState::RoomWaiting] = std::make_unique<scenes::RoomWaitingScene>(
             _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
         );
-        _scenes[GameState::Settings] = std::make_unique<client::Scenes::SettingsScene>(
+        _scenes[GameState::Settings] = std::make_unique<scenes::SettingsScene>(
             _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
         );
-        _scenes[GameState::KeyBindings] = std::make_unique<client::Scenes::KeyBindingScene>(
+        _scenes[GameState::KeyBindings] = std::make_unique<scenes::KeyBindingScene>(
             _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
         );
-        _scenes[GameState::GamepadSettings] = std::make_unique<client::Scenes::GamepadSettingsScene>(
+        _scenes[GameState::GamepadSettings] = std::make_unique<scenes::GamepadSettingsScene>(
             _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
         );
-        _scenes[GameState::Paused] = std::make_unique<client::Scenes::PauseScene>(
+        _scenes[GameState::Paused] = std::make_unique<scenes::PauseScene>(
             _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
         );
-        _scenes[GameState::Playing] = std::make_unique<client::Scenes::PlayingScene>(
+        _scenes[GameState::Playing] = std::make_unique<scenes::PlayingScene>(
             _worldRegistry, _uiRegistry, _settings, _translations, net, _uiFactory, _worldEntityBuilder, changeStateCb
         );
         } catch (const std::exception& e) {
@@ -279,7 +279,7 @@ namespace rtp::client
             _window.draw(overlay);
         }
 
-        _uiSystemManager.getSystem<Client::Systems::UIRenderSystem>().update(_lastDt);
+        _uiSystemManager.getSystem<systems::UIRenderSystem>().update(_lastDt);
         
         // Only show gamepad cursor in menus, not in-game (Playing state)
         if (_currentState != GameState::Playing) {

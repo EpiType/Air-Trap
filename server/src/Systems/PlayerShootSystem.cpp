@@ -20,7 +20,7 @@ namespace rtp::server
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
-    PlayerShootSystem::PlayerShootSystem(rtp::ecs::Registry& registry,
+    PlayerShootSystem::PlayerShootSystem(ecs::Registry& registry,
                                          RoomSystem& roomSystem,
                                          NetworkSyncSystem& networkSync)
         : _registry(registry), _roomSystem(roomSystem), _networkSync(networkSync)
@@ -29,26 +29,26 @@ namespace rtp::server
 
     void PlayerShootSystem::update(float dt)
     {
-        std::vector<std::pair<rtp::ecs::components::Transform,
-                              rtp::ecs::components::RoomId>> pendingSpawns;
-        std::vector<std::tuple<rtp::ecs::components::Transform,
-                               rtp::ecs::components::RoomId,
+        std::vector<std::pair<ecs::components::Transform,
+                              ecs::components::RoomId>> pendingSpawns;
+        std::vector<std::tuple<ecs::components::Transform,
+                               ecs::components::RoomId,
                                float>> pendingChargedSpawns;
 
         constexpr float kChargeMax = 2.0f;
         constexpr float kChargeMin = 0.2f;
 
         auto view =
-            _registry.zipView<rtp::ecs::components::Transform,
-                              rtp::ecs::components::server::InputComponent,
-                              rtp::ecs::components::EntityType,
-                              rtp::ecs::components::RoomId,
-                              rtp::ecs::components::SimpleWeapon,
-                              rtp::ecs::components::NetworkId,
-                              rtp::ecs::components::Ammo>();
+            _registry.zipView<ecs::components::Transform,
+                              ecs::components::server::InputComponent,
+                              ecs::components::EntityType,
+                              ecs::components::RoomId,
+                              ecs::components::SimpleWeapon,
+                              ecs::components::NetworkId,
+                              ecs::components::Ammo>();
 
         for (auto &&[tf, input, type, roomId, weapon, net, ammo] : view) {
-            if (type.type != rtp::net::EntityType::Player)
+            if (type.type != net::EntityType::Player)
                 continue;
 
             weapon.lastShotTime += dt;
@@ -63,7 +63,7 @@ namespace rtp::server
             }
 
             using Bits =
-                rtp::ecs::components::server::InputComponent::InputBits;
+                ecs::components::server::InputComponent::InputBits;
 
             if ((input.mask & Bits::Reload) && !ammo.isReloading && ammo.current < ammo.max) {
                 ammo.isReloading = true;
@@ -130,53 +130,53 @@ namespace rtp::server
     //////////////////////////////////////////////////////////////////////////
 
     void PlayerShootSystem::spawnBullet(
-        const rtp::ecs::components::Transform& tf,
-        const rtp::ecs::components::RoomId& roomId)
+        const ecs::components::Transform& tf,
+        const ecs::components::RoomId& roomId)
     {
         auto entityRes = _registry.spawn();
         if (!entityRes) {
-            rtp::log::error("Failed to spawn bullet entity: {}", entityRes.error().message());
+            log::error("Failed to spawn bullet entity: {}", entityRes.error().message());
             return;
         }
 
-        rtp::ecs::Entity bullet = entityRes.value();
+        ecs::Entity bullet = entityRes.value();
 
         const float x = tf.position.x + _spawnOffsetX;
         const float y = tf.position.y;
 
-        _registry.add<rtp::ecs::components::Transform>(
+        _registry.add<ecs::components::Transform>(
             bullet,
-            rtp::ecs::components::Transform{ {x, y}, 0.f, {1.f, 1.f} }
+            ecs::components::Transform{ {x, y}, 0.f, {1.f, 1.f} }
         );
 
-        _registry.add<rtp::ecs::components::Velocity>(
+        _registry.add<ecs::components::Velocity>(
             bullet,
-            rtp::ecs::components::Velocity{ {_bulletSpeed, 0.f}, 0.f }
+            ecs::components::Velocity{ {_bulletSpeed, 0.f}, 0.f }
         );
 
-        _registry.add<rtp::ecs::components::BoundingBox>(
+        _registry.add<ecs::components::BoundingBox>(
             bullet,
-            rtp::ecs::components::BoundingBox{ 8.0f, 4.0f }
+            ecs::components::BoundingBox{ 8.0f, 4.0f }
         );
 
-        _registry.add<rtp::ecs::components::Damage>(
+        _registry.add<ecs::components::Damage>(
             bullet,
-            rtp::ecs::components::Damage{ 25, rtp::ecs::NullEntity }
+            ecs::components::Damage{ 25, ecs::NullEntity }
         );
 
-        _registry.add<rtp::ecs::components::NetworkId>(
+        _registry.add<ecs::components::NetworkId>(
             bullet,
-            rtp::ecs::components::NetworkId{ static_cast<uint32_t>(bullet.index()) }
+            ecs::components::NetworkId{ static_cast<uint32_t>(bullet.index()) }
         );
 
-        _registry.add<rtp::ecs::components::EntityType>(
+        _registry.add<ecs::components::EntityType>(
             bullet,
-            rtp::ecs::components::EntityType{ rtp::net::EntityType::Bullet }
+            ecs::components::EntityType{ net::EntityType::Bullet }
         );
 
-        _registry.add<rtp::ecs::components::RoomId>(
+        _registry.add<ecs::components::RoomId>(
             bullet,
-            rtp::ecs::components::RoomId{ roomId.id }
+            ecs::components::RoomId{ roomId.id }
         );
 
         auto room = _roomSystem.getRoom(roomId.id);
@@ -192,29 +192,29 @@ namespace rtp::server
             sessions.push_back(player->getId());
         }
 
-        rtp::net::Packet packet(rtp::net::OpCode::EntitySpawn);
-        rtp::net::EntitySpawnPayload payload = {
+        net::Packet packet(net::OpCode::EntitySpawn);
+        net::EntitySpawnPayload payload = {
             static_cast<uint32_t>(bullet.index()),
-            static_cast<uint8_t>(rtp::net::EntityType::Bullet),
+            static_cast<uint8_t>(net::EntityType::Bullet),
             x,
             y
         };
         packet << payload;
-        _networkSync.sendPacketToSessions(sessions, packet, rtp::net::NetworkMode::TCP);
+        _networkSync.sendPacketToSessions(sessions, packet, net::NetworkMode::TCP);
     }
 
     void PlayerShootSystem::spawnChargedBullet(
-        const rtp::ecs::components::Transform& tf,
-        const rtp::ecs::components::RoomId& roomId,
+        const ecs::components::Transform& tf,
+        const ecs::components::RoomId& roomId,
         float chargeRatio)
     {
         auto entityRes = _registry.spawn();
         if (!entityRes) {
-            rtp::log::error("Failed to spawn charged bullet entity: {}", entityRes.error().message());
+            log::error("Failed to spawn charged bullet entity: {}", entityRes.error().message());
             return;
         }
 
-        rtp::ecs::Entity bullet = entityRes.value();
+        ecs::Entity bullet = entityRes.value();
 
         const float x = tf.position.x + _spawnOffsetX;
         const float y = tf.position.y;
@@ -227,39 +227,39 @@ namespace rtp::server
         const int maxDamage = 120;
         const int damage = static_cast<int>(minDamage + (maxDamage - minDamage) * ratio);
 
-        _registry.add<rtp::ecs::components::Transform>(
+        _registry.add<ecs::components::Transform>(
             bullet,
-            rtp::ecs::components::Transform{ {x, y}, 0.f, {1.f, 1.f} }
+            ecs::components::Transform{ {x, y}, 0.f, {1.f, 1.f} }
         );
 
-        _registry.add<rtp::ecs::components::Velocity>(
+        _registry.add<ecs::components::Velocity>(
             bullet,
-            rtp::ecs::components::Velocity{ {_chargedBulletSpeed, 0.f}, 0.f }
+            ecs::components::Velocity{ {_chargedBulletSpeed, 0.f}, 0.f }
         );
 
-        _registry.add<rtp::ecs::components::BoundingBox>(
+        _registry.add<ecs::components::BoundingBox>(
             bullet,
-            rtp::ecs::components::BoundingBox{ sizeX, sizeY }
+            ecs::components::BoundingBox{ sizeX, sizeY }
         );
 
-        _registry.add<rtp::ecs::components::Damage>(
+        _registry.add<ecs::components::Damage>(
             bullet,
-            rtp::ecs::components::Damage{ damage, rtp::ecs::NullEntity }
+            ecs::components::Damage{ damage, ecs::NullEntity }
         );
 
-        _registry.add<rtp::ecs::components::NetworkId>(
+        _registry.add<ecs::components::NetworkId>(
             bullet,
-            rtp::ecs::components::NetworkId{ static_cast<uint32_t>(bullet.index()) }
+            ecs::components::NetworkId{ static_cast<uint32_t>(bullet.index()) }
         );
 
-        _registry.add<rtp::ecs::components::EntityType>(
+        _registry.add<ecs::components::EntityType>(
             bullet,
-            rtp::ecs::components::EntityType{ rtp::net::EntityType::ChargedBullet }
+            ecs::components::EntityType{ net::EntityType::ChargedBullet }
         );
 
-        _registry.add<rtp::ecs::components::RoomId>(
+        _registry.add<ecs::components::RoomId>(
             bullet,
-            rtp::ecs::components::RoomId{ roomId.id }
+            ecs::components::RoomId{ roomId.id }
         );
 
         auto room = _roomSystem.getRoom(roomId.id);
@@ -275,23 +275,23 @@ namespace rtp::server
             sessions.push_back(player->getId());
         }
 
-        rtp::net::Packet packet(rtp::net::OpCode::EntitySpawn);
-        rtp::net::EntitySpawnPayload payload = {
+        net::Packet packet(net::OpCode::EntitySpawn);
+        net::EntitySpawnPayload payload = {
             static_cast<uint32_t>(bullet.index()),
-            static_cast<uint8_t>(rtp::net::EntityType::ChargedBullet),
+            static_cast<uint8_t>(net::EntityType::ChargedBullet),
             x,
             y,
             sizeX,
             sizeY
         };
         packet << payload;
-        _networkSync.sendPacketToSessions(sessions, packet, rtp::net::NetworkMode::TCP);
+        _networkSync.sendPacketToSessions(sessions, packet, net::NetworkMode::TCP);
     }
 
-    void PlayerShootSystem::sendAmmoUpdate(uint32_t netId, const rtp::ecs::components::Ammo& ammo)
+    void PlayerShootSystem::sendAmmoUpdate(uint32_t netId, const ecs::components::Ammo& ammo)
     {
-        rtp::net::Packet packet(rtp::net::OpCode::AmmoUpdate);
-        rtp::net::AmmoUpdatePayload payload{};
+        net::Packet packet(net::OpCode::AmmoUpdate);
+        net::AmmoUpdatePayload payload{};
         payload.current = ammo.current;
         payload.max = ammo.max;
         payload.isReloading = static_cast<uint8_t>(ammo.isReloading ? 1 : 0);
@@ -299,6 +299,6 @@ namespace rtp::server
             ? (ammo.reloadCooldown - ammo.reloadTimer)
             : 0.0f;
         packet << payload;
-        _networkSync.sendPacketToEntity(netId, packet, rtp::net::NetworkMode::TCP);
+        _networkSync.sendPacketToEntity(netId, packet, net::NetworkMode::TCP);
     }
 } // namespace rtp::server

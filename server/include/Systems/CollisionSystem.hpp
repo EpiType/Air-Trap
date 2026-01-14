@@ -27,7 +27,7 @@
 
 namespace rtp::server {
 
-class CollisionSystem : public rtp::ecs::ISystem {
+class CollisionSystem : public ecs::ISystem {
     public:
         /**
          * @brief Constructor for CollisionSystem
@@ -35,7 +35,7 @@ class CollisionSystem : public rtp::ecs::ISystem {
          * @param roomSystem Reference to the RoomSystem
          * @param networkSync Reference to the NetworkSyncSystem
          */
-        CollisionSystem(rtp::ecs::Registry& registry,
+        CollisionSystem(ecs::Registry& registry,
                         RoomSystem& roomSystem,
                         NetworkSyncSystem& networkSync);
 
@@ -54,20 +54,20 @@ class CollisionSystem : public rtp::ecs::ISystem {
          * @param bb BoundingBox of the second entity
          * @return true if the entities overlap, false otherwise
          */
-        bool overlaps(const rtp::ecs::components::Transform& a,
-                      const rtp::ecs::components::BoundingBox& ab,
-                      const rtp::ecs::components::Transform& b,
-                      const rtp::ecs::components::BoundingBox& bb) const;
+        bool overlaps(const ecs::components::Transform& a,
+                      const ecs::components::BoundingBox& ab,
+                      const ecs::components::Transform& b,
+                      const ecs::components::BoundingBox& bb) const;
 
         /**
          * @brief Handle collision between two entities
          * @param entityA First entity involved in the collision
          * @param entityB Second entity involved in the collision
          */
-        void despawn(const rtp::ecs::Entity& entity, uint32_t roomId);
+        void despawn(const ecs::Entity& entity, uint32_t roomId);
     
     private:
-        rtp::ecs::Registry& _registry;      /**< Reference to the ECS registry */
+        ecs::Registry& _registry;      /**< Reference to the ECS registry */
         RoomSystem& _roomSystem;            /**< Reference to the RoomSystem */
         NetworkSyncSystem& _networkSync;    /**< Reference to the NetworkSyncSystem */
 };

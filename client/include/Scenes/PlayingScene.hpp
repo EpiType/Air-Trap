@@ -20,7 +20,7 @@
     #include <functional>
 
 namespace rtp::client {
-    namespace Scenes {
+    namespace scenes {
         /**
          * @class PlayingScene
          * @brief Scene for the main gameplay.
@@ -118,7 +118,7 @@ namespace rtp::client {
 
                 float _chargeTime{0.0f};                    /**< Local charge timer for HUD */
         };
-    } // namespace Scenes
+    } // namespace scenes
 } // namespace rtp::client
 
 #endif // RTYPE_CLIENT_SCENES_PLAYINGSCENE_HPP_

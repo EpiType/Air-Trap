@@ -8,7 +8,7 @@
 #include "Scenes/KeyBindingScene.hpp"
 
 namespace rtp::client {
-    namespace Scenes {
+    namespace scenes {
 
         //////////////////////////////////////////////////////////////////////////
         // Public API
@@ -31,7 +31,7 @@ namespace rtp::client {
 
         void KeyBindingScene::onEnter(void)
         {
-            rtp::log::info("Entering KeyBindingScene");
+            log::info("Entering KeyBindingScene");
 
             _uiFactory.createText(
                 _uiRegistry,
@@ -110,7 +110,7 @@ namespace rtp::client {
             if (const auto* kp = event.getIf<sf::Event::KeyPressed>()) {
                 if (kp->code == sf::Keyboard::Key::Escape) {
                     _isWaitingForKey = false;
-                    rtp::log::info("Key binding cancelled");
+                    log::info("Key binding cancelled");
                     refreshButtonLabel(_actionToRebind);
                     return;
                 }
@@ -119,7 +119,7 @@ namespace rtp::client {
                 _settings.save();
                 _isWaitingForKey = false;
 
-                rtp::log::info("Key {} bound to action {}",
+                log::info("Key {} bound to action {}",
                             _settings.getKeyName(kp->code),
                             static_cast<int>(_actionToRebind));
 
@@ -140,30 +140,30 @@ namespace rtp::client {
         {
             auto it = _actionToButton.find(action);
             if (it == _actionToButton.end()) {
-                rtp::log::warning("No button found for action {}", static_cast<int>(action));
+                log::warning("No button found for action {}", static_cast<int>(action));
                 return;
             }
 
-            const rtp::ecs::Entity e = it->second;
+            const ecs::Entity e = it->second;
 
             const sf::Keyboard::Key key = _settings.getKey(action);
             const std::string keyName = _settings.getKeyName(key);
 
-            auto buttonsRes = _uiRegistry.get<rtp::ecs::components::ui::Button>();
+            auto buttonsRes = _uiRegistry.get<ecs::components::ui::Button>();
             if (!buttonsRes) {
-                rtp::log::error("Failed to get Button components");
+                log::error("Failed to get Button components");
                 return;
             }
 
             auto& buttons = buttonsRes.value().get();
 
             if (!buttons.has(e)) {
-                rtp::log::warning("Button component not found for entity {}", static_cast<std::uint64_t>(e));
+                log::warning("Button component not found for entity {}", static_cast<std::uint64_t>(e));
                 return;
             }
 
             buttons[e].text = keyName;
         }
 
-    } // namespace Scenes
+    } // namespace scenes
 } // namespace rtp::client

@@ -13,7 +13,7 @@
 #include <string>
 
 namespace rtp::client {
-    namespace Scenes {
+    namespace scenes {
 
         namespace {
             void hashCombine(std::size_t &seed, std::size_t value)
@@ -21,7 +21,7 @@ namespace rtp::client {
                 seed ^= value + 0x9e3779b97f4a7c15ULL + (seed << 6) + (seed >> 2);
             }
 
-            std::size_t hashRoomList(const std::list<rtp::net::RoomInfo>& rooms)
+            std::size_t hashRoomList(const std::list<net::RoomInfo>& rooms)
             {
                 std::size_t seed = 0;
                 for (const auto& room : rooms) {
@@ -61,7 +61,7 @@ namespace rtp::client {
 
         void LobbyScene::onEnter(void)
         {
-            rtp::log::info("Entering LobbyScene");
+            log::info("Entering LobbyScene");
 
             _network.requestListRooms();
             _roomsHash = hashRoomList(_network.getAvailableRooms());
@@ -141,7 +141,7 @@ namespace rtp::client {
                     "JOIN",
                     [this, room]() {
                         _uiSelectedRoomId = room.roomId;
-                        rtp::log::info("Attempting to join Room ID {}", room.roomId);
+                        log::info("Attempting to join Room ID {}", room.roomId);
                         _network.tryJoinRoom(room.roomId, false);
                     }
                 );
@@ -153,7 +153,7 @@ namespace rtp::client {
                     "SPEC",
                     [this, room]() {
                         _uiSelectedRoomId = room.roomId;
-                        rtp::log::info("Attempting to spectate Room ID {}", room.roomId);
+                        log::info("Attempting to spectate Room ID {}", room.roomId);
                         _network.tryJoinRoom(room.roomId, true);
                     }
                 );
@@ -165,7 +165,7 @@ namespace rtp::client {
 
         void LobbyScene::onExit(void)
         {
-            rtp::log::info("Exiting LobbyScene");
+            log::info("Exiting LobbyScene");
         }
 
         void LobbyScene::handleEvent(const sf::Event& event)
@@ -191,5 +191,5 @@ namespace rtp::client {
             }
         }
 
-    } // namespace Scenes
+    } // namespace scenes
 } // namespace rtp::client

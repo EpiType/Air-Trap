@@ -21,7 +21,7 @@
     #include <array>
 
 /**
- * @namespace rtp::net
+ * @namespace net
  * @brief Network layer for R-Type client protocol
  */
 namespace rtp::client {
