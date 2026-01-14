@@ -33,6 +33,7 @@ namespace rtp::client {
                 : _r(r), _window(window) {}
 
         void update(float dt) override;
+        void clearTextureCache();
 
     private:
         rtp::ecs::Registry& _r;

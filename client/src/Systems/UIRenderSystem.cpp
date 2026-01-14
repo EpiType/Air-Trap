@@ -15,6 +15,12 @@ UIRenderSystem::UIRenderSystem(rtp::ecs::Registry& registry,
                                sf::RenderWindow& window)
     : _registry(registry), _window(window) {}
 
+void UIRenderSystem::clearTextureCache()
+{
+    _textures.clear();
+    rtp::log::info("UIRenderSystem: Texture cache cleared");
+}
+
 void UIRenderSystem::update(float dt) {
     (void)dt;
     renderButtons();
@@ -22,6 +28,7 @@ void UIRenderSystem::update(float dt) {
     renderSliders();
     renderDropdowns();
     renderTextInputs(dt);
+    renderSpritePreviews();
 }
 
 void UIRenderSystem::renderButtons() {
@@ -274,6 +281,66 @@ void UIRenderSystem::renderTextInputs(float dt)
             rtp::log::error("Failed to render TextInput: {}", e.what());
         }
     }
+}
+
+void UIRenderSystem::renderSpritePreviews() {
+    auto spritesResult = _registry.getComponents<rtp::ecs::components::ui::SpritePreview>();
+    if (!spritesResult) return;
+    
+    auto& sprites = spritesResult.value().get();
+    for (const auto& entity : sprites.entities()) {
+        auto& spritePreview = sprites[entity];
+        
+        try {
+            sf::Texture& texture = loadTexture(spritePreview.texturePath);
+            sf::Sprite sprite(texture);
+            
+            // Custom sprites (from assets/sprites/custom/) use the full image
+            // Sprite sheet sprites need texture rect extraction
+            bool isCustomSprite = spritePreview.texturePath.find("custom/") != std::string::npos;
+            
+            if (!isCustomSprite) {
+                // Set texture rect to extract the specific part of the sprite sheet
+                sprite.setTextureRect(sf::IntRect(
+                    sf::Vector2i(spritePreview.rectLeft, spritePreview.rectTop),
+                    sf::Vector2i(spritePreview.rectWidth, spritePreview.rectHeight)
+                ));
+                
+                // Debug log for sprite sheet extraction
+                if (spritePreview.texturePath.find("r-typesheet1.gif") != std::string::npos && 
+                    spritePreview.rectLeft == 0 && spritePreview.rectTop == 0) {
+                    rtp::log::info("Rendering Player Ship sprite: rect({},{}) size({},{})", 
+                                 spritePreview.rectLeft, spritePreview.rectTop,
+                                 spritePreview.rectWidth, spritePreview.rectHeight);
+                }
+            }
+            // Otherwise use the full texture (for custom sprites)
+            
+            // Apply scale and position
+            sprite.setScale(sf::Vector2f(spritePreview.scale, spritePreview.scale));
+            sprite.setPosition(sf::Vector2f(spritePreview.x, spritePreview.y));
+            
+            _window.draw(sprite);
+        } catch (const std::exception& e) {
+            rtp::log::error("Failed to render sprite preview '{}': {}", 
+                          spritePreview.texturePath, e.what());
+        }
+    }
+}
+
+sf::Texture& UIRenderSystem::loadTexture(const std::string& texturePath) {
+    auto it = _textures.find(texturePath);
+    if (it != _textures.end()) {
+        return it->second;
+    }
+    
+    sf::Texture texture;
+    if (!texture.loadFromFile(texturePath)) {
+        throw std::runtime_error("Failed to load texture: " + texturePath);
+    }
+    
+    _textures[texturePath] = std::move(texture);
+    return _textures[texturePath];
 }
 
 }  // namespace Client::Systems
