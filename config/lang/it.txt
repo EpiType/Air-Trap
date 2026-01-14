@@ -4,6 +4,7 @@
 menu.title=AIR-TRAP
 menu.play=GIOCA
 menu.settings=IMPOSTAZIONI
+menu.mods=MODS
 menu.exit=ESCI
 
 # Settings
