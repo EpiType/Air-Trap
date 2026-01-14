@@ -215,9 +215,9 @@ namespace rtp::client {
                 return;
 
             _chatOpen = false;
-            if (!_chatPanel.isNull()) _uiRegistry.killEntity(_chatPanel);
-            if (!_chatHistoryText.isNull()) _uiRegistry.killEntity(_chatHistoryText);
-            if (!_chatInput.isNull()) _uiRegistry.killEntity(_chatInput);
+            if (!_chatPanel.isNull()) _uiRegistry.kill(_chatPanel);
+            if (!_chatHistoryText.isNull()) _uiRegistry.kill(_chatHistoryText);
+            if (!_chatInput.isNull()) _uiRegistry.kill(_chatInput);
             _chatPanel = {};
             _chatHistoryText = {};
             _chatInput = {};

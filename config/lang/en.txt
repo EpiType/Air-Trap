@@ -14,6 +14,17 @@ settings.music_volume=Music Volume
 settings.sfx_volume=SFX Volume
 settings.language=Language
 settings.colorblind_mode=Color Blind Mode
+settings.difficulty=Solo Difficulty
+settings.easy=Easy
+settings.normal=Normal
+settings.hard=Hard
+settings.infernal=Infernal
+settings.gamepad=Gamepad Support
+settings.gamepad_settings=GAMEPAD SETTINGS
+settings.gamepad_deadzone=Stick Deadzone
+settings.enabled=Enabled
+settings.disabled=Disabled
+settings.close=CLOSE
 settings.back=BACK
 settings.key_bindings=KEY BINDINGS
 

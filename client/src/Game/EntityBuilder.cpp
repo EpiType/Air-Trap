@@ -15,26 +15,26 @@ namespace rtp::client {
     auto EntityBuilder::spawn(const EntityTemplate &t)
         -> std::expected<rtp::ecs::Entity, rtp::Error>
     {
-        auto e = _registry.spawnEntity();
+        auto e = _registry.spawn();
         if (!e) {
             return std::unexpected{e.error()};
         }
         auto entity = e.value();
 
-        _registry.addComponent<rtp::ecs::components::Transform>(entity, t.position, t.rotation, t.scale);
+        _registry.add<rtp::ecs::components::Transform>(entity, t.position, t.rotation, t.scale);
 
         if (t.withVelocity) {
-            _registry.addComponent<rtp::ecs::components::Velocity>(entity, t.velocity);
+            _registry.add<rtp::ecs::components::Velocity>(entity, t.velocity);
         }
 
-        _registry.addComponent<rtp::ecs::components::Sprite>(entity, t.sprite);
+        _registry.add<rtp::ecs::components::Sprite>(entity, t.sprite);
 
         if (t.withAnimation) {
-            _registry.addComponent<rtp::ecs::components::Animation>(entity, t.animation);
+            _registry.add<rtp::ecs::components::Animation>(entity, t.animation);
         }
 
         if (t.withParallax) {
-            _registry.addComponent<rtp::ecs::components::ParallaxLayer>(entity, t.parallax);
+            _registry.add<rtp::ecs::components::ParallaxLayer>(entity, t.parallax);
         }
 
         return entity;
@@ -42,7 +42,7 @@ namespace rtp::client {
 
     void EntityBuilder::kill(rtp::ecs::Entity entity)
     {
-        _registry.killEntity(entity);
+        _registry.kill(entity);
     }
 
     void EntityBuilder::update(rtp::ecs::Entity entity, const EntityTemplate &t)

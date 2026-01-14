@@ -8,20 +8,21 @@
 #include "RType/ECS/SystemManager.hpp"
 #include "RType/Logger.hpp"
 
-namespace rtp::ecs {
-
+namespace rtp::ecs
+{
     //////////////////////////////////////////////////
     // Public API
     //////////////////////////////////////////////////
 
     SystemManager::SystemManager(Registry &registry) 
         : _registry(registry)
-    {}
-
-    void SystemManager::update(float dt) {
-        for (auto &[type, system] : _systems) {
-            system->update(dt);
-        }
+    {
     }
 
-} // namespace rtp::ecs
+    void SystemManager::update(float dt)
+    {
+        for (auto &[type, system] : this->_systems)
+            system->update(dt);
+    }
+
+}

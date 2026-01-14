@@ -48,12 +48,12 @@ namespace rtp::ecs
     // Public API
     ///////////////////////////////////////////////////////////////////////////
 
-    auto Registry::spawnEntity(void) -> std::expected<Entity, rtp::Error>
+    auto Registry::spawn(void) -> std::expected<Entity, rtp::Error>
     {
-        std::lock_guard<std::mutex> lock(this->_mutex);
+        std::unique_lock lock(this->_mutex);
 
         if (!this->_freeIndices.empty()) {
-            std::uint32_t idx = this->_freeIndices.front();
+            std::size_t idx = this->_freeIndices.front();
             this->_freeIndices.pop_front();
 
             return Entity(idx, this->_generations[idx]);
@@ -63,16 +63,16 @@ namespace rtp::ecs
             return std::unexpected{Error::failure(ErrorCode::RegistryFull,
                 "Registry: Max entities reached, cannot spawn new entity.")};
 
-        std::uint32_t idx = static_cast<std::uint32_t>(this->_generations.size());
+        std::size_t idx = this->_generations.size();
 
         this->_generations.push_back(0); 
 
         return Entity(idx, 0);
     }
 
-    void Registry::killEntity(Entity entity)
+    void Registry::kill(Entity entity)
     {
-        std::lock_guard<std::mutex> lock(this->_mutex);
+        std::unique_lock lock(this->_mutex);
 
         std::uint32_t idx = entity.index();
 
@@ -84,7 +84,49 @@ namespace rtp::ecs
             pair.second->erase(entity);
 
         this->_generations[idx]++;
-
         this->_freeIndices.push_back(idx);
+    }
+
+    bool Registry::isAlive(Entity entity) const noexcept
+    {
+        std::shared_lock lock(this->_mutex);
+
+        std::uint32_t idx = entity.index();
+        
+        if (idx >= this->_generations.size())
+            return false;
+            
+        return this->_generations[idx] == entity.generation();
+    }
+
+    void Registry::clear(void) noexcept
+    {
+        std::unique_lock lock(this->_mutex);
+
+        for (auto &pair : this->_arrays)
+            pair.second->clear();
+
+        this->_generations.clear();
+        this->_freeIndices.clear();
+    }
+
+    void Registry::purge(void) noexcept
+    {
+        std::unique_lock lock(this->_mutex);
+
+        for (auto &pair : this->_arrays)
+            pair.second->clear();
+
+        this->_freeIndices.clear();
+
+        auto idxs = std::views::iota(0uz, this->_generations.size())
+                  | std::views::filter([this](std::size_t i) { return this->_generations[i] != 0; });
+        std::ranges::copy(idxs, std::back_inserter(this->_freeIndices));
+    }
+
+    std::size_t Registry::entityCount(void) const noexcept
+    {
+        std::shared_lock lock(this->_mutex);
+        return this->_generations.size() - this->_freeIndices.size();
     }
 }

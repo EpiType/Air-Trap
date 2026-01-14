@@ -133,7 +133,7 @@ namespace rtp::server
         const rtp::ecs::components::Transform& tf,
         const rtp::ecs::components::RoomId& roomId)
     {
-        auto entityRes = _registry.spawnEntity();
+        auto entityRes = _registry.spawn();
         if (!entityRes) {
             rtp::log::error("Failed to spawn bullet entity: {}", entityRes.error().message());
             return;
@@ -144,37 +144,37 @@ namespace rtp::server
         const float x = tf.position.x + _spawnOffsetX;
         const float y = tf.position.y;
 
-        _registry.addComponent<rtp::ecs::components::Transform>(
+        _registry.add<rtp::ecs::components::Transform>(
             bullet,
             rtp::ecs::components::Transform{ {x, y}, 0.f, {1.f, 1.f} }
         );
 
-        _registry.addComponent<rtp::ecs::components::Velocity>(
+        _registry.add<rtp::ecs::components::Velocity>(
             bullet,
             rtp::ecs::components::Velocity{ {_bulletSpeed, 0.f}, 0.f }
         );
 
-        _registry.addComponent<rtp::ecs::components::BoundingBox>(
+        _registry.add<rtp::ecs::components::BoundingBox>(
             bullet,
             rtp::ecs::components::BoundingBox{ 8.0f, 4.0f }
         );
 
-        _registry.addComponent<rtp::ecs::components::Damage>(
+        _registry.add<rtp::ecs::components::Damage>(
             bullet,
             rtp::ecs::components::Damage{ 25, rtp::ecs::NullEntity }
         );
 
-        _registry.addComponent<rtp::ecs::components::NetworkId>(
+        _registry.add<rtp::ecs::components::NetworkId>(
             bullet,
             rtp::ecs::components::NetworkId{ static_cast<uint32_t>(bullet.index()) }
         );
 
-        _registry.addComponent<rtp::ecs::components::EntityType>(
+        _registry.add<rtp::ecs::components::EntityType>(
             bullet,
             rtp::ecs::components::EntityType{ rtp::net::EntityType::Bullet }
         );
 
-        _registry.addComponent<rtp::ecs::components::RoomId>(
+        _registry.add<rtp::ecs::components::RoomId>(
             bullet,
             rtp::ecs::components::RoomId{ roomId.id }
         );
@@ -208,7 +208,7 @@ namespace rtp::server
         const rtp::ecs::components::RoomId& roomId,
         float chargeRatio)
     {
-        auto entityRes = _registry.spawnEntity();
+        auto entityRes = _registry.spawn();
         if (!entityRes) {
             rtp::log::error("Failed to spawn charged bullet entity: {}", entityRes.error().message());
             return;
@@ -227,37 +227,37 @@ namespace rtp::server
         const int maxDamage = 120;
         const int damage = static_cast<int>(minDamage + (maxDamage - minDamage) * ratio);
 
-        _registry.addComponent<rtp::ecs::components::Transform>(
+        _registry.add<rtp::ecs::components::Transform>(
             bullet,
             rtp::ecs::components::Transform{ {x, y}, 0.f, {1.f, 1.f} }
         );
 
-        _registry.addComponent<rtp::ecs::components::Velocity>(
+        _registry.add<rtp::ecs::components::Velocity>(
             bullet,
             rtp::ecs::components::Velocity{ {_chargedBulletSpeed, 0.f}, 0.f }
         );
 
-        _registry.addComponent<rtp::ecs::components::BoundingBox>(
+        _registry.add<rtp::ecs::components::BoundingBox>(
             bullet,
             rtp::ecs::components::BoundingBox{ sizeX, sizeY }
         );
 
-        _registry.addComponent<rtp::ecs::components::Damage>(
+        _registry.add<rtp::ecs::components::Damage>(
             bullet,
             rtp::ecs::components::Damage{ damage, rtp::ecs::NullEntity }
         );
 
-        _registry.addComponent<rtp::ecs::components::NetworkId>(
+        _registry.add<rtp::ecs::components::NetworkId>(
             bullet,
             rtp::ecs::components::NetworkId{ static_cast<uint32_t>(bullet.index()) }
         );
 
-        _registry.addComponent<rtp::ecs::components::EntityType>(
+        _registry.add<rtp::ecs::components::EntityType>(
             bullet,
             rtp::ecs::components::EntityType{ rtp::net::EntityType::ChargedBullet }
         );
 
-        _registry.addComponent<rtp::ecs::components::RoomId>(
+        _registry.add<rtp::ecs::components::RoomId>(
             bullet,
             rtp::ecs::components::RoomId{ roomId.id }
         );
