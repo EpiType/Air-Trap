@@ -105,6 +105,7 @@ namespace rtp::client {
                 rtp::ecs::Entity _hudScore{};               /**< Entity for displaying score in the HUD */
                 rtp::ecs::Entity _hudEntities{};            /**< Parent entity for HUD elements */
                 rtp::ecs::Entity _hudAmmo{};                /**< Entity for displaying ammo */
+                rtp::ecs::Entity _hudChargeBar{};           /**< Entity for charged shot HUD bar */
                 bool _hudInit{false};                       /**< Flag indicating if HUD is initialized */
 
                 bool _chatOpen{false};                      /**< Whether expanded chat is open */
@@ -114,6 +115,8 @@ namespace rtp::client {
                 rtp::ecs::Entity _chatPanel{};              /**< Expanded chat panel */
                 rtp::ecs::Entity _chatHistoryText{};        /**< Text entity for chat history */
                 rtp::ecs::Entity _chatInput{};              /**< Text input entity for chat */
+
+                float _chargeTime{0.0f};                    /**< Local charge timer for HUD */
         };
     } // namespace Scenes
 } // namespace rtp::client

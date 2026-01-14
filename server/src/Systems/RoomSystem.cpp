@@ -10,6 +10,8 @@
  */
 
 #include "Systems/RoomSystem.hpp"
+#include "RType/ECS/Components/RoomId.hpp"
+#include "RType/ECS/Components/Transform.hpp"
 
 using namespace rtp::net;
 
@@ -68,6 +70,11 @@ namespace rtp::server
             "Player {} (Session ID {}) attempting to join Room ID {}{}",
             player->getUsername(), player->getId(), roomId,
             asSpectator ? " as spectator" : "");
+        if (!leaveRoom(player)) {
+            log::warning(
+                " Could not leave previous room, maybe first connection ?. Player {} (Session ID {})",
+                player->getId(), roomId);
+        }
         {
             std::lock_guard lock(_mutex);
 
@@ -122,12 +129,6 @@ namespace rtp::server
                 return false;
             }
 
-            if (!leaveRoom(player)) {
-                log::warning(
-                    " Could not leave previous room, maybe first connection ?. Player {} (Session ID {})",
-                    player->getId(), roomId);
-            }
-
             const Room::PlayerType joinType = asSpectator
                 ? Room::PlayerType::Spectator
                 : Room::PlayerType::Player;
@@ -151,6 +152,11 @@ namespace rtp::server
             log::info("Player {} (Session ID {}) joined Room ID {}",
                       player->getUsername(), player->getId(), room->getId());
         }
+        if (room->getType() != Room::RoomType::Lobby) {
+            rtp::net::Packet response(rtp::net::OpCode::JoinRoom);
+            response << static_cast<uint8_t>(1);
+            _network.sendPacket(player->getId(), response, rtp::net::NetworkMode::TCP);
+        }
         return true;
     }
 
@@ -161,38 +167,70 @@ namespace rtp::server
 
     bool RoomSystem::leaveRoom(PlayerPtr player)
     {
-        if (_playerRoomMap.find(player->getId()) != _playerRoomMap.end()) {
-            try {
-                uint32_t previousRoomId = _playerRoomMap[player->getId()];
-                auto prevIt = _rooms.find(previousRoomId);
-                if (prevIt != _rooms.end()) {
-                    prevIt->second->removePlayer(player->getId(), false);
-                    // sendRoomUpdate(*prevIt->second);
-                    return true;
-                }
-            } catch (const std::exception &e) {
-                rtp::log::error(
-                    "Exception while removing Player {} from previous room: {}",
-                    player->getId(), e.what());
+        if (!player) {
+            return false;
+        }
+
+        std::shared_ptr<Room> previousRoom;
+        {
+            std::lock_guard lock(_mutex);
+            auto mapIt = _playerRoomMap.find(player->getId());
+            if (mapIt == _playerRoomMap.end()) {
                 return false;
             }
+
+            uint32_t previousRoomId = mapIt->second;
+            auto prevIt = _rooms.find(previousRoomId);
+            if (prevIt != _rooms.end()) {
+                previousRoom = prevIt->second;
+                prevIt->second->removePlayer(player->getId(), false);
+                if (prevIt->second->getType() != Room::RoomType::Lobby &&
+                    prevIt->second->getCurrentPlayerCount() == 0) {
+                    _rooms.erase(prevIt);
+                }
+            }
+
+            _playerRoomMap.erase(mapIt);
         }
-        return false;
+
+        despawnPlayerEntity(player, previousRoom);
+        return true;
     }
 
     void RoomSystem::disconnectPlayer(uint32_t sessionId)
     {
-        auto it = _playerRoomMap.find(sessionId);
+        std::shared_ptr<Room> room;
+        PlayerPtr player;
+        {
+            std::lock_guard lock(_mutex);
+            auto it = _playerRoomMap.find(sessionId);
+            if (it == _playerRoomMap.end()) {
+                return;
+            }
 
-        if (it != _playerRoomMap.end()) {
             uint32_t roomId = it->second;
             auto roomIt = _rooms.find(roomId);
             if (roomIt != _rooms.end()) {
+                room = roomIt->second;
+                if (room) {
+                    for (const auto& roomPlayer : room->getPlayers()) {
+                        if (roomPlayer && roomPlayer->getId() == sessionId) {
+                            player = roomPlayer;
+                            break;
+                        }
+                    }
+                }
                 roomIt->second->removePlayer(sessionId, true);
-                // sendRoomUpdate(*roomIt->second);
+                if (roomIt->second->getType() != Room::RoomType::Lobby &&
+                    roomIt->second->getCurrentPlayerCount() == 0) {
+                    _rooms.erase(roomIt);
+                }
             }
+
             _playerRoomMap.erase(it);
         }
+
+        despawnPlayerEntity(player, room);
     }
 
     void RoomSystem::listAllRooms(uint32_t sessionId)
@@ -318,5 +356,55 @@ namespace rtp::server
             return it->second;
         }
         return nullptr;
+    }
+
+    void RoomSystem::despawnPlayerEntity(const PlayerPtr& player,
+                                         const std::shared_ptr<Room>& room)
+    {
+        if (!player) {
+            return;
+        }
+
+        const uint32_t entityId = player->getEntityId();
+        if (entityId == 0) {
+            _networkSync.unbindSession(player->getId());
+            return;
+        }
+
+        rtp::ecs::Entity entity(entityId, 0);
+        auto transformsRes = _registry.getComponents<rtp::ecs::components::Transform>();
+        auto typesRes = _registry.getComponents<rtp::ecs::components::EntityType>();
+        auto netsRes = _registry.getComponents<rtp::ecs::components::NetworkId>();
+        auto roomsRes = _registry.getComponents<rtp::ecs::components::RoomId>();
+
+        if (transformsRes && typesRes && netsRes && roomsRes) {
+            auto &transforms = transformsRes->get();
+            auto &types = typesRes->get();
+            auto &nets = netsRes->get();
+            auto &rooms = roomsRes->get();
+            if (transforms.has(entity) && types.has(entity) && nets.has(entity) && rooms.has(entity)) {
+                const bool shouldBroadcast = room && room->getType() != Room::RoomType::Lobby;
+                if (shouldBroadcast) {
+                    const auto players = room->getPlayers();
+                    if (!players.empty()) {
+                        rtp::net::Packet packet(rtp::net::OpCode::EntityDeath);
+                        rtp::net::EntityDeathPayload payload{};
+                        payload.netId = nets[entity].id;
+                        payload.type = static_cast<uint8_t>(types[entity].type);
+                        payload.position = transforms[entity].position;
+                        packet << payload;
+
+                        for (const auto& roomPlayer : players) {
+                            _networkSync.sendPacketToSession(
+                                roomPlayer->getId(), packet, rtp::net::NetworkMode::TCP);
+                        }
+                    }
+                }
+            }
+        }
+
+        _registry.kill(entity);
+        _networkSync.unbindSession(player->getId());
+        player->setEntityId(0);
     }
 } // namespace rtp::server

@@ -87,33 +87,26 @@ namespace rtp::log
                         loc.file_name()).filename().string();
 
                     std::string_view color = "";
-                    std::string_view levelStr = "";
 
                     switch (level) {
                         using enum Level;
                         case Debug:
                             color = "\033[36m";
-                            levelStr = "DEBUG";
                             break;
                         case Info:
                             color = "\033[32m";
-                            levelStr = "INFO ";
                             break;
                         case Warning:
                             color = "\033[33m";
-                            levelStr = "WARN ";
                             break;
                         case Error:
                             color = "\033[31m";
-                            levelStr = "ERROR";
                             break;
                         case Fatal:
                             color = "\033[1;31m";
-                            levelStr = "FATAL";
                             break;
                         case None:
                             color = "\033[90m";
-                            levelStr = "NONE ";
                             break;
                     }
 
@@ -121,11 +114,11 @@ namespace rtp::log
 
                     std::println(std::cout, "{}[{:%T}] [{}] {} \033[0m "
                                              "\t({}:{})",
-                                             color, timePoint, levelStr, msg,
+                                             color, timePoint, level, msg,
                                              loc.file_name(), loc.line());
                     if (this->_file.is_open()) {
                         std::println(this->_file, "[{:%T}] [{}] {} ({}:{})",
-                                     timePoint, levelStr, msg,
+                                     timePoint, level, msg,
                                      cleanFileName, loc.line());
                     }
                 }

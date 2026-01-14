@@ -17,6 +17,7 @@
 #include "RType/ECS/Components/UI/Button.hpp"
 #include "RType/ECS/Components/UI/Text.hpp"
 #include "RType/ECS/Components/UI/TextInput.hpp"
+#include "Core/Settings.hpp"
 #include "RType/Logger.hpp"
 
 namespace rtp::client 
@@ -27,12 +28,14 @@ namespace rtp::client
      */
     class UISystem : public rtp::ecs::ISystem {
         public:
-            UISystem(rtp::ecs::Registry& registry, sf::RenderWindow& window)
-                : _registry(registry), _window(window) {}
+            UISystem(rtp::ecs::Registry& registry, sf::RenderWindow& window, Settings& settings)
+                : _registry(registry), _window(window), _settings(settings), 
+                  _gamepadCursorPos(640.0f, 360.0f) {}
 
             void update(float dt) override;
 
             void handleEvent(const sf::Event& event);
+            void renderGamepadCursor(sf::RenderWindow& window);
 
         private:
             void handleMouseMove(const sf::Vector2i& mousePos);
@@ -60,8 +63,16 @@ namespace rtp::client
             void handleTextEntered(std::uint32_t unicode);
             void handleKeyPressed(sf::Keyboard::Key key);
 
+            void updateGamepadCursor(float dt);
+            void handleGamepadInput();
+
             rtp::ecs::Registry& _registry;
             sf::RenderWindow& _window;
+            Settings& _settings;
+            
+            sf::Vector2f _gamepadCursorPos;
+            bool _gamepadMode{false};
+            sf::Clock _gamepadButtonClock;
     };
 }  // namespace Client::Systems
 

@@ -124,7 +124,7 @@ namespace rtp::server {
                 const auto& powerup = active.data.powerups[active.nextPowerup];
                 auto entity = _entitySystem.createPowerupEntity(
                     roomId, powerup.position, powerup.type, powerup.value, powerup.duration);
-                _registry.addComponent<rtp::ecs::components::Velocity>(
+                _registry.add<rtp::ecs::components::Velocity>(
                     entity, rtp::ecs::components::Velocity{ {-scrollSpeed, 0.0f}, 0.0f }
                 );
                 spawnEntityForRoom(roomId, entity);
@@ -136,7 +136,7 @@ namespace rtp::server {
                 const auto& obstacle = active.data.obstacles[active.nextObstacle];
                 auto entity = _entitySystem.createObstacleEntity(
                     roomId, obstacle.position, obstacle.size, obstacle.health, obstacle.type);
-                _registry.addComponent<rtp::ecs::components::Velocity>(
+                _registry.add<rtp::ecs::components::Velocity>(
                     entity, rtp::ecs::components::Velocity{ {-scrollSpeed, 0.0f}, 0.0f }
                 );
                 spawnEntityForRoom(roomId, entity);

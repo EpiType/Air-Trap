@@ -199,6 +199,39 @@ namespace rtp::server
         }
 
         if (entityId != 0) {
+            rtp::ecs::Entity entity(entityId, 0);
+            auto transformsRes = _registry.getComponents<rtp::ecs::components::Transform>();
+            auto typesRes = _registry.getComponents<rtp::ecs::components::EntityType>();
+            auto netsRes = _registry.getComponents<rtp::ecs::components::NetworkId>();
+            auto roomsRes = _registry.getComponents<rtp::ecs::components::RoomId>();
+
+            if (transformsRes && typesRes && netsRes && roomsRes) {
+                auto &transforms = transformsRes->get();
+                auto &types = typesRes->get();
+                auto &nets = netsRes->get();
+                auto &rooms = roomsRes->get();
+                if (transforms.has(entity) && types.has(entity) && nets.has(entity) && rooms.has(entity)) {
+                    auto room = _roomSystem->getRoom(rooms[entity].id);
+                    if (room) {
+                        const auto players = room->getPlayers();
+                        if (!players.empty()) {
+                            rtp::net::Packet packet(rtp::net::OpCode::EntityDeath);
+                            rtp::net::EntityDeathPayload payload{};
+                            payload.netId = nets[entity].id;
+                            payload.type = static_cast<uint8_t>(types[entity].type);
+                            payload.position = transforms[entity].position;
+                            packet << payload;
+
+                            for (const auto& player : players) {
+                                _networkSyncSystem->sendPacketToSession(player->getId(), packet, rtp::net::NetworkMode::TCP);
+                            }
+                        }
+                    }
+                }
+            }
+
+            _registry.kill(entity);
+
             rtp::net::Packet disconnectPlayer(rtp::net::OpCode::Disconnect);
             disconnectPlayer << entityId;
             _networkManager.broadcastPacket(disconnectPlayer, rtp::net::NetworkMode::UDP);
@@ -262,6 +295,12 @@ namespace rtp::server
         {
             std::lock_guard lock(_mutex);
             player = _playerSystem->getPlayer(sessionId);
+            if (!player) {
+                rtp::net::Packet response(rtp::net::OpCode::CreateRoom);
+                response << static_cast<uint8_t>(0);
+                _networkManager.sendPacket(sessionId, response, rtp::net::NetworkMode::TCP);
+                return;
+            }
             newId = _roomSystem->createRoom(
                 sessionId,
                 std::string(payload.roomName),
@@ -620,7 +659,7 @@ namespace rtp::server
             auto netRes = _registry.getComponents<rtp::ecs::components::NetworkId>();
             if (netRes) {
                 auto &nets = netRes->get();
-                for (auto e : nets.getEntities()) {
+                for (auto e : nets.entities()) {
                     netToEntity[nets[e].id] = e;
                 }
             }

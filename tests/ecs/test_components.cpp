@@ -98,8 +98,10 @@ TEST(ECS_Component_ParallaxLayer, Defaults) {
 // Controllable is a tag component
 TEST(ECS_Component_Controllable, TagPresenceViaRegistry) {
     Registry reg;
-    auto &arr = reg.registerComponent<Controllable>();
-    auto e = reg.spawnEntity();
+    auto arrResult = reg.registerComponent<Controllable>();
+    ASSERT_TRUE(arrResult.has_value());
+    auto &arr = arrResult->get();
+    auto e = reg.spawn();
     ASSERT_TRUE(e.has_value());
     arr.emplace(e.value());
     EXPECT_TRUE(arr.has(e.value()));
@@ -122,8 +124,10 @@ TEST(ECS_Component_InputComponent, DefaultsAndBits) {
 // Registry integration: add/get/overwrite/erase for Health
 TEST(ECS_Component_RegistryIntegration, AddOverwriteErase_Health) {
     Registry reg;
-    auto &healths = reg.registerComponent<Health>();
-    auto e = reg.spawnEntity();
+    auto healthsResult = reg.registerComponent<Health>();
+    ASSERT_TRUE(healthsResult.has_value());
+    auto &healths = healthsResult->get();
+    auto e = reg.spawn();
     ASSERT_TRUE(e.has_value());
 
     // Add custom health
@@ -146,10 +150,12 @@ TEST(ECS_Component_RegistryIntegration, AddOverwriteErase_Health) {
 // Registry view order and values for Transform
 TEST(ECS_Component_RegistryView, TransformViewOrder) {
     Registry reg;
-    auto &transforms = reg.registerComponent<Transform>();
+    auto transformsResult = reg.registerComponent<Transform>();
+    ASSERT_TRUE(transformsResult.has_value());
+    auto &transforms = transformsResult->get();
 
-    auto e1 = reg.spawnEntity();
-    auto e2 = reg.spawnEntity();
+    auto e1 = reg.spawn();
+    auto e2 = reg.spawn();
     ASSERT_TRUE(e1.has_value());
     ASSERT_TRUE(e2.has_value());
 

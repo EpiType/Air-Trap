@@ -14,6 +14,17 @@ settings.music_volume=Musiklautstärke
 settings.sfx_volume=Effektlautstärke
 settings.language=Sprache
 settings.colorblind_mode=Farbenblindheitsmodus
+settings.difficulty=Einzelspieler Schwierigkeit
+settings.easy=Einfach
+settings.normal=Normal
+settings.hard=Schwer
+settings.infernal=Infernal
+settings.gamepad=Gamepad-Unterstützung
+settings.gamepad_settings=GAMEPAD-EINSTELLUNGEN
+settings.gamepad_deadzone=Stick-Totzone
+settings.enabled=Aktiviert
+settings.disabled=Deaktiviert
+settings.close=SCHLIESSEN
 settings.back=ZURÜCK
 settings.key_bindings=TASTENBELEGUNG
 

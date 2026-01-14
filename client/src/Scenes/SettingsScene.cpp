@@ -35,29 +35,29 @@ namespace rtp::client {
         void SettingsScene::onEnter(void)
         {
             rtp::log::info("Entering SettingsScene");
-            float yPos = 150.0f;
+            float yPos = 120.0f;
 
             _uiFactory.createText(
                 _uiRegistry,
-                {500.0f, 50.0f},
+                {540.0f, 30.0f},
                 _translationManager.get("settings.title"),
                 "assets/fonts/main.ttf",
-                60,
+                50,
                 10,
                 {255, 200, 100}
             );
 
             _uiFactory.createText(
                 _uiRegistry,
-                {200.0f, yPos},
+                {240.0f, yPos},
                 _translationManager.get("settings.master_volume"),
                 "assets/fonts/main.ttf",
-                24
+                22
             );
 
             _uiFactory.createSlider(
                 _uiRegistry,
-                {450.0f, yPos + 5.0f},
+                {540.0f, yPos + 3.0f},
                 {300.0f, 15.0f},
                 0.0f,
                 1.0f,
@@ -67,19 +67,19 @@ namespace rtp::client {
                 }
             );
 
-            yPos += 50.0f;
+            yPos += 45.0f;
 
             _uiFactory.createText(
                 _uiRegistry,
-                {200.0f, yPos},
+                {240.0f, yPos},
                 _translationManager.get("settings.music_volume"),
                 "assets/fonts/main.ttf",
-                24
+                22
             );
 
             _uiFactory.createSlider(
                 _uiRegistry,
-                {450.0f, yPos + 5.0f},
+                {540.0f, yPos + 3.0f},
                 {300.0f, 15.0f},
                 0.0f,
                 1.0f,
@@ -89,19 +89,19 @@ namespace rtp::client {
                 }
             );
 
-            yPos += 50.0f;
+            yPos += 45.0f;
 
             _uiFactory.createText(
                 _uiRegistry,
-                {200.0f, yPos},
+                {290.0f, yPos},
                 _translationManager.get("settings.sfx_volume"),
                 "assets/fonts/main.ttf",
-                24
+                22
             );
 
             _uiFactory.createSlider(
                 _uiRegistry,
-                {450.0f, yPos + 5.0f},
+                {540.0f, yPos + 3.0f},
                 {300.0f, 15.0f},
                 0.0f,
                 1.0f,
@@ -111,38 +111,37 @@ namespace rtp::client {
                 }
             );
 
-            yPos += 80.0f;
+            yPos += 60.0f;
 
             _uiFactory.createText(
                 _uiRegistry,
-                {200.0f, yPos},
+                {240.0f, yPos},
                 _translationManager.get("settings.language"),
                 "assets/fonts/main.ttf",
-                24
+                22
             );
 
             _uiFactory.createDropdown(
                 _uiRegistry,
-                {450.0f, yPos},
+                {540.0f, yPos},
                 {300.0f, 35.0f},
                 std::vector<std::string>{"English", "Français", "Español", "Deutsch", "Italiano"},
                 static_cast<int>(_settings.getLanguage()),
                 [this](int index) {
-                    _settings.setLanguage(
-                        static_cast<Language>(index));
-                    _translationManager.loadLanguage(_settings.getLanguage());
-                    _changeState(GameState::Settings);
+                    _settings.setLanguage(static_cast<Language>(index));
+                    // Don't reload language here - it will destroy UI while callback is executing
+                    rtp::log::info("Language changed to: {}. Changes will apply on next scene load.", index);
                 }
             );
 
-            yPos += 80.0f;
+            yPos += 55.0f;
 
             _uiFactory.createText(
                 _uiRegistry,
-                {200.0f, yPos},
+                {240.0f, yPos},
                 _translationManager.get("settings.colorblind_mode"),
                 "assets/fonts/main.ttf",
-                24
+                22
             );
 
             std::vector<std::string> colorblindOptions = {
@@ -154,35 +153,77 @@ namespace rtp::client {
 
             _uiFactory.createDropdown(
                 _uiRegistry,
-                {450.0f, yPos},
+                {540.0f, yPos},
                 {300.0f, 35.0f},
                 colorblindOptions,
                 static_cast<int>(_settings.getColorBlindMode()),
-                [this, colorblindOptions](int index) {
+                [this, colorblindOptions = colorblindOptions](int index) {
                     _settings.setColorBlindMode(
                         static_cast<ColorBlindMode>(index));
                 }
             );
 
-            yPos += 80.0f;
+            yPos += 55.0f;
+
+            _uiFactory.createText(
+                _uiRegistry,
+                {240.0f, yPos},
+                _translationManager.get("settings.difficulty"),
+                "assets/fonts/main.ttf",
+                22
+            );
+
+            std::vector<std::string> difficultyOptions = {
+                _translationManager.get("settings.easy"),
+                _translationManager.get("settings.normal"),
+                _translationManager.get("settings.hard"),
+                _translationManager.get("settings.infernal")
+            };
+            _uiFactory.createDropdown(
+                _uiRegistry,
+                {540.0f, yPos},
+                {300.0f, 35.0f},
+                difficultyOptions,
+                static_cast<int>(_settings.getDifficulty()),
+                [this, difficultyOptions = difficultyOptions](int index) {
+                    _settings.setDifficulty(static_cast<Difficulty>(index));
+                    rtp::log::info("Solo difficulty set to: {}", difficultyOptions[index]);
+                }
+            );
+
+            yPos += 55.0f;
 
             _uiFactory.createButton(
                 _uiRegistry,
                 {490.0f, yPos},
-                {300.0f, 60.0f},
+                {300.0f, 50.0f},
                 _translationManager.get("settings.key_bindings"),
                 [this]() {
                     _changeState(GameState::KeyBindings);
                 }
             );
 
+            // Petit bouton carré pour les settings gamepad à droite du bouton Key Bindings
             _uiFactory.createButton(
                 _uiRegistry,
-                {490.0f, 600.0f},
-                {300.0f, 60.0f},
+                {810.0f, yPos},
+                {60.0f, 50.0f},
+                "[GP]", // Gamepad
+                [this]() {
+                    _changeState(GameState::GamepadSettings);
+                }
+            );
+
+            yPos += 65.0f;
+
+            _uiFactory.createButton(
+                _uiRegistry,
+                {490.0f, yPos},
+                {300.0f, 50.0f},
                 _translationManager.get("settings.back"),
                 [this]() {
                     _settings.save();
+                    _translationManager.loadLanguage(_settings.getLanguage());
                     _changeState(GameState::Menu);
                 }
             );
@@ -190,6 +231,8 @@ namespace rtp::client {
 
         void SettingsScene::onExit(void)
         {
+            // Reload language when exiting settings to apply changes
+            _translationManager.loadLanguage(_settings.getLanguage());
         }
 
         void SettingsScene::handleEvent(const sf::Event& e)

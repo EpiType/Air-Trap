@@ -44,6 +44,7 @@
 
     #include "RType/ECS/ISystem.hpp"
     #include "RType/ECS/Registry.hpp"
+    #include "RType/ECS/Signature.hpp"
     #include <memory>
     #include <map>
     #include <typeindex>
@@ -57,20 +58,24 @@ namespace rtp::ecs
             explicit SystemManager(Registry &registry);
 
             template <typename T, typename... Args>
-            T& addSystem(Args&&... args);
+            T &add(Args &&...args);
+
+            template <typename T, typename... Args>
+            T &addSystem(Args &&...args);
 
             template <typename T>
             T &getSystem(void);
-            
+
             void update(float dt);
 
         private:
-            Registry &_registry;                            /**< Reference to the entity registry */
-            std::map<std::type_index,
-                std::unique_ptr<ISystem>> _systems;         /**< Registered systems */
+            Registry &_registry; /**< Reference to the entity registry */
+            std::unordered_map<std::type_index, Signature> _signatures;
+            std::unordered_map<std::type_index,
+                               std::unique_ptr<ISystem>> _systems; /**< Registered systems */
     };
 }
 
-#include "SystemManager.tpp"
+    #include "SystemManager.tpp"
 
 #endif
