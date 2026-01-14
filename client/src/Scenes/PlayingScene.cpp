@@ -6,6 +6,7 @@
  */
 
 #include "Scenes/PlayingScene.hpp"
+#include "Game/SpriteCustomizer.hpp"
 #include "RType/ECS/Components/UI/Button.hpp"
 #include "RType/ECS/Components/UI/Slider.hpp"
 #include "RType/ECS/Components/UI/Text.hpp"

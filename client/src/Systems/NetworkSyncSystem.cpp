@@ -451,10 +451,10 @@ namespace rtp::client {
                 break;
 
             case rtp::net::EntityType::Bullet:
-                t = EntityTemplate::createBulletEnemy(pos);
+                t = EntityTemplate::createBulletPlayer(pos);
                 break;
             case rtp::net::EntityType::ChargedBullet:
-                t = EntityTemplate::createBulletEnemy(pos);
+                t = EntityTemplate::createBulletPlayer(pos);
                 if (payload.sizeX > 0.0f) {
                     float scale = 1.0f;
                     if (payload.sizeX <= 6.0f) {

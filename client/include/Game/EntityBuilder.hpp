@@ -31,6 +31,7 @@ namespace rtp::client {
  */
 struct EntityTemplate {
     std::string id;                                 /**< Enemy type identifier */
+    std::string tag{};                              /**< Template tag for entity differentiation */
 
     rtp::Vec2f position{0.0f, 0.0f};                /**< Spawn position */
     float rotation{0.0f};                           /**< Spawn rotation */
@@ -84,6 +85,7 @@ struct EntityTemplate {
     {
         EntityTemplate t;
         t.id = d.id;
+        t.tag = d.id;  // Use id as tag for entity differentiation
         t.position = initialPos;
         t.rotation = 0.0f;
         t.scale = d.scale;
@@ -156,6 +158,8 @@ struct EntityTemplate {
 
     static constexpr SpriteAnimDef k_rt2_2{ "rt2_2", "assets/sprites/r-typesheet2.gif", 159, 35, 24, 16, 5, 255, true, 24, 16, 159, 35, 6, 2.0f, {-1.0f, 0.0f}, {1.0f, 1.0f} };
     static constexpr SpriteAnimDef k_rt2_3{ "rt2_3", "assets/sprites/r-typesheet2.gif", 300, 58, 18, 6, 5, 255, false, 0, 0, 0, 0, 0, 50.0f, {-1.0f, 0.0f}, {1.0f, 1.0f} };
+    // Player bullet (same sprite as rt2_3 but goes right)
+    static constexpr SpriteAnimDef k_player_bullet{ "player_bullet", "assets/sprites/r-typesheet2.gif", 300, 58, 18, 6, 5, 255, false, 0, 0, 0, 0, 0, 50.0f, {1.0f, 0.0f}, {1.0f, 1.0f} };
     static constexpr SpriteAnimDef k_rt2_4{ "rt2_4", "assets/sprites/r-typesheet2.gif", 300, 71, 30, 18, 5, 255, true, 30, 18, 300, 71, 6, 2.0f, {-1.0f, 0.0f}, {1.0f, 1.0f} };
     static constexpr SpriteAnimDef k_rt2_5{ "rt2_5", "assets/sprites/r-typesheet2.gif", 266, 94, 17, 10, 5, 255, true, 17, 10, 266, 94, 2, 2.0f, {-1.0f, 0.0f}, {1.0f, 1.0f} };
     static constexpr SpriteAnimDef k_rt2_6{ "rt2_6", "assets/sprites/r-typesheet2.gif", 101, 118, 17, 14, 5, 255, true, 17, 14, 101, 118, 4, 2.0f, {-1.0f, 0.0f}, {1.0f, 1.0f} };
@@ -260,6 +264,11 @@ struct EntityTemplate {
     static EntityTemplate createBulletEnemy(const rtp::Vec2f& initialPos)
     {
         return makeFromDef(initialPos, k_rt2_3);
+    }
+
+    static EntityTemplate createBulletPlayer(const rtp::Vec2f& initialPos)
+    {
+        return makeFromDef(initialPos, k_player_bullet);
     }
 
     static EntityTemplate createBasicScout2(const rtp::Vec2f& initialPos)

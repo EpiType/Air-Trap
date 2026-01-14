@@ -6,6 +6,7 @@
 */
 
 #include "Game/EntityBuilder.hpp"
+#include "Game/SpriteCustomizer.hpp"
 
 namespace rtp::client {
 
@@ -27,9 +28,93 @@ namespace rtp::client {
             _registry.add<rtp::ecs::components::Velocity>(entity, t.velocity);
         }
 
-        _registry.add<rtp::ecs::components::Sprite>(entity, t.sprite);
+        // Apply custom sprite if exists
+        auto sprite = t.sprite;
+        auto& customizer = SpriteCustomizer::getInstance();
+        
+        // Try to map entity name from template tag or common sprite names
+        std::string entityKey;
+        
+        // First, check if template has a specific tag (for bullets, etc.)
+        if (!t.tag.empty()) {
+            rtp::log::debug("EntityBuilder: Checking tag '{}' for entity '{}'", t.tag, t.id);
+        }
+        
+        if (t.tag == "player_bullet") {
+            entityKey = "Player_Laser";
+            rtp::log::info("EntityBuilder: Mapped player_bullet to Player_Laser");
+        } else if (t.tag == "enemy_bullet") {
+            entityKey = "Basic_Laser";
+            rtp::log::info("EntityBuilder: Mapped enemy_bullet to Basic_Laser");
+        } else if (t.tag == "rt1_1") {
+            entityKey = "Player_Ship";
+            rtp::log::info("EntityBuilder: Mapped rt1_1 to Player_Ship");
+        } else if (sprite.texturePath.find("r-typesheet1.gif") != std::string::npos) {
+            if (sprite.rectLeft == 101 && sprite.rectTop == 3) {
+                entityKey = "Player_Ship";
+            } else if (sprite.rectLeft == 134) {
+                entityKey = "Enemy_Fighter_1";
+            } else if (sprite.rectLeft == 134) {
+                entityKey = "Enemy_Fighter_2";
+            } else if (sprite.rectLeft == 2 && sprite.rectTop == 51) {
+                entityKey = "Enemy_Fighter_3";
+            } else if (sprite.rectLeft == 215) {
+                entityKey = "Enemy_Ship_1";
+            } else if (sprite.rectLeft == 232) {
+                entityKey = "Enemy_Ship_2";
+            } else if (sprite.rectLeft == 200) {
+                entityKey = "Enemy_Ship_3";
+            } else if (sprite.rectLeft == 168) {
+                entityKey = "Enemy_Ship_4";
+            } else if (sprite.rectLeft == 104) {
+                entityKey = "Enemy_Ship_5";
+            } else if (sprite.rectLeft == 211) {
+                entityKey = "Missile_1";
+            } else if (sprite.rectLeft == 72) {
+                entityKey = "Explosion";
+            }
+        } else if (sprite.texturePath.find("r-typesheet2.gif") != std::string::npos) {
+            if (sprite.rectLeft == 159 && sprite.rectTop == 35) {
+                entityKey = "Enemy_Drone";
+            } else if (sprite.rectLeft == 300 && sprite.rectTop == 58) {
+                entityKey = "Basic_Laser";
+            } else if (sprite.rectLeft == 300 && sprite.rectTop == 71) {
+                entityKey = "Heavy_Laser";
+            } else if (sprite.rectLeft == 266) {
+                entityKey = "Plasma_Shot";
+            } else if (sprite.rectLeft == 101) {
+                entityKey = "Energy_Beam";
+            } else if (sprite.rectLeft == 157) {
+                entityKey = "Special_Beam";
+            }
+        }
 
-        if (t.withAnimation) {
+        if (!entityKey.empty()) {
+            rtp::log::info("EntityBuilder: entityKey='{}', hasCustomSprite={}", 
+                entityKey, customizer.hasCustomSprite(entityKey));
+        }
+
+        bool hasActiveCustomization = false;
+        if (!entityKey.empty() && customizer.hasCustomSprite(entityKey)) {
+            int left = sprite.rectLeft;
+            int top = sprite.rectTop;
+            sprite.texturePath = customizer.getSpriteInfo(
+                entityKey, 
+                sprite.texturePath, 
+                left, 
+                top,
+                sprite.rectWidth,
+                sprite.rectHeight
+            );
+            sprite.rectLeft = left;
+            sprite.rectTop = top;
+            hasActiveCustomization = true;
+        }
+
+        _registry.add<rtp::ecs::components::Sprite>(entity, sprite);
+
+        // Only disable animation if we actually applied a custom sprite
+        if (t.withAnimation && !hasActiveCustomization) {
             _registry.add<rtp::ecs::components::Animation>(entity, t.animation);
         }
 
