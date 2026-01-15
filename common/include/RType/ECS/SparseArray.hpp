@@ -48,6 +48,7 @@
 
     #include <vector>
     #include <limits>
+    #include <span>
 
 namespace rtp::ecs
 {
