@@ -21,7 +21,7 @@
     #include <unordered_map>
 
 namespace rtp::client {
-    namespace Scenes {
+    namespace scenes {
         
         enum class GamepadAction {
             Shoot,
@@ -63,9 +63,9 @@ namespace rtp::client {
                 
                 bool _isWaitingForButton{false};
                 GamepadAction _actionToRebind;
-                std::unordered_map<GamepadAction, rtp::ecs::Entity> _actionToButton;
+                std::unordered_map<GamepadAction, ecs::Entity> _actionToButton;
         };
-    } // namespace Scenes
+    } // namespace scenes
 } // namespace rtp::client
 
 #endif // RTYPE_CLIENT_SCENES_GAMEPADSETTINGSSCENE_HPP_

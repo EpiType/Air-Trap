@@ -2,10 +2,12 @@
 ** EPITECH PROJECT, 2025
 ** Air-Trap
 ** File description:
-** CollisionSystem
+**
+ * CollisionSystem
 */
 
 #include "Systems/CollisionSystem.hpp"
+
 #include "RType/Logger.hpp"
 
 #include <algorithm>
@@ -17,9 +19,9 @@ namespace rtp::server
     //////////////////////////////////////////////////////////////////////////
     // Public API
     //////////////////////////////////////////////////////////////////////////
-    CollisionSystem::CollisionSystem(rtp::ecs::Registry& registry,
-                                    RoomSystem& roomSystem,
-                                    NetworkSyncSystem& networkSync)
+    CollisionSystem::CollisionSystem(ecs::Registry &registry,
+                                     RoomSystem &roomSystem,
+                                     NetworkSyncSystem &networkSync)
         : _registry(registry)
         , _roomSystem(roomSystem)
         , _networkSync(networkSync)
@@ -29,18 +31,25 @@ namespace rtp::server
     void CollisionSystem::update(float dt)
     {
         (void)dt;
-        auto transformsRes = _registry.getComponents<rtp::ecs::components::Transform>();
-        auto boxesRes = _registry.getComponents<rtp::ecs::components::BoundingBox>();
-        auto typesRes = _registry.getComponents<rtp::ecs::components::EntityType>();
-        auto roomsRes = _registry.getComponents<rtp::ecs::components::RoomId>();
-        auto healthRes = _registry.getComponents<rtp::ecs::components::Health>();
-        auto speedRes = _registry.getComponents<rtp::ecs::components::MovementSpeed>();
-        auto powerupRes = _registry.getComponents<rtp::ecs::components::Powerup>();
-        auto damageRes = _registry.getComponents<rtp::ecs::components::Damage>();
-        auto velocityRes = _registry.getComponents<rtp::ecs::components::Velocity>();
+        auto transformsRes = _registry.get<ecs::components::Transform>();
+        auto boxesRes = _registry.get<ecs::components::BoundingBox>();
+        auto typesRes = _registry.get<ecs::components::EntityType>();
+        auto roomsRes = _registry.get<ecs::components::RoomId>();
+        auto healthRes = _registry.get<ecs::components::Health>();
+        auto speedRes = _registry.get<ecs::components::MovementSpeed>();
+        auto powerupRes = _registry.get<ecs::components::Powerup>();
+        auto damageRes = _registry.get<ecs::components::Damage>();
+        auto velocityRes = _registry.get<ecs::components::Velocity>();
 
-        if (!transformsRes || !boxesRes || !typesRes || !roomsRes ||
-            !healthRes || !speedRes || !powerupRes || !damageRes || !velocityRes) {
+        if (!transformsRes ||
+            !boxesRes ||
+            !typesRes ||
+            !roomsRes ||
+            !healthRes ||
+            !speedRes ||
+            !powerupRes ||
+            !damageRes ||
+            !velocityRes) {
             return;
         }
 
@@ -55,15 +64,15 @@ namespace rtp::server
         auto &velocities = velocityRes->get();
 
         std::unordered_set<uint32_t> removed;
-        std::vector<std::pair<rtp::ecs::Entity, uint32_t>> pending;
-        std::vector<rtp::ecs::Entity> players;
-        std::vector<rtp::ecs::Entity> enemies;
-        std::vector<rtp::ecs::Entity> obstacles;
-        std::vector<rtp::ecs::Entity> bullets;
-        std::vector<rtp::ecs::Entity> enemyBullets;
-        std::vector<rtp::ecs::Entity> powerupEntities;
+        std::vector<std::pair<ecs::Entity, uint32_t>> pending;
+        std::vector<ecs::Entity> players;
+        std::vector<ecs::Entity> enemies;
+        std::vector<ecs::Entity> obstacles;
+        std::vector<ecs::Entity> bullets;
+        std::vector<ecs::Entity> enemyBullets;
+        std::vector<ecs::Entity> powerupEntities;
 
-        auto markForDespawn = [&](rtp::ecs::Entity entity, uint32_t roomId) {
+        auto markForDespawn = [&](ecs::Entity entity, uint32_t roomId) {
             if (removed.find(entity.index()) != removed.end()) {
                 return;
             }
@@ -76,38 +85,56 @@ namespace rtp::server
                 continue;
             }
             const auto type = types[entity].type;
-            if (type == rtp::net::EntityType::Player) {
-                if (transforms.has(entity) && boxes.has(entity) && rooms.has(entity) &&
-                    healths.has(entity) && speeds.has(entity)) {
+            if (type == net::EntityType::Player) {
+                if (transforms.has(entity) &&
+                    boxes.has(entity) &&
+                    rooms.has(entity) &&
+                    healths.has(entity) &&
+                    speeds.has(entity)) {
                     players.push_back(entity);
                 }
-            } else if (type == rtp::net::EntityType::Scout ||
-                    type == rtp::net::EntityType::Tank ||
-                    type == rtp::net::EntityType::Boss) {
-                if (transforms.has(entity) && boxes.has(entity) && rooms.has(entity) &&
+            } else if (type ==
+                       net::EntityType::Scout ||
+                       type ==
+                       net::EntityType::Tank ||
+                       type == net::EntityType::Boss) {
+                if (transforms.has(entity) &&
+                    boxes.has(entity) &&
+                    rooms.has(entity) &&
                     healths.has(entity)) {
                     enemies.push_back(entity);
                 }
-            } else if (type == rtp::net::EntityType::Obstacle ||
-                    type == rtp::net::EntityType::ObstacleSolid) {
-                if (transforms.has(entity) && boxes.has(entity) && rooms.has(entity) &&
+            } else if (type ==
+                       net::EntityType::Obstacle ||
+                       type == net::EntityType::ObstacleSolid) {
+                if (transforms.has(entity) &&
+                    boxes.has(entity) &&
+                    rooms.has(entity) &&
                     healths.has(entity)) {
                     obstacles.push_back(entity);
                 }
-            } else if (type == rtp::net::EntityType::Bullet ||
-                       type == rtp::net::EntityType::ChargedBullet) {
-                if (transforms.has(entity) && boxes.has(entity) && rooms.has(entity) &&
+            } else if (type ==
+                       net::EntityType::Bullet ||
+                       type == net::EntityType::ChargedBullet) {
+                if (transforms.has(entity) &&
+                    boxes.has(entity) &&
+                    rooms.has(entity) &&
                     damages.has(entity)) {
                     bullets.push_back(entity);
                 }
-            } else if (type == rtp::net::EntityType::EnemyBullet) {
-                if (transforms.has(entity) && boxes.has(entity) && rooms.has(entity) &&
+            } else if (type == net::EntityType::EnemyBullet) {
+                if (transforms.has(entity) &&
+                    boxes.has(entity) &&
+                    rooms.has(entity) &&
                     damages.has(entity)) {
                     enemyBullets.push_back(entity);
                 }
-            } else if (type == rtp::net::EntityType::PowerupHeal ||
-                    type == rtp::net::EntityType::PowerupSpeed) {
-                if (transforms.has(entity) && boxes.has(entity) && rooms.has(entity) &&
+            } else if (type ==
+                       net::EntityType::PowerupHeal ||
+                       type == net::EntityType::PowerupSpeed) {
+                if (transforms.has(entity) &&
+                    boxes.has(entity) &&
+                    rooms.has(entity) &&
                     powerups.has(entity)) {
                     powerupEntities.push_back(entity);
                 }
@@ -137,12 +164,16 @@ namespace rtp::server
                 }
 
                 const auto &powerup = powerups[powerEntity];
-                if (powerup.type == rtp::ecs::components::PowerupType::Heal) {
-                    health.currentHealth = std::min(health.maxHealth,
+                if (powerup.type == ecs::components::PowerupType::Heal) {
+                    health.currentHealth = std::min(
+                        health.maxHealth,
                         health.currentHealth + static_cast<int>(powerup.value));
-                } else if (powerup.type == rtp::ecs::components::PowerupType::Speed) {
-                    speed.multiplier = std::max(speed.multiplier, powerup.value);
-                    speed.boostRemaining = std::max(speed.boostRemaining, powerup.duration);
+                } else if (powerup.type ==
+                           ecs::components::PowerupType::Speed) {
+                    speed.multiplier =
+                        std::max(speed.multiplier, powerup.value);
+                    speed.boostRemaining =
+                        std::max(speed.boostRemaining, powerup.duration);
                 }
 
                 markForDespawn(powerEntity, proom.id);
@@ -180,8 +211,10 @@ namespace rtp::server
                 const float overlapY1 = (py + ph) - oy;
                 const float overlapY2 = (oy + oh) - py;
 
-                const float minOverlapX = (overlapX1 < overlapX2) ? overlapX1 : -overlapX2;
-                const float minOverlapY = (overlapY1 < overlapY2) ? overlapY1 : -overlapY2;
+                const float minOverlapX =
+                    (overlapX1 < overlapX2) ? overlapX1 : -overlapX2;
+                const float minOverlapY =
+                    (overlapY1 < overlapY2) ? overlapY1 : -overlapY2;
 
                 if (std::abs(minOverlapX) < std::abs(minOverlapY)) {
                     ptf.position.x -= minOverlapX;
@@ -240,11 +273,12 @@ namespace rtp::server
                     continue;
                 }
 
-                if (types[obstacle].type == rtp::net::EntityType::Obstacle) {
+                if (types[obstacle].type == net::EntityType::Obstacle) {
                     health.currentHealth -= damage.amount;
                 }
                 markForDespawn(bullet, broom.id);
-                if (types[obstacle].type == rtp::net::EntityType::Obstacle &&
+                if (types[obstacle].type ==
+                    net::EntityType::Obstacle &&
                     health.currentHealth <= 0) {
                     markForDespawn(obstacle, broom.id);
                 }
@@ -272,13 +306,14 @@ namespace rtp::server
                     continue;
                 }
 
-                health.currentHealth = std::max(0, health.currentHealth - damage.amount);
+                health.currentHealth =
+                    std::max(0, health.currentHealth - damage.amount);
                 markForDespawn(bullet, broom.id);
                 break;
             }
         }
 
-        for (const auto& [entity, roomId] : pending) {
+        for (const auto &[entity, roomId] : pending) {
             despawn(entity, roomId);
         }
     }
@@ -287,10 +322,10 @@ namespace rtp::server
     // Private API
     /////////////////////////////////////////////////////////////////////////////
 
-    bool CollisionSystem::overlaps(const rtp::ecs::components::Transform& a,
-                                const rtp::ecs::components::BoundingBox& ab,
-                                const rtp::ecs::components::Transform& b,
-                                const rtp::ecs::components::BoundingBox& bb) const
+    bool CollisionSystem::overlaps(const ecs::components::Transform &a,
+                                   const ecs::components::BoundingBox &ab,
+                                   const ecs::components::Transform &b,
+                                   const ecs::components::BoundingBox &bb) const
     {
         const float ax1 = a.position.x;
         const float ay1 = a.position.y;
@@ -305,11 +340,11 @@ namespace rtp::server
         return ax1 < bx2 && ax2 > bx1 && ay1 < by2 && ay2 > by1;
     }
 
-    void CollisionSystem::despawn(const rtp::ecs::Entity& entity, uint32_t roomId)
+    void CollisionSystem::despawn(const ecs::Entity &entity, uint32_t roomId)
     {
-        auto transformRes = _registry.getComponents<rtp::ecs::components::Transform>();
-        auto typeRes = _registry.getComponents<rtp::ecs::components::EntityType>();
-        auto netRes = _registry.getComponents<rtp::ecs::components::NetworkId>();
+        auto transformRes = _registry.get<ecs::components::Transform>();
+        auto typeRes = _registry.get<ecs::components::EntityType>();
+        auto netRes = _registry.get<ecs::components::NetworkId>();
         if (!transformRes || !typeRes || !netRes) {
             return;
         }
@@ -317,7 +352,9 @@ namespace rtp::server
         auto &transforms = transformRes->get();
         auto &types = typeRes->get();
         auto &nets = netRes->get();
-        if (!transforms.has(entity) || !types.has(entity) || !nets.has(entity)) {
+        if (!transforms.has(entity) ||
+            !types.has(entity) ||
+            !nets.has(entity)) {
             return;
         }
 
@@ -337,17 +374,18 @@ namespace rtp::server
             return;
         }
 
-        rtp::net::Packet packet(rtp::net::OpCode::EntityDeath);
-        rtp::net::EntityDeathPayload payload{};
+        net::Packet packet(net::OpCode::EntityDeath);
+        net::EntityDeathPayload payload{};
         payload.netId = net.id;
         payload.type = static_cast<uint8_t>(type.type);
         payload.position = transform.position;
         packet << payload;
 
-        for (const auto& player : players) {
-            _networkSync.sendPacketToSession(player->getId(), packet, rtp::net::NetworkMode::TCP);
+        for (const auto &player : players) {
+            _networkSync.sendPacketToSession(player->getId(), packet,
+                                             net::NetworkMode::TCP);
         }
 
         _registry.kill(entity);
     }
-}  // namespace rtp::server
+}

@@ -20,7 +20,7 @@
     #include <functional>
 
 namespace rtp::client {
-    namespace Scenes {
+    namespace scenes {
         /**
          * @class RoomWaitingScene
          * @brief Scene for waiting in a game room.
@@ -83,20 +83,20 @@ namespace rtp::client {
                 bool _uiReady = false;                      /**< Player ready status in the UI */
                 bool _chatOpen = false;                     /**< Whether expanded chat is open */
 
-                rtp::ecs::Entity _chatCompactPanel{};       /**< Compact chat background panel */
-                rtp::ecs::Entity _chatCompactText{};        /**< Text entity for last chat message */
-                rtp::ecs::Entity _chatToggleButton{};       /**< Toggle button for chat */
+                ecs::Entity _chatCompactPanel{};       /**< Compact chat background panel */
+                ecs::Entity _chatCompactText{};        /**< Text entity for last chat message */
+                ecs::Entity _chatToggleButton{};       /**< Toggle button for chat */
 
-                rtp::ecs::Entity _chatPanel{};              /**< Expanded chat panel */
-                rtp::ecs::Entity _chatHistoryText{};        /**< Text entity for chat history */
-                rtp::ecs::Entity _chatInput{};              /**< Text input entity for chat */
+                ecs::Entity _chatPanel{};              /**< Expanded chat panel */
+                ecs::Entity _chatHistoryText{};        /**< Text entity for chat history */
+                ecs::Entity _chatInput{};              /**< Text input entity for chat */
 
                 void openChat(void);
                 void closeChat(void);
                 void updateChatHistoryText(void);
                 void sendChatMessage(void);
         };
-    } // namespace Scenes
+    } // namespace scenes
 } // namespace rtp::client
 
 #endif // RTYPE_CLIENT_SCENES_ROOMWAITINGSCENE_HPP_

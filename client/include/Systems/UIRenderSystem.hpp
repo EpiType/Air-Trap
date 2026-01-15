@@ -17,14 +17,17 @@
 #include "RType/ECS/Components/UI/Slider.hpp"
 #include "RType/ECS/Components/UI/Dropdown.hpp"
 #include "RType/ECS/Components/UI/TextInput.hpp"
+#include "RType/ECS/Components/UI/SpritePreview.hpp"
 
-namespace Client::Systems {
+namespace rtp::client::systems
+{
 
-    class UIRenderSystem : public rtp::ecs::ISystem {
+    class UIRenderSystem : public ecs::ISystem {
         public:
-            UIRenderSystem(rtp::ecs::Registry& registry, sf::RenderWindow& window);
+            UIRenderSystem(ecs::Registry& registry, sf::RenderWindow& window);
 
             void update(float dt) override;
+            void clearTextureCache();
 
         private:
             void renderButtons();
@@ -32,13 +35,16 @@ namespace Client::Systems {
             void renderSliders();
             void renderDropdowns();
             void renderTextInputs(float dt);
+            void renderSpritePreviews();
             sf::Font& loadFont(const std::string& fontPath);
+            sf::Texture& loadTexture(const std::string& texturePath);
 
-            rtp::ecs::Registry& _registry;
+            ecs::Registry& _registry;
             sf::RenderWindow& _window;
             std::unordered_map<std::string, sf::Font> _fonts;
+            std::unordered_map<std::string, sf::Texture> _textures;
     };
 
-}  // namespace Client::Systems
+}  // namespace rtp::client::systems
 
 #endif /* !UIRENDERSYSTEM_HPP_ */

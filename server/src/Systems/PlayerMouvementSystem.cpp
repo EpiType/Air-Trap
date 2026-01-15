@@ -15,7 +15,7 @@ namespace rtp::server
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
-    PlayerMouvementSystem::PlayerMouvementSystem(rtp::ecs::Registry &registry)
+    PlayerMouvementSystem::PlayerMouvementSystem(ecs::Registry &registry)
         : _registry(registry)
     {
     }
@@ -24,14 +24,14 @@ namespace rtp::server
     {
         (void)dt;
         auto view =
-            _registry.zipView<rtp::ecs::components::Transform,
-                              rtp::ecs::components::Velocity,
-                              rtp::ecs::components::server::InputComponent,
-                              rtp::ecs::components::EntityType,
-                              rtp::ecs::components::MovementSpeed>();
+            _registry.zipView<ecs::components::Transform,
+                              ecs::components::Velocity,
+                              ecs::components::server::InputComponent,
+                              ecs::components::EntityType,
+                              ecs::components::MovementSpeed>();
 
         for (auto &&[tf, vel, input, type, speed] : view) {
-            if (type.type != rtp::net::EntityType::Player)
+            if (type.type != net::EntityType::Player)
                 continue;
 
             if (speed.boostRemaining > 0.0f) {
@@ -46,7 +46,7 @@ namespace rtp::server
 
             float dx = 0.f, dy = 0.f;
             using Bits =
-                rtp::ecs::components::server::InputComponent::InputBits;
+                ecs::components::server::InputComponent::InputBits;
 
             if (input.mask & Bits::MoveUp)
                 dy -= 1.f;

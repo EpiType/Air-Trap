@@ -109,10 +109,10 @@ namespace rtp::server
         }
 
         if (_type != RoomType::Lobby) {
-            rtp::net::Packet response(rtp::net::OpCode::JoinRoom);
+            net::Packet response(net::OpCode::JoinRoom);
             const uint8_t success = added ? 1 : 0;
             response << success;
-            _network.sendPacketToSession(sessionId, response, rtp::net::NetworkMode::TCP);
+            _network.sendPacketToSession(sessionId, response, net::NetworkMode::TCP);
         }
 
         if (added && _type != RoomType::Lobby) {
@@ -177,17 +177,17 @@ namespace rtp::server
             }
         }
 
-        rtp::net::RoomChatReceivedPayload payload{};
+        net::RoomChatReceivedPayload payload{};
         payload.sessionId = 0;
         payload.username[0] = '\0';
         std::strncpy(payload.message, message.c_str(), sizeof(payload.message) - 1);
         payload.message[sizeof(payload.message) - 1] = '\0';
 
-        rtp::net::Packet packet(rtp::net::OpCode::RoomChatReceived);
+        net::Packet packet(net::OpCode::RoomChatReceived);
         packet << payload;
 
         for (uint32_t sid : sessions) {
-            _network.sendPacketToSession(sid, packet, rtp::net::NetworkMode::TCP);
+            _network.sendPacketToSession(sid, packet, net::NetworkMode::TCP);
         }
     }
 
@@ -357,12 +357,12 @@ namespace rtp::server
             }
         }
 
-        std::vector<rtp::net::EntitySnapshotPayload> snapshots;
+        std::vector<net::EntitySnapshotPayload> snapshots;
 
         auto view = _registry.zipView<
-            rtp::ecs::components::Transform,
-            rtp::ecs::components::NetworkId,
-            rtp::ecs::components::RoomId
+            ecs::components::Transform,
+            ecs::components::NetworkId,
+            ecs::components::RoomId
         >();
 
         for (auto&& [tf, net, room] : view) {
@@ -376,20 +376,20 @@ namespace rtp::server
             });
         }
 
-        rtp::log::debug("Room '{}' (ID: {}) broadcasting {} entity snapshots",
+        log::debug("Room '{}' (ID: {}) broadcasting {} entity snapshots",
                        _name, _id, snapshots.size());
         if (snapshots.empty())
             return;
 
-        rtp::net::Packet packet(rtp::net::OpCode::RoomUpdate);
-        rtp::net::RoomSnapshotPayload header = {
+        net::Packet packet(net::OpCode::RoomUpdate);
+        net::RoomSnapshotPayload header = {
             serverTick,
             static_cast<uint16_t>(snapshots.size())
         };
         packet << header << snapshots;
 
         for (uint32_t sid : sessions) {
-            _network.sendPacketToSession(sid, packet, rtp::net::NetworkMode::UDP);
+            _network.sendPacketToSession(sid, packet, net::NetworkMode::UDP);
         }
     }
 } // namespace rtp::server

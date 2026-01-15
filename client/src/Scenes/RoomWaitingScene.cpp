@@ -6,12 +6,13 @@
  */
 
 #include "Scenes/RoomWaitingScene.hpp"
+#include "Game/SpriteCustomizer.hpp"
 #include "RType/ECS/Components/UI/Button.hpp"
 #include "RType/ECS/Components/UI/Text.hpp"
 #include "RType/ECS/Components/UI/TextInput.hpp"
 
 namespace rtp::client {
-    namespace Scenes {
+    namespace scenes {
 
         //////////////////////////////////////////////////////////////////////////
         // Public API
@@ -34,7 +35,7 @@ namespace rtp::client {
 
         void RoomWaitingScene::onEnter(void)
         {
-            rtp::log::info("Entering RoomWaitingScene");
+            log::info("Entering RoomWaitingScene");
 
             _chatCompactPanel = _uiFactory.createButton(
                 _uiRegistry,
@@ -43,7 +44,7 @@ namespace rtp::client {
                 "",
                 nullptr
             );
-            if (auto buttonsOpt = _uiRegistry.getComponents<rtp::ecs::components::ui::Button>()) {
+            if (auto buttonsOpt = _uiRegistry.get<ecs::components::ui::Button>()) {
                 auto &buttons = buttonsOpt.value().get();
                 if (buttons.has(_chatCompactPanel)) {
                     auto &panel = buttons[_chatCompactPanel];
@@ -98,7 +99,7 @@ namespace rtp::client {
                         "Not Ready" :
                         "Ready";
 
-                    rtp::log::info("Player is now {}", _uiReady ? "ready" : "not ready");
+                    log::info("Player is now {}", _uiReady ? "ready" : "not ready");
 
                     _network.trySetReady(_uiReady);
                 }
@@ -137,7 +138,7 @@ namespace rtp::client {
                 _changeState(GameState::Playing);
             }
 
-            auto textsOpt = _uiRegistry.getComponents<rtp::ecs::components::ui::Text>();
+            auto textsOpt = _uiRegistry.get<ecs::components::ui::Text>();
             if (textsOpt) {
                 auto &texts = textsOpt.value().get();
                 if (texts.has(_chatCompactText)) {
@@ -164,7 +165,7 @@ namespace rtp::client {
                 "",
                 nullptr
             );
-            if (auto buttonsOpt = _uiRegistry.getComponents<rtp::ecs::components::ui::Button>()) {
+            if (auto buttonsOpt = _uiRegistry.get<ecs::components::ui::Button>()) {
                 auto &buttons = buttonsOpt.value().get();
                 if (buttons.has(_chatPanel)) {
                     auto &panel = buttons[_chatPanel];
@@ -195,7 +196,7 @@ namespace rtp::client {
                 nullptr,
                 nullptr
             );
-            if (auto inputsOpt = _uiRegistry.getComponents<rtp::ecs::components::ui::TextInput>()) {
+            if (auto inputsOpt = _uiRegistry.get<ecs::components::ui::TextInput>()) {
                 auto &inputs = inputsOpt.value().get();
                 if (inputs.has(_chatInput)) {
                     inputs[_chatInput].onSubmit = [this](const std::string&) {
@@ -225,7 +226,7 @@ namespace rtp::client {
 
         void RoomWaitingScene::updateChatHistoryText(void)
         {
-            auto textsOpt = _uiRegistry.getComponents<rtp::ecs::components::ui::Text>();
+            auto textsOpt = _uiRegistry.get<ecs::components::ui::Text>();
             if (!textsOpt)
                 return;
             auto &texts = textsOpt.value().get();
@@ -244,7 +245,7 @@ namespace rtp::client {
 
         void RoomWaitingScene::sendChatMessage(void)
         {
-            auto inputsOpt = _uiRegistry.getComponents<rtp::ecs::components::ui::TextInput>();
+            auto inputsOpt = _uiRegistry.get<ecs::components::ui::TextInput>();
             if (!inputsOpt)
                 return;
 
@@ -260,5 +261,5 @@ namespace rtp::client {
             _network.trySendMessage(message);
             input.value.clear();
         }
-    } // namespace Scenes
+    } // namespace scenes
 } // namespace rtp::client

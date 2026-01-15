@@ -15,12 +15,12 @@
 #include "RType/ECS/Components/Animation.hpp"
 
 namespace rtp::client {
-    class AnimationSystem : public rtp::ecs::ISystem {
+    class AnimationSystem : public ecs::ISystem {
     public:
-        explicit AnimationSystem(rtp::ecs::Registry& r) : _r(r) {}
+        explicit AnimationSystem(ecs::Registry& r) : _r(r) {}
 
         void update(float dt) override {
-            auto view = _r.zipView<rtp::ecs::components::Sprite, rtp::ecs::components::Animation>();
+            auto view = _r.zipView<ecs::components::Sprite, ecs::components::Animation>();
 
             for (auto&& [sprite, animation] : view) {
                 animation.elapsedTime += dt;
@@ -36,7 +36,7 @@ namespace rtp::client {
             }
         }
     private:
-        rtp::ecs::Registry& _r;
+        ecs::Registry& _r;
     };
 }
 #endif // ANIMATION_SYSTEM_HPP

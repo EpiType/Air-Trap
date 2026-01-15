@@ -132,6 +132,7 @@ Thumbs.db
 
 # IDE specific files
 config/*.cfg
+assets/sprites/custom/
 
 # Binary files
 r-type_client

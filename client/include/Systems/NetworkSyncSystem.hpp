@@ -35,7 +35,7 @@ namespace rtp::client {
      * @class NetworkSyncSystem
      * @brief System to handle network-related operations on the client side.
      */
-    class NetworkSyncSystem : public rtp::ecs::ISystem
+    class NetworkSyncSystem : public ecs::ISystem
     {
         public:
             enum class State {
@@ -53,7 +53,7 @@ namespace rtp::client {
              * @param network Reference to the client network manager
              * @param registry Reference to the entity registry
              */
-            NetworkSyncSystem(ClientNetwork& network, rtp::ecs::Registry& registry, EntityBuilder builder);
+            NetworkSyncSystem(ClientNetwork& network, ecs::Registry& registry, EntityBuilder builder);
 
             /**
              * @brief Update system logic for one frame
@@ -153,7 +153,7 @@ namespace rtp::client {
              * @brief Get a list of available rooms from the server
              * @return List of RoomInfo structures
              */
-            std::list<rtp::net::RoomInfo> getAvailableRooms(void) const;
+            std::list<net::RoomInfo> getAvailableRooms(void) const;
 
             /**
              * @brief Check if the client is in game
@@ -188,8 +188,8 @@ namespace rtp::client {
 
         private:
             ClientNetwork& _network;                                       /**< Reference to the client network manager */
-            rtp::ecs::Registry& _registry;                                 /**< Reference to the entity registry */
-            std::unordered_map<uint32_t, rtp::ecs::Entity> _netIdToEntity; /**< Map of network IDs to entities */
+            ecs::Registry& _registry;                                 /**< Reference to the entity registry */
+            std::unordered_map<uint32_t, ecs::Entity> _netIdToEntity; /**< Map of network IDs to entities */
             EntityBuilder _builder;                                        /**< Entity builder for spawning entities */
 
         private:
@@ -198,7 +198,7 @@ namespace rtp::client {
             bool _udpReady = false;                                        /**< Flag indicating if UDP is ready */
             bool _isLoggedIn = false;                                      /**< Flag indicating if the client is logged in */
             std::string _username;                                         /**< The username of the client */
-            std::list<rtp::net::RoomInfo> _availableRooms;                 /**< List of available rooms from the server */
+            std::list<net::RoomInfo> _availableRooms;                 /**< List of available rooms from the server */
             State _currentState = State::NotLogged;                        /**< Current state of the client */
             std::string _lastChatMessage;                                  /**< Last received chat message */
             std::deque<std::string> _chatHistory;                          /**< Recent chat messages */
@@ -217,35 +217,35 @@ namespace rtp::client {
              * @brief Handle a network event
              * @param event Reference to the network event to handle
              */
-            void handleEvent(rtp::net::NetworkEvent& event);
+            void handleEvent(net::NetworkEvent& event);
 
-            void onLoginResponse(rtp::net::Packet& packet);
+            void onLoginResponse(net::Packet& packet);
 
-            void onRegisterResponse(rtp::net::Packet& packet);
+            void onRegisterResponse(net::Packet& packet);
 
-            void onRoomResponse(rtp::net::Packet& packet);
+            void onRoomResponse(net::Packet& packet);
 
-            void onJoinRoomResponse(rtp::net::Packet& packet);
+            void onJoinRoomResponse(net::Packet& packet);
 
-            void onCreateRoomResponse(rtp::net::Packet& packet);
+            void onCreateRoomResponse(net::Packet& packet);
 
-            void onLeaveRoomResponse(rtp::net::Packet& packet);
+            void onLeaveRoomResponse(net::Packet& packet);
 
-            void onSpawnEntityFromServer(rtp::net::Packet& packet);
+            void onSpawnEntityFromServer(net::Packet& packet);
 
-            void onEntityDeath(rtp::net::Packet& packet);
+            void onEntityDeath(net::Packet& packet);
 
-            void onRoomUpdate(rtp::net::Packet& packet);
+            void onRoomUpdate(net::Packet& packet);
 
-            void onRoomChatReceived(rtp::net::Packet& packet);
+            void onRoomChatReceived(net::Packet& packet);
 
             void pushChatMessage(const std::string& message);
 
-            void onAmmoUpdate(rtp::net::Packet& packet);
+            void onAmmoUpdate(net::Packet& packet);
 
-            void onPong(rtp::net::Packet& packet);
+            void onPong(net::Packet& packet);
 
-            void onDebugModeUpdate(rtp::net::Packet& packet);
+            void onDebugModeUpdate(net::Packet& packet);
     };
 }
 

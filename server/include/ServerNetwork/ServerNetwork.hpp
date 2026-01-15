@@ -32,7 +32,7 @@ namespace rtp::server {
      * @class ServerNetwork
      * @brief Implementation ASIO du serveur réseau (TCP + UDP)
      */
-    class ServerNetwork : public rtp::net::INetwork, public rtp::net::IEventPublisher {
+    class ServerNetwork : public net::INetwork, public net::IEventPublisher {
         public:
             /**
              * @brief Constructor for ServerNetwork
@@ -63,26 +63,26 @@ namespace rtp::server {
              * @param packet Packet to send
              * @param mode Network mode (TCP or UDP)
              */
-            void sendPacket(uint32_t sessionId, const rtp::net::Packet &packet, rtp::net::NetworkMode mode);
+            void sendPacket(uint32_t sessionId, const net::Packet &packet, net::NetworkMode mode);
 
             /**
              * @brief Broadcast a packet to all connected sessions
              * @param packet Packet to broadcast
              * @param mode Network mode (TCP or UDP)
              */
-            void broadcastPacket(const rtp::net::Packet &packet, rtp::net::NetworkMode mode);
+            void broadcastPacket(const net::Packet &packet, net::NetworkMode mode);
 
             /**
              * @brief Poll for a network event
              * @return Optional NetworkEvent if available
              */
-            std::optional<rtp::net::NetworkEvent> pollEvent(void) override;
+            std::optional<net::NetworkEvent> pollEvent(void) override;
 
             /**
              * @brief Publish a network event to be processed
              * @param event NetworkEvent to publish
              */
-            void publishEvent(rtp::net::NetworkEvent event) override;
+            void publishEvent(net::NetworkEvent event) override;
 
         private:
             /**
@@ -104,10 +104,10 @@ namespace rtp::server {
             std::thread _ioThread;                             /**< Thread running the ASIO I/O context */
 
             std::unordered_map<uint32_t, 
-                std::shared_ptr<rtp::net::Session>> _sessions; /**< Map of active sessions indexed by session ID */
+                std::shared_ptr<net::Session>> _sessions; /**< Map of active sessions indexed by session ID */
             std::mutex _sessionsMutex;                         /**< Mutex for protecting access to the sessions map */
             
-            std::queue<rtp::net::NetworkEvent> _eventQueue;    /**< Queue of network events to be processed */
+            std::queue<net::NetworkEvent> _eventQueue;    /**< Queue of network events to be processed */
             std::mutex _eventQueueMutex;                       /**< Mutex for protecting access to the event queue */
             
             uint32_t _nextSessionId;                           /**< Next session ID to assign to a new connection */

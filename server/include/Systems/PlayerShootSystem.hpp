@@ -34,7 +34,7 @@ namespace rtp::server {
      * @class PlayerShootSystem
      * @brief Spawns bullets from player input on the server.
      */
-    class PlayerShootSystem : public rtp::ecs::ISystem {
+    class PlayerShootSystem : public ecs::ISystem {
         public:
             /**
              * @brief Constructor for PlayerShootSystem
@@ -42,7 +42,7 @@ namespace rtp::server {
              * @param roomSystem Reference to the RoomSystem
              * @param networkSync Reference to the NetworkSyncSystem
              */
-            PlayerShootSystem(rtp::ecs::Registry& registry,
+            PlayerShootSystem(ecs::Registry& registry,
                               RoomSystem& roomSystem,
                               NetworkSyncSystem& networkSync);
 
@@ -58,8 +58,8 @@ namespace rtp::server {
              * @param tf Transform component of the player
              * @param roomId RoomId component of the player
              */
-            void spawnBullet(const rtp::ecs::components::Transform& tf,
-                             const rtp::ecs::components::RoomId& roomId);
+            void spawnBullet(const ecs::components::Transform& tf,
+                             const ecs::components::RoomId& roomId);
 
             /**
              * @brief Spawn a charged bullet based on the player's transform and room ID
@@ -67,8 +67,8 @@ namespace rtp::server {
              * @param roomId RoomId component of the player
              * @param chargeRatio Charge ratio in [0, 1]
              */
-            void spawnChargedBullet(const rtp::ecs::components::Transform& tf,
-                                    const rtp::ecs::components::RoomId& roomId,
+            void spawnChargedBullet(const ecs::components::Transform& tf,
+                                    const ecs::components::RoomId& roomId,
                                     float chargeRatio);
 
             /**
@@ -76,10 +76,10 @@ namespace rtp::server {
              * @param netId Network ID of the entity
              * @param ammo Ammo component to send
              */
-            void sendAmmoUpdate(uint32_t netId, const rtp::ecs::components::Ammo& ammo);
+            void sendAmmoUpdate(uint32_t netId, const ecs::components::Ammo& ammo);
 
         private:
-            rtp::ecs::Registry& _registry;      /**< Reference to the entity registry */
+            ecs::Registry& _registry;      /**< Reference to the entity registry */
             RoomSystem& _roomSystem;            /**< Reference to the RoomSystem */
             NetworkSyncSystem& _networkSync;    /**< Reference to the NetworkSyncSystem */
 

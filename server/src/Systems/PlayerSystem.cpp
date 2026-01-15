@@ -12,7 +12,7 @@ namespace rtp::server {
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
-    PlayerSystem::PlayerSystem(ServerNetwork& network, rtp::ecs::Registry& registry)
+    PlayerSystem::PlayerSystem(ServerNetwork& network, ecs::Registry& registry)
         : _network(network), _registry(registry) {}
 
     void PlayerSystem::update(float dt) 
@@ -29,7 +29,7 @@ namespace rtp::server {
             it = _players.find(sessionId);
         }
         it->second->setUsername(username);
-        rtp::log::info("Player created for Session ID {}", sessionId);
+        log::info("Player created for Session ID {}", sessionId);
         return it->second;
     }
 
@@ -42,7 +42,7 @@ namespace rtp::server {
             entityId = itP->second->getEntityId();
         }
         _players.erase(sessionId);
-        rtp::log::info("Player removed for Session ID {}", sessionId);
+        log::info("Player removed for Session ID {}", sessionId);
         return entityId;
     }
 
@@ -51,7 +51,7 @@ namespace rtp::server {
         auto it = _players.find(sessionId);
         if (it != _players.end()) {
             it->second->setUsername(username);
-            rtp::log::info("Updated username for Session ID {}: {}", sessionId, username);
+            log::info("Updated username for Session ID {}: {}", sessionId, username);
         }
     }
 
