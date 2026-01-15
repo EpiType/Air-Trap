@@ -39,7 +39,7 @@ namespace rtp::client {
 
         void ModMenuScene::onEnter(void)
         {
-            rtp::log::info("Entering ModMenuScene");
+            log::info("Entering ModMenuScene");
             _showingCategoryList = true;
             _loadedTextures.clear();
             loadSpriteMappings(); // Reload mappings in case they changed
@@ -48,7 +48,7 @@ namespace rtp::client {
 
         void ModMenuScene::onExit(void)
         {
-            rtp::log::info("Exiting ModMenuScene");
+            log::info("Exiting ModMenuScene");
             _loadedTextures.clear();
         }
 
@@ -83,7 +83,7 @@ namespace rtp::client {
             try {
                 if (!std::filesystem::exists(_customSpritesPath)) {
                     std::filesystem::create_directories(_customSpritesPath);
-                    rtp::log::info("Created custom sprites directory: {}", _customSpritesPath.string());
+                    log::info("Created custom sprites directory: {}", _customSpritesPath.string());
                 }
                 
                 // Create subdirectories for each category
@@ -115,7 +115,7 @@ namespace rtp::client {
                     readme.close();
                 }
             } catch (const std::exception& e) {
-                rtp::log::error("Failed to initialize mod directory: {}", e.what());
+                log::error("Failed to initialize mod directory: {}", e.what());
             }
         }
 
@@ -229,7 +229,7 @@ namespace rtp::client {
         void ModMenuScene::showEntityCodex(size_t categoryIndex)
         {
             if (categoryIndex >= _categories.size()) {
-                rtp::log::error("Invalid category index: {}", categoryIndex);
+                log::error("Invalid category index: {}", categoryIndex);
                 return;
             }
 
@@ -329,7 +329,7 @@ namespace rtp::client {
                             _loadedTextures.clear();
                             _uiRegistry.clear();
                             showEntityCodex(_selectedCategoryIndex);
-                            rtp::log::info("Reset sprite for: {}", entity.name);
+                            log::info("Reset sprite for: {}", entity.name);
                         } else {
                             // Apply custom sprite
                             applyCustomSprite(entity, categoryName);
@@ -365,7 +365,7 @@ namespace rtp::client {
                 return &_loadedTextures[texturePath];
             }
 
-            rtp::log::error("Failed to load texture: {}", texturePath);
+            log::error("Failed to load texture: {}", texturePath);
             return nullptr;
         }
 
@@ -388,12 +388,12 @@ namespace rtp::client {
                 std::ofstream file(_spriteMappingPath);
                 if (file.is_open()) {
                     file << j.dump(4);
-                    rtp::log::info("Saved sprite mappings to {}", _spriteMappingPath.string());
+                    log::info("Saved sprite mappings to {}", _spriteMappingPath.string());
                 } else {
-                    rtp::log::error("Failed to open sprite mapping file for writing");
+                    log::error("Failed to open sprite mapping file for writing");
                 }
             } catch (const std::exception& e) {
-                rtp::log::error("Failed to save sprite mappings: {}", e.what());
+                log::error("Failed to save sprite mappings: {}", e.what());
             }
         }
 
@@ -401,7 +401,7 @@ namespace rtp::client {
         {
             try {
                 if (!std::filesystem::exists(_spriteMappingPath)) {
-                    rtp::log::info("No sprite mapping file found, using defaults");
+                    log::info("No sprite mapping file found, using defaults");
                     return;
                 }
 
@@ -415,12 +415,12 @@ namespace rtp::client {
                         _customSpriteMappings[key] = value.get<std::string>();
                     }
 
-                    rtp::log::info("Loaded {} custom sprite mappings", _customSpriteMappings.size());
+                    log::info("Loaded {} custom sprite mappings", _customSpriteMappings.size());
                 } else {
-                    rtp::log::error("Failed to open sprite mapping file for reading");
+                    log::error("Failed to open sprite mapping file for reading");
                 }
             } catch (const std::exception& e) {
-                rtp::log::error("Failed to load sprite mappings: {}", e.what());
+                log::error("Failed to load sprite mappings: {}", e.what());
             }
         }
 
@@ -432,7 +432,7 @@ namespace rtp::client {
             
             FILE* pipe = popen(command.c_str(), "r");
             if (!pipe) {
-                rtp::log::error("Failed to open file dialog");
+                log::error("Failed to open file dialog");
                 return "";
             }
 
@@ -472,17 +472,17 @@ namespace rtp::client {
             // Open file dialog
             std::string selectedFile = openFileDialog();
             if (selectedFile.empty()) {
-                rtp::log::info("No file selected");
+                log::info("No file selected");
                 return;
             }
 
-            rtp::log::info("Selected sprite file: {}", selectedFile);
+            log::info("Selected sprite file: {}", selectedFile);
 
             try {
                 // Load the selected image
                 sf::Image customImage;
                 if (!customImage.loadFromFile(selectedFile)) {
-                    rtp::log::error("Failed to load custom sprite: {}", selectedFile);
+                    log::error("Failed to load custom sprite: {}", selectedFile);
                     return;
                 }
 
@@ -502,7 +502,7 @@ namespace rtp::client {
                 auto outputPath = categoryPath / (entityKey + ".png");
                 
                 if (resizedImage.saveToFile(outputPath.string())) {
-                    rtp::log::info("Saved custom sprite to: {}", outputPath.string());
+                    log::info("Saved custom sprite to: {}", outputPath.string());
                     
                     // Update mapping
                     _customSpriteMappings[entityKey] = outputPath.string();
@@ -521,12 +521,12 @@ namespace rtp::client {
                     _uiRegistry.clear();
                     showEntityCodex(_selectedCategoryIndex);
 
-                    rtp::log::info("Custom sprite applied successfully!");
+                    log::info("Custom sprite applied successfully!");
                 } else {
-                    rtp::log::error("Failed to save resized sprite");
+                    log::error("Failed to save resized sprite");
                 }
             } catch (const std::exception& e) {
-                rtp::log::error("Error applying custom sprite: {}", e.what());
+                log::error("Error applying custom sprite: {}", e.what());
             }
         }
 

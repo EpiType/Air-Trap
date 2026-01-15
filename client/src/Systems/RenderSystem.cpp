@@ -13,7 +13,7 @@ namespace rtp::client {
 void RenderSystem::clearTextureCache()
 {
     _textureCache.clear();
-    rtp::log::info("RenderSystem: Texture cache cleared");
+    log::info("RenderSystem: Texture cache cleared");
 }
 
 void RenderSystem::update(float dt)
@@ -72,7 +72,7 @@ void RenderSystem::update(float dt)
 
     for (const auto &item : itemsToDraw) {
         _window.draw(item.sprite);
-        if (rtp::client::g_drawDebugBounds) {
+        if (client::g_drawDebugBounds) {
             sf::FloatRect bounds = item.sprite.getGlobalBounds();
             sf::RectangleShape box({bounds.size.x, bounds.size.y});
             box.setPosition({bounds.position.x, bounds.position.y});
