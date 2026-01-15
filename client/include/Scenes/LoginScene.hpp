@@ -19,7 +19,7 @@
     #include <memory>
 
 namespace rtp::client {
-    namespace Scenes {
+    namespace scenes {
 
         /**
          * @class LoginScene
@@ -83,7 +83,7 @@ namespace rtp::client {
                 std::string _uiUsername;                    /**< Username input from the UI */
                 std::string _uiPassword;                    /**< Password input from the UI */
         };
-    } // namespace Scenes
+    } // namespace scenes
 } // namespace rtp::client
 
 #endif // RTYPE_CLIENT_SCENES_LOGINSCENE_HPP_

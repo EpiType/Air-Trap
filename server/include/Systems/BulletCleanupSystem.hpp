@@ -24,7 +24,7 @@ namespace rtp::server {
      * @class BulletCleanupSystem
      * @brief Despawns bullets that leave the play area.
      */
-    class BulletCleanupSystem : public rtp::ecs::ISystem {
+    class BulletCleanupSystem : public ecs::ISystem {
         public:
             /**
              * @brief Constructor for BulletCleanupSystem
@@ -32,7 +32,7 @@ namespace rtp::server {
              * @param roomSystem Reference to the RoomSystem
              * @param networkSync Reference to the NetworkSyncSystem
              */
-            BulletCleanupSystem(rtp::ecs::Registry& registry,
+            BulletCleanupSystem(ecs::Registry& registry,
                                 RoomSystem& roomSystem,
                                 NetworkSyncSystem& networkSync);
 
@@ -48,10 +48,10 @@ namespace rtp::server {
              * @param entity The entity to despawn
              * @param roomId The ID of the room the entity belongs to
              */
-            void despawn(const rtp::ecs::Entity& entity, uint32_t roomId);
+            void despawn(const ecs::Entity& entity, uint32_t roomId);
 
         private:
-            rtp::ecs::Registry& _registry;      /**< Reference to the ECS registry */
+            ecs::Registry& _registry;      /**< Reference to the ECS registry */
             RoomSystem& _roomSystem;            /**< Reference to the RoomSystem */
             NetworkSyncSystem& _networkSync;    /**< Reference to the NetworkSyncSystem */
 

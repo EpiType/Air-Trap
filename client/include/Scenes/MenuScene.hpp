@@ -20,7 +20,7 @@
     #include <functional>
 
 namespace rtp::client {
-    namespace Scenes {
+    namespace scenes {
         /**
          * @class MenuScene
          * @brief Scene for the main menu.
@@ -81,7 +81,7 @@ namespace rtp::client {
                 graphics::UiFactory& _uiFactory;            /**< UI Factory for creating UI components */
                 ChangeStateFn _changeState;                 /**< Function to change the game state */
         };
-    } // namespace Scenes
+    } // namespace scenes
 } // namespace rtp::client
 
 #endif // RTYPE_CLIENT_SCENES_MENUSCENE_HPP_

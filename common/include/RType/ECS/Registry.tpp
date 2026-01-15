@@ -14,7 +14,7 @@ namespace rtp::ecs
     ///////////////////////////////////////////////////////////////////////////
 
     template <Component T, typename Self>
-    auto Registry::registerComponent(this Self &self)
+    auto Registry::subscribe(this Self &self)
         -> std::expected<std::reference_wrapper<ConstLike<Self,
                                                           SparseArray<T>>>,
                          rtp::Error>
@@ -42,17 +42,22 @@ namespace rtp::ecs
     auto Registry::add(Entity entity, Args &&...args)
         -> std::expected<std::reference_wrapper<T>, rtp::Error>
     {
-        auto result = this->get<T>();
-
-        if (!result.has_value()) [[unlikely]]
-            return std::unexpected{result.error()};
-
         std::unique_lock lock(this->_mutex);
-        return std::ref(result->get().emplace(entity, std::forward<Args>(args)...));
+        std::type_index type = typeid(T);
+
+        if (!this->_arrays.contains(type)) [[unlikely]]
+            return std::unexpected{Error::failure(ErrorCode::ComponentMissing,
+                                                  "Missing component: {}",
+                                                  type.name())};
+
+        auto &ptr = this->_arrays.at(type);
+        auto *rawPtr = static_cast<SparseArray<T> *>(ptr.get());
+
+        return std::ref(rawPtr->emplace(entity, std::forward<Args>(args)...));
     }
 
     template <Component T, typename Self>
-    auto Registry::get(this Self &self)
+    auto Registry::get(this const Self &self)
         -> std::expected<std::reference_wrapper<ConstLike<Self,
                                                           SparseArray<T>>>,
                          rtp::Error>
@@ -69,15 +74,6 @@ namespace rtp::ecs
         auto *rawPtr = static_cast<SparseArray<T> *>(ptr.get());
 
         return std::ref(*rawPtr);
-    }
-
-    template <Component T, typename Self>
-    auto Registry::getComponents(this Self &self)
-        -> std::expected<std::reference_wrapper<ConstLike<Self,
-                                                          SparseArray<T>>>,
-                         rtp::Error>
-    {
-        return self.template get<T>();
     }
 
     template <Component T>
@@ -109,6 +105,9 @@ namespace rtp::ecs
 
         {
             std::unique_lock lock{this->_mutex};
+
+            if (!this->_arrays.contains(type)) [[unlikely]]
+                return;
             auto &ptr = this->_arrays.find(type)->second;
             auto *rawPtr = static_cast<SparseArray<T> *>(ptr.get());
 
@@ -146,6 +145,8 @@ namespace rtp::ecs
     template <Component... Ts, typename Self>
     auto Registry::zipView(this Self &self)
     {
+        std::shared_lock lock{self._mutex};
+        
         auto get_array = [&]<typename T>() -> ConstLikeRef<Self, SparseArray<T>> {
             std::type_index index(typeid(T));
             
@@ -169,26 +170,34 @@ namespace rtp::ecs
     template <Component T, typename Self>
     auto Registry::getArray(this Self &self) -> ConstLikeRef<Self, SparseArray<T>>
     {
-        std::unique_lock lock{self._mutex};
+        std::shared_lock lock{self._mutex};
 
         auto it = self._arrays.find(typeid(T));
-        if (it == self._arrays.end()) {
-            auto array = std::make_unique<SparseArray<T>>();
-            it = self._arrays.emplace(typeid(T), std::move(array)).first;
-        }
+        if (it == self._arrays.end()) [[unlikely]]
+            throw rtp::Error::failure(ErrorCode::ComponentMissing,
+                                     "Component not registered: {}",
+                                     typeid(T).name());
 
         return static_cast<ConstLikeRef<Self, SparseArray<T>>>(*it->second);
     }
 
-    template <Component T, Component... Ts>
-    auto &Registry::getSmallestArray(void)
+    template <Component T, Component... Ts, typename Self>
+    auto &Registry::getSmallestArray(this Self &self)
     {
-        return this->template getArray<T>();
+        if constexpr (sizeof...(Ts) == 0) {
+            return self.template getArray<T>();
+        } else {
+            auto &firstArray   = self.template getArray<T>();
+            auto &restSmallest = self.template getSmallestArray<Ts...>();
+
+            return (firstArray.size() < restSmallest.size()) ? firstArray 
+                                                             : restSmallest;
+        }
     }
 
     template <Component... Ts>
     bool Registry::hasAllComponents(Entity entity) const noexcept
     {
-        return (... && this->getArray<Ts>(*this).has(entity));
+        return (... && this->has<Ts>(entity));
     }
 }

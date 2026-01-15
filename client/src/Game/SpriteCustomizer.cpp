@@ -122,7 +122,7 @@ namespace rtp::client {
             }
             
             if (s_uiRenderSystem) {
-                auto* uiRenderSystem = static_cast<Client::Systems::UIRenderSystem*>(s_uiRenderSystem);
+                auto* uiRenderSystem = static_cast<rtp::client::systems::UIRenderSystem*>(s_uiRenderSystem);
                 uiRenderSystem->clearTextureCache();
                 rtp::log::info("SpriteCustomizer: Cleared UI render system texture cache");
             }

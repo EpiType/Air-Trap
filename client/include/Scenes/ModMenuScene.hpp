@@ -22,7 +22,7 @@
     #include <nlohmann/json.hpp>
 
 namespace rtp::client {
-    namespace Scenes {
+    namespace scenes {
         
         /**
          * @struct EntitySpriteInfo
@@ -183,7 +183,7 @@ namespace rtp::client {
                  */
                 std::string getEntityKey(const EntitySpriteInfo& entity) const;
         };
-    } // namespace Scenes
+    } // namespace scenes
 } // namespace rtp::client
 
 #endif // RTYPE_CLIENT_SCENES_MODMENUSCENE_HPP_

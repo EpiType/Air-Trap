@@ -60,9 +60,6 @@ namespace rtp::ecs
             template <typename T, typename... Args>
             T &add(Args &&...args);
 
-            template <typename T, typename... Args>
-            T &addSystem(Args &&...args);
-
             template <typename T>
             T &getSystem(void);
 

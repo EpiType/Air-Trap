@@ -9,7 +9,7 @@
 #include <SFML/Window/Joystick.hpp>
 
 namespace rtp::client {
-    namespace Scenes {
+    namespace scenes {
 
         //////////////////////////////////////////////////////////////////////////
         // Public API
@@ -32,7 +32,7 @@ namespace rtp::client {
 
         void GamepadSettingsScene::onEnter(void)
         {
-            rtp::log::info("Entering GamepadSettingsScene");
+            log::info("Entering GamepadSettingsScene");
             float yPos = 120.0f;
 
             // Title
@@ -64,7 +64,7 @@ namespace rtp::client {
                 _settings.getGamepadEnabled() ? 1 : 0,
                 [this](int index) {
                     _settings.setGamepadEnabled(index == 1);
-                    rtp::log::info("Gamepad {}", index == 1 ? "enabled" : "disabled");
+                    log::info("Gamepad {}", index == 1 ? "enabled" : "disabled");
                 }
             );
 
@@ -224,7 +224,7 @@ namespace rtp::client {
                         _settings.save();
                         _isWaitingForButton = false;
                         
-                        rtp::log::info("Gamepad button {} bound to action",
+                        log::info("Gamepad button {} bound to action",
                                     getButtonName(i));
                         
                         refreshButtonLabel(_actionToRebind);
@@ -240,7 +240,7 @@ namespace rtp::client {
             if (const auto* kp = event.getIf<sf::Event::KeyPressed>()) {
                 if (kp->code == sf::Keyboard::Key::Escape) {
                     _isWaitingForButton = false;
-                    rtp::log::info("Button binding cancelled");
+                    log::info("Button binding cancelled");
                     refreshButtonLabel(_actionToRebind);
                     return;
                 }
@@ -260,11 +260,11 @@ namespace rtp::client {
         {
             auto it = _actionToButton.find(action);
             if (it == _actionToButton.end()) {
-                rtp::log::warning("No button found for action");
+                log::warning("No button found for action");
                 return;
             }
 
-            const rtp::ecs::Entity e = it->second;
+            const ecs::Entity e = it->second;
 
             unsigned int button = 0;
             switch (action) {
@@ -281,16 +281,16 @@ namespace rtp::client {
 
             const std::string buttonName = _isWaitingForButton ? "Press button..." : getButtonName(button);
 
-            auto buttonsRes = _uiRegistry.getComponents<rtp::ecs::components::ui::Button>();
+            auto buttonsRes = _uiRegistry.get<ecs::components::ui::Button>();
             if (!buttonsRes) {
-                rtp::log::error("Failed to get Button components");
+                log::error("Failed to get Button components");
                 return;
             }
 
             auto& buttons = buttonsRes.value().get();
 
             if (!buttons.has(e)) {
-                rtp::log::warning("Button component not found for entity");
+                log::warning("Button component not found for entity");
                 return;
             }
 
@@ -311,5 +311,5 @@ namespace rtp::client {
             return "Button " + std::to_string(button);
         }
 
-    } // namespace Scenes
+    } // namespace scenes
 } // namespace rtp::client

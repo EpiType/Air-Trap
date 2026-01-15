@@ -7,12 +7,12 @@
 
 namespace rtp::client {
 
-class ParallaxSystem : public rtp::ecs::ISystem {
+class ParallaxSystem : public ecs::ISystem {
     public:
-        explicit ParallaxSystem(rtp::ecs::Registry& r) : _r(r) {}
+        explicit ParallaxSystem(ecs::Registry& r) : _r(r) {}
 
         void update(float dt) override {
-        auto view = _r.zipView<rtp::ecs::components::Transform, rtp::ecs::components::ParallaxLayer>();
+        auto view = _r.zipView<ecs::components::Transform, ecs::components::ParallaxLayer>();
 
         for (auto&& [transform, parallax] : view) {
             transform.position.x -= parallax.speed * dt;
@@ -25,6 +25,6 @@ class ParallaxSystem : public rtp::ecs::ISystem {
     }
 
     private:
-        rtp::ecs::Registry& _r;
+        ecs::Registry& _r;
     };
 } // namespace rtp::client

@@ -18,7 +18,7 @@ namespace rtp::server {
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
-    LevelSystem::LevelSystem(rtp::ecs::Registry& registry,
+    LevelSystem::LevelSystem(ecs::Registry& registry,
                             EntitySystem& entitySystem,
                             RoomSystem& roomSystem,
                             NetworkSyncSystem& networkSync)
@@ -38,14 +38,14 @@ namespace rtp::server {
     {
         auto it = _levelPaths.find(levelId);
         if (it == _levelPaths.end()) {
-            rtp::log::warning("No level path registered for level {}", levelId);
+            log::warning("No level path registered for level {}", levelId);
             return std::nullopt;
         }
 
         std::string error;
         auto level = loadLevelFromFile(it->second, error);
         if (!level) {
-            rtp::log::error("Failed to load level {}: {}", levelId, error);
+            log::error("Failed to load level {}: {}", levelId, error);
             return std::nullopt;
         }
 
@@ -62,7 +62,7 @@ namespace rtp::server {
         ActiveLevel active{};
         active.data = std::move(level.value());
         _activeLevels[roomId] = std::move(active);
-        rtp::log::info("Loaded level {} for room {}", levelId, roomId);
+        log::info("Loaded level {} for room {}", levelId, roomId);
     }
 
     void LevelSystem::stopLevelForRoom(uint32_t roomId)
@@ -85,12 +85,12 @@ namespace rtp::server {
             auto getFrontPlayerX = [&]() -> float {
                 float maxX = 0.0f;
                 auto view = _registry.zipView<
-                    rtp::ecs::components::Transform,
-                    rtp::ecs::components::EntityType,
-                    rtp::ecs::components::RoomId
+                    ecs::components::Transform,
+                    ecs::components::EntityType,
+                    ecs::components::RoomId
                 >();
                 for (auto &&[tf, type, room] : view) {
-                    if (room.id != roomId || type.type != rtp::net::EntityType::Player) {
+                    if (room.id != roomId || type.type != net::EntityType::Player) {
                         continue;
                     }
                     if (tf.position.x > maxX) {
@@ -103,7 +103,7 @@ namespace rtp::server {
             while (active.nextSpawn < active.data.spawns.size() &&
                 active.data.spawns[active.nextSpawn].atTime <= active.elapsed) {
                 const auto& spawn = active.data.spawns[active.nextSpawn];
-                rtp::Vec2f startPos = spawn.startPosition;
+                Vec2f startPos = spawn.startPosition;
                 const int patternIndex = static_cast<int>(active.nextSpawn % 5);
                 const float xOffsets[5] = {0.0f, 100.0f, -40.0f, 80.0f, -80.0f};
                 startPos.x += xOffsets[patternIndex];
@@ -124,8 +124,8 @@ namespace rtp::server {
                 const auto& powerup = active.data.powerups[active.nextPowerup];
                 auto entity = _entitySystem.createPowerupEntity(
                     roomId, powerup.position, powerup.type, powerup.value, powerup.duration);
-                _registry.add<rtp::ecs::components::Velocity>(
-                    entity, rtp::ecs::components::Velocity{ {-scrollSpeed, 0.0f}, 0.0f }
+                _registry.add<ecs::components::Velocity>(
+                    entity, ecs::components::Velocity{ {-scrollSpeed, 0.0f}, 0.0f }
                 );
                 spawnEntityForRoom(roomId, entity);
                 active.nextPowerup++;
@@ -136,8 +136,8 @@ namespace rtp::server {
                 const auto& obstacle = active.data.obstacles[active.nextObstacle];
                 auto entity = _entitySystem.createObstacleEntity(
                     roomId, obstacle.position, obstacle.size, obstacle.health, obstacle.type);
-                _registry.add<rtp::ecs::components::Velocity>(
-                    entity, rtp::ecs::components::Velocity{ {-scrollSpeed, 0.0f}, 0.0f }
+                _registry.add<ecs::components::Velocity>(
+                    entity, ecs::components::Velocity{ {-scrollSpeed, 0.0f}, 0.0f }
                 );
                 spawnEntityForRoom(roomId, entity);
                 active.nextObstacle++;
@@ -149,7 +149,7 @@ namespace rtp::server {
     // Private API
     ///////////////////////////////////////////////////////////////////////////
 
-    void LevelSystem::spawnEntityForRoom(uint32_t roomId, const rtp::ecs::Entity& entity)
+    void LevelSystem::spawnEntityForRoom(uint32_t roomId, const ecs::Entity& entity)
     {
         auto room = _roomSystem.getRoom(roomId);
         if (!room) {
@@ -167,12 +167,12 @@ namespace rtp::server {
             sessions.push_back(player->getId());
         }
 
-        auto transformRes = _registry.getComponents<rtp::ecs::components::Transform>();
-        auto typeRes = _registry.getComponents<rtp::ecs::components::EntityType>();
-        auto netRes = _registry.getComponents<rtp::ecs::components::NetworkId>();
-        auto boxRes = _registry.getComponents<rtp::ecs::components::BoundingBox>();
+        auto transformRes = _registry.get<ecs::components::Transform>();
+        auto typeRes = _registry.get<ecs::components::EntityType>();
+        auto netRes = _registry.get<ecs::components::NetworkId>();
+        auto boxRes = _registry.get<ecs::components::BoundingBox>();
         if (!transformRes || !typeRes || !netRes) {
-            rtp::log::error("Missing component array for level spawn");
+            log::error("Missing component array for level spawn");
             return;
         }
 
@@ -181,7 +181,7 @@ namespace rtp::server {
         auto &nets = netRes->get();
         auto *boxes = boxRes ? &boxRes->get() : nullptr;
         if (!transforms.has(entity) || !types.has(entity) || !nets.has(entity)) {
-            rtp::log::error("Level spawned entity {} missing Transform/EntityType/NetworkId", entity.index());
+            log::error("Level spawned entity {} missing Transform/EntityType/NetworkId", entity.index());
             return;
         }
 
@@ -196,8 +196,8 @@ namespace rtp::server {
             sizeY = box.height;
         }
 
-        rtp::net::Packet packet(rtp::net::OpCode::EntitySpawn);
-        rtp::net::EntitySpawnPayload payload = {
+        net::Packet packet(net::OpCode::EntitySpawn);
+        net::EntitySpawnPayload payload = {
             net.id,
             static_cast<uint8_t>(type.type),
             transform.position.x,
@@ -206,7 +206,7 @@ namespace rtp::server {
             sizeY
         };
         packet << payload;
-        _networkSync.sendPacketToSessions(sessions, packet, rtp::net::NetworkMode::TCP);
+        _networkSync.sendPacketToSessions(sessions, packet, net::NetworkMode::TCP);
     }
 
     const LevelData* LevelSystem::getLevelData(uint32_t roomId) const

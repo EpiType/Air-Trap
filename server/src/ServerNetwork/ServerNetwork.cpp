@@ -20,7 +20,7 @@ namespace rtp::server {
           _udpSocket(_ioContext, asio::ip::udp::endpoint(asio::ip::udp::v4(), port)),
           _nextSessionId(1)
     {
-        rtp::log::info("ServerNetwork initialized on port {}", port);
+        log::info("ServerNetwork initialized on port {}", port);
     }
 
     ServerNetwork::~ServerNetwork()
@@ -30,18 +30,18 @@ namespace rtp::server {
 
     void ServerNetwork::start()
     {
-        rtp::log::info("Starting ServerNetwork...");
+        log::info("Starting ServerNetwork...");
         
         acceptConnection();
         receiveUdpPacket();
 
         _ioThread = std::thread([this]() {
             try {
-                rtp::log::info("ASIO Context running...");
+                log::info("ASIO Context running...");
                 auto workGuard = asio::make_work_guard(_ioContext);
                 _ioContext.run();
             } catch (const std::exception& e) {
-                rtp::log::error("ServerNetwork context error: {}", e.what());
+                log::error("ServerNetwork context error: {}", e.what());
             }
         });
     }
@@ -56,10 +56,10 @@ namespace rtp::server {
         }
         _acceptor.close();
         _udpSocket.close();
-        rtp::log::info("ServerNetwork stopped.");
+        log::info("ServerNetwork stopped.");
     }
 
-    void ServerNetwork::sendPacket(uint32_t sessionId, const rtp::net::Packet& packet, rtp::net::NetworkMode mode)
+    void ServerNetwork::sendPacket(uint32_t sessionId, const net::Packet& packet, net::NetworkMode mode)
     {
         std::lock_guard<std::mutex> lock(_sessionsMutex);
         auto it = _sessions.find(sessionId);
@@ -68,7 +68,7 @@ namespace rtp::server {
         }
     }
 
-    void ServerNetwork::broadcastPacket(const rtp::net::Packet& packet, rtp::net::NetworkMode mode)
+    void ServerNetwork::broadcastPacket(const net::Packet& packet, net::NetworkMode mode)
     {
         std::lock_guard<std::mutex> lock(_sessionsMutex);
         for (auto& [id, session] : _sessions) {
@@ -76,7 +76,7 @@ namespace rtp::server {
         }
     }
 
-    std::optional<rtp::net::NetworkEvent> ServerNetwork::pollEvent()
+    std::optional<net::NetworkEvent> ServerNetwork::pollEvent()
     {
         std::lock_guard<std::mutex> lock(_eventQueueMutex);
         if (_eventQueue.empty()) {
@@ -87,7 +87,7 @@ namespace rtp::server {
         return event;
     }
 
-    void ServerNetwork::publishEvent(rtp::net::NetworkEvent event)
+    void ServerNetwork::publishEvent(net::NetworkEvent event)
     {
         std::lock_guard<std::mutex> lock(_eventQueueMutex);
         _eventQueue.push(event);
@@ -104,10 +104,10 @@ namespace rtp::server {
         _acceptor.async_accept(*newSocket, [this, newSocket](const asio::error_code& error) {
             if (!error) {
                 uint32_t id = _nextSessionId++;
-                rtp::log::info("New connection accepted from {}. Session ID: {}", 
+                log::info("New connection accepted from {}. Session ID: {}", 
                     newSocket->remote_endpoint().address().to_string(), id);
 
-                auto session = std::make_shared<rtp::net::Session>(
+                auto session = std::make_shared<net::Session>(
                     id, 
                     std::move(*newSocket), 
                     _udpSocket, 
@@ -121,12 +121,12 @@ namespace rtp::server {
 
                 session->start();
                 
-                rtp::net::Packet welcome(rtp::net::OpCode::Welcome);
+                net::Packet welcome(net::OpCode::Welcome);
                 welcome << id;
-                session->send(welcome, rtp::net::NetworkMode::TCP);
+                session->send(welcome, net::NetworkMode::TCP);
 
             } else {
-                rtp::log::error("Accept error: {}", error.message());
+                log::error("Accept error: {}", error.message());
             }
 
             acceptConnection();
@@ -142,38 +142,38 @@ namespace rtp::server {
         {
             if (error) {
                 if (error != asio::error::operation_aborted)
-                    rtp::log::error("UDP receive error: {}", error.message());
+                    log::error("UDP receive error: {}", error.message());
                 receiveUdpPacket();
                 return;
             }
 
-            if (bytesTransferred < sizeof(rtp::net::Header)) {
+            if (bytesTransferred < sizeof(net::Header)) {
                 receiveUdpPacket();
                 return;
             }
 
-            rtp::net::Header header;
+            net::Header header;
             std::memcpy(&header, _udpBuffer.data(), sizeof(header));
 
-            header.magic      = rtp::net::Packet::from_network(header.magic);
-            header.sequenceId = rtp::net::Packet::from_network(header.sequenceId);
-            header.bodySize   = rtp::net::Packet::from_network(header.bodySize);
-            header.ackId      = rtp::net::Packet::from_network(header.ackId);
-            header.sessionId  = rtp::net::Packet::from_network(header.sessionId);
+            header.magic      = net::Packet::from_network(header.magic);
+            header.sequenceId = net::Packet::from_network(header.sequenceId);
+            header.bodySize   = net::Packet::from_network(header.bodySize);
+            header.ackId      = net::Packet::from_network(header.ackId);
+            header.sessionId  = net::Packet::from_network(header.sessionId);
 
-            if (header.magic != rtp::net::MAGIC_NUMBER) {
+            if (header.magic != net::MAGIC_NUMBER) {
                 receiveUdpPacket();
                 return;
             }
 
-            if (bytesTransferred != sizeof(rtp::net::Header) + header.bodySize) {
-                rtp::log::error("Malformed UDP packet (size mismatch) bytes={} expected={}",
-                                bytesTransferred, sizeof(rtp::net::Header) + header.bodySize);
+            if (bytesTransferred != sizeof(net::Header) + header.bodySize) {
+                log::error("Malformed UDP packet (size mismatch) bytes={} expected={}",
+                                bytesTransferred, sizeof(net::Header) + header.bodySize);
                 receiveUdpPacket();
                 return;
             }
 
-            if (header.opCode == rtp::net::OpCode::Hello) {
+            if (header.opCode == net::OpCode::Hello) {
                 uint32_t claimedSessionId = header.sessionId;
 
                 {
@@ -187,7 +187,7 @@ namespace rtp::server {
                             _udpEndpointToSessionId[_udpRemoteEndpoint] = claimedSessionId;
                         }
 
-                        rtp::log::info("UDP bound: session {} -> {}:{}",
+                        log::info("UDP bound: session {} -> {}:{}",
                                        claimedSessionId,
                                        _udpRemoteEndpoint.address().to_string(),
                                        _udpRemoteEndpoint.port());
@@ -209,14 +209,14 @@ namespace rtp::server {
                 realSessionId = it->second;
             }
 
-            rtp::net::Packet packet;
+            net::Packet packet;
             header.sessionId = realSessionId;
             packet.header = header;
 
             if (header.bodySize > 0) {
                 packet.body.resize(header.bodySize);
                 std::memcpy(packet.body.data(),
-                            _udpBuffer.data() + sizeof(rtp::net::Header),
+                            _udpBuffer.data() + sizeof(net::Header),
                             header.bodySize);
             }
 

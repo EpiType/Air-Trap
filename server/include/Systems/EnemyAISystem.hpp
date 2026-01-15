@@ -26,13 +26,13 @@ namespace rtp::server {
      * @class EnemyAISystem
      * @brief System to handle enemy AI behavior.
      */
-    class EnemyAISystem : public rtp::ecs::ISystem {
+    class EnemyAISystem : public ecs::ISystem {
         public:
             /**
              * @brief Constructor for EnemyAISystem
              * @param registry Reference to the entity registry
              */
-            EnemyAISystem(rtp::ecs::Registry& registry);
+            EnemyAISystem(ecs::Registry& registry);
 
             /**
              * @brief Update enemy AI system logic for one frame
@@ -40,7 +40,7 @@ namespace rtp::server {
              */
             void update(float dt) override;
         private:
-            rtp::ecs::Registry& _registry;   /**< Reference to the entity registry */
+            ecs::Registry& _registry;   /**< Reference to the entity registry */
             float _time{0.0f};               /**< Elapsed time for AI calculations */
     };
 }

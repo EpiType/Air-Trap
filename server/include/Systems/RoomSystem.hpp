@@ -30,7 +30,7 @@ namespace rtp::server {
     * @class RoomSystem
     * @brief System to handle room-related operations on the server side.
     */
-    class RoomSystem : public rtp::ecs::ISystem
+    class RoomSystem : public ecs::ISystem
     {
         public:
             /**
@@ -50,7 +50,7 @@ namespace rtp::server {
              * @param network Reference to the server network manager
              * @param registry Reference to the entity registry
              */
-            RoomSystem(ServerNetwork& network, rtp::ecs::Registry& registry, NetworkSyncSystem& networkSync);
+            RoomSystem(ServerNetwork& network, ecs::Registry& registry, NetworkSyncSystem& networkSync);
 
             /**
              * @brief Update system logic for one frame
@@ -114,7 +114,7 @@ namespace rtp::server {
              * @param sessionId ID of the network session
              * @param packet Packet containing the chat message data
              */
-            void chatInRoom(uint32_t sessionId, const rtp::net::Packet& packet);
+            void chatInRoom(uint32_t sessionId, const net::Packet& packet);
 
             /**
              * @brief Launch all rooms that are ready to start the game
@@ -133,7 +133,7 @@ namespace rtp::server {
                                      const std::shared_ptr<Room>& room);
             ServerNetwork& _network;                          /**< Reference to the server network manager */
             NetworkSyncSystem& _networkSync;                  /**< Reference to the network sync system */
-            rtp::ecs::Registry& _registry;                    /**< Reference to the entity registry */
+            ecs::Registry& _registry;                    /**< Reference to the entity registry */
             std::map<uint32_t,
                 std::shared_ptr<Room>> _rooms{};              /**< Map of room ID to Room instances */
             std::map<uint32_t, uint32_t> _playerRoomMap;      /**< Map of player session ID to room ID */

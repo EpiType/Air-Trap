@@ -11,7 +11,7 @@
 #include <iostream>
 
 namespace rtp::client {
-    namespace Scenes {
+    namespace scenes {
 
         //////////////////////////////////////////////////////////////////////////
         // Public API
@@ -530,5 +530,5 @@ namespace rtp::client {
             }
         }
 
-    } // namespace Scenes
+    } // namespace scenes
 } // namespace rtp::client

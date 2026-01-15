@@ -20,7 +20,7 @@
     #include <functional>
 
 namespace rtp::client {
-    namespace Scenes {
+    namespace scenes {
         /**
          * @class PlayingScene
          * @brief Scene for the main gameplay.
@@ -100,25 +100,25 @@ namespace rtp::client {
                 float _fpsTimer = 0.0f;                     /**< FPS timer accumulator */
                 uint32_t _fpsFrames = 0;                    /**< FPS frame count */
 
-                rtp::ecs::Entity _hudPing{};                /**< Entity for displaying ping in the HUD */
-                rtp::ecs::Entity _hudFps{};                 /**< Entity for displaying FPS in the HUD */
-                rtp::ecs::Entity _hudScore{};               /**< Entity for displaying score in the HUD */
-                rtp::ecs::Entity _hudEntities{};            /**< Parent entity for HUD elements */
-                rtp::ecs::Entity _hudAmmo{};                /**< Entity for displaying ammo */
-                rtp::ecs::Entity _hudChargeBar{};           /**< Entity for charged shot HUD bar */
+                ecs::Entity _hudPing{};                /**< Entity for displaying ping in the HUD */
+                ecs::Entity _hudFps{};                 /**< Entity for displaying FPS in the HUD */
+                ecs::Entity _hudScore{};               /**< Entity for displaying score in the HUD */
+                ecs::Entity _hudEntities{};            /**< Parent entity for HUD elements */
+                ecs::Entity _hudAmmo{};                /**< Entity for displaying ammo */
+                ecs::Entity _hudChargeBar{};           /**< Entity for charged shot HUD bar */
                 bool _hudInit{false};                       /**< Flag indicating if HUD is initialized */
 
                 bool _chatOpen{false};                      /**< Whether expanded chat is open */
-                rtp::ecs::Entity _chatCompactPanel{};       /**< Compact chat background panel */
-                rtp::ecs::Entity _chatCompactText{};        /**< Text entity for last chat message */
+                ecs::Entity _chatCompactPanel{};       /**< Compact chat background panel */
+                ecs::Entity _chatCompactText{};        /**< Text entity for last chat message */
 
-                rtp::ecs::Entity _chatPanel{};              /**< Expanded chat panel */
-                rtp::ecs::Entity _chatHistoryText{};        /**< Text entity for chat history */
-                rtp::ecs::Entity _chatInput{};              /**< Text input entity for chat */
+                ecs::Entity _chatPanel{};              /**< Expanded chat panel */
+                ecs::Entity _chatHistoryText{};        /**< Text entity for chat history */
+                ecs::Entity _chatInput{};              /**< Text input entity for chat */
 
                 float _chargeTime{0.0f};                    /**< Local charge timer for HUD */
         };
-    } // namespace Scenes
+    } // namespace scenes
 } // namespace rtp::client
 
 #endif // RTYPE_CLIENT_SCENES_PLAYINGSCENE_HPP_
