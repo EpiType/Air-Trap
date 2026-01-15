@@ -426,8 +426,30 @@ namespace rtp::client {
 
         std::string ModMenuScene::openFileDialog()
         {
-            // Simple implementation using zenity (Linux) for file dialog
-            // For a production app, you'd want to use nativefiledialog or similar cross-platform library
+#ifdef _WIN32
+            // Windows: use PowerShell to show file dialog
+            std::string command = R"(powershell -Command "Add-Type -AssemblyName System.Windows.Forms; $f = New-Object System.Windows.Forms.OpenFileDialog; $f.Filter = 'Images|*.png;*.jpg;*.jpeg;*.gif'; $f.Title = 'Select Custom Sprite'; if($f.ShowDialog() -eq 'OK'){$f.FileName}")";
+            
+            FILE* pipe = _popen(command.c_str(), "r");
+            if (!pipe) {
+                log::error("Failed to open file dialog");
+                return "";
+            }
+
+            char buffer[512];
+            std::string result;
+            if (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+                result = buffer;
+                // Remove trailing newline/carriage return
+                while (!result.empty() && (result.back() == '\n' || result.back() == '\r')) {
+                    result.pop_back();
+                }
+            }
+            _pclose(pipe);
+
+            return result;
+#else
+            // Linux: use zenity for file dialog
             std::string command = "zenity --file-selection --title='Select Custom Sprite' --file-filter='Images | *.png *.jpg *.jpeg *.gif'";
             
             FILE* pipe = popen(command.c_str(), "r");
@@ -448,6 +470,7 @@ namespace rtp::client {
             pclose(pipe);
 
             return result;
+#endif
         }
 
         sf::Image ModMenuScene::resizeImage(const sf::Image& sourceImage, unsigned int targetWidth, unsigned int targetHeight)
