@@ -174,8 +174,8 @@ namespace rtp::client {
             return entity;
         }
 
-        rtp::ecs::Entity UiFactory::createSpritePreview(
-            rtp::ecs::Registry& registry,
+        ecs::Entity UiFactory::createSpritePreview(
+            ecs::Registry& registry,
             const position& position,
             const std::string& texturePath,
             int rectLeft,
@@ -187,13 +187,13 @@ namespace rtp::client {
         {
             auto entityRes = registry.spawn();
             if (!entityRes) {
-                rtp::log::error("Failed to spawn sprite preview entity: {}", entityRes.error().message());
+                log::error("Failed to spawn sprite preview entity: {}", entityRes.error().message());
                 throw std::runtime_error(std::string("Failed to spawn sprite preview entity: ") + std::string(entityRes.error().message()));
             }
 
-            rtp::ecs::Entity entity = entityRes.value();
+            ecs::Entity entity = entityRes.value();
 
-            rtp::ecs::components::ui::SpritePreview spritePreview;
+            ecs::components::ui::SpritePreview spritePreview;
             spritePreview.texturePath = texturePath;
             spritePreview.x = position.x;
             spritePreview.y = position.y;
@@ -204,7 +204,7 @@ namespace rtp::client {
             spritePreview.rectHeight = rectHeight;
             spritePreview.zIndex = zIndex;
 
-            registry.add<rtp::ecs::components::ui::SpritePreview>(entity, spritePreview);
+            registry.add<ecs::components::ui::SpritePreview>(entity, spritePreview);
 
             return entity;
         }

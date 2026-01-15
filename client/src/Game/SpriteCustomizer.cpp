@@ -29,13 +29,13 @@ namespace rtp::client {
     {
         try {
             if (!std::filesystem::exists(_spriteMappingPath)) {
-                rtp::log::info("No sprite mapping file found at {}, using defaults", _spriteMappingPath.string());
+                log::info("No sprite mapping file found at {}, using defaults", _spriteMappingPath.string());
                 return false;
             }
 
             std::ifstream file(_spriteMappingPath);
             if (!file.is_open()) {
-                rtp::log::error("Failed to open sprite mapping file: {}", _spriteMappingPath.string());
+                log::error("Failed to open sprite mapping file: {}", _spriteMappingPath.string());
                 return false;
             }
 
@@ -47,10 +47,10 @@ namespace rtp::client {
                 _customSpriteMappings[key] = value.get<std::string>();
             }
 
-            rtp::log::info("Loaded {} custom sprite mappings", _customSpriteMappings.size());
+            log::info("Loaded {} custom sprite mappings", _customSpriteMappings.size());
             return true;
         } catch (const std::exception& e) {
-            rtp::log::error("Failed to load sprite mappings: {}", e.what());
+            log::error("Failed to load sprite mappings: {}", e.what());
             return false;
         }
     }
@@ -59,14 +59,14 @@ namespace rtp::client {
     {
         _customSpriteMappings.clear();
         loadMappings();
-        rtp::log::info("Sprite mappings reloaded");
+        log::info("Sprite mappings reloaded");
     }
 
     bool SpriteCustomizer::hasCustomSprite(const std::string& entityName) const
     {
         bool found = _customSpriteMappings.find(entityName) != _customSpriteMappings.end();
         if (!found) {
-            rtp::log::debug("SpriteCustomizer: No custom sprite for '{}'. Available keys: {}",
+            log::debug("SpriteCustomizer: No custom sprite for '{}'. Available keys: {}",
                 entityName, _customSpriteMappings.size());
         }
         return found;
@@ -92,7 +92,7 @@ namespace rtp::client {
             outLeft = 0;
             outTop = 0;
             // Keep outWidth and outHeight unchanged - custom sprite is already resized to match
-            rtp::log::debug("SpriteCustomizer: Using custom sprite '{}' with original dimensions {}x{}",
+            log::debug("SpriteCustomizer: Using custom sprite '{}' with original dimensions {}x{}",
                 entityName, outWidth, outHeight);
             
             return it->second;
@@ -116,18 +116,18 @@ namespace rtp::client {
     {
         try {
             if (s_worldRenderSystem) {
-                auto* renderSystem = static_cast<rtp::client::RenderSystem*>(s_worldRenderSystem);
+                auto* renderSystem = static_cast<client::RenderSystem*>(s_worldRenderSystem);
                 renderSystem->clearTextureCache();
-                rtp::log::info("SpriteCustomizer: Cleared world render system texture cache");
+                log::info("SpriteCustomizer: Cleared world render system texture cache");
             }
             
             if (s_uiRenderSystem) {
-                auto* uiRenderSystem = static_cast<rtp::client::systems::UIRenderSystem*>(s_uiRenderSystem);
+                auto* uiRenderSystem = static_cast<client::systems::UIRenderSystem*>(s_uiRenderSystem);
                 uiRenderSystem->clearTextureCache();
-                rtp::log::info("SpriteCustomizer: Cleared UI render system texture cache");
+                log::info("SpriteCustomizer: Cleared UI render system texture cache");
             }
         } catch (const std::exception& e) {
-            rtp::log::error("SpriteCustomizer: Error clearing texture caches: {}", e.what());
+            log::error("SpriteCustomizer: Error clearing texture caches: {}", e.what());
         }
     }
 
