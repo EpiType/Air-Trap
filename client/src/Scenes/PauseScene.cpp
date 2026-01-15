@@ -8,7 +8,7 @@
 #include "Scenes/PauseScene.hpp"
 
 namespace rtp::client {
-    namespace Scenes {
+    namespace scenes {
 
         //////////////////////////////////////////////////////////////////////////
         // Public API
@@ -31,7 +31,7 @@ namespace rtp::client {
 
         void PauseScene::onEnter(void)
         {
-            rtp::log::info("Entering PauseScene");
+            log::info("Entering PauseScene");
 
             _uiFactory.createText(
                 _uiRegistry,
@@ -67,7 +67,7 @@ namespace rtp::client {
 
         void PauseScene::onExit(void)
         {
-            rtp::log::info("Exiting PauseScene");
+            log::info("Exiting PauseScene");
         }
 
         void PauseScene::handleEvent(const sf::Event& e)
@@ -83,5 +83,5 @@ namespace rtp::client {
         {
             (void)dt;
         }
-    } // namespace Scenes
+    } // namespace scenes
 } // namespace rtp::client

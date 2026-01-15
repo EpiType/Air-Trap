@@ -27,14 +27,14 @@ namespace rtp::server {
      * @class AuthSystem
      * @brief System to handle player login operations on the server side.
      */
-    class AuthSystem : public rtp::ecs::ISystem {
+    class AuthSystem : public ecs::ISystem {
         public:
             /** 
              * @brief Constructor for AuthSystem
              * @param network Reference to the server network manager
              * @param registry Reference to the entity registry
              */
-            AuthSystem(ServerNetwork& network, rtp::ecs::Registry& registry);
+            AuthSystem(ServerNetwork& network, ecs::Registry& registry);
 
             /**
              * @brief Update system logic for one frame
@@ -48,14 +48,14 @@ namespace rtp::server {
              * @param sessionId ID of the network session
              * @param packet Packet containing the login request data
              */
-            std::pair<bool, std::string> handleLoginRequest(uint32_t sessionId, const rtp::net::Packet& packet);
+            std::pair<bool, std::string> handleLoginRequest(uint32_t sessionId, const net::Packet& packet);
 
             /**
              * @brief Handle a registration request from a client
              * @param sessionId ID of the network session
              * @param packet Packet containing the registration request data
              */
-            std::pair<bool, std::string> handleRegisterRequest(uint32_t sessionId, const rtp::net::Packet& packet);
+            std::pair<bool, std::string> handleRegisterRequest(uint32_t sessionId, const net::Packet& packet);
 
             /**
              * @brief Send a login response to a client
@@ -75,7 +75,7 @@ namespace rtp::server {
 
         private:
             ServerNetwork& _network;          /**< Reference to the server network manager */
-            rtp::ecs::Registry& _registry;    /**< Reference to the entity registry */
+            ecs::Registry& _registry;    /**< Reference to the entity registry */
     };
 }
 

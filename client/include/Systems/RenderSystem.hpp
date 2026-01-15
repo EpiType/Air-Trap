@@ -27,16 +27,16 @@
 
 namespace rtp::client {
 
-    class RenderSystem : public rtp::ecs::ISystem {
+    class RenderSystem : public ecs::ISystem {
         public:
-            RenderSystem(rtp::ecs::Registry& r, sf::RenderWindow& window) 
+            RenderSystem(ecs::Registry& r, sf::RenderWindow& window) 
                 : _r(r), _window(window) {}
 
         void update(float dt) override;
         void clearTextureCache();
 
     private:
-        rtp::ecs::Registry& _r;
+        ecs::Registry& _r;
         sf::RenderWindow& _window;
         
         std::unordered_map<std::string, sf::Texture> _textureCache;

@@ -8,7 +8,7 @@
 #include "Scenes/LoginScene.hpp"
 
 namespace rtp::client {
-    namespace Scenes {
+    namespace scenes {
 
         //////////////////////////////////////////////////////////////////////////
         // Public API
@@ -31,7 +31,7 @@ namespace rtp::client {
 
         void LoginScene::onEnter(void)
         {
-            rtp::log::info("Entering LoginScene");
+            log::info("Entering LoginScene");
 
             _uiFactory.createText(
                 _uiRegistry,
@@ -104,7 +104,7 @@ namespace rtp::client {
 
         void LoginScene::onExit(void)
         {
-            rtp::log::info("Exiting LoginScene");
+            log::info("Exiting LoginScene");
         }
 
         void LoginScene::handleEvent(const sf::Event& event)
@@ -120,5 +120,5 @@ namespace rtp::client {
             }
         }
 
-    } // namespace Scenes
+    } // namespace scenes
 } // namespace rtp::client

@@ -21,12 +21,6 @@ namespace rtp::ecs
         return ref;
     }
 
-    template <typename T, typename... Args>
-    T &SystemManager::addSystem(Args &&...args)
-    {
-        return this->add<T>(std::forward<Args>(args)...);
-    }
-
     template <typename T>
     T &SystemManager::getSystem()
     {

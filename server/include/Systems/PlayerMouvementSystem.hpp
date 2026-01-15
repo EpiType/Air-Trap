@@ -26,13 +26,13 @@ namespace rtp::server {
      * @class PlayerMouvementSystem
      * @brief System to handle player entity movement based on input components.
      */
-    class PlayerMouvementSystem : public rtp::ecs::ISystem {
+    class PlayerMouvementSystem : public ecs::ISystem {
         public:
             /**
              * @brief Constructor for PlayerMouvementSystem
              * @param registry Reference to the entity registry
              */
-            PlayerMouvementSystem(rtp::ecs::Registry& registry);
+            PlayerMouvementSystem(ecs::Registry& registry);
 
             /**
              * @brief Update player movement system logic for one frame
@@ -41,7 +41,7 @@ namespace rtp::server {
             void update(float dt) override;
 
         private:
-            rtp::ecs::Registry& _registry;   /**< Reference to the entity registry */
+            ecs::Registry& _registry;   /**< Reference to the entity registry */
     };
 }
 #endif /* !RTYPE_PLAYER_MOUVEMENT_SYSTEM_HPP_ */

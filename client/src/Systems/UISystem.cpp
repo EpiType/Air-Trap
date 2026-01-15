@@ -20,7 +20,7 @@ namespace rtp::client
         handleGamepadInput();
 
         auto buttonsCheck =
-            _registry.getComponents<rtp::ecs::components::ui::Button>();
+            _registry.get<ecs::components::ui::Button>();
         if (!buttonsCheck) {
             return;
         }
@@ -33,7 +33,7 @@ namespace rtp::client
         handleMouseMove(cursorPos);
 
         buttonsCheck =
-            _registry.getComponents<rtp::ecs::components::ui::Button>();
+            _registry.get<ecs::components::ui::Button>();
         if (!buttonsCheck) {
             return;
         }
@@ -61,7 +61,7 @@ namespace rtp::client
     void UISystem::handleMouseMove(const sf::Vector2i &mousePos)
     {
         auto buttonsResult =
-            _registry.getComponents<rtp::ecs::components::ui::Button>();
+            _registry.get<ecs::components::ui::Button>();
         if (!buttonsResult)
             return;
 
@@ -70,9 +70,9 @@ namespace rtp::client
             auto &button = buttons[entity];
 
             if (isMouseOverButton(button, mousePos)) {
-                button.state = rtp::ecs::components::ui::ButtonState::Hovered;
+                button.state = ecs::components::ui::ButtonState::Hovered;
             } else {
-                button.state = rtp::ecs::components::ui::ButtonState::Idle;
+                button.state = ecs::components::ui::ButtonState::Idle;
             }
         }
     }
@@ -80,7 +80,7 @@ namespace rtp::client
     void UISystem::handleMouseClick(const sf::Vector2i &mousePos)
     {
         auto dropdownsResult =
-            _registry.getComponents<rtp::ecs::components::ui::Dropdown>();
+            _registry.get<ecs::components::ui::Dropdown>();
         if (dropdownsResult) {
             auto &dropdowns = dropdownsResult.value().get();
 
@@ -98,7 +98,7 @@ namespace rtp::client
                             dropdown.onSelect(optionIndex);
                         }
 
-                        rtp::log::info("Dropdown option {} selected",
+                        log::info("Dropdown option {} selected",
                                        optionIndex);
                         return;
                     }
@@ -110,7 +110,7 @@ namespace rtp::client
 
                 if (isMouseOverDropdown(dropdown, mousePos)) {
                     dropdown.isOpen = !dropdown.isOpen;
-                    rtp::log::info("Dropdown toggled: {}",
+                    log::info("Dropdown toggled: {}",
                                    dropdown.isOpen ? "open" : "closed");
 
                     for (const auto &otherEntity : dropdowns.entities()) {
@@ -136,12 +136,12 @@ namespace rtp::client
 
         {
             auto inputsResult =
-                _registry.getComponents<rtp::ecs::components::ui::TextInput>();
+                _registry.get<ecs::components::ui::TextInput>();
             if (inputsResult) {
                 auto &inputs = inputsResult.value().get();
 
                 auto isMouseOverTextInput =
-                    [&](const rtp::ecs::components::ui::TextInput &in) -> bool {
+                    [&](const ecs::components::ui::TextInput &in) -> bool {
                     return mousePos.x >=
                            in.position.x &&
                            mousePos.x <=
@@ -178,7 +178,7 @@ namespace rtp::client
                         }
                     }
 
-                    rtp::log::info("TextInput focused");
+                    log::info("TextInput focused");
                     return;
                 } else {
                     bool hadFocus = false;
@@ -191,18 +191,18 @@ namespace rtp::client
                         in.blinkTimer = 0.0f;
                     }
                     if (hadFocus) {
-                        rtp::log::info("TextInput unfocused");
+                        log::info("TextInput unfocused");
                     }
                 }
             }
         }
 
         auto buttonsResult =
-            _registry.getComponents<rtp::ecs::components::ui::Button>();
+            _registry.get<ecs::components::ui::Button>();
         if (buttonsResult) {
             auto &buttons = buttonsResult.value().get();
 
-            std::vector<std::pair<rtp::ecs::Entity, std::function<void()>>>
+            std::vector<std::pair<ecs::Entity, std::function<void()>>>
                 buttonCallbacks;
             for (const auto &entity : buttons.entities()) {
                 auto &button = buttons[entity];
@@ -211,13 +211,13 @@ namespace rtp::client
                 }
                 if (isMouseOverButton(button, mousePos)) {
                     button.state =
-                        rtp::ecs::components::ui::ButtonState::Pressed;
+                        ecs::components::ui::ButtonState::Pressed;
 
                     if (button.onClick) {
                         buttonCallbacks.emplace_back(entity, button.onClick);
                     }
 
-                    rtp::log::info("Button '{}' clicked", button.text);
+                    log::info("Button '{}' clicked", button.text);
                     break;
                 }
             }
@@ -230,7 +230,7 @@ namespace rtp::client
         }
 
         auto slidersResult =
-            _registry.getComponents<rtp::ecs::components::ui::Slider>();
+            _registry.get<ecs::components::ui::Slider>();
         if (slidersResult) {
             auto &sliders = slidersResult.value().get();
             for (const auto &entity : sliders.entities()) {
@@ -239,7 +239,7 @@ namespace rtp::client
                 if (isMouseOverSlider(slider, mousePos)) {
                     slider.isDragging = true;
                     updateSliderValue(slider, mousePos);
-                    rtp::log::info("Slider clicked at value: {}",
+                    log::info("Slider clicked at value: {}",
                                    slider.currentValue);
                     return;
                 }
@@ -248,7 +248,7 @@ namespace rtp::client
     }
 
     bool UISystem::isMouseOverButton(
-        const rtp::ecs::components::ui::Button &button,
+        const ecs::components::ui::Button &button,
         const sf::Vector2i &mousePos)
     {
         return mousePos.x >=
@@ -264,7 +264,7 @@ namespace rtp::client
     }
 
     bool UISystem::isMouseOverSlider(
-        const rtp::ecs::components::ui::Slider &slider,
+        const ecs::components::ui::Slider &slider,
         const sf::Vector2i &mousePos)
     {
         return mousePos.x >=
@@ -280,7 +280,7 @@ namespace rtp::client
     }
 
     bool UISystem::isMouseOverDropdown(
-        const rtp::ecs::components::ui::Dropdown &dropdown,
+        const ecs::components::ui::Dropdown &dropdown,
         const sf::Vector2i &mousePos)
     {
         return mousePos.x >=
@@ -295,7 +295,7 @@ namespace rtp::client
                dropdown.size.y;
     }
 
-    void UISystem::updateSliderValue(rtp::ecs::components::ui::Slider &slider,
+    void UISystem::updateSliderValue(ecs::components::ui::Slider &slider,
                                        const sf::Vector2i &mousePos)
     {
         float relativeX = mousePos.x - slider.position.x;
@@ -310,7 +310,7 @@ namespace rtp::client
     }
 
     int UISystem::getDropdownOptionAtMouse(
-        const rtp::ecs::components::ui::Dropdown &dropdown,
+        const ecs::components::ui::Dropdown &dropdown,
         const sf::Vector2i &mousePos)
     {
         float optionHeight = dropdown.size.y;
@@ -337,7 +337,7 @@ namespace rtp::client
     }
 
     bool UISystem::isMouseOverTextInput(
-        const rtp::ecs::components::ui::TextInput &input,
+        const ecs::components::ui::TextInput &input,
         const sf::Vector2i &mousePos) const
     {
         return mousePos.x >=
@@ -355,7 +355,7 @@ namespace rtp::client
     void UISystem::clearAllTextInputFocus()
     {
         auto inputsResult =
-            _registry.getComponents<rtp::ecs::components::ui::TextInput>();
+            _registry.get<ecs::components::ui::TextInput>();
         if (!inputsResult)
             return;
 
@@ -370,7 +370,7 @@ namespace rtp::client
     void UISystem::focusTextInputAt(const sf::Vector2i &mousePos)
     {
         auto inputsResult =
-            _registry.getComponents<rtp::ecs::components::ui::TextInput>();
+            _registry.get<ecs::components::ui::TextInput>();
         if (!inputsResult)
             return;
 
@@ -395,7 +395,7 @@ namespace rtp::client
     void UISystem::handleTextEntered(std::uint32_t unicode)
     {
         auto inputsResult =
-            _registry.getComponents<rtp::ecs::components::ui::TextInput>();
+            _registry.get<ecs::components::ui::TextInput>();
         if (!inputsResult)
             return;
 
@@ -452,7 +452,7 @@ namespace rtp::client
     void UISystem::handleKeyPressed(sf::Keyboard::Key key)
     {
         auto inputsResult =
-            _registry.getComponents<rtp::ecs::components::ui::TextInput>();
+            _registry.get<ecs::components::ui::TextInput>();
         if (!inputsResult)
             return;
 
@@ -582,4 +582,4 @@ namespace rtp::client
         window.draw(dot);
     }
 
-} // namespace Client::Systems
+} // namespace rtp::client

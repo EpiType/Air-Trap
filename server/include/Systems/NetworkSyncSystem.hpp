@@ -32,14 +32,14 @@ namespace rtp::server {
      * @class NetworkSyncSystem
      * @brief System to handle network-related operations on the server side.
      */
-    class NetworkSyncSystem : public rtp::ecs::ISystem {
+    class NetworkSyncSystem : public ecs::ISystem {
         public:
             /** 
              * @brief Constructor for NetworkSyncSystem
              * @param network Reference to the server network manager
              * @param registry Reference to the entity registry
              */
-            NetworkSyncSystem(ServerNetwork& network, rtp::ecs::Registry& registry);
+            NetworkSyncSystem(ServerNetwork& network, ecs::Registry& registry);
 
             /**
              * @brief Update system logic for one frame
@@ -61,7 +61,7 @@ namespace rtp::server {
              * @param sessionId ID of the network session
              * @param packet Packet containing the input data
              */
-            void handleInput(uint32_t sessionId, const rtp::net::Packet& packet);
+            void handleInput(uint32_t sessionId, const net::Packet& packet);
 
             /**
              * @brief Handle disconnection of a client
@@ -74,7 +74,7 @@ namespace rtp::server {
              * @param sessionId ID of the new session
              * @param packet Packet containing the connection data
              */
-            uint32_t handlePlayerConnection(uint32_t sessionId, const rtp::net::Packet& packet);
+            uint32_t handlePlayerConnection(uint32_t sessionId, const net::Packet& packet);
 
             /**
              * @brief Send a packet to the entity associated with the given ID
@@ -82,7 +82,7 @@ namespace rtp::server {
              * @param packet Packet to send
              * @param mode Network mode (TCP or UDP)
              */
-            void sendPacketToEntity(uint32_t entityId, const rtp::net::Packet& packet, rtp::net::NetworkMode mode);
+            void sendPacketToEntity(uint32_t entityId, const net::Packet& packet, net::NetworkMode mode);
 
             /**
              * @brief Send a packet to a specific session
@@ -90,7 +90,7 @@ namespace rtp::server {
              * @param packet Packet to send
              * @param mode Network mode (TCP or UDP)
              */
-            void sendPacketToSession(uint32_t sessionId, const rtp::net::Packet& packet, rtp::net::NetworkMode mode);
+            void sendPacketToSession(uint32_t sessionId, const net::Packet& packet, net::NetworkMode mode);
 
             /**
              * @brief Send a packet to multiple sessions
@@ -98,11 +98,11 @@ namespace rtp::server {
              * @param packet Packet to send
              * @param mode Network mode (TCP or UDP)
              */
-            void sendPacketToSessions(const std::vector<uint32_t>& sessions, const rtp::net::Packet& packet, rtp::net::NetworkMode mode);
+            void sendPacketToSessions(const std::vector<uint32_t>& sessions, const net::Packet& packet, net::NetworkMode mode);
             
         private:
             ServerNetwork& _network;           /**< Reference to the server network manager */
-            rtp::ecs::Registry& _registry;     /**< Reference to the entity registry */
+            ecs::Registry& _registry;     /**< Reference to the entity registry */
             std::unordered_map<uint32_t,
                 uint32_t> _sessionToEntity;    /**< Map of session IDs to entity IDs */
     };

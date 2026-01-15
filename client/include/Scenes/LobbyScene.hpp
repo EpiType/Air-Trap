@@ -19,7 +19,7 @@
     #include <memory>
 
 namespace rtp::client {
-    namespace Scenes {
+    namespace scenes {
         /**
          * @class LobbyScene
          * @brief Scene for the game lobby.
@@ -85,7 +85,7 @@ namespace rtp::client {
 
                 void buildUi(void);
         };
-    } // namespace Scenes
+    } // namespace scenes
 } // namespace rtp::client
 
 #endif // RTYPE_CLIENT_SCENES_LOBBYSCENE_HPP_

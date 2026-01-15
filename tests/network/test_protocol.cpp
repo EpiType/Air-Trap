@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include "RType/Network/Packet.hpp"
 
-using namespace rtp::net;
+using namespace net;
 
 TEST(PacketTest, DefaultConstruction) {
     Packet packet;

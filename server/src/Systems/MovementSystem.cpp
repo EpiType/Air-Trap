@@ -13,14 +13,14 @@ namespace rtp::server
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
-    MovementSystem::MovementSystem(rtp::ecs::Registry& registry)
+    MovementSystem::MovementSystem(ecs::Registry& registry)
         : _registry(registry) {}
 
     void MovementSystem::update(float dt)
     {
         auto view = _registry.zipView<
-            rtp::ecs::components::Transform,
-            rtp::ecs::components::Velocity
+            ecs::components::Transform,
+            ecs::components::Velocity
         >();
 
         for (auto&& [tf, vel] : view) {
@@ -29,16 +29,16 @@ namespace rtp::server
         }
 
         auto playerView = _registry.zipView<
-            rtp::ecs::components::Transform,
-            rtp::ecs::components::BoundingBox,
-            rtp::ecs::components::EntityType
+            ecs::components::Transform,
+            ecs::components::BoundingBox,
+            ecs::components::EntityType
         >();
 
         constexpr float kWindowWidth = 1280.0f;
         constexpr float kWindowHeight = 720.0f;
 
         for (auto&& [tf, box, type] : playerView) {
-            if (type.type != rtp::net::EntityType::Player) {
+            if (type.type != net::EntityType::Player) {
                 continue;
             }
 

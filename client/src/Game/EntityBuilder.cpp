@@ -2,19 +2,23 @@
 ** EPITECH PROJECT, 2025
 ** Air-Trap, Client
 ** File description:
-** EnemyBuilder implementation
+**
+ * EnemyBuilder implementation
 */
 
 #include "Game/EntityBuilder.hpp"
 #include "Game/SpriteCustomizer.hpp"
 
-namespace rtp::client {
+namespace rtp::client
+{
 
-    EntityBuilder::EntityBuilder(rtp::ecs::Registry &registry)
-        : _registry(registry) {}
+    EntityBuilder::EntityBuilder(ecs::Registry &registry)
+        : _registry(registry)
+    {
+    }
 
     auto EntityBuilder::spawn(const EntityTemplate &t)
-        -> std::expected<rtp::ecs::Entity, rtp::Error>
+        -> std::expected<ecs::Entity, Error>
     {
         auto e = _registry.spawn();
         if (!e) {
@@ -22,10 +26,11 @@ namespace rtp::client {
         }
         auto entity = e.value();
 
-        _registry.add<rtp::ecs::components::Transform>(entity, t.position, t.rotation, t.scale);
+        _registry.add<ecs::components::Transform>(entity, t.position,
+                                                       t.rotation, t.scale);
 
         if (t.withVelocity) {
-            _registry.add<rtp::ecs::components::Velocity>(entity, t.velocity);
+            _registry.add<ecs::components::Velocity>(entity, t.velocity);
         }
 
         // Apply custom sprite if exists
@@ -37,18 +42,18 @@ namespace rtp::client {
         
         // First, check if template has a specific tag (for bullets, etc.)
         if (!t.tag.empty()) {
-            rtp::log::debug("EntityBuilder: Checking tag '{}' for entity '{}'", t.tag, t.id);
+            log::debug("EntityBuilder: Checking tag '{}' for entity '{}'", t.tag, t.id);
         }
         
         if (t.tag == "player_bullet") {
             entityKey = "Player_Laser";
-            rtp::log::info("EntityBuilder: Mapped player_bullet to Player_Laser");
+            log::info("EntityBuilder: Mapped player_bullet to Player_Laser");
         } else if (t.tag == "enemy_bullet") {
             entityKey = "Basic_Laser";
-            rtp::log::info("EntityBuilder: Mapped enemy_bullet to Basic_Laser");
+            log::info("EntityBuilder: Mapped enemy_bullet to Basic_Laser");
         } else if (t.tag == "rt1_1") {
             entityKey = "Player_Ship";
-            rtp::log::info("EntityBuilder: Mapped rt1_1 to Player_Ship");
+            log::info("EntityBuilder: Mapped rt1_1 to Player_Ship");
         } else if (sprite.texturePath.find("r-typesheet1.gif") != std::string::npos) {
             if (sprite.rectLeft == 101 && sprite.rectTop == 3) {
                 entityKey = "Player_Ship";
@@ -90,7 +95,7 @@ namespace rtp::client {
         }
 
         if (!entityKey.empty()) {
-            rtp::log::info("EntityBuilder: entityKey='{}', hasCustomSprite={}", 
+            log::info("EntityBuilder: entityKey='{}', hasCustomSprite={}", 
                 entityKey, customizer.hasCustomSprite(entityKey));
         }
 
@@ -111,28 +116,29 @@ namespace rtp::client {
             hasActiveCustomization = true;
         }
 
-        _registry.add<rtp::ecs::components::Sprite>(entity, sprite);
+        _registry.add<ecs::components::Sprite>(entity, sprite);
 
         // Only disable animation if we actually applied a custom sprite
         if (t.withAnimation && !hasActiveCustomization) {
-            _registry.add<rtp::ecs::components::Animation>(entity, t.animation);
+            _registry.add<ecs::components::Animation>(entity, t.animation);
         }
 
         if (t.withParallax) {
-            _registry.add<rtp::ecs::components::ParallaxLayer>(entity, t.parallax);
+            _registry.add<ecs::components::ParallaxLayer>(entity,
+                                                               t.parallax);
         }
 
         return entity;
     }
 
-    void EntityBuilder::kill(rtp::ecs::Entity entity)
+    void EntityBuilder::kill(ecs::Entity entity)
     {
         _registry.kill(entity);
     }
 
-    void EntityBuilder::update(rtp::ecs::Entity entity, const EntityTemplate &t)
+    void EntityBuilder::update(ecs::Entity entity, const EntityTemplate &t)
     {
-        if (auto arr = _registry.getComponents<rtp::ecs::components::Transform>(); arr) {
+        if (auto arr = _registry.get<ecs::components::Transform>(); arr) {
             auto &sa = arr->get();
             if (entity < sa.size() && sa.has(entity)) {
                 auto &tr = sa[entity];
@@ -143,7 +149,8 @@ namespace rtp::client {
         }
 
         if (t.withVelocity) {
-            if (auto arr = _registry.getComponents<rtp::ecs::components::Velocity>(); arr) {
+            if (auto arr = _registry.get<ecs::components::Velocity>();
+                arr) {
                 auto &sa = arr->get();
                 if (entity < sa.size() && sa.has(entity)) {
                     sa[entity] = t.velocity;
@@ -151,7 +158,7 @@ namespace rtp::client {
             }
         }
 
-        if (auto arr = _registry.getComponents<rtp::ecs::components::Sprite>(); arr) {
+        if (auto arr = _registry.get<ecs::components::Sprite>(); arr) {
             auto &sa = arr->get();
             if (entity < sa.size() && sa.has(entity)) {
                 sa[entity] = t.sprite;
@@ -159,7 +166,8 @@ namespace rtp::client {
         }
 
         if (t.withAnimation) {
-            if (auto arr = _registry.getComponents<rtp::ecs::components::Animation>(); arr) {
+            if (auto arr = _registry.get<ecs::components::Animation>();
+                arr) {
                 auto &sa = arr->get();
                 if (entity < sa.size() && sa.has(entity)) {
                     sa[entity] = t.animation;
@@ -167,4 +175,4 @@ namespace rtp::client {
             }
         }
     }
-} // namespace Client::Game
+}

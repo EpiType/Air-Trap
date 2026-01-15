@@ -9,8 +9,8 @@ using namespace rtp::ecs::components;
 
 TEST(ZipViewTest, IterationAlignsOnCommonEntities) {
     Registry reg;
-    auto tsResult = reg.registerComponent<Transform>();
-    auto vsResult = reg.registerComponent<Velocity>();
+    auto tsResult = reg.subscribe<Transform>();
+    auto vsResult = reg.subscribe<Velocity>();
     ASSERT_TRUE(tsResult.has_value());
     ASSERT_TRUE(vsResult.has_value());
     auto &ts = tsResult->get();
@@ -37,8 +37,8 @@ TEST(ZipViewTest, IterationAlignsOnCommonEntities) {
 
 TEST(ZipViewTest, UpdatesAfterErase) {
     Registry reg;
-    auto tsResult = reg.registerComponent<Transform>();
-    auto vsResult = reg.registerComponent<Velocity>();
+    auto tsResult = reg.subscribe<Transform>();
+    auto vsResult = reg.subscribe<Velocity>();
     ASSERT_TRUE(tsResult.has_value());
     ASSERT_TRUE(vsResult.has_value());
     auto &ts = tsResult->get();
