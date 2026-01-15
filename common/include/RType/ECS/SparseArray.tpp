@@ -114,6 +114,8 @@ namespace rtp::ecs
         return this->_data.emplace_back(std::forward<Args>(args)...);
     }
 
+#if defined(__GNUC__) || defined(__clang__)
+    // C++23 explicit object parameter implementation
     template <Component T>
     template <typename Self>
     auto SparseArray<T>::data(this Self &&self) noexcept
@@ -124,7 +126,23 @@ namespace rtp::ecs
             return std::span<T>{self._data};
         }
     }
+#else
+    // Traditional overloads for MSVC
+    template <Component T>
+    std::span<T> SparseArray<T>::data() noexcept
+    {
+        return std::span<T>{_data};
+    }
 
+    template <Component T>
+    std::span<const T> SparseArray<T>::data() const noexcept
+    {
+        return std::span<const T>{_data};
+    }
+#endif
+
+#if defined(__GNUC__) || defined(__clang__)
+    // C++23 explicit object parameter implementation
     template <Component T>
     template <typename Self>
     auto SparseArray<T>::entities(this Self &&self) noexcept
@@ -135,6 +153,20 @@ namespace rtp::ecs
             return std::span<Entity>{self._dense};
         }
     }
+#else
+    // Traditional overloads for MSVC
+    template <Component T>
+    std::span<Entity> SparseArray<T>::entities() noexcept
+    {
+        return std::span<Entity>{_dense};
+    }
+
+    template <Component T>
+    std::span<const Entity> SparseArray<T>::entities() const noexcept
+    {
+        return std::span<const Entity>{_dense};
+    }
+#endif
 
     template <Component T>
     std::size_t SparseArray<T>::size(void) const noexcept

@@ -149,21 +149,39 @@ namespace rtp::ecs
 
             /**
              * @brief Get the underlying dense component array
-             * @tparam Self Deduced self type (const or non-const)
              * @return Reference to the dense component container
              */
+#if defined(__GNUC__) || defined(__clang__)
+            // C++23 explicit object parameter (GCC/Clang)
             template <typename Self>
             [[nodiscard]]
             auto data(this Self &&self) noexcept;
+#else
+            // Traditional overloads for MSVC
+            [[nodiscard]]
+            std::span<T> data() noexcept;
+
+            [[nodiscard]]
+            std::span<const T> data() const noexcept;
+#endif
 
             /**
              * @brief Get the entity array corresponding to components
-             * @tparam Self Deduced self type (const or non-const)
              * @return Reference to the entity container
              */
+#if defined(__GNUC__) || defined(__clang__)
+            // C++23 explicit object parameter (GCC/Clang)
             template <typename Self>
             [[nodiscard]]
             auto entities(this Self &&self) noexcept;
+#else
+            // Traditional overloads for MSVC
+            [[nodiscard]]
+            std::span<Entity> entities() noexcept;
+
+            [[nodiscard]]
+            std::span<const Entity> entities() const noexcept;
+#endif
 
             /**
              * @brief Get the number of components stored
