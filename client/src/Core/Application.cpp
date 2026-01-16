@@ -88,6 +88,7 @@ namespace rtp::client
         _worldSystemManager.add<InputSystem>(_worldRegistry, _uiRegistry, _settings, _clientNetwork, _window);
         _worldSystemManager.add<ParallaxSystem>(_worldRegistry);
         _worldSystemManager.add<AnimationSystem>(_worldRegistry);
+        _worldSystemManager.add<AudioSystem>(_worldRegistry);
         auto& worldRenderSystem = _worldSystemManager.add<RenderSystem>(_worldRegistry, _window);
         _worldSystemManager.add<ParallaxSystem>(_worldRegistry);
         
@@ -132,6 +133,8 @@ namespace rtp::client
         _worldRegistry.subscribe<ecs::components::NetworkId>();
         _worldRegistry.subscribe<ecs::components::EntityType>();
         _worldRegistry.subscribe<ecs::components::BoundingBox>();
+        _worldRegistry.subscribe<ecs::components::audio::AudioSource>();
+        _worldRegistry.subscribe<ecs::components::audio::SoundEvent>();
         log::info("OK: World ECS initialized with components");
     }
 

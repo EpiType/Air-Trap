@@ -7,6 +7,7 @@
 
 #include "Systems/InputSystem.hpp"
 #include "RType/ECS/Components/UI/TextInput.hpp"
+#include "RType/ECS/Components/Audio/SoundEvent.hpp"
 #include <SFML/Graphics.hpp>
 #include <SFML/Window/Joystick.hpp>
 
