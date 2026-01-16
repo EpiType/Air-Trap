@@ -17,6 +17,7 @@ set(SRC_CLIENT
     src/UI/UiFactory.cpp
     src/Systems/UIRenderSystem.cpp
     src/Systems/RenderSystem.cpp
+    src/Systems/AudioSystem.cpp
     src/Game/EntityBuilder.cpp
     src/Game/SpriteCustomizer.cpp
     # src/Systems/SettingsMenuSystem.cpp
@@ -71,6 +72,7 @@ target_link_libraries(r-type_client
     PRIVATE
         RTypeCommon
         SFML::Graphics
+        SFML::Audio
         SFML::Window
         SFML::System
         nlohmann_json::nlohmann_json
