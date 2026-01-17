@@ -19,6 +19,8 @@
 #include "RType/ECS/Components/Health.hpp"
 #include "RType/ECS/Components/Damage.hpp"
 #include "RType/ECS/Components/Powerup.hpp"
+#include "RType/ECS/Components/Shield.hpp"
+#include "RType/ECS/Components/DoubleFire.hpp"
 #include "RType/ECS/Components/MovementSpeed.hpp"
 #include "RType/ECS/Components/Velocity.hpp"
 
@@ -65,6 +67,14 @@ class CollisionSystem : public ecs::ISystem {
          * @param entityB Second entity involved in the collision
          */
         void despawn(const ecs::Entity& entity, uint32_t roomId);
+
+        /**
+         * @brief Spawn a power-up at given position
+         * @param position Position to spawn the power-up
+         * @param roomId Room ID
+         * @param dropRoll Random value to determine power-up type
+         */
+        void spawnPowerup(const Vec2f& position, uint32_t roomId, int dropRoll);
     
     private:
         ecs::Registry& _registry;      /**< Reference to the ECS registry */

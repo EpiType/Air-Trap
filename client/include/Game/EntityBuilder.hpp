@@ -62,6 +62,8 @@ namespace rtp::client
             int rectHeight;
             int zIndex;
             int red;
+            int green;
+            int blue;
             bool withAnimation;
             int frameWidth;
             int frameHeight;
@@ -105,6 +107,8 @@ namespace rtp::client
             t.sprite.rectHeight = d.rectHeight;
             t.sprite.zIndex = d.zIndex;
             t.sprite.red = d.red;
+            t.sprite.green = d.green;
+            t.sprite.blue = d.blue;
 
             t.withAnimation = d.withAnimation;
             if (d.withAnimation) {
@@ -169,7 +173,7 @@ namespace rtp::client
             "player_ship",     "assets/sprites/r-typesheet1.gif",
             101,         3,
             33,          14,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        33,
             14,          101,
             3,           5,
@@ -180,7 +184,7 @@ namespace rtp::client
             "shot_insane",     "assets/sprites/r-typesheet1.gif",
             134,         18,
             33,          32,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        33,
             32,          134,
             18,          4,
@@ -191,7 +195,7 @@ namespace rtp::client
             "effect_1",     "assets/sprites/r-typesheet1.gif",
             2,           51,
             33,          32,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        33,
             32,          2,
             51,          8,
@@ -202,7 +206,7 @@ namespace rtp::client
             "shot_1",     "assets/sprites/r-typesheet1.gif",
             215,         85,
             18,          12,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        18,
             12,          215,
             85,          3,
@@ -213,7 +217,7 @@ namespace rtp::client
             "shot_2",     "assets/sprites/r-typesheet1.gif",
             232,         103,
             17,          12,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        17,
             12,          232,
             103,         2,
@@ -224,7 +228,7 @@ namespace rtp::client
             "shot_3",     "assets/sprites/r-typesheet1.gif",
             200,         121,
             33,          10,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        33,
             10,          200,
             121,         2,
@@ -235,7 +239,7 @@ namespace rtp::client
             "shot_4",     "assets/sprites/r-typesheet1.gif",
             168,         137,
             49,          12,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        49,
             12,          168,
             137,         2,
@@ -246,7 +250,7 @@ namespace rtp::client
             "shot_5",     "assets/sprites/r-typesheet1.gif",
             104,         171,
             81,          14,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        81,
             14,          104,
             171,         2,
@@ -257,7 +261,7 @@ namespace rtp::client
             "effect_2",    "assets/sprites/r-typesheet1.gif",
             211,         276,
             16,          12,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        16,
             12,          211,
             276,         4,
@@ -268,7 +272,7 @@ namespace rtp::client
             "effect_3",    "assets/sprites/r-typesheet1.gif",
             72,          296,
             37,          30,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        37,
             30,          72,
             296,         6,
@@ -280,7 +284,7 @@ namespace rtp::client
             "enemy_1",     "assets/sprites/r-typesheet2.gif",
             159,         35,
             24,          16,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        24,
             16,          159,
             35,          6,
@@ -291,7 +295,7 @@ namespace rtp::client
             "shot_6",     "assets/sprites/r-typesheet2.gif",
             300,         58,
             18,          6,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             false,       0,
             0,           0,
             0,           0,
@@ -302,7 +306,7 @@ namespace rtp::client
             "enemy_2",     "assets/sprites/r-typesheet2.gif",
             300,         71,
             30,          18,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        30,
             18,          300,
             71,          6,
@@ -313,7 +317,7 @@ namespace rtp::client
             "shot_7",     "assets/sprites/r-typesheet2.gif",
             266,         94,
             17,          10,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        17,
             10,          266,
             94,          2,
@@ -324,7 +328,7 @@ namespace rtp::client
             "effect_4",     "assets/sprites/r-typesheet2.gif",
             101,         118,
             17,          14,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        17,
             14,          101,
             118,         4,
@@ -335,12 +339,45 @@ namespace rtp::client
             "effect_5",     "assets/sprites/r-typesheet2.gif",
             157,         316,
             18,          14,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        18,
             14,          157,
             316,         8,
             2.0f,        {-1.0f, 0.0f},
             {1.0f,  1.0f}
+        };
+        static constexpr SpriteAnimDef k_rt3_1{
+            "power_up_heal",     "assets/sprites/r-typesheet3.gif",
+            0,           0,           // Red powerup (Heal) - frame 0
+            16,          16,          // Each frame is 16x16
+            5,           255,         255, 100,  // zIndex 5, RED tint (R=255, G=255, B=100)
+            true,        16,          // withAnimation, frameWidth 16
+            16,          0,           // frameHeight 16, frameLeft 0
+            0,           12,          // frameTop 0, totalFrames 12
+            2.0f,        {0.0f, 0.0f}, // speed 2.0, no movement
+            {2.0f,  2.0f}             // scale 2x for visibility
+        };
+        static constexpr SpriteAnimDef k_rt3_2{
+            "power_up_double",   "assets/sprites/r-typesheet3.gif",
+            64,          0,           // Cyan powerup (DoubleFire) - frame 4 (16*4=64)
+            16,          16,          // Each frame is 16x16
+            5,           100,         200, 255,  // zIndex 5, CYAN tint (R=100, G=200, B=255)
+            true,        16,          // withAnimation, frameWidth 16
+            16,          64,          // frameHeight 16, frameLeft 64
+            0,           12,          // frameTop 0, totalFrames 12
+            2.0f,        {0.0f, 0.0f}, // speed 2.0, no movement
+            {2.0f,  2.0f}             // scale 2x for visibility
+        };
+        static constexpr SpriteAnimDef k_rt3_3{
+            "power_up_shield",   "assets/sprites/r-typesheet3.gif",
+            128,         0,           // Green powerup (Shield) - frame 8 (16*8=128)
+            16,          16,          // Each frame is 16x16
+            5,           100,         255, 100,  // zIndex 5, GREEN tint (R=100, G=255, B=100)
+            true,        16,          // withAnimation, frameWidth 16
+            16,          128,         // frameHeight 16, frameLeft 128
+            0,           12,          // frameTop 0, totalFrames 12
+            2.0f,        {0.0f, 0.0f}, // speed 2.0, no movement
+            {2.0f,  2.0f}             // scale 2x for visibility
         };
 
         static EntityTemplate createParrallaxLayer1()
@@ -433,11 +470,6 @@ namespace rtp::client
             return makeFromDef(initialPos, k_rt2_7);
         }
 
-        static EntityTemplate rt2_7(const Vec2f &initialPos)
-        {
-            return makeFromDef(initialPos, k_rt2_7);
-        }
-
         // Convenience aliases used by Application.cpp
         static EntityTemplate createBulletPlayer(const Vec2f &initialPos)
         {
@@ -456,6 +488,21 @@ namespace rtp::client
         static EntityTemplate createBasicScout2(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt2_2);
+        }
+
+        static EntityTemplate createPowerUpHeal(const Vec2f &initialPos)
+        {
+            return makeFromDef(initialPos, k_rt3_1);
+        }
+
+        static EntityTemplate createPowerUpDoubleFire(const Vec2f &initialPos)
+        {
+            return makeFromDef(initialPos, k_rt3_2);
+        }
+
+        static EntityTemplate createPowerUpShield(const Vec2f &initialPos)
+        {
+            return makeFromDef(initialPos, k_rt3_3);
         }
     };
 
