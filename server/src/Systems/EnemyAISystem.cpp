@@ -78,11 +78,9 @@ namespace rtp::server
                 if (it != frontX.end()) {
                     targetX = std::max(anchorX, it->second + minAhead);
                 }
-
                 const float dx = targetX - tf.position.x;
                 const float maxXSpeed = std::max(60.0f, pat.speed);
                 const float desiredX = std::clamp(dx * followGain, -maxXSpeed, maxXSpeed);
-
                 vel.direction.x = desiredX;
             }
 
@@ -104,7 +102,10 @@ namespace rtp::server
 
                 case ecs::components::Patterns::Circular: {
                     const float angle = _time * pat.frequency;
-                    vel.direction.y = pat.amplitude * std::cos(angle);
+                    const float circleX = pat.amplitude * std::cos(angle);
+                    const float circleY = pat.amplitude * std::sin(angle);
+                    vel.direction.x += circleX * 4.0f;
+                    vel.direction.y = circleY * 2.0f;
                     break;
                 }
 

@@ -25,7 +25,7 @@
             },
             "count": 4,
             "delay_between_spawn": 0.6,
-            "pattern": "kamikaze",
+            "pattern": "circle",
             "speed": 140.0
         },
         {
