@@ -1,9 +1,9 @@
-/*
-** EPITECH PROJECT, 2025
-** Air-Trap
-** File description:
-** ShieldSystem implementation
-*/
+/**
+ * File   : ShieldSystem.cpp
+ * License: MIT
+ * Author : Angel SEVERAN <angel.severan@epitech.eu>
+ * Date   : 17/01/2026
+ */
 
 #include "Systems/ShieldSystem.hpp"
 #include "RType/ECS/Components/ShieldVisual.hpp"
