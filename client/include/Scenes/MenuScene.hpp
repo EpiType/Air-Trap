@@ -80,6 +80,7 @@ namespace rtp::client {
                 NetworkSyncSystem& _network;                /**< Reference to the client network */
                 graphics::UiFactory& _uiFactory;            /**< UI Factory for creating UI components */
                 ChangeStateFn _changeState;                 /**< Function to change the game state */
+                ecs::Entity _menuMusicEntity;               /**< Entity for menu background music */
         };
     } // namespace scenes
 } // namespace rtp::client
