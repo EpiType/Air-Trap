@@ -36,6 +36,7 @@ void AudioSystem::stopAllSounds() {
         sound->stop();
     }
     _activeSounds.clear();
+    _loopingSounds.clear();
 }
 
 sf::SoundBuffer* AudioSystem::loadSoundBuffer(const std::string& path) {
@@ -66,16 +67,12 @@ void AudioSystem::updateAudioSources(float) {
                 }
                 audioSource.dirty = false;
             }
-
-            // Restart looping sounds that have finished
-            if (audioSource.loop && audioSource.sourceId > 0) {
+            if (audioSource.loop) {
                 auto it = _activeSounds.find(audioSource.sourceId);
                 if (it != _activeSounds.end() && it->second->getStatus() == sf::Sound::Status::Stopped) {
                     it->second->play();
                 }
             }
-
-            // Clean up finished non-looping sounds
             cleanupFinishedSounds();
         }
     } catch (const std::exception& e) {
@@ -106,11 +103,10 @@ void AudioSystem::playAudioSource(ecs::components::audio::AudioSource& audioSour
     auto sound = std::make_unique<sf::Sound>(*buffer);
     sound->setVolume(audioSource.volume * _masterVolume / 100.0f);
     sound->setPitch(audioSource.pitch);
-    // Note: sf::Sound doesn't support setLoop, only sf::Music does
-    // For looping audio effects, we'll need to restart the sound manually
     sound->play();
 
     audioSource.sourceId = _nextSoundId;
+    _loopingSounds[_nextSoundId] = audioSource.loop;
     _activeSounds[_nextSoundId++] = std::move(sound);
 }
 
@@ -128,8 +124,11 @@ void AudioSystem::playSoundEffect(ecs::components::audio::SoundEvent& soundEvent
 
 void AudioSystem::cleanupFinishedSounds() {
     for (auto it = _activeSounds.begin(); it != _activeSounds.end();) {
-        if (it->second->getStatus() == sf::Sound::Status::Stopped) {
+        const uint32_t id = it->first;
+        const bool isLooping = (_loopingSounds.find(id) != _loopingSounds.end() && _loopingSounds[id]);
+        if (it->second->getStatus() == sf::Sound::Status::Stopped && !isLooping) {
             it = _activeSounds.erase(it);
+            _loopingSounds.erase(id);
         } else {
             ++it;
         }
