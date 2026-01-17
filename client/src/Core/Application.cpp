@@ -200,7 +200,29 @@ namespace rtp::client
             _activeScene->onExit();
         }
         
-        _uiRegistry.clear();
+            if (newState == GameState::Playing) {
+                auto &uiAudio = _uiSystemManager.getSystem<AudioSystem>();
+                uiAudio.stopAllSounds();
+                _uiRegistry.clear();
+            } else {
+                std::vector<ecs::Entity> audioSourcesToKeep;
+                std::vector<ecs::components::audio::AudioSource> audioSourceData;
+            
+                auto audioSources = _uiRegistry.get<ecs::components::audio::AudioSource>();
+                if (audioSources) {
+                    auto& sources = audioSources.value().get();
+                    for (const auto& entity : sources.entities()) {
+                        audioSourcesToKeep.push_back(entity);
+                        audioSourceData.push_back(sources[entity]);
+                    }
+                }
+
+                _uiRegistry.clear();
+
+                for (size_t i = 0; i < audioSourcesToKeep.size(); ++i) {
+                    _uiRegistry.add<ecs::components::audio::AudioSource>(audioSourcesToKeep[i], audioSourceData[i]);
+                }
+            }
         
         if (newState != GameState::Playing && newState != GameState::Paused) {
             _worldRegistry.clear();
