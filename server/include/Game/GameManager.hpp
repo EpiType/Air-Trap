@@ -52,6 +52,8 @@
     #include "RType/ECS/Components/Damage.hpp"
     #include "RType/ECS/Components/Powerup.hpp"
     #include "RType/ECS/Components/MovementSpeed.hpp"
+    #include "RType/ECS/Components/Shield.hpp"
+    #include "RType/ECS/Components/DoubleFire.hpp"
 
 /**
  * @namespace rtp::server

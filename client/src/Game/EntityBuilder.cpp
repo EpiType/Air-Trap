@@ -46,51 +46,58 @@ namespace rtp::client
         }
         
         if (t.tag == "player_bullet") {
-            entityKey = "Player_Laser";
-            log::info("EntityBuilder: Mapped player_bullet to Player_Laser");
+            entityKey = "shot_6";
+            log::info("EntityBuilder: Mapped player_bullet to shot_6");
         } else if (t.tag == "enemy_bullet") {
-            entityKey = "Basic_Laser";
-            log::info("EntityBuilder: Mapped enemy_bullet to Basic_Laser");
+            entityKey = "shot_6";
+            log::info("EntityBuilder: Mapped enemy_bullet to shot_6");
         } else if (t.tag == "player_ship") {
-            entityKey = "Player_Ship";
-            log::info("EntityBuilder: Mapped player_ship to Player_Ship");
+            entityKey = "player_ship";
+            log::info("EntityBuilder: Mapped player_ship to player_ship");
         } else if (sprite.texturePath.find("r-typesheet1.gif") != std::string::npos) {
             if (sprite.rectLeft == 101 && sprite.rectTop == 3) {
-                entityKey = "Player_Ship";
-            } else if (sprite.rectLeft == 134) {
-                entityKey = "Enemy_Fighter_1";
-            } else if (sprite.rectLeft == 134) {
-                entityKey = "Enemy_Fighter_2";
+                entityKey = "player_ship";
+            } else if (sprite.rectLeft == 134 && sprite.rectTop == 18) {
+                entityKey = "shot_insane";
             } else if (sprite.rectLeft == 2 && sprite.rectTop == 51) {
-                entityKey = "Enemy_Fighter_3";
-            } else if (sprite.rectLeft == 215) {
-                entityKey = "Enemy_Ship_1";
-            } else if (sprite.rectLeft == 232) {
-                entityKey = "Enemy_Ship_2";
-            } else if (sprite.rectLeft == 200) {
-                entityKey = "Enemy_Ship_3";
-            } else if (sprite.rectLeft == 168) {
-                entityKey = "Enemy_Ship_4";
-            } else if (sprite.rectLeft == 104) {
-                entityKey = "Enemy_Ship_5";
-            } else if (sprite.rectLeft == 211) {
-                entityKey = "Missile_1";
-            } else if (sprite.rectLeft == 72) {
-                entityKey = "Explosion";
+                entityKey = "effect_1";
+            } else if (sprite.rectLeft == 215 && sprite.rectTop == 85) {
+                entityKey = "shot_1";
+            } else if (sprite.rectLeft == 232 && sprite.rectTop == 103) {
+                entityKey = "shot_2";
+            } else if (sprite.rectLeft == 200 && sprite.rectTop == 121) {
+                entityKey = "shot_3";
+            } else if (sprite.rectLeft == 168 && sprite.rectTop == 137) {
+                entityKey = "shot_4";
+            } else if (sprite.rectLeft == 104 && sprite.rectTop == 171) {
+                entityKey = "shot_5";
+            } else if (sprite.rectLeft == 211 && sprite.rectTop == 276) {
+                entityKey = "effect_2";
+            } else if (sprite.rectLeft == 72 && sprite.rectTop == 296) {
+                entityKey = "effect_3";
             }
         } else if (sprite.texturePath.find("r-typesheet2.gif") != std::string::npos) {
             if (sprite.rectLeft == 159 && sprite.rectTop == 35) {
-                entityKey = "Enemy_Drone";
+                entityKey = "enemy_1";
             } else if (sprite.rectLeft == 300 && sprite.rectTop == 58) {
-                entityKey = "Basic_Laser";
+                entityKey = "shot_6";
             } else if (sprite.rectLeft == 300 && sprite.rectTop == 71) {
-                entityKey = "Heavy_Laser";
-            } else if (sprite.rectLeft == 266) {
-                entityKey = "Plasma_Shot";
-            } else if (sprite.rectLeft == 101) {
-                entityKey = "Energy_Beam";
-            } else if (sprite.rectLeft == 157) {
-                entityKey = "Special_Beam";
+                entityKey = "enemy_2";
+            } else if (sprite.rectLeft == 266 && sprite.rectTop == 94) {
+                entityKey = "shot_7";
+            } else if (sprite.rectLeft == 101 && sprite.rectTop == 118) {
+                entityKey = "effect_4";
+            } else if (sprite.rectLeft == 157 && sprite.rectTop == 316) {
+                entityKey = "effect_5";
+            }
+        } else if (sprite.texturePath.find("r-typesheet3.gif") != std::string::npos) {
+            // Power-ups from r-typesheet3.gif
+            if (sprite.rectLeft == 0 && sprite.rectTop == 0) {
+                entityKey = "power_up_heal";
+            } else if (sprite.rectLeft == 64 && sprite.rectTop == 0) {
+                entityKey = "power_up_double";
+            } else if (sprite.rectLeft == 128 && sprite.rectTop == 0) {
+                entityKey = "power_up_shield";
             }
         }
 

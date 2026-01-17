@@ -65,10 +65,11 @@ namespace rtp::client {
     bool SpriteCustomizer::hasCustomSprite(const std::string& entityName) const
     {
         bool found = _customSpriteMappings.find(entityName) != _customSpriteMappings.end();
-        if (!found) {
-            log::debug("SpriteCustomizer: No custom sprite for '{}'. Available keys: {}",
-                entityName, _customSpriteMappings.size());
-        }
+        // Log disabled to avoid spam - uncomment for debugging:
+        // if (!found) {
+        //     log::debug("SpriteCustomizer: No custom sprite for '{}'. Available keys: {}",
+        //         entityName, _customSpriteMappings.size());
+        // }
         return found;
     }
 

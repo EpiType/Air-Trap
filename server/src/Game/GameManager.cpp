@@ -35,6 +35,8 @@ namespace rtp::server
         _registry.subscribe<ecs::components::Damage>();
         _registry.subscribe<ecs::components::Powerup>();
         _registry.subscribe<ecs::components::MovementSpeed>();
+        _registry.subscribe<ecs::components::Shield>();
+        _registry.subscribe<ecs::components::DoubleFire>();
 
         _networkSyncSystem = std::make_unique<NetworkSyncSystem>(_networkManager, _registry);
         _movementSystem = std::make_unique<MovementSystem>(_registry);

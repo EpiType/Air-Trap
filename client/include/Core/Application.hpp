@@ -51,6 +51,7 @@
 #include "Systems/AnimationSystem.hpp"
 #include "Systems/UISystem.hpp"
 #include "Systems/UIRenderSystem.hpp"
+#include "Systems/ShieldSystem.hpp"
 
 /* ECS */
 #include "RType/ECS/Registry.hpp"

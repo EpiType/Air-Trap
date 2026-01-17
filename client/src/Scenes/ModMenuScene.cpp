@@ -160,7 +160,8 @@ namespace rtp::client {
                 {"Effect 2", "assets/sprites/r-typesheet1.gif", 211, 276, 16, 12},        // effect_2
                 {"Effect 3", "assets/sprites/r-typesheet1.gif", 72, 296, 37, 30},          // effect_3
                 {"Effect 4", "assets/sprites/r-typesheet2.gif", 101, 118, 17, 14},      // effect_4
-                {"Effect 5", "assets/sprites/r-typesheet2.gif", 157, 316, 18, 14}      // effect_5
+                {"Effect 5", "assets/sprites/r-typesheet2.gif", 157, 316, 18, 14},      // effect_5
+                {"Power-Up", "assets/sprites/r-typesheet3.gif", 0, 0, 16, 16}      // power_up (frame 0 of animation)
             };
 
             _categories = {players, enemies, projectiles, effects};
