@@ -199,7 +199,12 @@ namespace rtp::client
         if (_activeScene) {
             _activeScene->onExit();
         }
-        
+
+        if (_currentState == GameState::Playing && newState != GameState::Playing) {
+            auto &worldAudio = _worldSystemManager.getSystem<AudioSystem>();
+            worldAudio.stopAllSounds();
+        }
+
             if (newState == GameState::Playing) {
                 auto &uiAudio = _uiSystemManager.getSystem<AudioSystem>();
                 uiAudio.stopAllSounds();
