@@ -51,9 +51,9 @@ namespace rtp::client
         } else if (t.tag == "enemy_bullet") {
             entityKey = "Basic_Laser";
             log::info("EntityBuilder: Mapped enemy_bullet to Basic_Laser");
-        } else if (t.tag == "rt1_1") {
+        } else if (t.tag == "player_ship") {
             entityKey = "Player_Ship";
-            log::info("EntityBuilder: Mapped rt1_1 to Player_Ship");
+            log::info("EntityBuilder: Mapped player_ship to Player_Ship");
         } else if (sprite.texturePath.find("r-typesheet1.gif") != std::string::npos) {
             if (sprite.rectLeft == 101 && sprite.rectTop == 3) {
                 entityKey = "Player_Ship";
