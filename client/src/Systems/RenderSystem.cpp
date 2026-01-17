@@ -7,6 +7,7 @@
 
 #include "Systems/RenderSystem.hpp"
 #include "Utils/DebugFlags.hpp"
+#include "RType/ECS/Components/ShieldVisual.hpp"
 
 namespace rtp::client {
 
@@ -106,6 +107,36 @@ void RenderSystem::update(float dt)
         }
         rect.setOutlineThickness(1.0f);
         _window.draw(rect);
+    }
+    
+    // Dessiner les shields visuels (cercle vert autour du joueur)
+    auto shieldView = _r.zipView<
+        ecs::components::Transform,
+        ecs::components::BoundingBox,
+        rtp::ecs::components::ShieldVisual
+    >();
+    
+    for (auto&& [trans, box, shield] : shieldView) {
+        // Calculer le rayon basé sur la taille de l'entité
+        const float radius = std::max(box.width, box.height) / 2.0f + 8.0f;
+        
+        // Créer le cercle avec effet de transparence
+        sf::CircleShape circle(radius);
+        circle.setPosition(sf::Vector2f(trans.position.x - radius, trans.position.y - radius));
+        circle.setFillColor(sf::Color::Transparent);
+        circle.setOutlineColor(sf::Color(0, 255, 0, static_cast<uint8_t>(shield.alpha)));
+        circle.setOutlineThickness(2.5f);
+        
+        _window.draw(circle);
+        
+        // Dessiner un cercle intérieur plus fin pour l'effet
+        sf::CircleShape innerCircle(radius - 4.0f);
+        innerCircle.setPosition(sf::Vector2f(trans.position.x - (radius - 4.0f), trans.position.y - (radius - 4.0f)));
+        innerCircle.setFillColor(sf::Color::Transparent);
+        innerCircle.setOutlineColor(sf::Color(100, 255, 100, static_cast<uint8_t>(shield.alpha * 0.5f)));
+        innerCircle.setOutlineThickness(1.0f);
+        
+        _window.draw(innerCircle);
     }
 }
 

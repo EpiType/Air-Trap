@@ -141,12 +141,14 @@ namespace rtp::net
         Tank   = 3,
         Boss   = 4,
         Bullet = 5,
-        PowerupHeal = 6,
-        PowerupSpeed = 7,
+        PowerupHeal = 6,        // Red - Health regen
+        PowerupSpeed = 7,       // (unused for now)
         Obstacle = 8,
         EnemyBullet = 9,
         ObstacleSolid = 10,
-        ChargedBullet = 11
+        ChargedBullet = 11,
+        PowerupDoubleFire = 12, // Yellow/White - Double fire for 20s
+        PowerupShield = 13      // Green - Shield (absorb 1 hit)
     };
 
     //////////////////////////////////////////////////////////////////////////

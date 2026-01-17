@@ -14,8 +14,10 @@ namespace rtp::ecs::components {
  * @brief Supported powerup types.
  */
 enum class PowerupType : uint8_t {
-    Heal = 1,
-    Speed = 2
+    Heal = 1,         // Red - Restore 1 heart
+    Speed = 2,        // (unused)
+    DoubleFire = 3,   // Yellow/White - Double fire for 20s
+    Shield = 4        // Green - Absorb 1 hit
 };
 
 /**
@@ -24,7 +26,7 @@ enum class PowerupType : uint8_t {
  */
 struct Powerup {
     PowerupType type{PowerupType::Heal}; /**< Powerup type */
-    float value{0.0f};                  /**< Heal amount or speed multiplier */
-    float duration{0.0f};               /**< Duration for timed effects */
+    float value{0.0f};                  /**< Heal amount or effect strength */
+    float duration{0.0f};               /**< Duration for timed effects (0 = permanent) */
 };
 }  // namespace rtp::ecs::components

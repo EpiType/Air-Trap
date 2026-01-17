@@ -49,7 +49,8 @@ class InputSystem : public ecs::ISystem
             MoveLeft  = 1 << 2,
             MoveRight = 1 << 3,
             Shoot     = 1 << 4,
-            Reload    = 1 << 5
+            Reload    = 1 << 5,
+            DebugPowerup = 1 << 6  /**< Debug key to spawn powerup */
         };
 
         ecs::Registry& _r;                 /**< Reference to the entity registry */
