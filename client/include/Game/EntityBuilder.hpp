@@ -166,7 +166,7 @@ namespace rtp::client
         };
 
         static constexpr SpriteAnimDef k_rt1_1{
-            "rt1_1",     "assets/sprites/r-typesheet1.gif",
+            "player_ship",     "assets/sprites/r-typesheet1.gif",
             101,         3,
             33,          14,
             5,           255,
@@ -177,7 +177,7 @@ namespace rtp::client
             {1.0f,  1.0f}
         };
         static constexpr SpriteAnimDef k_rt1_2{
-            "rt1_2",     "assets/sprites/r-typesheet1.gif",
+            "shot_insane",     "assets/sprites/r-typesheet1.gif",
             134,         18,
             33,          32,
             5,           255,
@@ -188,7 +188,7 @@ namespace rtp::client
             {1.0f,  1.0f}
         };
         static constexpr SpriteAnimDef k_rt1_3{
-            "rt1_3",     "assets/sprites/r-typesheet1.gif",
+            "effect_1",     "assets/sprites/r-typesheet1.gif",
             2,           51,
             33,          32,
             5,           255,
@@ -199,7 +199,7 @@ namespace rtp::client
             {1.0f,  1.0f}
         };
         static constexpr SpriteAnimDef k_rt1_4{
-            "rt1_4",     "assets/sprites/r-typesheet1.gif",
+            "shot_1",     "assets/sprites/r-typesheet1.gif",
             215,         85,
             18,          12,
             5,           255,
@@ -210,7 +210,7 @@ namespace rtp::client
             {1.0f,  1.0f}
         };
         static constexpr SpriteAnimDef k_rt1_5{
-            "rt1_5",     "assets/sprites/r-typesheet1.gif",
+            "shot_2",     "assets/sprites/r-typesheet1.gif",
             232,         103,
             17,          12,
             5,           255,
@@ -221,7 +221,7 @@ namespace rtp::client
             {1.0f,  1.0f}
         };
         static constexpr SpriteAnimDef k_rt1_6{
-            "rt1_6",     "assets/sprites/r-typesheet1.gif",
+            "shot_3",     "assets/sprites/r-typesheet1.gif",
             200,         121,
             33,          10,
             5,           255,
@@ -232,7 +232,7 @@ namespace rtp::client
             {1.0f,  1.0f}
         };
         static constexpr SpriteAnimDef k_rt1_7{
-            "rt1_7",     "assets/sprites/r-typesheet1.gif",
+            "shot_4",     "assets/sprites/r-typesheet1.gif",
             168,         137,
             49,          12,
             5,           255,
@@ -243,7 +243,7 @@ namespace rtp::client
             {1.0f,  1.0f}
         };
         static constexpr SpriteAnimDef k_rt1_8{
-            "rt1_8",     "assets/sprites/r-typesheet1.gif",
+            "shot_5",     "assets/sprites/r-typesheet1.gif",
             104,         171,
             81,          14,
             5,           255,
@@ -254,7 +254,7 @@ namespace rtp::client
             {1.0f,  1.0f}
         };
         static constexpr SpriteAnimDef k_rt1_12{
-            "rt1_12",    "assets/sprites/r-typesheet1.gif",
+            "effect_2",    "assets/sprites/r-typesheet1.gif",
             211,         276,
             16,          12,
             5,           255,
@@ -265,7 +265,7 @@ namespace rtp::client
             {1.0f,  1.0f}
         };
         static constexpr SpriteAnimDef k_rt1_13{
-            "rt1_13",    "assets/sprites/r-typesheet1.gif",
+            "effect_3",    "assets/sprites/r-typesheet1.gif",
             72,          296,
             37,          30,
             5,           255,
@@ -277,7 +277,7 @@ namespace rtp::client
         };
 
         static constexpr SpriteAnimDef k_rt2_2{
-            "rt2_2",     "assets/sprites/r-typesheet2.gif",
+            "enemy_1",     "assets/sprites/r-typesheet2.gif",
             159,         35,
             24,          16,
             5,           255,
@@ -288,7 +288,7 @@ namespace rtp::client
             {1.0f,  1.0f}
         };
         static constexpr SpriteAnimDef k_rt2_3{
-            "rt2_3",     "assets/sprites/r-typesheet2.gif",
+            "shot_6",     "assets/sprites/r-typesheet2.gif",
             300,         58,
             18,          6,
             5,           255,
@@ -299,7 +299,7 @@ namespace rtp::client
             {1.0f,  1.0f}
         };
         static constexpr SpriteAnimDef k_rt2_4{
-            "rt2_4",     "assets/sprites/r-typesheet2.gif",
+            "enemy_2",     "assets/sprites/r-typesheet2.gif",
             300,         71,
             30,          18,
             5,           255,
@@ -310,7 +310,7 @@ namespace rtp::client
             {1.0f,  1.0f}
         };
         static constexpr SpriteAnimDef k_rt2_5{
-            "rt2_5",     "assets/sprites/r-typesheet2.gif",
+            "shot_7",     "assets/sprites/r-typesheet2.gif",
             266,         94,
             17,          10,
             5,           255,
@@ -321,7 +321,7 @@ namespace rtp::client
             {1.0f,  1.0f}
         };
         static constexpr SpriteAnimDef k_rt2_6{
-            "rt2_6",     "assets/sprites/r-typesheet2.gif",
+            "effect_4",     "assets/sprites/r-typesheet2.gif",
             101,         118,
             17,          14,
             5,           255,
@@ -332,7 +332,7 @@ namespace rtp::client
             {1.0f,  1.0f}
         };
         static constexpr SpriteAnimDef k_rt2_7{
-            "rt2_8",     "assets/sprites/r-typesheet2.gif",
+            "effect_5",     "assets/sprites/r-typesheet2.gif",
             157,         316,
             18,          14,
             5,           255,
@@ -353,82 +353,82 @@ namespace rtp::client
             return makeParallax(kParallaxNear);
         }
 
-        static EntityTemplate rt1_1(const Vec2f &initialPos)
+        static EntityTemplate player_ship(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt1_1);
         }
 
-        static EntityTemplate rt1_2(const Vec2f &initialPos)
+        static EntityTemplate shot_insane(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt1_2);
         }
 
-        static EntityTemplate rt1_3(const Vec2f &initialPos)
+        static EntityTemplate effect_1(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt1_3);
         }
 
-        static EntityTemplate rt1_4(const Vec2f &initialPos)
+        static EntityTemplate shot_1(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt1_4);
         }
 
-        static EntityTemplate rt1_5(const Vec2f &initialPos)
+        static EntityTemplate shot_2(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt1_5);
         }
 
-        static EntityTemplate rt1_6(const Vec2f &initialPos)
+        static EntityTemplate shot_3(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt1_6);
         }
 
-        static EntityTemplate rt1_7(const Vec2f &initialPos)
+        static EntityTemplate shot_4(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt1_7);
         }
 
-        static EntityTemplate rt1_8(const Vec2f &initialPos)
+        static EntityTemplate shot_5(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt1_8);
         }
 
-        static EntityTemplate rt1_12(const Vec2f &initialPos)
+        static EntityTemplate effect_2(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt1_12);
         }
 
-        static EntityTemplate rt1_13(const Vec2f &initialPos)
+        static EntityTemplate effect_3(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt1_13);
         }
 
-        static EntityTemplate rt2_2(const Vec2f &initialPos)
+        static EntityTemplate enemy_1(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt2_2);
         }
 
-        static EntityTemplate rt2_3(const Vec2f &initialPos)
+        static EntityTemplate shot_6(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt2_3);
         }
 
-        static EntityTemplate rt2_4(const Vec2f &initialPos)
+        static EntityTemplate enemy_2(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt2_4);
         }
 
-        static EntityTemplate rt2_5(const Vec2f &initialPos)
+        static EntityTemplate shot_7(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt2_5);
         }
 
-        static EntityTemplate rt2_6(const Vec2f &initialPos)
+        static EntityTemplate effect_4(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt2_6);
         }
 
-        static EntityTemplate rt2_8(const Vec2f &initialPos)
+        static EntityTemplate effect_5(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt2_7);
         }

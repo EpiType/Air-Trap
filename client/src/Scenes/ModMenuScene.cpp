@@ -125,42 +125,42 @@ namespace rtp::client {
             EntityCategory players;
             players.name = "Players";
             players.entities = {
-                {"Player Ship", "assets/sprites/r-typesheet1.gif", 101, 3, 33, 14}  // rt1_1 - the actual player sprite
+                {"Player Ship", "assets/sprites/r-typesheet1.gif", 101, 3, 33, 14}  // player_ship - the actual player sprite
             };
 
             // Enemies category (ennemis)
             EntityCategory enemies;
             enemies.name = "Enemies";
             enemies.entities = {
-                {"Enemy Fighter 1", "assets/sprites/r-typesheet1.gif", 101, 3, 33, 14},    // rt1_1
-                {"Enemy Fighter 2", "assets/sprites/r-typesheet1.gif", 134, 18, 33, 32},   // rt1_2
-                {"Enemy Fighter 3", "assets/sprites/r-typesheet1.gif", 2, 51, 33, 32},     // rt1_3
-                {"Enemy Ship 1", "assets/sprites/r-typesheet1.gif", 215, 85, 18, 12},      // rt1_4
-                {"Enemy Ship 2", "assets/sprites/r-typesheet1.gif", 232, 103, 17, 12},     // rt1_5
-                {"Enemy Ship 3", "assets/sprites/r-typesheet1.gif", 200, 121, 33, 10},     // rt1_6
-                {"Enemy Ship 4", "assets/sprites/r-typesheet1.gif", 168, 137, 49, 12},     // rt1_7
-                {"Enemy Ship 5", "assets/sprites/r-typesheet1.gif", 104, 171, 81, 14},     // rt1_8
-                {"Enemy Drone", "assets/sprites/r-typesheet2.gif", 159, 35, 24, 16}        // rt2_2
+                {"Enemy 1", "assets/sprites/r-typesheet1.gif", 101, 3, 33, 14},    // player_ship
+                {"Enemy 2", "assets/sprites/r-typesheet2.gif", 159, 35, 24, 16},       // enemy_1
+                {"Heavy 3", "assets/sprites/r-typesheet2.gif", 300, 71, 30, 18},       // enemy_2
             };
-
+            
             // Projectiles category (projectiles)
             EntityCategory projectiles;
             projectiles.name = "Projectiles";
             projectiles.entities = {
-                {"Player Laser", "assets/sprites/r-typesheet2.gif", 300, 58, 18, 6},       // rt2_3 (player bullets)
-                {"Missile 1", "assets/sprites/r-typesheet1.gif", 211, 276, 16, 12},        // rt1_12
-                {"Basic Laser", "assets/sprites/r-typesheet2.gif", 300, 58, 18, 6},        // rt2_3 (enemy bullets)
-                {"Heavy Laser", "assets/sprites/r-typesheet2.gif", 300, 71, 30, 18},       // rt2_4
-                {"Plasma Shot", "assets/sprites/r-typesheet2.gif", 266, 94, 17, 10},       // rt2_5
-                {"Energy Beam", "assets/sprites/r-typesheet2.gif", 101, 118, 17, 14},      // rt2_6
-                {"Special Beam", "assets/sprites/r-typesheet2.gif", 157, 316, 18, 14}      // rt2_7
+                {"Player Shot", "assets/sprites/r-typesheet2.gif", 300, 58, 18, 6},       // shot_6 (player bullets)
+                {"Basic Shot", "assets/sprites/r-typesheet2.gif", 300, 58, 18, 6},        // shot_6 (enemy bullets)
+                {"Huge Shot", "assets/sprites/r-typesheet1.gif", 134, 18, 33, 32},   // shot_insane
+                {"Shot 1", "assets/sprites/r-typesheet1.gif", 215, 85, 18, 12},      // shot_1
+                {"Shot 2", "assets/sprites/r-typesheet1.gif", 232, 103, 17, 12},     // shot_2
+                {"Shot 3", "assets/sprites/r-typesheet1.gif", 200, 121, 33, 10},     // shot_3
+                {"Shot 4", "assets/sprites/r-typesheet1.gif", 168, 137, 49, 12},     // shot_4
+                {"Shot 5", "assets/sprites/r-typesheet1.gif", 104, 171, 81, 14},     // shot_5
+                {"Shot 6", "assets/sprites/r-typesheet2.gif", 266, 94, 17, 10},       // shot_7
             };
-
+            
             // Effects category (explosions/effets)
             EntityCategory effects;
             effects.name = "Effects";
             effects.entities = {
-                {"Explosion", "assets/sprites/r-typesheet1.gif", 72, 296, 37, 30}          // rt1_13
+                {"Effect 1", "assets/sprites/r-typesheet1.gif", 2, 51, 33, 32},     // effect_1
+                {"Effect 2", "assets/sprites/r-typesheet1.gif", 211, 276, 16, 12},        // effect_2
+                {"Effect 3", "assets/sprites/r-typesheet1.gif", 72, 296, 37, 30},          // effect_3
+                {"Effect 4", "assets/sprites/r-typesheet2.gif", 101, 118, 17, 14},      // effect_4
+                {"Effect 5", "assets/sprites/r-typesheet2.gif", 157, 316, 18, 14}      // effect_5
             };
 
             _categories = {players, enemies, projectiles, effects};

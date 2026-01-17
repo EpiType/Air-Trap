@@ -435,17 +435,17 @@ namespace rtp::client {
         EntityTemplate t;
         switch (static_cast<net::EntityType>(payload.type)) {
             case net::EntityType::Scout:
-                t = EntityTemplate::rt2_4(pos);
+                t = EntityTemplate::enemy_2(pos);
                 break;
             case net::EntityType::Tank:
-                t = EntityTemplate::rt1_3(pos);
+                t = EntityTemplate::effect_1(pos);
                 break;
             case net::EntityType::Boss:
-                t = EntityTemplate::rt1_13(pos);
+                t = EntityTemplate::effect_3(pos);
                 break;
 
             case net::EntityType::Player:
-                t = EntityTemplate::rt1_1(pos);
+                t = EntityTemplate::player_ship(pos);
                 break;
 
             case net::EntityType::Bullet:
@@ -468,23 +468,23 @@ namespace rtp::client {
                 break;
 
             case net::EntityType::PowerupHeal:
-                t = EntityTemplate::rt1_4(pos);
+                t = EntityTemplate::shot_1(pos);
                 break;
 
             case net::EntityType::PowerupSpeed:
-                t = EntityTemplate::rt1_5(pos);
+                t = EntityTemplate::shot_2(pos);
                 break;
 
             case net::EntityType::Obstacle:
-                t = EntityTemplate::rt2_6(pos);
+                t = EntityTemplate::effect_4(pos);
                 break;
             case net::EntityType::ObstacleSolid:
-                t = EntityTemplate::rt2_6(pos);
+                t = EntityTemplate::effect_4(pos);
                 break;
 
             default:
                 log::warning("Unknown entity type {}, fallback template", (int)payload.type);
-                t = EntityTemplate::rt2_2(pos);
+                t = EntityTemplate::enemy_1(pos);
                 break;
         }
 
