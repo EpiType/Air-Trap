@@ -51,6 +51,18 @@ public:
     float getMasterVolume() const;
 
     /**
+     * @brief Set music volume (affects AudioSource components)
+     * @param volume Volume level (0.0 - 100.0)
+     */
+    void setMusicVolume(float volume);
+
+    /**
+     * @brief Set SFX volume (affects SoundEvent components)
+     * @param volume Volume level (0.0 - 100.0)
+     */
+    void setSfxVolume(float volume);
+
+    /**
      * @brief Stop all currently playing sounds
      */
     void stopAllSounds();
@@ -58,9 +70,13 @@ public:
 private:
     ecs::Registry& _registry;
     float _masterVolume;
+    float _musicVolume;
+    float _sfxVolume;
     std::unordered_map<uint32_t, std::unique_ptr<sf::Sound>> _activeSounds;
     std::unordered_map<std::string, std::unique_ptr<sf::SoundBuffer>> _soundBuffers;
     std::unordered_map<uint32_t, bool> _loopingSounds;  /**< Track which sounds should loop */
+    std::unordered_map<uint32_t, float> _soundBaseVolumes;  /**< Track base volume (0.0-1.0) for each sound */
+    std::unordered_map<uint32_t, bool> _soundIsMusic;  /**< Track if sound is music (true) or SFX (false) */
     uint32_t _nextSoundId;
 
     /**
