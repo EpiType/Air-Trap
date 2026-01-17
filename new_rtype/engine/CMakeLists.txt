@@ -9,10 +9,9 @@ target_sources(engine_core PRIVATE
     src/ecs/Registry.cpp
     src/ecs/SystemManager.cpp
     src/input/Input.cpp
-    src/render/RenderSystem.cpp
     src/audio/AudioSystem.cpp
-    src/resource/AssetManager.cpp
-    src/net/Network.cpp
+    src/net/ANetwork.cpp
+    src/ui/UiFactory.cpp
     src/plugin/DynamicLibrary.cpp
     src/plugin/LibraryManager.cpp
 )

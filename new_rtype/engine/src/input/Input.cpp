@@ -92,6 +92,7 @@ namespace engine::input
                     _mouseY = event.y;
                     break;
                 case EventType::None:
+                    break;
                 default:
                     break;
             }
@@ -105,7 +106,6 @@ namespace engine::input
 
     bool Input::isKeyPressed(KeyCode key) const
     {
-        engine::core::debug("Checking if key is pressed: {}", static_cast<int>(key));
         return (key != KeyCode::Unknown) && _keysPressed[keyIndex(key)];
     }
 

@@ -10,7 +10,7 @@
 
     #include <functional>
     #include <string>
-    #include "engine/Math/Vec2.hpp"
+    #include "engine/math/Vec2.hpp"
     #include "engine/ui/UiUtilities.hpp"
 
 namespace engine::ecs::components
@@ -37,7 +37,7 @@ namespace engine::ecs::components
         std::function<void()> onClick;          /**< Callback when clicked */
         
         ui::color idleColor{100, 100, 100};     /**< RGB color when idle */
-        ui::color idleColor{150, 150, 150};     /**< RGB color when hovered */
+        ui::color hoverColor{150, 150, 150};    /**< RGB color when hovered */
         ui::color pressedColor{50, 50, 50};     /**< RGB color when pressed */
     };
 }  // namespace engine::ecs::components

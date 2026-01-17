@@ -53,6 +53,7 @@ namespace engine::input
         Close,
         KeyDown,
         KeyUp,
+        TextEntered,
         MouseMove,
         MouseButtonDown,
         MouseButtonUp,
@@ -70,6 +71,7 @@ namespace engine::input
         int x{0};
         int y{0};
         float wheelDelta{0.0f};
+        char32_t text{0};
     };
 }
 

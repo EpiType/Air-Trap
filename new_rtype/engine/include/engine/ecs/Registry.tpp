@@ -23,16 +23,18 @@ namespace engine::ecs
         std::type_index type = typeid(T);
 
         if (self._arrays.contains(type)) [[unlikely]]
-            return std::unexpected{Error::failure(ErrorCode::InternalRuntimeError,
-                                                  "Component already registered: {}",
-                                                  type.name())};
+            return std::unexpected{engine::core::Error::failure(
+                engine::core::ErrorCode::InternalRuntimeError,
+                "Component already registered: {}",
+                type.name())};
 
         auto [it, inserted] = self._arrays.emplace(
             type, std::make_unique<SparseArray<T>>());
         if (!inserted) [[unlikely]]
-            return std::unexpected{Error::failure(ErrorCode::InternalRuntimeError,
-                                                  "Failed to register component: {}",
-                                                  type.name())};
+            return std::unexpected{engine::core::Error::failure(
+                engine::core::ErrorCode::InternalRuntimeError,
+                "Failed to register component: {}",
+                type.name())};
 
         auto *rawPtr = static_cast<ConstLike<Self, SparseArray<T>> *>(it->second.get());
         return std::ref(*rawPtr);
@@ -51,15 +53,15 @@ namespace engine::ecs
         if (entity.index() >= this->_generations.size() ||
             this->_generations[entity.index()] != entity.generation()) {
             return std::unexpected{
-                Error::failure(ErrorCode::EntityInvalid,
-                               "Registry: Invalid entity")};
+                engine::core::Error::failure(engine::core::ErrorCode::EntityInvalid,
+                                             "Registry: Invalid entity")};
         }
 
         const auto componentId = getStaticComponentID<T>();
         if (componentId >= MAX_COMPONENTS) {
             return std::unexpected{
-                Error::failure(ErrorCode::RegistryFull,
-                               "Registry: Max component types reached")};
+                engine::core::Error::failure(engine::core::ErrorCode::RegistryFull,
+                                             "Registry: Max component types reached")};
         }
 
         if (entity.index() >= this->_entitySignatures.size()) {
@@ -80,9 +82,10 @@ namespace engine::ecs
         std::type_index type = typeid(T);
 
         if (!self._arrays.contains(type)) [[unlikely]]
-            return std::unexpected{Error::failure(ErrorCode::ComponentMissing,
-                                                  "Missing component: {}",
-                                                  type.name())};
+            return std::unexpected{engine::core::Error::failure(
+                engine::core::ErrorCode::ComponentMissing,
+                "Missing component: {}",
+                type.name())};
 
         auto &ptr = self._arrays.find(type)->second;
         auto *rawPtr = static_cast<SparseArray<T> *>(ptr.get());
@@ -173,9 +176,10 @@ namespace engine::ecs
             std::type_index index(typeid(T));
             
             if (self._arrays.find(index) == self._arrays.end()) {
-                throw engine::core::Error::failure(ErrorCode::ComponentMissing,
-                                          "Component not registered in zipView: {}",
-                                          typeid(T).name());
+                throw engine::core::Error::failure(
+                    engine::core::ErrorCode::ComponentMissing,
+                    "Component not registered in zipView: {}",
+                    typeid(T).name());
             }
 
             return static_cast<ConstLikeRef<Self, SparseArray<T>>>(*self._arrays.at(index));

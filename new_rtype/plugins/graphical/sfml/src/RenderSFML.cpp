@@ -79,6 +79,11 @@ namespace engine::render
             return (it == kKeyMap.end()) ? input::KeyCode::Unknown : it->second;
         }
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Public API
+    ////////////////////////////////////////////////////////////////////////////
+
     bool RenderSFML::init(int width, int height, const std::string& title)
     {
         engine::core::info("Initializing SFML Renderer: {}x{} - '{}'", width, height, title);
@@ -89,6 +94,7 @@ namespace engine::render
         if (!_window.isOpen()) {
             return false;
         }
+        _window.setVerticalSyncEnabled(true);
         return true;
     }
 
@@ -111,20 +117,19 @@ namespace engine::render
 
     void RenderSFML::draw(const RenderFrame& frame)
     {
-        for (const auto& sprite : frame.sprites) {
-            if (sprite.textureId != 0 && _textures.find(sprite.textureId) != _textures.end()) {
-                sf::Sprite s(_textures[sprite.textureId]);
-                s.setPosition({sprite.position.x, sprite.position.y});
-                s.setRotation(sf::degrees(sprite.rotation));
-                s.setScale({sprite.scale.x, sprite.scale.y});
-                _window.draw(s);
-            }
-        }
+        drawShapes(frame);
+        drawSprites(frame);
+        drawTexts(frame);
     }
 
     void RenderSFML::endFrame(void)
     {
         _window.display();
+    }
+
+    bool RenderSFML::hasFocus(void)
+    {
+        return _window.hasFocus();
     }
 
     void RenderSFML::resize(int width, int height)
@@ -152,6 +157,7 @@ namespace engine::render
     {
         sf::Font font;
         if (!font.openFromFile(path)) {
+            engine::core::warning("RenderSFML: failed to load font '{}'", path);
             return 0;
         }
         std::uint32_t id = _nextFontId++;
@@ -164,16 +170,22 @@ namespace engine::render
         _fonts.erase(id);
     }
 
-    bool RenderSFML::pollEvents(std::vector<input::Event>& outEvents)
+    std::vector<engine::input::Event> RenderSFML::pollEvents(void)
     {
-        outEvents.clear();
-        while (const std::optional event = _window.pollEvent()) {
+        std::vector<input::Event> outEvents;
+        if (!_window.isOpen()) {
+            return outEvents;
+        }
+
+        while (const std::optional event = _window.pollEvent())
+        {
             if (event->is<sf::Event::Closed>()) {
                 input::Event e{};
                 e.type = input::EventType::Close;
                 outEvents.push_back(e);
                 continue;
             }
+
             if (const auto *kp = event->getIf<sf::Event::KeyPressed>()) {
                 input::Event e{};
                 e.type = input::EventType::KeyDown;
@@ -181,6 +193,7 @@ namespace engine::render
                 outEvents.push_back(e);
                 continue;
             }
+
             if (const auto *kr = event->getIf<sf::Event::KeyReleased>()) {
                 input::Event e{};
                 e.type = input::EventType::KeyUp;
@@ -188,6 +201,15 @@ namespace engine::render
                 outEvents.push_back(e);
                 continue;
             }
+
+            if (const auto *te = event->getIf<sf::Event::TextEntered>()) {
+                input::Event e{};
+                e.type = input::EventType::TextEntered;
+                e.text = static_cast<char32_t>(te->unicode);
+                outEvents.push_back(e);
+                continue;
+            }
+
             if (const auto *mm = event->getIf<sf::Event::MouseMoved>()) {
                 input::Event e{};
                 e.type = input::EventType::MouseMove;
@@ -196,6 +218,7 @@ namespace engine::render
                 outEvents.push_back(e);
                 continue;
             }
+            
             if (const auto *mp = event->getIf<sf::Event::MouseButtonPressed>()) {
                 input::Event e{};
                 e.type = input::EventType::MouseButtonDown;
@@ -205,6 +228,7 @@ namespace engine::render
                 outEvents.push_back(e);
                 continue;
             }
+
             if (const auto *mr = event->getIf<sf::Event::MouseButtonReleased>()) {
                 input::Event e{};
                 e.type = input::EventType::MouseButtonUp;
@@ -214,6 +238,7 @@ namespace engine::render
                 outEvents.push_back(e);
                 continue;
             }
+
             if (const auto *mw = event->getIf<sf::Event::MouseWheelScrolled>()) {
                 input::Event e{};
                 e.type = input::EventType::MouseWheel;
@@ -224,8 +249,87 @@ namespace engine::render
                 continue;
             }
         }
-        return _window.isOpen();
+        return outEvents;
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Private API
+    ///////////////////////////////////////////////////////////////////////////
+
+    auto RenderSFML::toColor(float r, float g, float b, float a) -> sf::Color
+    {
+        return sf::Color(
+            static_cast<std::uint8_t>(r * 255.0f),
+            static_cast<std::uint8_t>(g * 255.0f),
+            static_cast<std::uint8_t>(b * 255.0f),
+            static_cast<std::uint8_t>(a * 255.0f));
+    }
+
+    void RenderSFML::drawShapes(const RenderFrame& frame)
+    {
+        auto shapes = frame.shapes;
+        std::sort(shapes.begin(), shapes.end(),
+                  [](const RenderRect &a, const RenderRect &b) { return a.z < b.z; });
+        for (const auto &rect : shapes) {
+            sf::RectangleShape shape;
+            shape.setSize({rect.size.x, rect.size.y});
+            shape.setPosition({rect.position.x, rect.position.y});
+            if (rect.filled) {
+                shape.setFillColor(toColor(rect.r, rect.g, rect.b, rect.a));
+            } else {
+                shape.setFillColor(sf::Color::Transparent);
+                shape.setOutlineThickness(rect.thickness);
+                shape.setOutlineColor(toColor(rect.r, rect.g, rect.b, rect.a));
+            }
+            _window.draw(shape);
+        }
+    }
+
+    void RenderSFML::drawSprites(const RenderFrame& frame)
+    {
+        auto sprites = frame.sprites;
+        std::sort(sprites.begin(), sprites.end(),
+                  [](const RenderSprite &a, const RenderSprite &b) { return a.z < b.z; });
+        for (const auto& sprite : sprites) {
+            if (sprite.textureId != 0 && _textures.find(sprite.textureId) != _textures.end()) {
+                sf::Sprite s(_textures[sprite.textureId]);
+                if (sprite.srcSize.x > 0.0f && sprite.srcSize.y > 0.0f) {
+                    s.setTextureRect(sf::IntRect(
+                        {static_cast<int>(sprite.srcOffset.x),
+                         static_cast<int>(sprite.srcOffset.y)},
+                        {static_cast<int>(sprite.srcSize.x),
+                         static_cast<int>(sprite.srcSize.y)}));
+                }
+                s.setPosition({sprite.position.x, sprite.position.y});
+                s.setOrigin({sprite.origin.x, sprite.origin.y});
+                s.setRotation(sf::degrees(sprite.rotation));
+                s.setScale({sprite.scale.x, sprite.scale.y});
+                s.setColor(toColor(sprite.r, sprite.g, sprite.b, sprite.a));
+                _window.draw(s);
+            }
+        }
+    }
+
+    void RenderSFML::drawTexts(const RenderFrame& frame)
+    {
+        auto texts = frame.texts;
+        std::sort(texts.begin(), texts.end(),
+                  [](const RenderText &a, const RenderText &b) { return a.z < b.z; });
+        for (const auto &text : texts) {
+            if (text.fontId == 0 || _fonts.find(text.fontId) == _fonts.end()) {
+                continue;
+            }
+            sf::Text t(_fonts[text.fontId]);
+            t.setString(text.content);
+            t.setCharacterSize(static_cast<unsigned int>(text.size));
+            t.setPosition({text.position.x, text.position.y});
+            t.setScale({text.scale.x, text.scale.y});
+            t.setFillColor(toColor(text.r, text.g, text.b, text.a));
+
+            _window.draw(t);
+        }
+    }
+
 } // namespace engine::render
 
 extern "C"

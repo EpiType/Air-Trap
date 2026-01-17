@@ -69,6 +69,11 @@ namespace engine::render
             virtual void endFrame(void) = 0;
 
             /** 
+             * @brief Check if the render window has focus.
+             */
+            virtual bool hasFocus(void) = 0;
+
+            /** 
              * @brief Resize the render window.
              * @param width New width of the window
              * @param height New height of the window
@@ -106,7 +111,7 @@ namespace engine::render
              * @param outEvents Output vector to append events into
              * @return true if the window is still open, false otherwise
              */
-            virtual bool pollEvents(std::vector<input::Event>& outEvents) = 0;
+            virtual std::vector<engine::input::Event> pollEvents(void) = 0;
     };
 }
 

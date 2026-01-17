@@ -1,0 +1,20 @@
+{
+    "availableRendererEngines": [
+        "./plugins/librender_sfml.so"
+    ],
+    "availableNetworkEngines": [
+        "./plugins/libnet_asio.so"
+    ],
+    "defaultRenderPlugin": "./plugins/librender_sfml.so",
+    "defaultNetworkPlugin": "./plugins/libnet_asio.so",
+    "window": {
+        "width": 1280,
+        "height": 720,
+        "title": "Enigne"
+    },
+    "assetsPath": "./assets/",
+    "network": {
+        "networkIp": "127.0.0.1",
+        "networkPort": 4242
+    }
+}

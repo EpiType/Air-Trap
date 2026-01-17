@@ -12,11 +12,11 @@
     #include "engine/ui/UiUtilities.hpp"
 
     /* Components UI */
-    #include "engine/ecs/components/Button.hpp"
-    #include "engine/ecs/components/Text.hpp"
-    #include "engine/ecs/components/Slider.hpp"
-    #include "engine/ecs/components/Dropdown.hpp"
-    #include "engine/ecs/components/TextInput.hpp"
+    #include "engine/ecs/components/ui/Button.hpp"
+    #include "engine/ecs/components/ui/Text.hpp"
+    #include "engine/ecs/components/ui/Slider.hpp"
+    #include "engine/ecs/components/ui/Dropdown.hpp"
+    #include "engine/ecs/components/ui/TextInput.hpp"
 
 namespace engine::ui
 {
@@ -117,7 +117,7 @@ namespace engine::ui
                                                     const position& position,
                                                     const size& size,
                                                     std::size_t maxLength = 64,
-                                                    const textContainer& placeholder,
+                                                    const textContainer& placeholder = {},
                                                     std::function<void(const std::string&)> onSumbit = nullptr,
                                                     std::function<void(const std::string&)> onChange = nullptr);
     }; // class UiFactory

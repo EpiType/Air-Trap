@@ -40,6 +40,8 @@ namespace engine::render
 
             void endFrame(void) override;
 
+            bool hasFocus(void) override;
+
             void resize(int width, int height) override;
 
             std::uint32_t loadTexture(const std::string& path) override;
@@ -50,17 +52,48 @@ namespace engine::render
 
             void unloadFont(std::uint32_t id) override;
 
-            bool pollEvents(std::vector<input::Event>& outEvents) override;
+            std::vector<engine::input::Event> pollEvents(void) override;
 
         private:
-            std::string _name{"SFML"};
+            /**
+             * @brief Convert RGBA float components to an SFML Color
+             * @param r Red component (0.0 to 1.0)
+             * @param g Green component (0.0 to 1.0)
+             * @param b Blue component (0.0 to 1.0)
+             * @param a Alpha component (0.0 to 1.0)
+             * @return Corresponding sf::Color object
+             */
+            auto toColor(float r, float g, float b, float a) -> sf::Color;
 
-            sf::RenderWindow _window;
+            /**
+             * @brief Draw rectangle shapes from the render frame
+             * @param frame The render frame containing shapes to draw
+             */
+            void drawShapes(const RenderFrame& frame);
 
-            std::unordered_map<std::uint32_t, sf::Texture> _textures;
-            std::unordered_map<std::uint32_t, sf::Font> _fonts;
-            std::uint32_t _nextTextureId{1};
-            std::uint32_t _nextFontId{1};
+            /**
+             * @brief Draw sprites from the render frame
+             * @param frame The render frame containing sprites to draw
+             */
+            void drawSprites(const RenderFrame& frame);
+
+            /**
+             * @brief Draw text elements from the render frame
+             * @param frame The render frame containing texts to draw
+             */
+            void drawTexts(const RenderFrame& frame);
+
+        private:
+            std::string _name{"SFML"};              /**< Name of the renderer */
+
+            sf::RenderWindow _window;               /**< SFML Render Window instance */
+
+            std::unordered_map<std::uint32_t,       
+                sf::Texture> _textures;             /**< Loaded textures mapped by their IDs */
+            std::unordered_map<std::uint32_t,
+                sf::Font> _fonts;                   /**< Loaded fonts mapped by their IDs */
+            std::uint32_t _nextTextureId{1};        /**< Next available texture ID */
+            std::uint32_t _nextFontId{1};           /**< Next available font ID */
     };
 } // namespace engine::render
 

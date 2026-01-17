@@ -9,6 +9,9 @@
 
     #include "engine/ecs/Registry.hpp"
     #include "engine/math/Vec2.hpp"
+    #include <cstdint>
+    #include <optional>
+    #include <string>
 
 namespace engine::ui
 {
