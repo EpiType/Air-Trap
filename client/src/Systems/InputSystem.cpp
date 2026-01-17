@@ -61,6 +61,8 @@ namespace rtp::client {
             mask |= InputBits::Shoot;
         if (sf::Keyboard::isKeyPressed(_settings.getKey(KeyAction::Reload)))
             mask |= InputBits::Reload;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::P))  // Debug: P for powerup
+            mask |= InputBits::DebugPowerup;
 
         // Gamepad input (if enabled)
         if (_settings.getGamepadEnabled() && sf::Joystick::isConnected(0)) {

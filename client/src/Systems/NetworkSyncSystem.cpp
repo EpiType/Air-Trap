@@ -13,6 +13,8 @@
 #include "RType/ECS/Components/Animation.hpp"
 #include "RType/ECS/Components/EntityType.hpp"
 #include "RType/ECS/Components/BoundingBox.hpp"
+#include "RType/ECS/Components/ShieldVisual.hpp"
+#include "RType/ECS/Components/Controllable.hpp"
 #include "RType/Network/Packet.hpp"
 #include "Game/EntityBuilder.hpp"
 #include "Utils/DebugFlags.hpp"
@@ -467,19 +469,26 @@ namespace rtp::client {
                 t = EntityTemplate::createBulletEnemy(pos);
                 break;
 
-            case net::EntityType::PowerupHeal:
-                t = EntityTemplate::shot_1(pos);
-                break;
-
-            case net::EntityType::PowerupSpeed:
-                t = EntityTemplate::shot_2(pos);
-                break;
-
             case net::EntityType::Obstacle:
                 t = EntityTemplate::effect_4(pos);
                 break;
             case net::EntityType::ObstacleSolid:
                 t = EntityTemplate::effect_4(pos);
+                break;
+            case net::EntityType::PowerupHeal:
+                log::debug("Creating PowerupHeal template at ({}, {})", pos.x, pos.y);
+                t = EntityTemplate::createPowerUpHeal(pos);
+                break;
+            case net::EntityType::PowerupSpeed:
+                t = EntityTemplate::createPowerUpHeal(pos); // Speed uses same sprite as Heal for now
+                break;
+            case net::EntityType::PowerupDoubleFire:
+                log::debug("Creating PowerupDoubleFire template at ({}, {})", pos.x, pos.y);
+                t = EntityTemplate::createPowerUpDoubleFire(pos);
+                break;
+            case net::EntityType::PowerupShield:
+                log::debug("Creating PowerupShield template at ({}, {})", pos.x, pos.y);
+                t = EntityTemplate::createPowerUpShield(pos);
                 break;
 
             default:
@@ -488,11 +497,13 @@ namespace rtp::client {
                 break;
         }
 
+        log::debug("About to spawn entity template, tag='{}'", t.tag);
         auto res = _builder.spawn(t);
         if (!res) {
             log::error("Failed to spawn entity from template: {}", res.error().message());
             return;
         }
+        log::debug("Successfully spawned entity from template");
 
         auto e = res.value();
 
@@ -547,7 +558,78 @@ namespace rtp::client {
         }
 
         const ecs::Entity entity = it->second;
-        _builder.kill(entity);
+        
+        // Vérifier si c'est un power-up Shield qui a été collecté
+        auto entityTypesOpt = _registry.get<ecs::components::EntityType>();
+        if (entityTypesOpt) {
+            auto& entityTypes = entityTypesOpt.value().get();
+            if (entityTypes.has(entity)) {
+                const auto entityType = entityTypes[entity].type;
+                log::debug("EntityDeath: netId={}, entityType={}", payload.netId, static_cast<int>(entityType));
+                
+                if (entityType == net::EntityType::PowerupShield) {
+                    log::info("🛡️ PowerupShield collected!");
+                    auto playerTypesOpt = _registry.get<ecs::components::EntityType>();
+                    auto shieldVisualsOpt = _registry.get<rtp::ecs::components::ShieldVisual>();
+                    
+                    if (playerTypesOpt && shieldVisualsOpt) {
+                        auto& playerTypes = playerTypesOpt.value().get();
+                        auto& shieldVisuals = shieldVisualsOpt.value().get();
+                        
+                        int playerCount = 0;
+                        for (auto playerEntity : playerTypes.entities()) {
+                            if (!playerTypes.has(playerEntity)) continue;
+                            if (playerTypes[playerEntity].type != net::EntityType::Player) continue;
+                            
+                            playerCount++;
+                            
+                            if (!shieldVisuals.has(playerEntity)) {
+                                _registry.add<rtp::ecs::components::ShieldVisual>(playerEntity, rtp::ecs::components::ShieldVisual{});
+                            } else {
+                                shieldVisuals[playerEntity].animationTime = 0.0f;
+                                shieldVisuals[playerEntity].alpha = 255.0f;
+                            }
+                        }
+                    } else {
+                        log::warning("Could not get playerTypes or shieldVisuals!");
+                    }
+                }
+                else if (entityType == net::EntityType::EnemyBullet) {
+                    auto playerTypesOpt = _registry.get<ecs::components::EntityType>();
+                    auto shieldVisualsOpt = _registry.get<rtp::ecs::components::ShieldVisual>();
+                    auto transformsOpt = _registry.get<ecs::components::Transform>();
+                    
+                    if (playerTypesOpt && shieldVisualsOpt && transformsOpt) {
+                        auto& playerTypes = playerTypesOpt.value().get();
+                        auto& shieldVisuals = shieldVisualsOpt.value().get();
+                        auto& transforms = transformsOpt.value().get();
+                        
+                        for (auto playerEntity : shieldVisuals.entities()) {
+                            if (!shieldVisuals.has(playerEntity)) continue;
+                            if (!playerTypes.has(playerEntity)) continue;
+                            if (playerTypes[playerEntity].type != net::EntityType::Player) continue;
+                            
+                            if (transforms.has(playerEntity) && transforms.has(entity)) {
+                                const auto& playerPos = transforms[playerEntity].position;
+                                const auto& bulletPos = transforms[entity].position;
+                                
+                                const float dx = bulletPos.x - playerPos.x;
+                                const float dy = bulletPos.y - playerPos.y;
+                                const float distance = std::sqrt(dx * dx + dy * dy);
+                                
+                                if (distance < 150.0f) {
+                                    _registry.remove<rtp::ecs::components::ShieldVisual>(playerEntity);
+                                    log::info("🛡️ Shield absorbed bullet!");
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        _registry.kill(entity);
         _netIdToEntity.erase(it);
     }
 
