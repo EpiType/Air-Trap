@@ -89,6 +89,7 @@ void AudioSystem::updateSoundEvents(float) {
         
         for (auto&& [soundEvent] : view) {
             if (!soundEvent.played) {
+                log::info("Playing sound: {}", soundEvent.soundPath);
                 playSoundEffect(soundEvent);
                 soundEvent.played = true;
             }

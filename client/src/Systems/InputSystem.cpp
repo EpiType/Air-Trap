@@ -105,7 +105,6 @@ namespace rtp::client {
                 mask |= InputBits::Reload;
         }
 
-        // Déclencher le son de tir au changement du bouton
         if ((mask & InputBits::Shoot) && !(_lastMask & InputBits::Shoot)) {
             playShotSound();
         }
@@ -132,14 +131,9 @@ namespace rtp::client {
             return;
         }
         ecs::Entity soundEntity = entityRes.value();
-    
         ecs::components::audio::SoundEvent shootSound;
         shootSound.soundPath = "assets/sounds/shoot.wav";
-        // Appliquer le volume SFX utilisateur (0.0–1.0) → 0–100
         shootSound.volume = _settings.getSfxVolume() * 100.0f;
-        // ...optionnel: pitch par défaut...
-        // shootSound.pitch = 1.0f;
-    
         _r.add<ecs::components::audio::SoundEvent>(soundEntity, shootSound);
     }
 

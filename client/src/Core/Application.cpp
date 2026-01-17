@@ -102,6 +102,7 @@ namespace rtp::client
     void Application::initUiSystems(void)
     {
         _uiSystemManager.add<UISystem>(_uiRegistry, _window, _settings);
+        _uiSystemManager.add<AudioSystem>(_uiRegistry);
         // _uiSystemManager.add<systems::SettingsMenuSystem>(_uiRegistry, _window, _settings);
         auto& uiRenderSystem = _uiSystemManager.add<systems::UIRenderSystem>(_uiRegistry, _window);
         
@@ -119,6 +120,8 @@ namespace rtp::client
         _uiRegistry.subscribe<ecs::components::ui::Dropdown>();
         _uiRegistry.subscribe<ecs::components::ui::TextInput>();
         _uiRegistry.subscribe<ecs::components::ui::SpritePreview>();
+        _uiRegistry.subscribe<ecs::components::audio::AudioSource>();
+        _uiRegistry.subscribe<ecs::components::audio::SoundEvent>();
         log::info("OK: UI ECS initialized with components");
     }
 
