@@ -203,6 +203,15 @@ namespace {
         if (lower == "static") {
             return rtp::ecs::components::Patterns::Static;
         }
+        if (lower == "zigzag" || lower == "zig-zag") {
+            return rtp::ecs::components::Patterns::ZigZag;
+        }
+        if (lower == "circular" || lower == "circle") {
+            return rtp::ecs::components::Patterns::Circular;
+        }
+        if (lower == "kamikaze" || lower == "chase") {
+            return rtp::ecs::components::Patterns::Kamikaze;
+        }
         return rtp::ecs::components::Patterns::StraightLine;
     }
 
