@@ -6,6 +6,7 @@
  */
 
 #include "Scenes/PlayingScene.hpp"
+#include "RType/ECS/Components/Audio/AudioSource.hpp"
 #include "Game/SpriteCustomizer.hpp"
 #include "RType/ECS/Components/UI/Button.hpp"
 #include "RType/ECS/Components/UI/Slider.hpp"
@@ -46,6 +47,22 @@ namespace rtp::client {
             log::info("Entering PlayingScene");
 
             spawnParallax();
+
+            {
+                auto musicEntity = _worldRegistry.spawn();
+                if (musicEntity) {
+                    ecs::components::audio::AudioSource levelMusic;
+                    levelMusic.audioPath = "assets/musics/lvl1.mp3";
+                    levelMusic.volume = 80.0f;
+                    levelMusic.loop = true;
+                    levelMusic.isPlaying = true;
+                    levelMusic.dirty = true;
+                    _worldRegistry.add<ecs::components::audio::AudioSource>(musicEntity.value(), levelMusic);
+                    log::info("Playing Level 1 music");
+                } else {
+                    log::warning("Failed to spawn entity for Level 1 music");
+                }
+            }
 
             _chatCompactPanel = _uiFactory.createButton(
                 _uiRegistry,

@@ -90,6 +90,7 @@ namespace rtp::client
         _worldSystemManager.add<ParallaxSystem>(_worldRegistry);
         _worldSystemManager.add<AnimationSystem>(_worldRegistry);
         _worldSystemManager.add<ShieldSystem>(_worldRegistry);
+        _worldSystemManager.add<AudioSystem>(_worldRegistry);
         auto& worldRenderSystem = _worldSystemManager.add<RenderSystem>(_worldRegistry, _window);
         _worldSystemManager.add<ParallaxSystem>(_worldRegistry);
         
@@ -103,6 +104,7 @@ namespace rtp::client
     void Application::initUiSystems(void)
     {
         _uiSystemManager.add<UISystem>(_uiRegistry, _window, _settings);
+        _uiSystemManager.add<AudioSystem>(_uiRegistry);
         // _uiSystemManager.add<systems::SettingsMenuSystem>(_uiRegistry, _window, _settings);
         auto& uiRenderSystem = _uiSystemManager.add<systems::UIRenderSystem>(_uiRegistry, _window);
         
@@ -120,6 +122,8 @@ namespace rtp::client
         _uiRegistry.subscribe<ecs::components::ui::Dropdown>();
         _uiRegistry.subscribe<ecs::components::ui::TextInput>();
         _uiRegistry.subscribe<ecs::components::ui::SpritePreview>();
+        _uiRegistry.subscribe<ecs::components::audio::AudioSource>();
+        _uiRegistry.subscribe<ecs::components::audio::SoundEvent>();
         log::info("OK: UI ECS initialized with components");
     }
 
@@ -135,6 +139,8 @@ namespace rtp::client
         _worldRegistry.subscribe<ecs::components::EntityType>();
         _worldRegistry.subscribe<ecs::components::BoundingBox>();
         _worldRegistry.subscribe<ecs::components::ShieldVisual>();
+        _worldRegistry.subscribe<ecs::components::audio::AudioSource>();
+        _worldRegistry.subscribe<ecs::components::audio::SoundEvent>();
         log::info("OK: World ECS initialized with components");
     }
 
@@ -196,8 +202,35 @@ namespace rtp::client
         if (_activeScene) {
             _activeScene->onExit();
         }
-        
-        _uiRegistry.clear();
+
+        if (_currentState == GameState::Playing && newState != GameState::Playing) {
+            auto &worldAudio = _worldSystemManager.getSystem<AudioSystem>();
+            worldAudio.stopAllSounds();
+        }
+
+            if (newState == GameState::Playing) {
+                auto &uiAudio = _uiSystemManager.getSystem<AudioSystem>();
+                uiAudio.stopAllSounds();
+                _uiRegistry.clear();
+            } else {
+                std::vector<ecs::Entity> audioSourcesToKeep;
+                std::vector<ecs::components::audio::AudioSource> audioSourceData;
+            
+                auto audioSources = _uiRegistry.get<ecs::components::audio::AudioSource>();
+                if (audioSources) {
+                    auto& sources = audioSources.value().get();
+                    for (const auto& entity : sources.entities()) {
+                        audioSourcesToKeep.push_back(entity);
+                        audioSourceData.push_back(sources[entity]);
+                    }
+                }
+
+                _uiRegistry.clear();
+
+                for (size_t i = 0; i < audioSourcesToKeep.size(); ++i) {
+                    _uiRegistry.add<ecs::components::audio::AudioSource>(audioSourcesToKeep[i], audioSourceData[i]);
+                }
+            }
         
         if (newState != GameState::Playing && newState != GameState::Paused) {
             _worldRegistry.clear();

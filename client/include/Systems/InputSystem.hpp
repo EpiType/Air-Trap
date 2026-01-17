@@ -43,6 +43,7 @@ class InputSystem : public ecs::ISystem
         void update(float) override;
 
     private:
+        void playShotSound();
         enum InputBits : uint8_t {              /**< Bitmask for input directions */
             MoveUp    = 1 << 0,
             MoveDown  = 1 << 1,
