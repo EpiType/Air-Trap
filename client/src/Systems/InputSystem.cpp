@@ -58,8 +58,11 @@ namespace rtp::client {
             mask |= InputBits::MoveLeft;
         if (sf::Keyboard::isKeyPressed(_settings.getKey(KeyAction::MoveRight)))
             mask |= InputBits::MoveRight;
-        if (sf::Keyboard::isKeyPressed(_settings.getKey(KeyAction::Shoot)))
+        
+        bool shootPressed = sf::Keyboard::isKeyPressed(_settings.getKey(KeyAction::Shoot));
+        if (shootPressed)
             mask |= InputBits::Shoot;
+        
         if (sf::Keyboard::isKeyPressed(_settings.getKey(KeyAction::Reload)))
             mask |= InputBits::Reload;
 
@@ -94,10 +97,17 @@ namespace rtp::client {
                 mask |= InputBits::MoveRight;
             
             // Buttons: Configurable
-            if (sf::Joystick::isButtonPressed(0, _settings.getGamepadShootButton()))
+            if (sf::Joystick::isButtonPressed(0, _settings.getGamepadShootButton())) {
+                shootPressed = true;
                 mask |= InputBits::Shoot;
+            }
             if (sf::Joystick::isButtonPressed(0, _settings.getGamepadReloadButton()))
                 mask |= InputBits::Reload;
+        }
+
+        // Déclencher le son de tir au changement du bouton
+        if ((mask & InputBits::Shoot) && !(_lastMask & InputBits::Shoot)) {
+            playShotSound();
         }
 
         if (mask == _lastMask)
@@ -112,6 +122,25 @@ namespace rtp::client {
         p << payload;
 
         _net.sendPacket(p, net::NetworkMode::UDP);
+    }
+
+    void InputSystem::playShotSound()
+    {
+        auto entityRes = _r.spawn();
+        if (!entityRes) {
+            log::error("Failed to spawn sound event entity");
+            return;
+        }
+        ecs::Entity soundEntity = entityRes.value();
+    
+        ecs::components::audio::SoundEvent shootSound;
+        shootSound.soundPath = "assets/sounds/shoot.wav";
+        // Appliquer le volume SFX utilisateur (0.0–1.0) → 0–100
+        shootSound.volume = _settings.getSfxVolume() * 100.0f;
+        // ...optionnel: pitch par défaut...
+        // shootSound.pitch = 1.0f;
+    
+        _r.add<ecs::components::audio::SoundEvent>(soundEntity, shootSound);
     }
 
 } // namespace rtp::client
