@@ -11,7 +11,7 @@
 namespace rtp::client {
 
 AudioSystem::AudioSystem(ecs::Registry& registry)
-    : _registry(registry), _masterVolume(100.0f), _nextSoundId(0) {}
+    : _registry(registry), _masterVolume(100.0f), _musicVolume(100.0f), _sfxVolume(100.0f), _nextSoundId(0) {}
 
 AudioSystem::~AudioSystem() {
     stopAllSounds();
@@ -24,11 +24,42 @@ void AudioSystem::update(float dt) {
 
 void AudioSystem::setMasterVolume(float volume) {
     _masterVolume = std::clamp(volume, 0.0f, 100.0f);
-    sf::Listener::setGlobalVolume(_masterVolume);
+    
+    // Update volume of all currently playing sounds
+    for (auto& [id, sound] : _activeSounds) {
+        float baseVolume = _soundBaseVolumes[id];
+        bool isMusic = _soundIsMusic[id];
+        float categoryVolume = isMusic ? _musicVolume : _sfxVolume;
+        sound->setVolume(baseVolume * _masterVolume * categoryVolume / 100.0f);
+    }
 }
 
 float AudioSystem::getMasterVolume() const {
     return _masterVolume;
+}
+
+void AudioSystem::setMusicVolume(float volume) {
+    _musicVolume = std::clamp(volume, 0.0f, 100.0f);
+    
+    // Update volume of all currently playing music
+    for (auto& [id, sound] : _activeSounds) {
+        if (_soundIsMusic[id]) {
+            float baseVolume = _soundBaseVolumes[id];
+            sound->setVolume(baseVolume * _masterVolume * _musicVolume / 100.0f);
+        }
+    }
+}
+
+void AudioSystem::setSfxVolume(float volume) {
+    _sfxVolume = std::clamp(volume, 0.0f, 100.0f);
+    
+    // Update volume of all currently playing SFX
+    for (auto& [id, sound] : _activeSounds) {
+        if (!_soundIsMusic[id]) {
+            float baseVolume = _soundBaseVolumes[id];
+            sound->setVolume(baseVolume * _masterVolume * _sfxVolume / 100.0f);
+        }
+    }
 }
 
 void AudioSystem::stopAllSounds() {
@@ -37,6 +68,8 @@ void AudioSystem::stopAllSounds() {
     }
     _activeSounds.clear();
     _loopingSounds.clear();
+    _soundBaseVolumes.clear();
+    _soundIsMusic.clear();
 }
 
 sf::SoundBuffer* AudioSystem::loadSoundBuffer(const std::string& path) {
@@ -101,12 +134,14 @@ void AudioSystem::playAudioSource(ecs::components::audio::AudioSource& audioSour
     if (!buffer) return;
 
     auto sound = std::make_unique<sf::Sound>(*buffer);
-    sound->setVolume(audioSource.volume * _masterVolume / 100.0f);
+    sound->setVolume(audioSource.volume * _masterVolume * _musicVolume / 100.0f);
     sound->setPitch(audioSource.pitch);
     sound->play();
 
     audioSource.sourceId = _nextSoundId;
     _loopingSounds[_nextSoundId] = audioSource.loop;
+    _soundBaseVolumes[_nextSoundId] = audioSource.volume;
+    _soundIsMusic[_nextSoundId] = true;  // AudioSource = Music
     _activeSounds[_nextSoundId++] = std::move(sound);
 }
 
@@ -115,10 +150,12 @@ void AudioSystem::playSoundEffect(ecs::components::audio::SoundEvent& soundEvent
     if (!buffer) return;
 
     auto sound = std::make_unique<sf::Sound>(*buffer);
-    sound->setVolume(soundEvent.volume * _masterVolume / 100.0f);
+    sound->setVolume(soundEvent.volume * _masterVolume * _sfxVolume / 100.0f);
     sound->setPitch(soundEvent.pitch);
     sound->play();
 
+    _soundBaseVolumes[_nextSoundId] = soundEvent.volume;
+    _soundIsMusic[_nextSoundId] = false;  // SoundEvent = SFX
     _activeSounds[_nextSoundId++] = std::move(sound);
 }
 
@@ -129,6 +166,8 @@ void AudioSystem::cleanupFinishedSounds() {
         if (it->second->getStatus() == sf::Sound::Status::Stopped && !isLooping) {
             it = _activeSounds.erase(it);
             _loopingSounds.erase(id);
+            _soundBaseVolumes.erase(id);
+            _soundIsMusic.erase(id);
         } else {
             ++it;
         }

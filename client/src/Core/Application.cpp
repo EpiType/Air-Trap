@@ -90,7 +90,10 @@ namespace rtp::client
         _worldSystemManager.add<ParallaxSystem>(_worldRegistry);
         _worldSystemManager.add<AnimationSystem>(_worldRegistry);
         _worldSystemManager.add<ShieldSystem>(_worldRegistry);
-        _worldSystemManager.add<AudioSystem>(_worldRegistry);
+        auto& worldAudioSystem = _worldSystemManager.add<AudioSystem>(_worldRegistry);
+        worldAudioSystem.setMasterVolume(_settings.getMasterVolume());
+        worldAudioSystem.setMusicVolume(_settings.getMusicVolume());
+        worldAudioSystem.setSfxVolume(_settings.getSfxVolume());
         auto& worldRenderSystem = _worldSystemManager.add<RenderSystem>(_worldRegistry, _window);
         _worldSystemManager.add<ParallaxSystem>(_worldRegistry);
         
@@ -104,7 +107,10 @@ namespace rtp::client
     void Application::initUiSystems(void)
     {
         _uiSystemManager.add<UISystem>(_uiRegistry, _window, _settings);
-        _uiSystemManager.add<AudioSystem>(_uiRegistry);
+        auto& uiAudioSystem = _uiSystemManager.add<AudioSystem>(_uiRegistry);
+        uiAudioSystem.setMasterVolume(_settings.getMasterVolume());
+        uiAudioSystem.setMusicVolume(_settings.getMusicVolume());
+        uiAudioSystem.setSfxVolume(_settings.getSfxVolume());
         // _uiSystemManager.add<systems::SettingsMenuSystem>(_uiRegistry, _window, _settings);
         auto& uiRenderSystem = _uiSystemManager.add<systems::UIRenderSystem>(_uiRegistry, _window);
         
@@ -293,17 +299,20 @@ namespace rtp::client
     {
         _settings.onMasterVolumeChanged([this](float volume) {
             log::info("Master volume changed to: {:.2f}", volume);
-            // TODO: Appliquer au AudioManager quand il sera implémenté
+            _worldSystemManager.getSystem<AudioSystem>().setMasterVolume(volume);
+            _uiSystemManager.getSystem<AudioSystem>().setMasterVolume(volume);
         });
 
         _settings.onMusicVolumeChanged([this](float volume) {
             log::info("Music volume changed to: {:.2f}", volume);
-            // TODO: Appliquer au AudioManager quand il sera implémenté
+            _worldSystemManager.getSystem<AudioSystem>().setMusicVolume(volume);
+            _uiSystemManager.getSystem<AudioSystem>().setMusicVolume(volume);
         });
 
         _settings.onSfxVolumeChanged([this](float volume) {
             log::info("SFX volume changed to: {:.2f}", volume);
-            // TODO: Appliquer au AudioManager quand il sera implémenté
+            _worldSystemManager.getSystem<AudioSystem>().setSfxVolume(volume);
+            _uiSystemManager.getSystem<AudioSystem>().setSfxVolume(volume);
         });
 
         _settings.onLanguageChanged([this](Language lang) {
