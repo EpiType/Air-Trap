@@ -8,6 +8,7 @@
 #include "Systems/UISystem.hpp"
 
 #include "RType/Logger.hpp"
+#include "RType/ECS/Components/Audio/SoundEvent.hpp"
 #include <SFML/Window/Joystick.hpp>
 #include <cmath>
 
@@ -212,6 +213,9 @@ namespace rtp::client
                 if (isMouseOverButton(button, mousePos)) {
                     button.state =
                         ecs::components::ui::ButtonState::Pressed;
+
+                    // Jouer le son de clic
+                    playClickSound();
 
                     if (button.onClick) {
                         buttonCallbacks.emplace_back(entity, button.onClick);
@@ -580,6 +584,24 @@ namespace rtp::client
 
         window.draw(cursor);
         window.draw(dot);
+    }
+
+    void UISystem::playClickSound()
+    {
+        auto entityRes = _registry.spawn();
+        if (!entityRes) {
+            log::error("Failed to spawn click sound event entity");
+            return;
+        }
+
+        ecs::Entity soundEntity = entityRes.value();
+        ecs::components::audio::SoundEvent clickSound;
+        clickSound.soundPath = "assets/sounds/click.mp3";
+        clickSound.volume = 100.0f;
+        clickSound.pitch = 1.0f;
+        
+        log::info("Creating click sound event with volume: {}", clickSound.volume);
+        _registry.add<ecs::components::audio::SoundEvent>(soundEntity, clickSound);
     }
 
 } // namespace rtp::client

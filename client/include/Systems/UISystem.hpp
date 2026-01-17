@@ -47,6 +47,7 @@ namespace rtp::client
         private:
             void handleMouseMove(const sf::Vector2i &mousePos);
             void handleMouseClick(const sf::Vector2i &mousePos);
+            void playClickSound();
 
             bool isMouseOverButton(const ecs::components::ui::Button &button,
                                    const sf::Vector2i &mousePos);

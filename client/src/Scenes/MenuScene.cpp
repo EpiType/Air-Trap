@@ -6,6 +6,7 @@
  */
 
 #include "Scenes/MenuScene.hpp"
+#include "RType/ECS/Components/Audio/AudioSource.hpp"
 
 namespace rtp::client {
     namespace scenes {
@@ -25,13 +26,46 @@ namespace rtp::client {
               _translationManager(translationManager),
               _network(network),
               _uiFactory(uiFactory),
-              _changeState(changeState)
+              _changeState(changeState),
+              _menuMusicEntity()
         {
         }
 
         void MenuScene::onEnter(void)
         {
             log::info("Entering MenuScene");
+
+            auto audioSources = _uiRegistry.get<ecs::components::audio::AudioSource>();
+            bool musicAlreadyPlaying = false;
+            
+            if (audioSources) {
+                auto& sources = audioSources.value().get();
+                for (const auto& entity : sources.entities()) {
+                    auto& source = sources[entity];
+                    if (source.audioPath == "assets/musics/menu.mp3") {
+                        musicAlreadyPlaying = true;
+                        _menuMusicEntity = entity;
+                        log::info("Menu music already playing, reusing it");
+                        break;
+                    }
+                }
+            }
+
+            if (!musicAlreadyPlaying) {
+                auto musicEntity = _uiRegistry.spawn();
+                if (musicEntity) {
+                    _menuMusicEntity = musicEntity.value();
+                    ecs::components::audio::AudioSource menuMusic;
+                    menuMusic.audioPath = "assets/musics/menu.mp3";
+                    menuMusic.volume = 80.0f;
+                    menuMusic.loop = true;
+                    menuMusic.isPlaying = true;
+                    menuMusic.dirty = true;
+                    
+                    _uiRegistry.add<ecs::components::audio::AudioSource>(_menuMusicEntity, menuMusic);
+                    log::info("Playing menu music");
+                }
+            }
 
             _uiFactory.createText(
                 _uiRegistry,
@@ -88,6 +122,7 @@ namespace rtp::client {
         void MenuScene::onExit(void)
         {
             log::info("Exiting MenuScene");
+            // La musique sera arrêtée par Application::stopAllUiSounds()
         }
 
         void MenuScene::handleEvent(const sf::Event& e)
