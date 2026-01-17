@@ -168,6 +168,11 @@ namespace rtp::client {
             State getState(void) const;
 
             /**
+             * @brief Get the current level ID for client-side visuals (parallax)
+             */
+            uint32_t getCurrentLevelId(void) const;
+
+            /**
              * @brief Get the last received room chat message
              * @return Last chat message string
              */
@@ -211,6 +216,7 @@ namespace rtp::client {
             float _pingTimer = 0.0f;                                       /**< Ping timer accumulator */
             float _pingInterval = 1.0f;                                    /**< Ping interval in seconds */
             bool _kicked = false;                                          /**< Kicked flag */
+            uint32_t _currentLevelId = 1;                                   /**< Current level id used by client visuals */
         
         private:
             /**

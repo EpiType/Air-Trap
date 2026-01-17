@@ -116,6 +116,23 @@ namespace rtp::client {
                 [this](float v) { _uiSpeed = v; }
             );
 
+            _uiFactory.createText(
+                _uiRegistry,
+                {280.0f, 480.0f},
+                "Level :",
+                "assets/fonts/main.ttf",
+                24
+            );
+
+            _uiFactory.createDropdown(
+                _uiRegistry,
+                {520.0f, 480.0f},
+                {220.0f, 40.0f},
+                {"1", "2", "3", "4"},
+                static_cast<int>(_uiLevelId - 1),
+                [this](int index) { _uiLevelId = static_cast<uint32_t>(index + 1); }
+            );
+
             _uiFactory.createButton(
                 _uiRegistry,
                 {280.0f, 520.0f},
