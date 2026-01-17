@@ -17,6 +17,7 @@
     #include "rtype/utility/Settings.hpp"
     #include "rtype/utility/TranslationManager.hpp"
     #include "rtype/systems/NetworkSyncSystem.hpp"
+    #include "rtype/utility/SceneId.hpp"
 
     #include <functional>
     #include <string>
@@ -34,7 +35,7 @@ namespace rtp::client::scenes
                        Settings& settings,
                        TranslationManager& translation,
                        NetworkSyncSystem& network,
-                       std::function<void()> onBack = {});
+                       std::function<void(SceneId)> changeScene);
 
             void onEnter(void) override;
             void onExit(void) override;
@@ -45,8 +46,8 @@ namespace rtp::client::scenes
             engine::ecs::Registry& _uiRegistry;
             Settings& _settings;
             TranslationManager& _translation;
-            NetworkSyncSystem& _network;
-            std::function<void()> _onBack;
+            NetworkSyncSystem& _networkSystem;
+            std::function<void(SceneId)> _changeScene;
 
             std::string _roomName{"Room"};
     };

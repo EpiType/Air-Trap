@@ -16,6 +16,8 @@
     /* R-Type Client */
     #include "rtype/utility/Settings.hpp"
     #include "rtype/utility/TranslationManager.hpp"
+    #include "client/include/rtype/systems/NetworkSyncSystem.hpp"
+    #include "rtype/utility/SceneId.hpp"
 
     #include <functional>
     #include <string>
@@ -32,9 +34,8 @@ namespace rtp::client::scenes
             MenuScene(engine::ecs::Registry& uiRegistry,
                       Settings& settings,
                       TranslationManager& translation,
-                      std::function<void()> onPlay = {},
-                      std::function<void()> onSettings = {},
-                      std::function<void()> onLogout = {});
+                      NetworkSyncSystem& network,
+                      std::function<void(SceneId)> changeScene);
 
             void onEnter(void) override;
             void onExit(void) override;
@@ -45,9 +46,8 @@ namespace rtp::client::scenes
             engine::ecs::Registry& _uiRegistry;
             Settings& _settings;
             TranslationManager& _translation;
-            std::function<void()> _onPlay;
-            std::function<void()> _onSettings;
-            std::function<void()> _onLogout;
+            NetworkSyncSystem& _networkSystem;
+            std::function<void(SceneId)> _changeScene;
     };
 }
 

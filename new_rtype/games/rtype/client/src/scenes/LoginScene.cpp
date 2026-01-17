@@ -31,12 +31,12 @@ namespace rtp::client::scenes
                            Settings& settings,
                            TranslationManager& translation,
                            NetworkSyncSystem& network,
-                           std::function<void()> onLoggedIn)
+                           std::function<void(SceneId)> changeScene)
         : _uiRegistry(uiRegistry),
           _settings(settings),
           _translation(translation),
-          _network(network),
-          _onLoggedIn(std::move(onLoggedIn))
+          _networkSystem(network),
+          _changeScene(changeScene)
     {
     }
 
@@ -96,7 +96,7 @@ namespace rtp::client::scenes
             {270.0f, 60.0f},
             makeText(loginLabel == "login.action" ? "LOGIN" : loginLabel,
                      "assets/fonts/main.ttf", 22),
-            [this]() { _network.tryLogin(_username, _password); }
+            [this]() { _networkSystem.tryLogin(_username, _password); }
         );
 
         engine::ui::UiFactory::createButton(
@@ -105,7 +105,7 @@ namespace rtp::client::scenes
             {270.0f, 60.0f},
             makeText(registerLabel == "register.action" ? "REGISTER" : registerLabel,
                      "assets/fonts/main.ttf", 22),
-            [this]() { _network.tryRegister(_username, _password); }
+            [this]() { _networkSystem.tryRegister(_username, _password); }
         );
 
         _loginNotified = false;
@@ -124,10 +124,10 @@ namespace rtp::client::scenes
     void LoginScene::update(float)
     {
         (void)_settings;
-        if (!_loginNotified && _network.isLoggedIn()) {
+        if (!_loginNotified && _networkSystem.isLoggedIn()) {
             _loginNotified = true;
-            if (_onLoggedIn) {
-                _onLoggedIn();
+            if (_changeScene) {
+                _changeScene(SceneId::Menu);
             }
         }
     }

@@ -28,9 +28,9 @@
     #include "rtype/systems/UISystem.hpp"
     #include "rtype/systems/UIRenderSystem.hpp"
     #include "rtype/scenes/LoginScene.hpp"
-    #include "rtype/scenes/RegisterScene.hpp"
     #include "rtype/scenes/MenuScene.hpp"
     #include "rtype/scenes/LobbyScene.hpp"
+    #include "rtype/utility/SceneId.hpp"
 
     #include <memory>
     #include <unordered_map>
@@ -44,14 +44,6 @@ namespace rtp::client
      */
     class ClientApp
     {
-        public:
-            enum class SceneId {
-                Login,
-                Register,
-                Menu,
-                Lobby
-            };
-
         public:
             /**
              * @brief Constructor for ClientApp

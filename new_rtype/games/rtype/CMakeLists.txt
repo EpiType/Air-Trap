@@ -8,7 +8,6 @@ target_sources(rtype_game PRIVATE
     client/src/entity/EntityBuilder.cpp
     client/src/net/NetworkBootstrap.cpp
     client/src/scenes/LoginScene.cpp
-    client/src/scenes/RegisterScene.cpp
     client/src/scenes/MenuScene.cpp
     client/src/scenes/LobbyScene.cpp
     client/src/systems/AnimationSystem.cpp

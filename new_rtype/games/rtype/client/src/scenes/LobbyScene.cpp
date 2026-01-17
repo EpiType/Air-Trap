@@ -31,12 +31,12 @@ namespace rtp::client::scenes
                            Settings& settings,
                            TranslationManager& translation,
                            NetworkSyncSystem& network,
-                           std::function<void()> onBack)
+                           std::function<void(SceneId)> changeScene)
         : _uiRegistry(uiRegistry),
           _settings(settings),
           _translation(translation),
-          _network(network),
-          _onBack(std::move(onBack))
+          _networkSystem(network),
+          _changeScene(changeScene)
     {
     }
 
@@ -78,7 +78,7 @@ namespace rtp::client::scenes
             makeText(createLabel == "lobby.create" ? "CREATE" : createLabel,
                      "assets/fonts/main.ttf", 22),
             [this]() {
-                _network.tryCreateRoom(_roomName.empty() ? "Room" : _roomName,
+                _networkSystem.tryCreateRoom(_roomName.empty() ? "Room" : _roomName,
                                        4,
                                        1.0f,
                                        1.0f,
@@ -94,7 +94,7 @@ namespace rtp::client::scenes
             {270.0f, 60.0f},
             makeText(refreshLabel == "lobby.refresh" ? "REFRESH" : refreshLabel,
                      "assets/fonts/main.ttf", 22),
-            [this]() { _network.requestListRooms(); }
+            [this]() { _networkSystem.requestListRooms(); }
         );
 
         engine::ui::UiFactory::createButton(
@@ -103,7 +103,7 @@ namespace rtp::client::scenes
             {560.0f, 60.0f},
             makeText(backLabel == "common.back" ? "BACK" : backLabel,
                      "assets/fonts/main.ttf", 22),
-            [this]() { if (_onBack) { _onBack(); } }
+            [this]() { if (_changeScene) { _changeScene(SceneId::Menu); } }
         );
     }
 

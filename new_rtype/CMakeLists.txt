@@ -15,11 +15,11 @@ add_subdirectory(plugins/graphical/sfml)
 add_subdirectory(plugins/graphical/opengl)
 add_subdirectory(plugins/script_lua)
 add_subdirectory(games/rtype)
-add_subdirectory(runtime)
 
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/engine")
 configure_file("${CMAKE_SOURCE_DIR}/engine/config.json"
                "${CMAKE_BINARY_DIR}/engine/config.json" COPYONLY)
+file(COPY "${CMAKE_SOURCE_DIR}/../config"
+     DESTINATION "${CMAKE_BINARY_DIR}")
 file(COPY "${CMAKE_SOURCE_DIR}/assets"
      DESTINATION "${CMAKE_BINARY_DIR}")
-

@@ -128,27 +128,16 @@ namespace rtp::client
                             _settings,
                             _translation,
                             _networkSystem,
-                            [this]() { setScene(SceneId::Menu); }
+                            [this](SceneId s) { setScene(s); }
                         ));
-
-        _scenes.emplace(SceneId::Register,
-                        std::make_unique<scenes::RegisterScene>(
-                            _uiRegistry,
-                            _settings,
-                            _translation,
-                            _networkSystem,
-                            [this]() { setScene(SceneId::Menu); },
-                            [this]() { setScene(SceneId::Login); }
-                        ));
-
+                        
         _scenes.emplace(SceneId::Menu,
                         std::make_unique<scenes::MenuScene>(
                             _uiRegistry,
                             _settings,
                             _translation,
-                            [this]() { setScene(SceneId::Lobby); },
-                            nullptr,
-                            [this]() { setScene(SceneId::Login); }
+                            _networkSystem,
+                            [this](SceneId s) { setScene(s); }
                         ));
 
         _scenes.emplace(SceneId::Lobby,
@@ -157,7 +146,7 @@ namespace rtp::client
                             _settings,
                             _translation,
                             _networkSystem,
-                            [this]() { setScene(SceneId::Menu); }
+                            [this](SceneId s) { setScene(s); }
                         ));
     }
 
