@@ -17,7 +17,7 @@
     "spawn_triggers": [
         {
             "at_time": 3.0,
-            "entity_type": "boss",
+            "entity_type": "boss2",
             "template_path": "templates/enemy/boss/boss_01.json",
             "start_position": {
                 "x": 1280,

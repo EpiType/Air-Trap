@@ -131,6 +131,8 @@ namespace rtp::server
             maxHealth = 80;
         } else if (type == net::EntityType::Boss) {
             maxHealth = 500;
+        } else if (type == net::EntityType::Boss2) {
+            maxHealth = 650;
         } else if (type == net::EntityType::BossShield) {
             maxHealth = 150;
         }
@@ -152,6 +154,8 @@ namespace rtp::server
             fireRate = 0.4f;
         } else if (type == net::EntityType::Boss) {
             fireRate = 1.2f;
+        } else if (type == net::EntityType::Boss2) {
+            fireRate = 0.9f;
         }
         _registry.add<ecs::components::SimpleWeapon>(
             entity, ecs::components::SimpleWeapon{fireRate, 0.0f, 0});
@@ -162,6 +166,9 @@ namespace rtp::server
         if (type == net::EntityType::Boss) {
             bboxWidth = 198.0f;
             bboxHeight = 198.0f;
+        } else if (type == net::EntityType::Boss2) {
+            bboxWidth = 536.0f;
+            bboxHeight = 656.0f;
         } else if (type == net::EntityType::BossShield) {
             bboxWidth = 90.0f;
             bboxHeight = 99.0f;

@@ -94,6 +94,7 @@ void RenderSystem::update(float dt)
         if (type.type != net::EntityType::Obstacle &&
             type.type != net::EntityType::ObstacleSolid &&
             type.type != net::EntityType::Boss &&
+            type.type != net::EntityType::Boss2 &&
             type.type != net::EntityType::BossShield &&
             type.type != net::EntityType::Scout &&
             type.type != net::EntityType::Tank) {
@@ -105,6 +106,7 @@ void RenderSystem::update(float dt)
         float posY = trans.position.y;
         
         if (type.type == net::EntityType::Boss ||
+            type.type == net::EntityType::Boss2 ||
             type.type == net::EntityType::BossShield ||
             type.type == net::EntityType::Scout ||
             type.type == net::EntityType::Tank) {
@@ -118,7 +120,7 @@ void RenderSystem::update(float dt)
         if (type.type == net::EntityType::ObstacleSolid) {
             rect.setFillColor(sf::Color(40, 40, 40, 220));
             rect.setOutlineColor(sf::Color(90, 90, 90, 240));
-        } else if (type.type == net::EntityType::Boss) {
+        } else if (type.type == net::EntityType::Boss || type.type == net::EntityType::Boss2) {
             rect.setFillColor(sf::Color::Transparent);
             rect.setOutlineColor(sf::Color(255, 0, 0, 240)); // Rouge pour le boss
         } else if (type.type == net::EntityType::BossShield) {

@@ -507,6 +507,14 @@ namespace rtp::client {
                 log::debug("Creating BossShield template at ({}, {})", pos.x, pos.y);
                 t = EntityTemplate::createBossShield(pos);
                 break;
+            case net::EntityType::Boss2:
+                log::debug("Creating Boss2 template at ({}, {})", pos.x, pos.y);
+                t = EntityTemplate::createBossShip2(pos);
+                break;
+            case net::EntityType::BossBeam:
+                log::debug("Creating BossBeam template at ({}, {})", pos.x, pos.y);
+                t = EntityTemplate::createBossBeam(pos);
+                break;
 
             default:
                 log::warning("Unknown entity type {}, fallback template", (int)payload.type);

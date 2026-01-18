@@ -87,9 +87,11 @@ namespace rtp::server
             if (etype != net::EntityType::Bullet &&
                 etype != net::EntityType::ChargedBullet &&
                 etype != net::EntityType::EnemyBullet &&
+                etype != net::EntityType::BossBeam &&
                 etype != net::EntityType::Scout &&
                 etype != net::EntityType::Tank &&
                 etype != net::EntityType::Boss &&
+                etype != net::EntityType::Boss2 &&
                 etype != net::EntityType::BossShield &&
                 etype != net::EntityType::PowerupHeal &&
                 etype != net::EntityType::PowerupSpeed) {

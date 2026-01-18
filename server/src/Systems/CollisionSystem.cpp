@@ -106,6 +106,8 @@ namespace rtp::server
                        type ==
                        net::EntityType::Boss ||
                        type ==
+                       net::EntityType::Boss2 ||
+                       type ==
                        net::EntityType::BossShield) {
                 if (transforms.has(entity) &&
                     boxes.has(entity) &&
@@ -299,8 +301,9 @@ namespace rtp::server
                     continue;
                 }
 
-                // Check if enemy is a Boss and if there are shields protecting it
-                if (types[enemy].type == net::EntityType::Boss) {
+                // Check if enemy is a Boss variant and if there are shields protecting it
+                if (types[enemy].type == net::EntityType::Boss ||
+                    types[enemy].type == net::EntityType::Boss2) {
                     // Count living BossShields in the same room
                     int shieldCount = 0;
                     for (auto potentialShield : enemies) {

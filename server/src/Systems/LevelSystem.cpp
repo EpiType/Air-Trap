@@ -110,7 +110,9 @@ namespace rtp::server {
                 const float xOffsets[5] = {0.0f, 100.0f, -40.0f, 80.0f, -80.0f};
                 startPos.x += xOffsets[patternIndex];
                 const float frontX = getFrontPlayerX();
-                const float minAhead = (spawn.type == net::EntityType::Boss)
+                const bool isBoss = (spawn.type == net::EntityType::Boss ||
+                                     spawn.type == net::EntityType::Boss2);
+                const float minAhead = isBoss
                     ? 450.0f   // boss plus éloigné
                     : 200.0f;  // distance standard pour scouts/tanks/etc.
                 if (startPos.x < frontX + minAhead) {
@@ -121,7 +123,7 @@ namespace rtp::server {
                     spawn.speed, spawn.amplitude, spawn.frequency, spawn.type);
                 spawnEntityForRoom(roomId, entity);
                 
-                // If spawning a Boss, also spawn 4 BossShields in a semi-circle in front of it
+                // If spawning Boss1, also spawn 4 BossShields in a semi-circle in front of it
                 if (spawn.type == net::EntityType::Boss) {
                     const float shieldRadius = 250.0f; // Distance from boss center (more separation)
                     // Semi-circle in front (left side, towards player): angles from 90° to 270°

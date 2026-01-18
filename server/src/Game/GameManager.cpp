@@ -37,6 +37,7 @@ namespace rtp::server
         _registry.subscribe<ecs::components::MovementSpeed>();
         _registry.subscribe<ecs::components::Shield>();
         _registry.subscribe<ecs::components::DoubleFire>();
+        _registry.subscribe<ecs::components::Lifetime>();
 
         _networkSyncSystem = std::make_unique<NetworkSyncSystem>(_networkManager, _registry);
         _movementSystem = std::make_unique<MovementSystem>(_registry);
@@ -51,6 +52,7 @@ namespace rtp::server
         _collisionSystem = std::make_unique<CollisionSystem>(_registry, *_roomSystem, *_networkSyncSystem);
         _enemyShootSystem = std::make_unique<EnemyShootSystem>(_registry, *_roomSystem, *_networkSyncSystem);
         _bulletCleanupSystem = std::make_unique<BulletCleanupSystem>(_registry, *_roomSystem, *_networkSyncSystem);
+        _lifetimeSystem = std::make_unique<LifetimeSystem>(_registry, *_networkSyncSystem, *_roomSystem);
 
         _levelSystem->registerLevelPath(1, "common/assets/levels/level_01.json");
         _levelSystem->registerLevelPath(2, "common/assets/levels/level_02.json");
@@ -119,6 +121,7 @@ namespace rtp::server
                 _enemyShootSystem->update(scaledDt);
                 _movementSystem->update(scaledDt);
                 _collisionSystem->update(scaledDt);
+                _lifetimeSystem->update(scaledDt);
                 _bulletCleanupSystem->update(scaledDt);
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(16));

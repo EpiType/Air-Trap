@@ -64,7 +64,7 @@ namespace rtp::server
             }
             const auto &type = types[entity];
             const auto &room = rooms[entity];
-            if (type.type == net::EntityType::Boss) {
+            if (type.type == net::EntityType::Boss || type.type == net::EntityType::Boss2) {
                 bosses[room.id].push_back({entity, transforms[entity].position});
             }
         }
@@ -92,6 +92,7 @@ namespace rtp::server
             if (type.type != net::EntityType::Scout &&
                 type.type != net::EntityType::Tank &&
                 type.type != net::EntityType::Boss &&
+                type.type != net::EntityType::Boss2 &&
                 type.type != net::EntityType::BossShield) {
                 continue;
             }
@@ -162,7 +163,7 @@ namespace rtp::server
                     vel.direction.x = 0.f;
                 }
             } else {
-                const bool isBoss = (type.type == net::EntityType::Boss);
+                const bool isBoss = (type.type == net::EntityType::Boss || type.type == net::EntityType::Boss2);
                 const float minAhead = isBoss ? minAheadBoss : minAheadDefault;
                 const float anchorX = isBoss ? anchorBoss : anchorDefault;
 

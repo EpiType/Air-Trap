@@ -35,10 +35,9 @@
     #include "Systems/EnemyAISystem.hpp"
     #include "Systems/LevelSystem.hpp"
     #include "Systems/CollisionSystem.hpp"
-    #include "Systems/EnemyShootSystem.hpp"
-    #include "Systems/BulletCleanupSystem.hpp"
-
-    /* Components */
+#include "Systems/EnemyShootSystem.hpp"
+#include "Systems/BulletCleanupSystem.hpp"
+#include "Systems/LifetimeSystem.hpp"    /* Components */
     #include "RType/ECS/Components/InputComponent.hpp"
     #include "RType/ECS/Components/Transform.hpp"
     #include "RType/ECS/Components/Velocity.hpp"
@@ -203,6 +202,7 @@ namespace rtp::server
             std::unique_ptr<CollisionSystem> _collisionSystem;          /**< Collision system for pickups/obstacles */
             std::unique_ptr<EnemyShootSystem> _enemyShootSystem;        /**< Enemy shooting system */
             std::unique_ptr<BulletCleanupSystem> _bulletCleanupSystem;  /**< Bullet cleanup system */
+            std::unique_ptr<LifetimeSystem> _lifetimeSystem;            /**< Lifetime system for timed despawns */
 
             uint32_t _serverTick = 0;                                  /**< Current server tick for synchronization */
             mutable std::mutex _mutex;                                 /**< Mutex for thread-safe operations */

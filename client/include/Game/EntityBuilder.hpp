@@ -409,6 +409,30 @@ namespace rtp::client
             {3.0f,  3.0f}
         };
 
+        static constexpr SpriteAnimDef k_rt41_1{
+            "boss2_ship",    "assets/sprites/r-typesheet41.gif",
+            118,          0,
+            67,        82,
+            5,          255,         255, 255,  // RGB tint (white by default)
+            true,       67,
+            82,        118,
+            0,          5,
+            1.0f,        {0.0f, 0.0f},
+            {8.0f,  8.0f}
+        };
+
+        static constexpr SpriteAnimDef k_beam{
+            "boss_beam",    "assets/sprites/projectiles/laser_beam.png",
+            0,          0,
+            1901,       351,
+            5,          255,         255, 255,  // RGB tint (white by default)
+            false,      1901,
+            351,        0,
+            0,          1,
+            100.0f,     {1.0f, 0.0f},
+            {0.5f,  0.5f}
+        };
+
     static EntityTemplate createParrallaxLvl1_1()
     {
         return makeParallax(kParallaxLvl1_1);
@@ -647,6 +671,16 @@ namespace rtp::client
         static EntityTemplate createBossShield(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt39_2);
+        }
+
+        static EntityTemplate createBossShip2(const Vec2f &initialPos)
+        {
+            return makeFromDef(initialPos, k_rt41_1);
+        }
+
+        static EntityTemplate createBossBeam(const Vec2f &initialPos)
+        {
+            return makeFromDef(initialPos, k_beam);
         }
     };
 
