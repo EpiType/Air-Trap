@@ -12,6 +12,7 @@
 #include "RType/ECS/Components/Powerup.hpp"
 #include "RType/ECS/Components/Health.hpp"
 #include "RType/ECS/Components/BoundingBox.hpp"
+#include "RType/ECS/Components/Homing.hpp"
 #include <cmath>
 
 #include <algorithm>
@@ -510,6 +511,28 @@ namespace rtp::server
             ecs::components::RoomId{ roomId.id }
         );
 
+        // Attach homing component for charged bullet if owner's weapon supports homing
+        if (auto weaponRes = _registry.get<ecs::components::SimpleWeapon>()) {
+            auto &weapons = weaponRes->get();
+            if (weapons.has(owner) && weapons[owner].homing) {
+                ecs::components::Homing h;
+                h.steering = weapons[owner].homingSteering;
+                h.range = weapons[owner].homingRange;
+                _registry.add<ecs::components::Homing>(bullet, h);
+            }
+        }
+
+        // Attach homing component if owner's weapon supports homing
+        if (auto weaponRes = _registry.get<ecs::components::SimpleWeapon>()) {
+            auto &weapons = weaponRes->get();
+            if (weapons.has(owner) && weapons[owner].homing) {
+                ecs::components::Homing h;
+                h.steering = weapons[owner].homingSteering;
+                h.range = weapons[owner].homingRange;
+                _registry.add<ecs::components::Homing>(bullet, h);
+            }
+        }
+
         auto room = _roomSystem.getRoom(roomId.id);
         if (!room)
             return;
@@ -580,6 +603,28 @@ namespace rtp::server
                 bullet2,
                 ecs::components::RoomId{ roomId.id }
             );
+
+            // Attach homing for second charged bullet if applicable
+            if (auto weaponRes2 = _registry.get<ecs::components::SimpleWeapon>()) {
+                auto &weapons = weaponRes2->get();
+                if (weapons.has(owner) && weapons[owner].homing) {
+                    ecs::components::Homing h2;
+                    h2.steering = weapons[owner].homingSteering;
+                    h2.range = weapons[owner].homingRange;
+                    _registry.add<ecs::components::Homing>(bullet2, h2);
+                }
+            }
+
+                // Attach homing for second bullet if applicable
+                if (auto weaponRes2 = _registry.get<ecs::components::SimpleWeapon>()) {
+                    auto &weapons = weaponRes2->get();
+                    if (weapons.has(owner) && weapons[owner].homing) {
+                        ecs::components::Homing h2;
+                        h2.steering = weapons[owner].homingSteering;
+                        h2.range = weapons[owner].homingRange;
+                        _registry.add<ecs::components::Homing>(bullet2, h2);
+                    }
+                }
 
             net::Packet packet2(net::OpCode::EntitySpawn);
             net::EntitySpawnPayload payload2 = {

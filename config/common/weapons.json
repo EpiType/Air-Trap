@@ -36,6 +36,8 @@
     "damage": 6,
     "difficulty": 1,
     "homing": true,
+    "homingSteering": 3.0,
+    "homingRange": 600.0,
     "ammo": 50,
     "maxAmmo": 50
   },
