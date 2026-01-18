@@ -532,6 +532,9 @@ namespace rtp::client {
 
         EntityTemplate t;
         switch (static_cast<net::EntityType>(payload.type)) {
+            case net::EntityType::Boss3Invincible:
+                t = EntityTemplate::createBoss3Invincible(pos);
+                break;
                         case net::EntityType::Enemy4:
                             t = EntityTemplate::enemy_4(pos);
                             break;
@@ -1012,8 +1015,8 @@ namespace rtp::client {
         packet >> payload;
         const auto now = std::chrono::steady_clock::now();
         const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
-        if (ms >= payload.clientTimeMs) {
-            _pingMs = static_cast<uint32_t>(ms - payload.clientTimeMs);
+        if (static_cast<uint64_t>(ms) >= payload.clientTimeMs) {
+            _pingMs = static_cast<uint32_t>(static_cast<uint64_t>(ms) - payload.clientTimeMs);
         } else {
             _pingMs = 0;
         }

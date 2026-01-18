@@ -44,6 +44,21 @@ struct ObstacleEvent {
     net::EntityType type{net::EntityType::Obstacle};
 };
 
+
+struct BossPhase {
+    float duration{0.0f};
+    int spawnCount{0};
+    float spawnInterval{0.0f};
+    std::string enemyType;
+    float spawnAreaX{1100.0f};
+    float spawnAreaYMin{60.0f};
+    float spawnAreaYMax{660.0f};
+};
+
+struct Boss3Data {
+    std::vector<BossPhase> phases;
+};
+
 struct LevelData {
     uint32_t id{0};
     std::string name;
@@ -53,6 +68,8 @@ struct LevelData {
     std::vector<SpawnEvent> spawns;
     std::vector<PowerupEvent> powerups;
     std::vector<ObstacleEvent> obstacles;
+    // Optional boss3_invincible phase data
+    std::optional<Boss3Data> boss3Data;
 };
 
 std::optional<LevelData> loadLevelFromFile(const std::string& path, std::string& error);

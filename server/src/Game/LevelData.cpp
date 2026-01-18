@@ -18,48 +18,28 @@
 #include <unordered_map>
 
 namespace {
-    std::string toLower(std::string value)
-    {
-        std::transform(value.begin(), value.end(), value.begin(),
-            [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-        return value;
-    }
 
-    std::optional<std::string> readFile(const std::string& path)
+    bool extractArray(const std::string& text, const std::string& key, std::string& out)
     {
-        std::ifstream in(path);
-        if (!in) {
-            return std::nullopt;
+        const std::string needle = "\"" + key + "\"";
+        const size_t keyPos = text.find(needle);
+        if (keyPos == std::string::npos) {
+            return false;
         }
-        std::ostringstream ss;
-        ss << in.rdbuf();
-        return ss.str();
-    }
-
-    size_t findMatching(const std::string& text, size_t start, char open, char close)
-    {
-        bool inString = false;
-        int depth = 1;
-
-        for (size_t i = start + 1; i < text.size(); ++i) {
-            const char c = text[i];
-            if (c == '"' && (i == 0 || text[i - 1] != '\\')) {
-                inString = !inString;
-                continue;
-            }
-            if (inString) {
-                continue;
-            }
-            if (c == open) {
-                depth++;
-            } else if (c == close) {
-                depth--;
-                if (depth == 0) {
-                    return i;
-                }
-            }
+        const size_t startPos = text.find('[', keyPos);
+        if (startPos == std::string::npos) {
+            return false;
         }
-        return std::string::npos;
+        size_t depth = 1;
+        size_t i = startPos + 1;
+        for (; i < text.size(); ++i) {
+            if (text[i] == '[') depth++;
+            else if (text[i] == ']') depth--;
+            if (depth == 0) break;
+        }
+        if (depth != 0) return false;
+        out = text.substr(startPos, i - startPos + 1);
+        return true;
     }
 
     bool extractObject(const std::string& text, const std::string& key, std::string& out)
@@ -73,30 +53,15 @@ namespace {
         if (bracePos == std::string::npos) {
             return false;
         }
-        const size_t endPos = findMatching(text, bracePos, '{', '}');
-        if (endPos == std::string::npos) {
-            return false;
+        size_t depth = 1;
+        size_t i = bracePos + 1;
+        for (; i < text.size(); ++i) {
+            if (text[i] == '{') depth++;
+            else if (text[i] == '}') depth--;
+            if (depth == 0) break;
         }
-        out = text.substr(bracePos, endPos - bracePos + 1);
-        return true;
-    }
-
-    bool extractArray(const std::string& text, const std::string& key, std::string& out)
-    {
-        const std::string needle = "\"" + key + "\"";
-        const size_t keyPos = text.find(needle);
-        if (keyPos == std::string::npos) {
-            return false;
-        }
-        const size_t startPos = text.find('[', keyPos);
-        if (startPos == std::string::npos) {
-            return false;
-        }
-        const size_t endPos = findMatching(text, startPos, '[', ']');
-        if (endPos == std::string::npos) {
-            return false;
-        }
-        out = text.substr(startPos, endPos - startPos + 1);
+        if (depth != 0) return false;
+        out = text.substr(bracePos, i - bracePos + 1);
         return true;
     }
 
@@ -106,20 +71,15 @@ namespace {
         bool inString = false;
         int depth = 0;
         size_t start = std::string::npos;
-
         for (size_t i = 0; i < arrayText.size(); ++i) {
             const char c = arrayText[i];
             if (c == '"' && (i == 0 || arrayText[i - 1] != '\\')) {
                 inString = !inString;
                 continue;
             }
-            if (inString) {
-                continue;
-            }
+            if (inString) continue;
             if (c == '{') {
-                if (depth == 0) {
-                    start = i;
-                }
+                if (depth == 0) start = i;
                 depth++;
             } else if (c == '}') {
                 depth--;
@@ -132,66 +92,84 @@ namespace {
         return out;
     }
 
-    bool extractString(const std::string& text, const std::string& key, std::string& out)
-    {
-        const std::regex re("\"" + key + "\"\\s*:\\s*\"([^\"]*)\"");
-        std::smatch match;
-        if (std::regex_search(text, match, re) && match.size() >= 2) {
-            out = match[1].str();
+        bool extractString(const std::string& text, const std::string& key, std::string& out)
+        {
+            const std::regex re("\"" + key + "\"\\s*:\\s*\"([^\"]*)\"");
+            std::smatch match;
+            if (std::regex_search(text, match, re) && match.size() >= 2) {
+                out = match[1].str();
+                return true;
+            }
+            return false;
+        }
+
+        bool extractNumber(const std::string& text, const std::string& key, float& out)
+        {
+            const std::regex re("\"" + key + "\"\\s*:\\s*([-0-9.+eE]+)");
+            std::smatch match;
+            if (std::regex_search(text, match, re) && match.size() >= 2) {
+                out = std::strtof(match[1].str().c_str(), nullptr);
+                return true;
+            }
+            return false;
+        }
+
+        bool extractInt(const std::string& text, const std::string& key, int& out)
+        {
+            float value = 0.0f;
+            if (!extractNumber(text, key, value)) {
+                return false;
+            }
+            out = static_cast<int>(value);
             return true;
         }
-        return false;
-    }
 
-    bool extractNumber(const std::string& text, const std::string& key, float& out)
-    {
-        const std::regex re("\"" + key + "\"\\s*:\\s*([-0-9.+eE]+)");
-        std::smatch match;
-        if (std::regex_search(text, match, re) && match.size() >= 2) {
-            out = std::strtof(match[1].str().c_str(), nullptr);
+        bool extractVec2(const std::string& text, const std::string& key, rtp::Vec2f& out)
+        {
+            std::string obj;
+            if (!extractObject(text, key, obj)) {
+                return false;
+            }
+            float x = 0.0f;
+            float y = 0.0f;
+            if (!extractNumber(obj, "x", x) || !extractNumber(obj, "y", y)) {
+                return false;
+            }
+            out = {x, y};
             return true;
         }
-        return false;
+
+        bool extractVec2WH(const std::string& text, const std::string& key, rtp::Vec2f& out)
+        {
+            std::string obj;
+            if (!extractObject(text, key, obj)) {
+                return false;
+            }
+            float w = 0.0f;
+            float h = 0.0f;
+            if (!extractNumber(obj, "w", w) || !extractNumber(obj, "h", h)) {
+                return false;
+            }
+            out = {w, h};
+            return true;
+        }
+    std::string toLower(std::string value)
+    {
+        std::transform(value.begin(), value.end(), value.begin(),
+            [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+        return value;
     }
 
-    bool extractInt(const std::string& text, const std::string& key, int& out)
-    {
-        float value = 0.0f;
-        if (!extractNumber(text, key, value)) {
-            return false;
-        }
-        out = static_cast<int>(value);
-        return true;
-    }
 
-    bool extractVec2(const std::string& text, const std::string& key, rtp::Vec2f& out)
+    std::optional<std::string> readFile(const std::string& path)
     {
-        std::string obj;
-        if (!extractObject(text, key, obj)) {
-            return false;
+        std::ifstream in(path);
+        if (!in) {
+            return std::nullopt;
         }
-        float x = 0.0f;
-        float y = 0.0f;
-        if (!extractNumber(obj, "x", x) || !extractNumber(obj, "y", y)) {
-            return false;
-        }
-        out = {x, y};
-        return true;
-    }
-
-    bool extractVec2WH(const std::string& text, const std::string& key, rtp::Vec2f& out)
-    {
-        std::string obj;
-        if (!extractObject(text, key, obj)) {
-            return false;
-        }
-        float w = 0.0f;
-        float h = 0.0f;
-        if (!extractNumber(obj, "w", w) || !extractNumber(obj, "h", h)) {
-            return false;
-        }
-        out = {w, h};
-        return true;
+        std::ostringstream ss;
+        ss << in.rdbuf();
+        return ss.str();
     }
 
     rtp::ecs::components::Patterns parsePattern(const std::string& value)
@@ -238,6 +216,9 @@ namespace {
         }
         if (lower == "boss_shield") {
             return rtp::net::EntityType::BossShield;
+        }
+        if (lower == "boss3_invincible" || lower == "boss3" || lower == "invincible_boss") {
+            return rtp::net::EntityType::Boss3Invincible;
         }
 
         const std::string templateLower = toLower(templatePath);
@@ -431,9 +412,11 @@ namespace {
             }
         }
     }
-}
+
+} // end anonymous namespace
 
 namespace rtp::server {
+
 
 std::optional<LevelData> loadLevelFromFile(const std::string& path, std::string& error)
 {
@@ -452,6 +435,28 @@ std::optional<LevelData> loadLevelFromFile(const std::string& path, std::string&
     }
     extractString(json, "name", level.name);
 
+    // --- Parse spawn_triggers (entities) ---
+    std::string spawnArray;
+    if (extractArray(json, "spawn_triggers", spawnArray)) {
+        const auto objects = splitObjects(spawnArray);
+        for (const auto& obj : objects) {
+            SpawnEvent event{};
+            extractNumber(obj, "at_time", event.atTime);
+            extractVec2(obj, "start_position", event.startPosition);
+            std::string patternStr;
+            extractString(obj, "pattern", patternStr);
+            event.pattern = parsePattern(patternStr);
+            extractNumber(obj, "speed", event.speed);
+            extractNumber(obj, "amplitude", event.amplitude);
+            extractNumber(obj, "frequency", event.frequency);
+            std::string typeStr, templatePath;
+            extractString(obj, "entity_type", typeStr);
+            extractString(obj, "template_path", templatePath);
+            event.type = parseEntityType(typeStr, templatePath);
+            level.spawns.push_back(event);
+        }
+    }
+
     std::string metadataObj;
     if (extractObject(json, "game_metadata", metadataObj)) {
         float width = 0.0f;
@@ -462,58 +467,6 @@ std::optional<LevelData> loadLevelFromFile(const std::string& path, std::string&
         extractString(metadataObj, "tileset_path", level.tilesetPath);
     }
 
-    std::string spawnArray;
-    if (extractArray(json, "spawn_triggers", spawnArray)) {
-        const auto objects = splitObjects(spawnArray);
-        for (const auto& obj : objects) {
-            float time = 0.0f;
-            if (!extractNumber(obj, "at_time", time)) {
-                extractNumber(obj, "at_position", time);
-            }
-
-            std::string templatePath;
-            extractString(obj, "template_path", templatePath);
-
-            std::string typeStr;
-            extractString(obj, "entity_type", typeStr);
-            const rtp::net::EntityType entityType = parseEntityType(typeStr, templatePath);
-
-            rtp::Vec2f startPos{0.0f, 0.0f};
-            extractVec2(obj, "start_position", startPos);
-
-            int count = 1;
-            extractInt(obj, "count", count);
-
-            float delay = 0.0f;
-            extractNumber(obj, "delay_between_spawn", delay);
-
-            std::string patternStr;
-            extractString(obj, "pattern", patternStr);
-            const auto pattern = patternStr.empty()
-                ? rtp::ecs::components::Patterns::StraightLine
-                : parsePattern(patternStr);
-
-            float speed = 120.0f;
-            float amplitude = 40.0f;
-            float frequency = 2.0f;
-            extractNumber(obj, "speed", speed);
-            extractNumber(obj, "amplitude", amplitude);
-            extractNumber(obj, "frequency", frequency);
-
-            count = std::max(1, count);
-            for (int i = 0; i < count; ++i) {
-                SpawnEvent spawn{};
-                spawn.atTime = time + (delay * static_cast<float>(i));
-                spawn.type = entityType;
-                spawn.startPosition = startPos;
-                spawn.pattern = pattern;
-                spawn.speed = speed;
-                spawn.amplitude = amplitude;
-                spawn.frequency = frequency;
-                level.spawns.push_back(spawn);
-            }
-        }
-    }
 
     std::string powerupArray;
     if (extractArray(json, "powerup_triggers", powerupArray)) {
@@ -550,12 +503,69 @@ std::optional<LevelData> loadLevelFromFile(const std::string& path, std::string&
         appendTileObstacles(level.tilesetPath, level.obstacles);
     }
 
+    // --- Boss3Invincible phase parsing ---
+    // Look for boss3_invincible in spawns, then parse its template for phase data
+    bool hasBoss3 = false;
+    std::string boss3TemplatePath;
+    for (const auto& spawn : level.spawns) {
+        if (spawn.type == rtp::net::EntityType::Boss3Invincible) {
+            hasBoss3 = true;
+            // Try to find the template path from the spawn trigger
+            // (Assume template_path is always present in the JSON for boss3)
+            std::string spawnArray;
+            if (extractArray(json, "spawn_triggers", spawnArray)) {
+                const auto objects = splitObjects(spawnArray);
+                for (const auto& obj : objects) {
+                    std::string typeStr, templatePath;
+                    extractString(obj, "entity_type", typeStr);
+                    extractString(obj, "template_path", templatePath);
+                    if (parseEntityType(typeStr, templatePath) == rtp::net::EntityType::Boss3Invincible) {
+                        boss3TemplatePath = templatePath;
+                        break;
+                    }
+                }
+            }
+            break;
+        }
+    }
+    if (hasBoss3 && !boss3TemplatePath.empty()) {
+        // Read the boss3 template JSON
+        auto boss3DataOpt = readFile(boss3TemplatePath);
+        if (boss3DataOpt) {
+            const std::string& boss3Json = boss3DataOpt.value();
+            std::string aiObj;
+            if (extractObject(boss3Json, "AIBehavior", aiObj)) {
+                std::string phasesArray;
+                if (extractArray(aiObj, "phases", phasesArray)) {
+                    const auto phaseObjs = splitObjects(phasesArray);
+                    Boss3Data boss3Data;
+                    for (const auto& phaseObj : phaseObjs) {
+                        BossPhase phase;
+                        extractNumber(phaseObj, "duration", phase.duration);
+                        extractInt(phaseObj, "spawnCount", phase.spawnCount);
+                        extractNumber(phaseObj, "spawnInterval", phase.spawnInterval);
+                        // Get enemyType and spawnArea from parent AIBehavior
+                        extractString(aiObj, "enemyType", phase.enemyType);
+                        std::string spawnAreaObj;
+                        if (extractObject(aiObj, "spawnArea", spawnAreaObj)) {
+                            extractNumber(spawnAreaObj, "x", phase.spawnAreaX);
+                            extractNumber(spawnAreaObj, "yMin", phase.spawnAreaYMin);
+                            extractNumber(spawnAreaObj, "yMax", phase.spawnAreaYMax);
+                        }
+                        boss3Data.phases.push_back(phase);
+                    }
+                    level.boss3Data = boss3Data;
+                }
+            }
+        }
+    }
+
     auto sortByTime = [](const auto& a, const auto& b) { return a.atTime < b.atTime; };
     std::sort(level.spawns.begin(), level.spawns.end(), sortByTime);
     std::sort(level.powerups.begin(), level.powerups.end(), sortByTime);
     std::sort(level.obstacles.begin(), level.obstacles.end(), sortByTime);
 
     return level;
-}
-
 }  // namespace rtp::server
+
+} // namespace rtp::server

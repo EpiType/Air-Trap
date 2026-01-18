@@ -434,16 +434,27 @@ namespace rtp::client
         };
         // Kraken Alien Boss (r-typesheet35.gif) - 528x574 spritesheet, 2 cols x 4 rows = 8 frames
         // Each frame: 264x143 (approx)
+        static constexpr SpriteAnimDef k_rt17_boss{
+            "boss3_invincible",    "assets/sprites/r-typesheet17.gif",
+            0,          0,
+            66,         66,
+            5,          200,         200, 255,  // Slight blue tint
+            true,       66,
+            66,         0,
+            0,          8,
+            0.8f,       {-1.0f, 0.0f},
+            {3.0f,  3.0f} // Increased scale for bigger boss
+        };
         static constexpr SpriteAnimDef k_rt35_boss2{
-            "boss2_kraken",   "assets/sprites/r-typesheet35.gif",
+            "boss2_kraken",    "assets/sprites/r-typesheet35.gif",
             0,          0,
             264,        143,
-            5,          255,         200, 200,  // Slight red tint for menacing look
+            5,          255,         255, 255,  // White tint
             true,       264,
             143,        0,
             0,          8,
-            0.5f,       {-1.0f, 0.0f},
-            {1.5f,  1.5f}  // Large scale for intimidating boss
+            1.0f,       {-1.0f, 0.0f},
+            {2.0f,  2.0f}
         };
         // Kraken Boomerang projectile (uses a menacing tentacle-like look)
         static constexpr SpriteAnimDef k_rt35_boss2_bullet{
@@ -456,6 +467,18 @@ namespace rtp::client
             85,         3,
             5.0f,       {-1.0f, 0.0f},
             {2.0f,  2.0f}
+        };
+        // Invincible King Boss (r-typesheet17.gif)
+        static constexpr SpriteAnimDef k_rt17_king{
+            "boss3_king",    "assets/sprites/r-typesheet17.gif",
+            0,          0,
+            128,        128,
+            5,          200,         200, 255,  // Slight blue tint
+            true,       128,
+            128,        0,
+            0,          6,
+            0.8f,       {-1.0f, 0.0f},
+            {3.0f,  3.0f}
         };
 
     static EntityTemplate createParrallaxLvl1_1()
@@ -722,6 +745,24 @@ namespace rtp::client
         {
             auto t = makeFromDef(initialPos, k_rt35_boss2_bullet);
             t.tag = "boss2_bullet";
+            return t;
+        }
+
+        static EntityTemplate createBossKing(const Vec2f &initialPos)
+        {
+            auto t = makeFromDef(initialPos, k_rt17_king);
+            t.tag = "boss_king";
+            return t;
+        }
+
+        static EntityTemplate createBoss3Invincible(const Vec2f &initialPos)
+        {
+            // Anchor boss to bottom: set Y so bottom of sprite is at screen bottom (assuming 720p)
+            float bossHeight = 66.0f * k_rt17_boss.scale.y;
+            float screenHeight = 720.0f;
+            Vec2f anchoredPos = {initialPos.x, screenHeight - bossHeight};
+            auto t = makeFromDef(anchoredPos, k_rt17_boss);
+            t.tag = "boss3_invincible";
             return t;
         }
     };

@@ -82,7 +82,94 @@ namespace rtp::server {
                 continue;
             }
 
+
             active.elapsed += dt;
+
+            // --- Boss3Invincible logic (phase-driven) ---
+            if (active.boss3Active && active.data.boss3Data.has_value()) {
+                const auto& boss3Data = active.data.boss3Data.value();
+                if (active.boss3PhaseIndex < static_cast<int>(boss3Data.phases.size())) {
+                    const auto& phase = boss3Data.phases[active.boss3PhaseIndex];
+                    active.boss3Timer += dt;
+                    active.boss3PhaseTimer += dt;
+                    // Spawn enemies at intervals for this phase
+                    if (active.boss3EnemiesSpawnedThisPhase < phase.spawnCount &&
+                        active.boss3PhaseTimer >= active.boss3NextEnemySpawn) {
+                        // Calculate random Y positions for each enemy
+                        float minY = phase.spawnAreaYMin;
+                        float maxY = phase.spawnAreaYMax;
+                        float x = phase.spawnAreaX + (std::rand() % 101);
+                        for (int i = 0; i < phase.spawnCount; ++i) {
+                            if (i < active.boss3EnemiesSpawnedThisPhase) continue;
+                            // Y totalement aléatoire sur la plage
+                            float spawnY = minY + static_cast<float>(std::rand()) / RAND_MAX * (maxY - minY);
+                            // Determine enemy type from string
+                            net::EntityType enemyType = net::EntityType::Enemy3;
+                            if (phase.enemyType == "enemy1") enemyType = net::EntityType::Enemy1;
+                            else if (phase.enemyType == "enemy2") enemyType = net::EntityType::Enemy2;
+                            else if (phase.enemyType == "enemy3") enemyType = net::EntityType::Enemy3;
+                            else if (phase.enemyType == "enemy4") enemyType = net::EntityType::Enemy4;
+                            Vec2f spawnPos = { x, spawnY };
+                            auto entity = _entitySystem.createEnemyEntity(
+                                roomId, spawnPos, ecs::components::Patterns::StraightLine,
+                                120.0f, 0.0f, 0.0f, enemyType);
+                            spawnEntityForRoom(roomId, entity);
+                        }
+                        active.boss3EnemiesSpawnedThisPhase = phase.spawnCount;
+                        active.boss3NextEnemySpawn += phase.spawnInterval;
+                    }
+                    // Move to next phase if duration elapsed
+                    if (active.boss3PhaseTimer >= phase.duration) {
+                        active.boss3PhaseIndex++;
+                        active.boss3PhaseTimer = 0.0f;
+                        active.boss3NextEnemySpawn = 0.0f;
+                        active.boss3EnemiesSpawnedThisPhase = 0;
+                    }
+                } else {
+                    // All phases complete: win condition
+                    bool anyPlayerAlive = false;
+                    auto view = _registry.zipView<
+                        ecs::components::EntityType,
+                        ecs::components::RoomId,
+                        ecs::components::Health
+                    >();
+                    for (auto &&[type, roomComp, health] : view) {
+                        if (roomComp.id != roomId) continue;
+                        if (type.type == net::EntityType::Player && health.currentHealth > 0) {
+                            anyPlayerAlive = true;
+                        }
+                    }
+                    if (anyPlayerAlive) {
+                        // Victory: send GameOver with win
+                        auto room = _roomSystem.getRoom(roomId);
+                        if (room) {
+                            auto players = room->getPlayers();
+                            int32_t bestScore = 0;
+                            std::string bestPlayer;
+                            for (const auto& p : players) {
+                                if (p->getScore() > bestScore || bestPlayer.empty()) {
+                                    bestScore = p->getScore();
+                                    bestPlayer = p->getUsername();
+                                }
+                            }
+                            for (const auto& p : players) {
+                                rtp::net::Packet packet(rtp::net::OpCode::GameOver);
+                                rtp::net::GameOverPayload payload{};
+                                std::strncpy(payload.bestPlayer, bestPlayer.c_str(), sizeof(payload.bestPlayer) - 1);
+                                payload.bestPlayer[sizeof(payload.bestPlayer) - 1] = '\0';
+                                payload.bestScore = bestScore;
+                                payload.playerScore = p->getScore();
+                                packet << payload;
+                                _networkSync.sendPacketToSession(p->getId(), packet, rtp::net::NetworkMode::TCP);
+                            }
+                            room->forceFinishGame();
+                        }
+                    }
+                    active.boss3Active = false;
+                    // TODO: supprimer l'entité boss3 du monde ici si tu veux qu'il disparaisse visuellement
+                    continue;
+                }
+            }
 
             // Check level completion: all players dead OR all bosses defeated
             bool anyPlayerAlive = false;
@@ -190,6 +277,14 @@ namespace rtp::server {
                             net::EntityType::BossShield);
                         spawnEntityForRoom(roomId, shieldEntity);
                     }
+                } else if (spawn.type == net::EntityType::Boss3Invincible) {
+                    // Start Boss3Invincible logic (phase-driven)
+                    active.boss3Active = true;
+                    active.boss3Timer = 0.0f;
+                    active.boss3PhaseTimer = 0.0f;
+                    active.boss3PhaseIndex = 0;
+                    active.boss3NextEnemySpawn = 0.0f;
+                    active.boss3EnemiesSpawnedThisPhase = 0;
                 }
                 active.nextSpawn++;
             }
