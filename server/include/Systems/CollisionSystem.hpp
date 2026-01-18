@@ -23,6 +23,8 @@
 #include "RType/ECS/Components/DoubleFire.hpp"
 #include "RType/ECS/Components/MovementSpeed.hpp"
 #include "RType/ECS/Components/Velocity.hpp"
+#include "RType/ECS/Components/Boomerang.hpp"
+#include "RType/ECS/Components/Ammo.hpp"
 
 #include "Systems/RoomSystem.hpp"
 #include "Systems/NetworkSyncSystem.hpp"

@@ -223,6 +223,15 @@ namespace rtp::client {
             const float weaponPanelW = 300.0f;
             const float weaponPanelH = 320.0f;
 
+            // Weapon selection list (explicit available kinds)
+            const std::vector<ecs::components::WeaponKind> availableKinds = {
+                ecs::components::WeaponKind::Classic,
+                ecs::components::WeaponKind::Beam,
+                ecs::components::WeaponKind::Tracker,
+                ecs::components::WeaponKind::Boomerang
+            };
+
+            // Left arrow button
             auto weaponPanel = _uiFactory.createButton(
                 _uiRegistry,
                 {weaponPanelX, weaponPanelY},
@@ -257,10 +266,15 @@ namespace rtp::client {
                 {weaponPanelX + 20.0f, weaponPanelY + 85.0f},
                 {44.0f, 44.0f},
                 "<",
-                [this]() {
-                    auto current = static_cast<int>(_settings.getSelectedWeapon());
-                    current = (current == 0) ? 4 : current - 1;
-                    _settings.setSelectedWeapon(static_cast<ecs::components::WeaponKind>(current));
+                [this, availableKinds]() {
+                    auto currentKind = _settings.getSelectedWeapon();
+                    size_t idx = 0;
+                    for (size_t i = 0; i < availableKinds.size(); ++i) {
+                        if (availableKinds[i] == currentKind) { idx = i; break; }
+                    }
+                    if (idx == 0) idx = availableKinds.size() - 1;
+                    else --idx;
+                    _settings.setSelectedWeapon(availableKinds[idx]);
                     _settings.save("config/settings.cfg");
                     updateWeaponDisplay();
                     _network.sendSelectedWeapon(static_cast<uint8_t>(_settings.getSelectedWeapon()));
@@ -289,10 +303,14 @@ namespace rtp::client {
                 {weaponPanelX + weaponPanelW - 64.0f, weaponPanelY + 85.0f},
                 {44.0f, 44.0f},
                 ">",
-                [this]() {
-                    auto current = static_cast<int>(_settings.getSelectedWeapon());
-                    current = (current + 1) % 5;
-                    _settings.setSelectedWeapon(static_cast<ecs::components::WeaponKind>(current));
+                [this, availableKinds]() {
+                    auto currentKind = _settings.getSelectedWeapon();
+                    size_t idx = 0;
+                    for (size_t i = 0; i < availableKinds.size(); ++i) {
+                        if (availableKinds[i] == currentKind) { idx = i; break; }
+                    }
+                    idx = (idx + 1) % availableKinds.size();
+                    _settings.setSelectedWeapon(availableKinds[idx]);
                     _settings.save("config/settings.cfg");
                     updateWeaponDisplay();
                     _network.sendSelectedWeapon(static_cast<uint8_t>(_settings.getSelectedWeapon()));
@@ -460,10 +478,7 @@ namespace rtp::client {
                 if (def.beamDuration > 0.0f) {
                     special += "Beam: " + std::to_string(def.beamDuration) + "s active / " + std::to_string(def.beamCooldown) + "s cooldown";
                 }
-                if (def.canReflect) {
-                    if (!special.empty()) special += " / ";
-                    special += "Reflects enemy bullets";
-                }
+                // Reflect feature removed
                 if (def.homing) {
                     if (!special.empty()) special += " / ";
                     special += "Auto-homing shots";
@@ -478,50 +493,6 @@ namespace rtp::client {
             } else {
                 log::warning("No weapon configurations found; using default stats display");
             }
-            // else {
-            //     switch (weapon) {
-            //         case ecs::components::WeaponKind::Classic:
-            //             stats =
-            //                 "Damage: 10\n"
-            //                 "Ammo: 100\n"
-            //                 "Fire Rate: High\n"
-            //                 "Special: Standard shots\n"
-            //                 "Difficulty: 2/5";
-            //             break;
-            //         case ecs::components::WeaponKind::Beam:
-            //             stats =
-            //                 "Damage: 4 (per tick)\n"
-            //                 "Ammo: 1\n"
-            //                 "Fire Rate: Continuous\n"
-            //                 "Special: Beam — 5s active / 5s cooldown\n"
-            //                 "Difficulty: 3/5";
-            //             break;
-            //         case ecs::components::WeaponKind::Paddle:
-            //             stats =
-            //                 "Damage: 0 (reflects bullets)\n"
-            //                 "Ammo: N/A\n"
-            //                 "Fire Rate: N/A\n"
-            //                 "Special: Reflects enemy bullets in front\n"
-            //                 "Difficulty: 5/5";
-            //             break;
-            //         case ecs::components::WeaponKind::Tracker:
-            //             stats =
-            //                 "Damage: 6\n"
-            //                 "Ammo: 50\n"
-            //                 "Fire Rate: Medium\n"
-            //                 "Special: Auto-homing shots\n"
-            //                 "Difficulty: 1/5";
-            //             break;
-            //         case ecs::components::WeaponKind::Boomerang:
-            //             stats =
-            //                 "Damage: 18\n"
-            //                 "Ammo: Infinite\n"
-            //                 "Fire Rate: Slow\n"
-            //                 "Special: Single projectile that returns to player\n"
-            //                 "Difficulty: 4/5";
-            //             break;
-            //     }
-            // }
 
             if (texts && texts.value().get().has(_weaponStatsText)) {
                 auto& text = texts.value().get()[_weaponStatsText];
