@@ -23,6 +23,7 @@
 #include "Utils/DebugFlags.hpp"
 
 #include <chrono>
+#include <cmath>
 
 namespace rtp::client {
     //////////////////////////////////////////////////////////////////////////
@@ -317,6 +318,10 @@ namespace rtp::client {
             }
             case net::OpCode::AmmoUpdate: {
                 onAmmoUpdate(event.packet);
+                break;
+            }
+            case net::OpCode::BeamState: {
+                onBeamState(event.packet);
                 break;
             }
             case net::OpCode::Pong: {
@@ -747,11 +752,50 @@ namespace rtp::client {
             if (!transforms.has(e))
                 continue;
 
-            // log::debug("Updating entity NetID={} Position=({}, {}) Rotation={}",
-            //     snap.netId, snap.position.x, snap.position.y, snap.rotation);
             transforms[e].position.x = snap.position.x;
             transforms[e].position.y = snap.position.y;
             transforms[e].rotation   = snap.rotation;
+            auto beamIt = _beamEntities.find(snap.netId);
+            if (beamIt != _beamEntities.end()) {
+                auto &vec = beamIt->second; // vector<pair<Entity, offsetY>>
+                if (auto tOpt2 = _registry.get<ecs::components::Transform>(); tOpt2) {
+                    auto &transforms2 = tOpt2.value().get();
+                    const float spriteW = 81.0f;
+
+                    // Compute frontOffset from player's sprite width
+                    float frontOffset = 20.0f;
+                    ecs::Entity ownerEntity = e;
+                    if (auto sOpt = _registry.get<ecs::components::Sprite>(); sOpt) {
+                        auto &sprites = sOpt.value().get();
+                        if (sprites.has(ownerEntity)) {
+                            const float playerSpriteW = static_cast<float>(sprites[ownerEntity].rectWidth);
+                            if (auto t3Opt = _registry.get<ecs::components::Transform>(); t3Opt) {
+                                auto &transforms3 = t3Opt.value().get();
+                                if (transforms3.has(ownerEntity)) {
+                                    const float playerScaleX = std::abs(transforms3[ownerEntity].scale.x);
+                                    frontOffset = (playerSpriteW * playerScaleX) * 0.5f + 4.0f;
+                                }
+                            }
+                        }
+                    }
+
+                    auto lenIt = _beamLengths.find(snap.netId);
+                    for (size_t i = 0; i < vec.size(); ++i) {
+                        ecs::Entity beamEntity = vec[i].first;
+                        float offsetY = vec[i].second;
+                        float length = 0.0f;
+                        if (lenIt != _beamLengths.end() && i < lenIt->second.size()) length = lenIt->second[i];
+
+                        if (!transforms2.has(beamEntity)) continue;
+                            float scaleMag = (length > 0.0f) ? (length / spriteW) : std::abs(transforms2[beamEntity].scale.x);
+                            transforms2[beamEntity].rotation = 0.0f;
+                            transforms2[beamEntity].scale.x = -std::abs(scaleMag);
+                            const float scaledWidth = spriteW * std::abs(transforms2[beamEntity].scale.x);
+                        transforms2[beamEntity].position.x = snap.position.x + frontOffset + (scaledWidth * 0.5f);
+                        transforms2[beamEntity].position.y = snap.position.y + offsetY;
+                    }
+                }
+            }
         }
     }
 
@@ -791,14 +835,98 @@ namespace rtp::client {
         _ammoReloadRemaining = payload.cooldownRemaining;
     }
 
+    void NetworkSyncSystem::onBeamState(net::Packet& packet)
+    {
+        net::BeamStatePayload payload{};
+        packet >> payload;
+
+        auto it = _netIdToEntity.find(payload.ownerNetId);
+        if (it == _netIdToEntity.end()) {
+            return;
+        }
+
+    
+
+        const ecs::Entity ownerEntity = it->second;
+
+        if (payload.active) {
+            Vec2f pos{0.0f, 0.0f};
+            if (auto tOpt = _registry.get<ecs::components::Transform>(); tOpt) {
+                auto &transforms = tOpt.value().get();
+                if (transforms.has(ownerEntity)) {
+                    pos = transforms[ownerEntity].position;
+                }
+            }
+
+            // Prepare template
+            EntityTemplate t = EntityTemplate::shot_5(pos);
+            const float spriteW = 81.0f;
+
+            float frontOffset = 20.0f;
+            if (auto sOpt = _registry.get<ecs::components::Sprite>(); sOpt) {
+                auto &sprites = sOpt.value().get();
+                if (sprites.has(ownerEntity)) {
+                    const float playerSpriteW = static_cast<float>(sprites[ownerEntity].rectWidth);
+                    if (auto t3Opt = _registry.get<ecs::components::Transform>(); t3Opt) {
+                        auto &transforms3 = t3Opt.value().get();
+                        if (transforms3.has(ownerEntity)) {
+                            const float playerScaleX = std::abs(transforms3[ownerEntity].scale.x);
+                            frontOffset = (playerSpriteW * playerScaleX) * 0.5f + 4.0f;
+                        }
+                    }
+                }
+            }
+
+            float scaleMag = (payload.length > 0.0f) ? (payload.length / spriteW) : 1.0f;
+            t.rotation = 0.0f;
+            t.scale.x = -std::abs(scaleMag);
+            t.scale.y = 1.0f;
+            t.tag = "beam_visual";
+            const float scaledWidth = spriteW * std::abs(t.scale.x);
+            t.position.x = pos.x + frontOffset + (scaledWidth * 0.5f);
+            t.position.y = pos.y + payload.offsetY;
+
+            auto res = _builder.spawn(t);
+            if (!res) {
+                log::error("Failed to spawn beam visual: {}", res.error().message());
+                return;
+            }
+            auto beamEntity = res.value();
+            _beamEntities[payload.ownerNetId].push_back({beamEntity, payload.offsetY});
+            _beamLengths[payload.ownerNetId].push_back(payload.length);
+        } else {
+            auto it2 = _beamEntities.find(payload.ownerNetId);
+            if (it2 != _beamEntities.end()) {
+                auto &vec = it2->second;
+                for (size_t i = 0; i < vec.size(); ++i) {
+                    if (std::fabs(vec[i].second - payload.offsetY) < 0.1f) {
+                        ecs::Entity beamEntity = vec[i].first;
+                        _builder.kill(beamEntity);
+                        vec.erase(vec.begin() + i);
+                        auto lenIt = _beamLengths.find(payload.ownerNetId);
+                        if (lenIt != _beamLengths.end() && i < lenIt->second.size()) lenIt->second.erase(lenIt->second.begin() + i);
+                        break;
+                    }
+                }
+                if (vec.empty()) {
+                    _beamEntities.erase(it2);
+                    _beamLengths.erase(payload.ownerNetId);
+                }
+            }
+        }
+        
+    }
+
     void NetworkSyncSystem::onPong(net::Packet& packet)
     {
         net::PingPayload payload{};
         packet >> payload;
         const auto now = std::chrono::steady_clock::now();
         const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
-        if (ms >= static_cast<int64_t>(payload.clientTimeMs)) {
+        if (ms >= payload.clientTimeMs) {
             _pingMs = static_cast<uint32_t>(ms - payload.clientTimeMs);
+        } else {
+            _pingMs = 0;
         }
     }
 

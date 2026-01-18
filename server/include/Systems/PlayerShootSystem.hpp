@@ -26,6 +26,8 @@
     #include "Systems/RoomSystem.hpp"
     #include "Systems/NetworkSyncSystem.hpp"
 
+    #include <unordered_map>
+
 /**
  * @namespace rtp::server
  * @brief Systems for R-Type server
@@ -60,7 +62,8 @@ namespace rtp::server {
              * @param roomId RoomId component of the player
              * @param doubleFire Whether to spawn two bullets (double fire power-up)
              */
-            void spawnBullet(const ecs::components::Transform& tf,
+            void spawnBullet(ecs::Entity owner,
+                             const ecs::components::Transform& tf,
                              const ecs::components::RoomId& roomId,
                              bool doubleFire = false);
 
@@ -71,7 +74,8 @@ namespace rtp::server {
              * @param chargeRatio Charge ratio in [0, 1]
              * @param doubleFire Whether to spawn two bullets (double fire power-up)
              */
-            void spawnChargedBullet(const ecs::components::Transform& tf,
+            void spawnChargedBullet(ecs::Entity owner,
+                                    const ecs::components::Transform& tf,
                                     const ecs::components::RoomId& roomId,
                                     float chargeRatio,
                                     bool doubleFire = false);
@@ -99,6 +103,9 @@ namespace rtp::server {
             float _bulletSpeed = 500.0f;        /**< Speed of the spawned bullets */
             float _chargedBulletSpeed = 280.0f; /**< Speed of the charged bullets */
             float _spawnOffsetX = 20.0f;        /**< X offset for bullet spawn position */
+
+            // Beam tick timers per-owner (accumulator for periodic damage ticks)
+            std::unordered_map<uint32_t, float> _beamTickTimers;
     };
 }
 
