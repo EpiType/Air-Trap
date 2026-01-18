@@ -1,0 +1,5 @@
+<map id="rtp::server::PlayerSystem" name="rtp::server::PlayerSystem">
+<area shape="rect" id="Node000001" title="System to handle player&#45;related operations on the server side." alt="" coords="5,140,173,369"/>
+<area shape="rect" id="Node000002" href="$classrtp_1_1ecs_1_1ISystem.html" title="Abstract base class for all ECS systems." alt="" coords="34,5,145,92"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="90,104,92,141,87,140,89,109"/>
+</map>

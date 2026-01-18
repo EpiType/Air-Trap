@@ -1,0 +1,51 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$classrtp_1_1ecs_1_1ISystem.html" title="Abstract base class for all ECS systems." alt="" coords="5,609,128,635"/>
+<area shape="rect" id="Node000001" href="$classrtp_1_1client_1_1AnimationSystem.html" title=" " alt="" coords="187,5,373,31"/>
+<area shape="poly" id="edge29_Node000000_Node000001" title=" " alt="" coords="66,594,74,475,93,309,107,224,125,147,147,84,160,59,174,40,191,29,188,34,178,44,164,62,152,86,130,149,112,225,98,310,80,475,72,594"/>
+<area shape="rect" id="Node000002" href="$classrtp_1_1client_1_1AudioSystem.html" title="System responsible for handling audio playback (music, SFX, ambient)." alt="" coords="199,55,360,80"/>
+<area shape="poly" id="edge30_Node000000_Node000002" title=" " alt="" coords="67,594,76,484,96,333,110,256,128,186,149,129,174,90,200,74,197,78,178,93,153,131,133,188,115,257,101,333,82,484,72,594"/>
+<area shape="rect" id="Node000003" href="$classrtp_1_1client_1_1InputSystem.html" title=" " alt="" coords="201,104,358,130"/>
+<area shape="poly" id="edge31_Node000000_Node000003" title=" " alt="" coords="68,593,79,493,100,357,114,289,131,226,151,175,174,140,202,124,200,128,178,144,155,178,136,228,119,290,105,358,84,494,73,594"/>
+<area shape="rect" id="Node000004" href="$classrtp_1_1client_1_1NetworkSyncSystem.html" title="System to handle network&#45;related operations on the client side." alt="" coords="199,154,361,194"/>
+<area shape="poly" id="edge32_Node000000_Node000004" title=" " alt="" coords="69,594,82,505,105,389,136,278,154,235,174,204,200,188,197,192,178,208,158,237,141,280,110,391,88,506,74,594"/>
+<area shape="rect" id="Node000005" href="$classrtp_1_1client_1_1ParallaxSystem.html" title=" " alt="" coords="192,219,368,244"/>
+<area shape="poly" id="edge33_Node000000_Node000005" title=" " alt="" coords="65,594,68,525,82,433,96,384,115,337,141,292,174,254,193,242,190,246,177,257,145,295,120,339,101,386,87,434,73,525,70,594"/>
+<area shape="rect" id="Node000006" href="$classrtp_1_1client_1_1RenderSystem.html" title=" " alt="" coords="195,268,365,294"/>
+<area shape="poly" id="edge34_Node000000_Node000006" title=" " alt="" coords="66,594,72,533,89,454,103,413,121,373,144,335,174,303,195,291,193,295,177,307,149,339,126,375,107,415,94,456,77,534,71,594"/>
+<area shape="rect" id="Node000007" href="$classrtp_1_1client_1_1ScoreSystem.html" title=" " alt="" coords="199,317,361,343"/>
+<area shape="poly" id="edge35_Node000000_Node000007" title=" " alt="" coords="68,594,77,542,96,476,127,409,148,379,174,352,200,338,197,343,177,356,152,382,131,412,101,478,82,543,73,594"/>
+<area shape="rect" id="Node000008" href="$classrtp_1_1client_1_1ShieldSystem.html" title="System responsible for managing shield visual effects." alt="" coords="198,367,362,392"/>
+<area shape="poly" id="edge36_Node000000_Node000008" title=" " alt="" coords="71,594,83,551,103,499,133,446,152,422,174,401,199,389,196,393,177,406,156,426,137,449,108,501,88,553,76,595"/>
+<area shape="rect" id="Node000009" href="$classrtp_1_1client_1_1UISystem.html" title="System responsible for handling menu interactions." alt="" coords="209,416,351,442"/>
+<area shape="poly" id="edge37_Node000000_Node000009" title=" " alt="" coords="75,594,90,561,111,522,139,484,174,452,210,436,207,441,177,456,143,488,116,525,95,563,80,595"/>
+<area shape="rect" id="Node000010" href="$classrtp_1_1client_1_1systems_1_1UIRenderSystem.html" title=" " alt="" coords="213,466,346,506"/>
+<area shape="poly" id="edge38_Node000000_Node000010" title=" " alt="" coords="85,596,124,555,174,516,215,499,211,504,177,520,128,559,90,598"/>
+<area shape="rect" id="Node000011" href="$classrtp_1_1server_1_1AuthSystem.html" title="System to handle player login operations on the server side." alt="" coords="200,531,360,556"/>
+<area shape="poly" id="edge39_Node000000_Node000011" title=" " alt="" coords="101,600,175,565,212,555,209,559,177,570,105,603"/>
+<area shape="rect" id="Node000012" href="$classrtp_1_1server_1_1BoomerangSystem.html" title=" " alt="" coords="180,580,380,606"/>
+<area shape="poly" id="edge40_Node000000_Node000012" title=" " alt="" coords="141,610,184,604,180,608,145,614"/>
+<area shape="rect" id="Node000013" href="$classrtp_1_1server_1_1BulletCleanupSystem.html" title="Despawns bullets that leave the play area." alt="" coords="195,630,364,670"/>
+<area shape="poly" id="edge41_Node000000_Node000013" title=" " alt="" coords="142,630,197,637,192,641,145,634"/>
+<area shape="rect" id="Node000014" href="$classrtp_1_1server_1_1CollisionSystem.html" title=" " alt="" coords="188,695,372,720"/>
+<area shape="poly" id="edge42_Node000000_Node000014" title=" " alt="" coords="100,641,137,661,177,680,215,693,211,695,175,685,135,666,102,646"/>
+<area shape="rect" id="Node000015" href="$classrtp_1_1server_1_1EnemyAISystem.html" title="System to handle enemy AI behavior." alt="" coords="186,744,374,770"/>
+<area shape="poly" id="edge43_Node000000_Node000015" title=" " alt="" coords="85,645,126,690,150,712,177,731,202,742,197,745,174,735,147,716,122,694,86,650"/>
+<area shape="rect" id="Node000016" href="$classrtp_1_1server_1_1EnemyShootSystem.html" title="Spawns bullets for enemies on the server." alt="" coords="176,793,384,819"/>
+<area shape="poly" id="edge44_Node000000_Node000016" title=" " alt="" coords="78,647,96,680,117,715,144,751,177,780,198,792,193,794,174,784,140,754,113,718,91,682,79,652"/>
+<area shape="rect" id="Node000017" href="$classrtp_1_1server_1_1EntitySystem.html" title="Base class for systems that operate on entities in the ECS." alt="" coords="196,843,364,868"/>
+<area shape="poly" id="edge45_Node000000_Node000017" title=" " alt="" coords="74,647,89,690,109,739,138,788,156,810,177,829,198,842,193,844,174,834,153,814,134,791,104,741,84,692,74,653"/>
+<area shape="rect" id="Node000018" href="$classrtp_1_1server_1_1HomingSystem.html" title=" " alt="" coords="191,892,369,918"/>
+<area shape="poly" id="edge46_Node000000_Node000018" title=" " alt="" coords="71,648,83,700,102,762,132,825,153,854,177,879,195,891,190,892,174,883,149,857,128,828,97,764,78,701,71,653"/>
+<area shape="rect" id="Node000019" href="$classrtp_1_1server_1_1MovementSystem.html" title="System to handle entity movement based on input components." alt="" coords="183,941,377,967"/>
+<area shape="poly" id="edge47_Node000000_Node000019" title=" " alt="" coords="69,647,78,708,95,784,109,823,127,862,149,897,177,928,194,940,189,941,174,932,145,901,122,864,104,825,90,785,73,709,69,653"/>
+<area shape="rect" id="Node000020" href="$classrtp_1_1server_1_1NetworkSyncSystem.html" title="System to handle network&#45;related operations on the server side." alt="" coords="196,991,364,1032"/>
+<area shape="poly" id="edge48_Node000000_Node000020" title=" " alt="" coords="68,648,75,717,90,804,104,851,123,897,147,940,177,978,198,993,193,995,174,981,142,943,118,899,99,853,85,806,70,717,68,653"/>
+<area shape="rect" id="Node000021" href="$classrtp_1_1server_1_1PlayerMouvementSystem.html" title="System to handle player entity movement based on input components." alt="" coords="183,1056,376,1097"/>
+<area shape="poly" id="edge49_Node000000_Node000021" title=" " alt="" coords="72,648,88,739,110,857,140,969,158,1012,178,1042,194,1056,188,1056,174,1045,154,1015,135,970,105,858,82,740,71,653"/>
+<area shape="rect" id="Node000022" href="$classrtp_1_1server_1_1PlayerShootSystem.html" title="Spawns bullets from player input on the server." alt="" coords="200,1122,360,1162"/>
+<area shape="poly" id="edge50_Node000000_Node000022" title=" " alt="" coords="71,648,85,751,106,888,120,957,137,1020,156,1072,178,1107,202,1126,197,1127,174,1111,151,1074,132,1022,115,959,100,889,79,752,70,653"/>
+<area shape="rect" id="Node000023" href="$classrtp_1_1server_1_1PlayerSystem.html" title="System to handle player&#45;related operations on the server side." alt="" coords="195,1187,365,1212"/>
+<area shape="poly" id="edge51_Node000000_Node000023" title=" " alt="" coords="70,648,81,765,100,922,114,1001,132,1074,153,1133,178,1172,197,1188,192,1188,174,1176,148,1135,127,1075,109,1002,95,922,76,765,69,653"/>
+<area shape="rect" id="Node000024" href="$classrtp_1_1server_1_1RoomSystem.html" title="System to handle room&#45;related operations on the server side." alt="" coords="196,1236,364,1262"/>
+<area shape="poly" id="edge52_Node000000_Node000024" title=" " alt="" coords="69,647,79,773,96,945,110,1033,128,1114,151,1179,164,1204,178,1223,198,1239,193,1238,174,1227,159,1207,146,1181,123,1115,105,1034,91,946,74,773,69,653"/>
+</map>

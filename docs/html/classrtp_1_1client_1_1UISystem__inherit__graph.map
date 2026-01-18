@@ -1,0 +1,5 @@
+<map id="rtp::client::UISystem" name="rtp::client::UISystem">
+<area shape="rect" id="Node000001" title="System responsible for handling menu interactions." alt="" coords="5,140,204,674"/>
+<area shape="rect" id="Node000002" href="$classrtp_1_1ecs_1_1ISystem.html" title="Abstract base class for all ECS systems." alt="" coords="49,5,161,92"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="105,104,107,140,102,140,105,110"/>
+</map>

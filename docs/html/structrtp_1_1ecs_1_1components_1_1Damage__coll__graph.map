@@ -1,0 +1,5 @@
+<map id="rtp::ecs::components::Damage" name="rtp::ecs::components::Damage">
+<area shape="rect" id="Node000001" title="Component representing damage value." alt="" coords="16,326,150,407"/>
+<area shape="rect" id="Node000002" href="$classrtp_1_1ecs_1_1Entity.html" title="Represents an entity in the ECS (Entity&#45;Component&#45;System) architecture." alt="" coords="5,5,160,255"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="84,252,85,309,80,308,81,257"/>
+</map>

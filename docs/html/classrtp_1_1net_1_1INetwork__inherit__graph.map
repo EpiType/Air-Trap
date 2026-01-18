@@ -1,0 +1,7 @@
+<map id="rtp::net::INetwork" name="rtp::net::INetwork">
+<area shape="rect" id="Node000001" title="Interface for network operations." alt="" coords="122,5,234,133"/>
+<area shape="rect" id="Node000002" href="$classrtp_1_1client_1_1ClientNetwork.html" title=" " alt="" coords="5,181,161,715"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="159,145,153,181,147,180,158,150"/>
+<area shape="rect" id="Node000003" href="$classrtp_1_1server_1_1ServerNetwork.html" title="Implementation ASIO du serveur réseau (TCP + UDP)." alt="" coords="185,201,360,694"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="197,144,213,201,208,201,197,150"/>
+</map>

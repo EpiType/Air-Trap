@@ -1,0 +1,5 @@
+<map id="rtp::client::scenes::MenuScene::MenuEnemy" name="rtp::client::scenes::MenuScene::MenuEnemy">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,326,174,509"/>
+<area shape="rect" id="Node000002" href="$classrtp_1_1ecs_1_1Entity.html" title="Represents an entity in the ECS (Entity&#45;Component&#45;System) architecture." alt="" coords="12,5,167,255"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="90,252,92,309,87,308,89,257"/>
+</map>

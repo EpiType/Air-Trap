@@ -1,0 +1,5 @@
+<map id="rtp::client::NetworkSyncSystem" name="rtp::client::NetworkSyncSystem">
+<area shape="rect" id="Node000001" title="System to handle network&#45;related operations on the client side." alt="" coords="5,140,193,872"/>
+<area shape="rect" id="Node000002" href="$classrtp_1_1ecs_1_1ISystem.html" title="Abstract base class for all ECS systems." alt="" coords="44,5,155,92"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="100,104,102,140,97,140,99,110"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="rtp::ecs::components::audio::SoundEvent" name="rtp::ecs::components::audio::SoundEvent">
+<area shape="rect" id="Node000001" title="Component for triggering one&#45;time sound effects (SFX)." alt="" coords="5,273,139,395"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="38,136,106,202"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="73,200,75,257,70,256,71,205"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="15,5,130,87"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="73,99,75,137,70,136,72,104"/>
+</map>

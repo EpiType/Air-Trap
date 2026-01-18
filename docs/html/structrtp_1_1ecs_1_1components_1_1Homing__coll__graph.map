@@ -1,0 +1,3 @@
+<map id="rtp::ecs::components::Homing" name="rtp::ecs::components::Homing">
+<area shape="rect" id="Node000001" title="Marks an entity as homing and provides tuning parameters." alt="" coords="5,5,139,107"/>
+</map>

@@ -1,0 +1,15 @@
+<map id="common/include/RType/ECS/Components/Damage.hpp" name="common/include/RType/ECS/Components/Damage.hpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="106,5,315,46"/>
+<area shape="rect" id="Node000002" href="$Entity_8hpp.html" title="Entity identifier for ECS architecture." alt="" coords="134,94,286,120"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="212,44,213,80,208,77,209,49"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,168,77,193"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="183,123,85,164,83,159,181,118"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="100,168,160,193"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="199,119,156,160,153,155,194,121"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="184,168,236,193"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="212,118,213,153,208,150,208,122"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="261,168,338,193"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="226,118,275,158,270,158,225,123"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="362,168,432,193"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="243,118,354,161,348,162,241,123"/>
+</map>

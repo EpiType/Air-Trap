@@ -1,0 +1,3 @@
+<map id="EnemyTemplate" name="EnemyTemplate">
+<area shape="rect" id="Node000001" title="Data&#45;driven blueprint used to spawn an enemy entity on the client, incluant une factory statique pour..." alt="" coords="5,5,110,72"/>
+</map>

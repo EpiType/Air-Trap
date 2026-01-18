@@ -1,0 +1,5 @@
+<map id="rtp::client::scenes::MenuScene" name="rtp::client::scenes::MenuScene">
+<area shape="rect" id="Node000001" title="Scene for the main menu." alt="" coords="5,216,167,663"/>
+<area shape="rect" id="Node000002" href="$classrtp_1_1client_1_1interfaces_1_1IScene.html" title="Interface for different scenes in the client application." alt="" coords="22,5,151,168"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="87,180,89,216,84,216,86,186"/>
+</map>

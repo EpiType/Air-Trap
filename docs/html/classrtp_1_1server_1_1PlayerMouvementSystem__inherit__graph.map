@@ -1,0 +1,5 @@
+<map id="rtp::server::PlayerMouvementSystem" name="rtp::server::PlayerMouvementSystem">
+<area shape="rect" id="Node000001" title="System to handle player entity movement based on input components." alt="" coords="5,140,188,242"/>
+<area shape="rect" id="Node000002" href="$classrtp_1_1ecs_1_1ISystem.html" title="Abstract base class for all ECS systems." alt="" coords="41,5,152,92"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="98,105,99,141,94,140,95,109"/>
+</map>

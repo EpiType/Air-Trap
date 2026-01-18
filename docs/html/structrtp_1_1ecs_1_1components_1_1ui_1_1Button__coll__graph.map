@@ -1,0 +1,18 @@
+<map id="rtp::ecs::components::ui::Button" name="rtp::ecs::components::ui::Button">
+<area shape="rect" id="Node000001" title="Component representing a clickable button." alt="" coords="61,1235,195,1398"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="36,1027,105,1093"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="79,1091,109,1219,104,1219,77,1095"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,790,120,872"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="65,884,72,1027,67,1027,64,889"/>
+<area shape="rect" id="Node000004" href="$structrtp_1_1Vec2.html" title=" " alt="" coords="136,976,248,1144"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="173,1142,155,1220,150,1218,170,1146"/>
+<area shape="rect" id="Node000005" href="$structrtp_1_1details_1_1VecBase.html" title=" " alt="" coords="211,361,344,666"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="288,678,289,746,283,815,273,885,257,953,248,978,243,975,252,951,268,884,278,815,283,746,287,683"/>
+<area shape="rect" id="Node000007" href="$structrtp_1_1Vec2.html" title="A 2&#45;dimensional vector." alt="" coords="144,757,240,905"/>
+<area shape="poly" id="edge7_Node000007_Node000005" title=" " alt="" coords="233,678,214,758,209,757,232,683"/>
+<area shape="rect" id="Node000006" href="$structrtp_1_1details_1_1VecBase.html" title="CRTP base class for vectors." alt="" coords="211,5,344,290"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="278,302,280,361,275,361,277,307"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="193,917,195,977,189,976,191,923"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="168,480,187,547"/>
+<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="179,544,191,741,185,740,178,549"/>
+</map>

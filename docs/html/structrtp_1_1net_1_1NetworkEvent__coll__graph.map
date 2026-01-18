@@ -1,0 +1,13 @@
+<map id="rtp::net::NetworkEvent" name="rtp::net::NetworkEvent">
+<area shape="rect" id="Node000001" title="Represents a network event containing session ID and packet data." alt="" coords="52,941,194,1007"/>
+<area shape="rect" id="Node000002" href="$classrtp_1_1net_1_1Packet.html" title="Network packet with header and serializable body." alt="" coords="34,560,211,870"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="124,868,125,925,120,923,121,872"/>
+<area shape="rect" id="Node000003" href="$structrtp_1_1net_1_1Header.html" title="Packet header with sequencing and acknowledgment support." alt="" coords="5,280,107,468"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="58,466,68,535,70,543,64,543,63,536,58,471"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="131,341,267,407"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="192,405,164,544,159,542,191,410"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="146,143,251,209"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="199,221,201,342,196,341,198,226"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="190,5,208,72"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="199,69,201,126,196,126,199,74"/>
+</map>
