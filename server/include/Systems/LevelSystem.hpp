@@ -75,6 +75,7 @@ class LevelSystem {
             size_t nextSpawn{0};
             size_t nextPowerup{0};
             size_t nextObstacle{0};
+            bool bossHasSpawnedInWorld{false};
         };
 
         /**

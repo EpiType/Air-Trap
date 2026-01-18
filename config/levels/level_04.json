@@ -12,17 +12,17 @@
         "music_track": "assets/audio/music/theme_A.ogg"
     },
     "spawn_triggers": [
-        { "at_time": 3.0, "entity_type": "scout", "template_path": "templates/enemy/enemy_01.json", "start_position": { "x": 1280, "y": 200 }, "count": 6, "delay_between_spawn": 0.5, "pattern": "sine", "speed": 160.0 },
-        { "at_time": 7.0, "entity_type": "tank", "template_path": "templates/enemy/enemy_01.json", "start_position": { "x": 1280, "y": 520 }, "count": 4, "delay_between_spawn": 0.8, "pattern": "sine", "speed": 130.0 },
-        { "at_time": 15.0, "entity_type": "scout", "template_path": "templates/enemy/enemy_01.json", "start_position": { "x": 1280, "y": 150 }, "count": 8, "delay_between_spawn": 0.45, "pattern": "straight", "speed": 185.0 },
-        { "at_time": 23.0, "entity_type": "tank", "template_path": "templates/enemy/enemy_01.json", "start_position": { "x": 1280, "y": 520 }, "count": 5, "delay_between_spawn": 0.75, "pattern": "sine", "speed": 135.0 },
-        { "at_time": 34.0, "entity_type": "boss", "template_path": "templates/enemy/boss/boss_01.json", "start_position": { "x": 1200, "y": 450 }, "count": 1, "pattern": "static", "speed": 0.0 },
+        { "at_time": 3.0, "entity_type": "scout", "template_path": "templates/enemy/enemy_01.json", "start_position": { "x": 1280, "y": 200 }, "count": 6, "delay_between_spawn": 0.5, "pattern": "ZigZag", "speed": 160.0 },
+        { "at_time": 7.0, "entity_type": "tank", "template_path": "templates/enemy/enemy_01.json", "start_position": { "x": 1280, "y": 520 }, "count": 4, "delay_between_spawn": 0.8, "pattern": "ZigZag", "speed": 130.0 },
+        { "at_time": 15.0, "entity_type": "scout", "template_path": "templates/enemy/enemy_01.json", "start_position": { "x": 1280, "y": 150 }, "count": 8, "delay_between_spawn": 0.45, "pattern": "StraightLine", "speed": 185.0 },
+        { "at_time": 23.0, "entity_type": "tank", "template_path": "templates/enemy/enemy_01.json", "start_position": { "x": 1280, "y": 520 }, "count": 5, "delay_between_spawn": 0.75, "pattern": "ZigZag", "speed": 135.0 },
+        { "at_time": 34.0, "entity_type": "boss", "template_path": "templates/enemy/boss/boss_01.json", "start_position": { "x": 1200, "y": 450 }, "count": 1, "pattern": "Static", "speed": 0.0 },
 
-        { "at_time": 50.0, "entity_type": "scout", "template_path": "templates/enemy/enemy_01.json", "start_position": { "x": 1280, "y": 220 }, "count": 6, "delay_between_spawn": 0.5, "pattern": "sine", "speed": 160.0 },
-        { "at_time": 54.0, "entity_type": "tank", "template_path": "templates/enemy/enemy_01.json", "start_position": { "x": 1280, "y": 520 }, "count": 4, "delay_between_spawn": 0.8, "pattern": "sine", "speed": 130.0 },
-        { "at_time": 61.0, "entity_type": "scout", "template_path": "templates/enemy/enemy_01.json", "start_position": { "x": 1280, "y": 170 }, "count": 8, "delay_between_spawn": 0.45, "pattern": "straight", "speed": 185.0 },
-        { "at_time": 69.0, "entity_type": "tank", "template_path": "templates/enemy/enemy_01.json", "start_position": { "x": 1280, "y": 520 }, "count": 5, "delay_between_spawn": 0.75, "pattern": "sine", "speed": 135.0 },
-        { "at_time": 80.0, "entity_type": "boss", "template_path": "templates/enemy/boss/boss_01.json", "start_position": { "x": 1200, "y": 450 }, "count": 1, "pattern": "static", "speed": 0.0 }
+        { "at_time": 50.0, "entity_type": "scout", "template_path": "templates/enemy/enemy_01.json", "start_position": { "x": 1280, "y": 220 }, "count": 6, "delay_between_spawn": 0.5, "pattern": "ZigZag", "speed": 160.0 },
+        { "at_time": 54.0, "entity_type": "tank", "template_path": "templates/enemy/enemy_01.json", "start_position": { "x": 1280, "y": 520 }, "count": 4, "delay_between_spawn": 0.8, "pattern": "ZigZag", "speed": 130.0 },
+        { "at_time": 61.0, "entity_type": "scout", "template_path": "templates/enemy/enemy_01.json", "start_position": { "x": 1280, "y": 170 }, "count": 8, "delay_between_spawn": 0.45, "pattern": "StraightLine", "speed": 185.0 },
+        { "at_time": 69.0, "entity_type": "tank", "template_path": "templates/enemy/enemy_01.json", "start_position": { "x": 1280, "y": 520 }, "count": 5, "delay_between_spawn": 0.75, "pattern": "ZigZag", "speed": 135.0 },
+        { "at_time": 80.0, "entity_type": "boss", "template_path": "templates/enemy/boss/boss_01.json", "start_position": { "x": 1200, "y": 450 }, "count": 1, "pattern": "Static", "speed": 0.0 }
     ],
     "powerup_triggers": [
         { "at_time": 10.0, "type": "heal", "position": { "x": 900, "y": 300 }, "value": 25.0, "duration": 0.0 },

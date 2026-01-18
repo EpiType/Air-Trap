@@ -25,7 +25,7 @@
             },
             "count": 1,
             "delay_between_spawn": 0.6,
-            "pattern": "straight",
+            "pattern": "StraightLine",
             "speed": 60.0,
             "amplitude": 80.0,
             "frequency": 0.5
@@ -40,7 +40,7 @@
             },
             "count": 5,
             "delay_between_spawn": 0.55,
-            "pattern": "circle",
+            "pattern": "Circular",
             "speed": 160.0
         },
         {
@@ -53,7 +53,7 @@
             },
             "count": 3,
             "delay_between_spawn": 0.75,
-            "pattern": "sine",
+            "pattern": "ZigZag",
             "speed": 120.0
         },
         {
@@ -78,7 +78,7 @@
                 "y": 450
             },
             "count": 1,
-            "pattern": "static",
+            "pattern": "Static",
             "speed": 0.0
         },
         {

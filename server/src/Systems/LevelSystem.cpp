@@ -87,13 +87,13 @@ namespace rtp::server {
             // Check level completion: all players dead OR all bosses defeated
             bool anyPlayerAlive = false;
             bool anyBossAlive = false;
-            
+
             auto view = _registry.zipView<
                 ecs::components::EntityType,
                 ecs::components::RoomId,
                 ecs::components::Health
             >();
-            
+
             for (auto &&[type, roomComp, health] : view) {
                 if (roomComp.id != roomId) {
                     continue;
@@ -105,17 +105,11 @@ namespace rtp::server {
                     anyBossAlive = true;
                 }
             }
-            
-            // Level ends when: no players alive OR (boss was spawned and no boss alive)
-            bool bossWasSpawned = false;
-            for (const auto& spawn : active.data.spawns) {
-                if (spawn.type == net::EntityType::Boss) {
-                    bossWasSpawned = true;
-                    break;
-                }
-            }
-            
-            if (!anyPlayerAlive || (bossWasSpawned && !anyBossAlive)) {
+
+            // Fin de niveau :
+            // - tous les joueurs morts
+            // - OU boss effectivement spawné ET plus aucun boss vivant
+            if (!anyPlayerAlive || (active.bossHasSpawnedInWorld && !anyBossAlive)) {
                 log::info("Level completed for room {}: players alive={}, boss alive={}", 
                           roomId, anyPlayerAlive, anyBossAlive);
                 room->forceFinishGame();
@@ -158,20 +152,18 @@ namespace rtp::server {
                     roomId, startPos, spawn.pattern,
                     spawn.speed, spawn.amplitude, spawn.frequency, spawn.type);
                 spawnEntityForRoom(roomId, entity);
-                
-                // If spawning a Boss, also spawn 4 BossShields in a semi-circle in front of it
+                // Si c'est un boss, on note qu'il a été spawné dans le monde
                 if (spawn.type == net::EntityType::Boss) {
+                    active.bossHasSpawnedInWorld = true;
                     const float shieldRadius = 250.0f; // Distance from boss center (more separation)
                     // Semi-circle in front (left side, towards player): angles from 90° to 270°
                     const float angles[4] = {120.0f, 150.0f, 210.0f, 240.0f}; // 4 shields spread in front (left)
-                    
                     for (int i = 0; i < 4; i++) {
                         float angleRad = angles[i] * 3.14159f / 180.0f;
                         Vec2f shieldPos = {
                             startPos.x + shieldRadius * std::cos(angleRad),
                             startPos.y + shieldRadius * std::sin(angleRad)
                         };
-                        
                         auto shieldEntity = _entitySystem.createEnemyEntity(
                             roomId, shieldPos, spawn.pattern,
                             spawn.speed, spawn.amplitude, spawn.frequency, 
@@ -179,7 +171,6 @@ namespace rtp::server {
                         spawnEntityForRoom(roomId, shieldEntity);
                     }
                 }
-                
                 active.nextSpawn++;
             }
 
