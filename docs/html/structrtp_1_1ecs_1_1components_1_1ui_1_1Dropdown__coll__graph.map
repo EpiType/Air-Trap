@@ -1,0 +1,23 @@
+<map id="rtp::ecs::components::ui::Dropdown" name="rtp::ecs::components::ui::Dropdown">
+<area shape="rect" id="Node000001" title="Component for dropdown menu selection." alt="" coords="168,1235,302,1459"/>
+<area shape="rect" id="Node000002" href="$structrtp_1_1Vec2.html" title=" " alt="" coords="258,976,371,1144"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="293,1141,273,1220,268,1218,290,1146"/>
+<area shape="rect" id="Node000003" href="$structrtp_1_1details_1_1VecBase.html" title=" " alt="" coords="288,361,421,666"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="377,678,383,814,378,884,367,953,359,977,355,975,361,951,372,884,377,814,376,683"/>
+<area shape="rect" id="Node000005" href="$structrtp_1_1Vec2.html" title="A 2&#45;dimensional vector." alt="" coords="250,757,345,905"/>
+<area shape="poly" id="edge5_Node000005_Node000003" title=" " alt="" coords="325,678,313,758,308,757,324,683"/>
+<area shape="rect" id="Node000004" href="$structrtp_1_1details_1_1VecBase.html" title="CRTP base class for vectors." alt="" coords="288,5,421,290"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="355,302,357,361,352,361,354,307"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="305,917,311,977,306,976,303,923"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="208,480,227,547"/>
+<area shape="poly" id="edge6_Node000005_Node000006" title=" " alt="" coords="226,544,278,741,272,742,225,549"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="121,798,226,864"/>
+<area shape="poly" id="edge11_Node000010_Node000006" title=" " alt="" coords="212,544,190,690,180,782,175,781,184,690,211,549"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="80,1027,235,1093"/>
+<area shape="poly" id="edge7_Node000001_Node000007" title=" " alt="" coords="167,1090,203,1219,198,1219,165,1095"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="28,798,97,864"/>
+<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="67,862,79,906,93,951,127,1012,122,1013,89,953,74,907,67,867"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="5,473,120,554"/>
+<area shape="poly" id="edge9_Node000008_Node000009" title=" " alt="" coords="63,566,65,798,60,798,62,572"/>
+<area shape="poly" id="edge10_Node000007_Node000010" title=" " alt="" coords="171,877,162,1028,157,1027,169,882"/>
+</map>

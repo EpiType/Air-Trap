@@ -1,0 +1,3 @@
+<map id="rtp::ecs::components::Hitbox" name="rtp::ecs::components::Hitbox">
+<area shape="rect" id="Node000001" title="Component representing a rectangular hitbox." alt="" coords="5,5,139,209"/>
+</map>

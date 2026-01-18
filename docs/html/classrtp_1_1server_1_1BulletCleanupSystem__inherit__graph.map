@@ -1,0 +1,5 @@
+<map id="rtp::server::BulletCleanupSystem" name="rtp::server::BulletCleanupSystem">
+<area shape="rect" id="Node000001" title="Despawns bullets that leave the play area." alt="" coords="5,140,164,343"/>
+<area shape="rect" id="Node000002" href="$classrtp_1_1ecs_1_1ISystem.html" title="Abstract base class for all ECS systems." alt="" coords="29,5,140,92"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="85,104,87,141,82,140,84,110"/>
+</map>

@@ -1,0 +1,3 @@
+<map id="rtp::ecs::components::Shield" name="rtp::ecs::components::Shield">
+<area shape="rect" id="Node000001" title="Component representing a shield that absorbs damage." alt="" coords="5,5,139,87"/>
+</map>

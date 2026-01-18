@@ -1,0 +1,5 @@
+<map id="rtp::server::EnemyAISystem" name="rtp::server::EnemyAISystem">
+<area shape="rect" id="Node000001" title="System to handle enemy AI behavior." alt="" coords="5,140,182,247"/>
+<area shape="rect" id="Node000002" href="$classrtp_1_1ecs_1_1ISystem.html" title="Abstract base class for all ECS systems." alt="" coords="38,5,150,92"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="95,105,96,141,91,140,93,109"/>
+</map>

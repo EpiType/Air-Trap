@@ -1,0 +1,27 @@
+<map id="rtp::client::interfaces::IScene" name="rtp::client::interfaces::IScene">
+<area shape="rect" id="Node000001" title="Interface for different scenes in the client application." alt="" coords="960,5,1090,168"/>
+<area shape="rect" id="Node000002" href="$classrtp_1_1client_1_1scenes_1_1CreateRoomScene.html" title="Scene for creating a new game room." alt="" coords="5,318,148,724"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="943,90,758,99,525,118,410,135,306,156,221,184,188,200,163,218,142,239,125,264,101,319,95,317,121,261,138,236,159,214,185,195,219,179,305,151,409,129,524,113,758,94,948,88"/>
+<area shape="rect" id="Node000003" href="$classrtp_1_1client_1_1scenes_1_1GameOverScene.html" title=" " alt="" coords="173,389,314,653"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="943,93,792,107,608,130,519,146,438,166,373,190,348,203,328,218,297,254,275,297,260,343,251,390,246,388,255,342,270,295,293,251,324,214,345,199,371,185,437,161,518,141,608,124,792,102,948,91"/>
+<area shape="rect" id="Node000004" href="$classrtp_1_1client_1_1scenes_1_1GamepadSettingsScene.html" title="Scene for configuring gamepad settings." alt="" coords="338,338,511,704"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="943,100,835,120,711,146,598,179,555,198,525,218,502,244,483,274,454,340,450,337,478,271,498,241,522,214,553,193,596,174,709,140,834,114,947,98"/>
+<area shape="rect" id="Node000005" href="$classrtp_1_1client_1_1scenes_1_1KeyBindingScene.html" title=" " alt="" coords="536,348,677,694"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="943,99,883,114,814,137,748,171,718,192,691,218,669,247,651,279,626,350,621,347,646,277,664,244,687,214,714,188,745,166,812,132,882,109,948,96"/>
+<area shape="rect" id="Node000006" href="$classrtp_1_1client_1_1scenes_1_1LobbyScene.html" title="Scene for the game lobby." alt="" coords="701,348,842,694"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="950,128,899,170,876,193,856,217,823,281,799,350,795,347,818,279,852,215,872,189,896,166,946,132"/>
+<area shape="rect" id="Node000007" href="$classrtp_1_1client_1_1scenes_1_1LoginScene.html" title="Scene for user login." alt="" coords="866,368,1007,674"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="1007,181,970,370,965,367,1004,185"/>
+<area shape="rect" id="Node000008" href="$classrtp_1_1client_1_1scenes_1_1MenuScene.html" title="Scene for the main menu." alt="" coords="1032,297,1194,745"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="1045,180,1070,299,1065,297,1043,185"/>
+<area shape="rect" id="Node000009" href="$classrtp_1_1client_1_1scenes_1_1ModMenuScene.html" title="Scene for customizing game sprites." alt="" coords="1218,216,1383,826"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="1103,125,1159,164,1186,188,1208,214,1221,235,1216,234,1204,218,1182,191,1156,168,1102,130"/>
+<area shape="rect" id="Node000010" href="$classrtp_1_1client_1_1scenes_1_1PauseScene.html" title="Scene for the pause menu." alt="" coords="1408,389,1549,653"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="1104,92,1176,104,1254,126,1293,142,1331,162,1366,186,1397,214,1426,253,1448,297,1463,343,1472,390,1468,388,1458,344,1443,299,1422,256,1394,218,1363,190,1328,166,1291,147,1252,131,1174,109,1105,97"/>
+<area shape="rect" id="Node000011" href="$classrtp_1_1client_1_1scenes_1_1PlayingScene.html" title="Scene for the main gameplay." alt="" coords="1572,287,1738,755"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="1104,95,1223,112,1358,137,1423,153,1481,171,1529,192,1563,214,1592,248,1614,288,1609,286,1587,251,1559,218,1527,196,1480,176,1422,159,1357,143,1222,117,1105,100"/>
+<area shape="rect" id="Node000012" href="$classrtp_1_1client_1_1scenes_1_1RoomWaitingScene.html" title="Scene for waiting in a game room." alt="" coords="1763,267,1929,775"/>
+<area shape="poly" id="edge11_Node000001_Node000012" title=" " alt="" coords="1104,89,1263,101,1455,124,1549,140,1633,160,1703,185,1730,199,1752,214,1775,238,1795,268,1789,266,1771,242,1748,218,1728,203,1701,190,1632,165,1548,145,1454,129,1262,106,1105,94"/>
+<area shape="rect" id="Node000013" href="$classrtp_1_1client_1_1scenes_1_1SettingsScene.html" title="Scene for the settings menu." alt="" coords="1953,389,2094,653"/>
+<area shape="poly" id="edge12_Node000001_Node000013" title=" " alt="" coords="1104,86,1302,91,1424,98,1551,110,1675,126,1787,148,1879,177,1915,194,1943,214,1975,251,1998,295,2013,342,2022,391,2018,388,2008,343,1993,297,1970,254,1939,218,1912,199,1877,182,1785,153,1674,131,1551,115,1424,104,1302,97,1105,91"/>
+</map>

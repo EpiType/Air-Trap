@@ -1,0 +1,16 @@
+<map id="rtp::client::scenes::EntityCategory" name="rtp::client::scenes::EntityCategory">
+<area shape="rect" id="Node000001" title="Category of entities with their sprites." alt="" coords="199,680,314,761"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="231,136,300,202"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="289,200,302,226,304,248,302,270,306,379,315,465,317,506,315,550,308,599,295,656,292,666,288,662,290,655,303,598,310,549,311,506,309,465,301,379,296,270,298,248,296,227,288,205"/>
+<area shape="rect" id="Node000005" href="$structrtp_1_1client_1_1scenes_1_1EntitySpriteInfo.html" title="Information about an entity&#39;s sprite for the mod menu." alt="" coords="158,294,272,436"/>
+<area shape="poly" id="edge5_Node000005_Node000002" title=" " alt="" coords="231,203,218,227,212,252,209,277,204,276,207,251,214,225,233,198"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="208,5,323,87"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="266,99,268,137,263,136,265,104"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="110,527,280,609"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="212,606,237,665,231,664,210,611"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="209,433,203,511,198,510,207,438"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="5,332,110,398"/>
+<area shape="poly" id="edge6_Node000004_Node000006" title=" " alt="" coords="51,410,56,459,62,481,73,502,90,521,113,537,108,539,86,525,68,505,57,483,51,459,51,416"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="48,136,67,202"/>
+<area shape="poly" id="edge7_Node000006_Node000007" title=" " alt="" coords="58,199,60,315,55,315,57,205"/>
+</map>

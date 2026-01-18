@@ -1,0 +1,7 @@
+<map id="common/include/RType/Math/Vec4.tpp" name="common/include/RType/Math/Vec4.tpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,164,46"/>
+<area shape="rect" id="Node000002" href="$Vec4_8hpp.html" title="Declaration of the 4&#45;dimensional vector class." alt="" coords="5,94,164,135"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="85,59,87,94,82,93,84,64"/>
+<area shape="rect" id="Node000003" href="$Vec_8hpp.html" title="Smart alias that selects the optimized struct based on N." alt="" coords="5,183,164,223"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="86,148,87,183,82,181,83,152"/>
+</map>

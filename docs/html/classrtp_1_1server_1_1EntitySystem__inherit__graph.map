@@ -1,0 +1,5 @@
+<map id="rtp::server::EntitySystem" name="rtp::server::EntitySystem">
+<area shape="rect" id="Node000001" title="Base class for systems that operate on entities in the ECS." alt="" coords="5,140,163,410"/>
+<area shape="rect" id="Node000002" href="$classrtp_1_1ecs_1_1ISystem.html" title="Abstract base class for all ECS systems." alt="" coords="28,5,140,92"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="85,104,87,140,82,140,84,109"/>
+</map>

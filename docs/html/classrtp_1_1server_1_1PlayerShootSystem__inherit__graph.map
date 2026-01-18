@@ -1,0 +1,5 @@
+<map id="rtp::server::PlayerShootSystem" name="rtp::server::PlayerShootSystem">
+<area shape="rect" id="Node000001" title="Spawns bullets from player input on the server." alt="" coords="5,140,164,445"/>
+<area shape="rect" id="Node000002" href="$classrtp_1_1ecs_1_1ISystem.html" title="Abstract base class for all ECS systems." alt="" coords="29,5,141,92"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="85,104,87,140,82,140,84,109"/>
+</map>

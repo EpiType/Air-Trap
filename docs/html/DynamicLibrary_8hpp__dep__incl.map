@@ -1,0 +1,9 @@
+<map id="common/include/RType/System/DynamicLibrary.hpp" name="common/include/RType/System/DynamicLibrary.hpp">
+<area shape="rect" id="Node000001" title="Declaration of the DynamicLibrary class." alt="" coords="113,5,301,46"/>
+<area shape="rect" id="Node000002" href="$LibraryManager_8hpp.html" title="Declaration of the Dynamic Library Manager." alt="" coords="5,94,193,135"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="169,58,125,96,122,92,172,54"/>
+<area shape="rect" id="Node000004" href="$DynamicLibrary_8cpp.html" title="Implementation of platform&#45;independent dynamic library wrapper." alt="" coords="217,94,416,135"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="244,53,294,93,289,94,243,59"/>
+<area shape="rect" id="Node000003" href="$LibraryManager_8cpp.html" title="Implementation of the Dynamic Library Manager." alt="" coords="6,183,192,223"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="101,148,101,183,97,181,97,152"/>
+</map>
