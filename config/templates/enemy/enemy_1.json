@@ -1,0 +1,50 @@
+{
+    "name": "SpaceShip",
+    "type": "SIMPLE_ENEMY",
+    "components": {
+        "Transform": {
+            "position": { "x": 0, "y": 0 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+        },
+        "Sprite": {
+            "texture": "spaceship.png",
+            
+            "rectLeft": 0,
+            "rectTop": 0,
+            "rectWidth": 64,
+            "rectHeight": 64,
+            
+            "zIndex": 1,
+
+            "opacity": 255,
+            "red": 255,
+            "green": 255,
+            "blue": 255,
+
+            "isAnimated": false
+        },
+        "Health": {
+            "maxHealth": 100,
+            "currentHealth": 100
+        },
+        "AIBehavior": {
+            "pattern": "Aggressive",
+            "detectionRange": 300
+        },
+        "HitBox": {
+            "shape": "rectangle",
+
+            "width": 50,
+            "height": 50,
+            "offsetX": 0,
+            "offsetY": 0
+        },
+        "MouvementPattern": {
+            "patternType": "StraightLine",
+            "speed": 150.0,
+            "amplitude": 0.0,
+            "frequency": 0.0
+        }
+    }
+}

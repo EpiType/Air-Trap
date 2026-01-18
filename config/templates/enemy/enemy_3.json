@@ -1,0 +1,41 @@
+{
+    "name": "enemy_3",
+    "type": "SIMPLE_ENEMY",
+    "components": {
+        "Transform": {
+            "position": { "x": 0, "y": 0 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+        },
+        "Sprite": {
+            "texture": "assets/sprites/r-typesheet23.gif",
+            "rectLeft": 0,
+            "rectTop": 0,
+            "rectWidth": 33,
+            "rectHeight": 33,
+            "zIndex": 1,
+            "opacity": 255,
+            "red": 255,
+            "green": 255,
+            "blue": 255,
+            "isAnimated": false
+        },
+        "Health": {
+            "maxHealth": 50,
+            "currentHealth": 50
+        },
+        "HitBox": {
+            "shape": "rectangle",
+            "width": 30,
+            "height": 30,
+            "offsetX": 0,
+            "offsetY": 0
+        },
+        "MouvementPattern": {
+            "patternType": "Circular",
+            "speed": 140.0,
+            "amplitude": 60.0,
+            "frequency": 2.0
+        }
+    }
+}

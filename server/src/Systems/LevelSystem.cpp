@@ -84,6 +84,44 @@ namespace rtp::server {
 
             active.elapsed += dt;
 
+            // Check level completion: all players dead OR all bosses defeated
+            bool anyPlayerAlive = false;
+            bool anyBossAlive = false;
+            
+            auto view = _registry.zipView<
+                ecs::components::EntityType,
+                ecs::components::RoomId,
+                ecs::components::Health
+            >();
+            
+            for (auto &&[type, roomComp, health] : view) {
+                if (roomComp.id != roomId) {
+                    continue;
+                }
+                if (type.type == net::EntityType::Player && health.currentHealth > 0) {
+                    anyPlayerAlive = true;
+                }
+                if (type.type == net::EntityType::Boss && health.currentHealth > 0) {
+                    anyBossAlive = true;
+                }
+            }
+            
+            // Level ends when: no players alive OR (boss was spawned and no boss alive)
+            bool bossWasSpawned = false;
+            for (const auto& spawn : active.data.spawns) {
+                if (spawn.type == net::EntityType::Boss) {
+                    bossWasSpawned = true;
+                    break;
+                }
+            }
+            
+            if (!anyPlayerAlive || (bossWasSpawned && !anyBossAlive)) {
+                log::info("Level completed for room {}: players alive={}, boss alive={}", 
+                          roomId, anyPlayerAlive, anyBossAlive);
+                room->forceFinishGame();
+                continue;
+            }
+
             auto getFrontPlayerX = [&]() -> float {
                 float maxX = 0.0f;
                 auto view = _registry.zipView<

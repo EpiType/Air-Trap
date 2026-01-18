@@ -369,9 +369,9 @@ namespace rtp::client
         static constexpr SpriteAnimDef k_rt5_1{
             "enemy_4",     "assets/sprites/r-typesheet5.gif",
             0,           0,
-            64,          36,
+            66,          36,
             5,           255,         255, 255,
-            true,        64,
+            true,        66,
             36,          0,
             0,           8,
             2.0f,        {-1.0f, 0.0f},
