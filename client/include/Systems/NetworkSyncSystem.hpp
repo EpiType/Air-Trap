@@ -267,6 +267,11 @@ namespace rtp::client {
             void pushChatMessage(const std::string& message);
 
             void onAmmoUpdate(net::Packet& packet);
+            void onBeamState(net::Packet& packet);
+            // Map ownerNetId -> list of (beamEntity, offsetY)
+            std::unordered_map<uint32_t, std::vector<std::pair<ecs::Entity, float>>> _beamEntities;
+            // Map ownerNetId -> list of beam lengths (parallel to _beamEntities entries)
+            std::unordered_map<uint32_t, std::vector<float>> _beamLengths;
 
             void onPong(net::Packet& packet);
 

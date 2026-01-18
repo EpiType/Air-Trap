@@ -66,55 +66,31 @@ namespace rtp::server
         auto weaponKind = player->getWeaponKind();
         weapon.kind = weaponKind;
 
-        // Prefer configuration file values if available, otherwise fallback to hardcoded defaults
         if (rtp::config::hasWeaponConfigs()) {
             weapon = rtp::config::getWeaponDef(weaponKind);
             weapon.kind = weaponKind;
         } else {
-            switch (weaponKind) {
-                case ecs::components::WeaponKind::Classic:
-                    weapon.fireRate = 6.0f;
-                    weapon.damage = 10;
-                    weapon.ammo = -1;  // Infinite
-                    weapon.maxAmmo = -1;
-                    break;
-                case ecs::components::WeaponKind::Beam:
-                    weapon.fireRate = 0.0f;  // Continuous
-                    weapon.damage = 4;  // Per tick
-                    weapon.beamDuration = 5.0f;
-                    weapon.beamCooldown = 5.0f;
-                    weapon.ammo = -1;
-                    weapon.maxAmmo = -1;
-                    break;
-                case ecs::components::WeaponKind::Paddle:
-                    weapon.fireRate = 0.0f;
-                    weapon.damage = 0;
-                    weapon.canReflect = true;
-                    weapon.ammo = -1;
-                    weapon.maxAmmo = -1;
-                    break;
-                case ecs::components::WeaponKind::Tracker:
-                    weapon.fireRate = 2.0f;
-                    weapon.damage = 6;
-                    weapon.homing = true;
-                    weapon.ammo = 50;
-                    weapon.maxAmmo = 50;
-                    break;
-                case ecs::components::WeaponKind::Boomerang:
-                    weapon.fireRate = 0.5f;  // Slow single throw
-                    weapon.damage = 18;
-                    weapon.isBoomerang = true;
-                    weapon.ammo = -1;
-                    weapon.maxAmmo = -1;
-                    break;
-            }
+            log::warning("Weapon configurations not found, using default weapon settings for kind {}", static_cast<int>(weaponKind));
         }
 
         _registry.add<ecs::components::SimpleWeapon>(entity, weapon);
 
+        ecs::components::Ammo ammoComp{};
+        if (weapon.maxAmmo >= 0) {
+            ammoComp.max = static_cast<uint16_t>(weapon.maxAmmo);
+            ammoComp.current = static_cast<uint16_t>(weapon.ammo > 0 ? weapon.ammo : weapon.maxAmmo);
+        } else {
+            ammoComp.max = 0;
+            ammoComp.current = 0;
+        }
+        ammoComp.reloadCooldown = 2.0f;
+        ammoComp.reloadTimer = 0.0f;
+        ammoComp.isReloading = false;
+        ammoComp.dirty = true;
+
         _registry.add<ecs::components::Ammo>(
             entity,
-            ecs::components::Ammo{100, 100, 2.0f, 0.0f, false, true});
+            ammoComp);
 
         _registry.add<ecs::components::MovementSpeed>(
             entity, ecs::components::MovementSpeed{200.0f, 1.0f, 0.0f});
@@ -150,18 +126,7 @@ namespace rtp::server
             wcfg = rtp::config::getWeaponDef(weaponKind);
             wcfg.kind = weaponKind;
         } else {
-            switch (weaponKind) {
-                case ecs::components::WeaponKind::Classic:
-                    wcfg.fireRate = 6.0f; wcfg.damage = 10; wcfg.ammo = -1; wcfg.maxAmmo = -1; break;
-                case ecs::components::WeaponKind::Beam:
-                    wcfg.fireRate = 0.0f; wcfg.damage = 4; wcfg.beamDuration = 5.0f; wcfg.beamCooldown = 5.0f; wcfg.ammo = -1; wcfg.maxAmmo = -1; break;
-                case ecs::components::WeaponKind::Paddle:
-                    wcfg.fireRate = 0.0f; wcfg.damage = 0; wcfg.canReflect = true; wcfg.ammo = -1; wcfg.maxAmmo = -1; break;
-                case ecs::components::WeaponKind::Tracker:
-                    wcfg.fireRate = 2.0f; wcfg.damage = 6; wcfg.homing = true; wcfg.ammo = 50; wcfg.maxAmmo = 50; break;
-                case ecs::components::WeaponKind::Boomerang:
-                    wcfg.fireRate = 0.5f; wcfg.damage = 18; wcfg.isBoomerang = true; wcfg.ammo = -1; wcfg.maxAmmo = -1; break;
-            }
+            log::warning("Weapon configurations not found, using default weapon settings for kind {}", static_cast<int>(weaponKind));
         }
 
         auto weaponRes = _registry.get<ecs::components::SimpleWeapon>();
@@ -176,7 +141,6 @@ namespace rtp::server
             _registry.add<ecs::components::SimpleWeapon>(entity, wcfg);
         }
 
-        // Update Ammo component defaults if present
         auto ammoRes = _registry.get<ecs::components::Ammo>();
         if (ammoRes) {
             auto &ammos = ammoRes->get();

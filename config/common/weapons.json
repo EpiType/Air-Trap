@@ -15,7 +15,7 @@
     "damage": 4,
     "difficulty": 3,
     "beamDuration": 5.0,
-    "beamCooldown": 5.0,
+    "beamCooldown": 3.0,
     "ammo": 1,
     "maxAmmo": 1
   },

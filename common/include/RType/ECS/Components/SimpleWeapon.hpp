@@ -42,6 +42,7 @@ struct SimpleWeapon {
     float beamCooldown{0.0f};    /**< Beam cooldown time (Beam) */
     float beamActiveTime{0.0f};  /**< Current beam activity timer */
     bool beamActive{false};      /**< Is beam currently firing */
+    float beamCooldownRemaining{0.0f}; /**< Remaining cooldown for beam (runtime) */
     
     int difficulty{2};           /**< Difficulty to use this weapon (1-5) */
     

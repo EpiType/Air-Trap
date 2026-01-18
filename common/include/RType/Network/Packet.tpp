@@ -464,6 +464,28 @@ namespace rtp::net
     }
 
     template <>
+    inline auto Packet::operator<<(BeamStatePayload data) -> Packet &
+    {
+        *this << data.ownerNetId;
+        *this << data.active;
+        *this << data.timeRemaining;
+        *this << data.length;
+        *this << data.offsetY;
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator>>(BeamStatePayload &data) -> Packet &
+    {
+        *this >> data.ownerNetId;
+        *this >> data.active;
+        *this >> data.timeRemaining;
+        *this >> data.length;
+        *this >> data.offsetY;
+        return *this;
+    }
+
+    template <>
     inline auto Packet::operator<<(PingPayload data) -> Packet &
     {
         *this << data.clientTimeMs;
