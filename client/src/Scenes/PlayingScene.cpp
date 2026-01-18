@@ -344,12 +344,12 @@ namespace rtp::client {
                     spawnLayer(EntityTemplate::createParallaxLvl3_5());
                     spawnLayer(EntityTemplate::createParallaxLvl3_9());
                     spawnLayer(EntityTemplate::createParallaxLvl3_8());
-                    spawnLayer(EntityTemplate::createParallaxLvl3_1());
+                    //spawnLayer(EntityTemplate::createParallaxLvl3_1());
                     spawnLayer(EntityTemplate::createParallaxLvl3_7());
-                    spawnLayer(EntityTemplate::createParallaxLvl3_3());
+                    //spawnLayer(EntityTemplate::createParallaxLvl3_3());
                     spawnLayer(EntityTemplate::createParallaxLvl3_2());
-                    spawnLayer(EntityTemplate::createParallaxLvl3_4());
-                    spawnLayer(EntityTemplate::createParallaxLvl3_6());
+                    //spawnLayer(EntityTemplate::createParallaxLvl3_4());
+                    //spawnLayer(EntityTemplate::createParallaxLvl3_6());
                     break;
                 case 4:
                     spawnLayer(EntityTemplate::createParallaxLvl4_6());
@@ -357,7 +357,7 @@ namespace rtp::client {
                     spawnLayer(EntityTemplate::createParallaxLvl4_4());
                     spawnLayer(EntityTemplate::createParallaxLvl4_3());
                     spawnLayer(EntityTemplate::createParallaxLvl4_2());
-                    spawnLayer(EntityTemplate::createParallaxLvl4_1());
+                    //spawnLayer(EntityTemplate::createParallaxLvl4_1());
                     break;
             }
         }
