@@ -61,6 +61,8 @@ namespace rtp::config {
             cfg.beamCooldown = data.getFloat("beamCooldown", 0.0f);
             cfg.canReflect = data.getBool("canReflect", false);
             cfg.homing = data.getBool("homing", false);
+            cfg.homingSteering = data.getFloat("homingSteering", 3.0f);
+            cfg.homingRange = data.getFloat("homingRange", 600.0f);
             cfg.isBoomerang = data.getBool("isBoomerang", false);
             cfg.difficulty = data.getInt("difficulty", 2);
 
