@@ -221,6 +221,9 @@ namespace {
         if (lower == "boss") {
             return rtp::net::EntityType::Boss;
         }
+        if (lower == "boss2") {
+            return rtp::net::EntityType::Boss2;
+        }
         if (lower == "boss_shield") {
             return rtp::net::EntityType::BossShield;
         }
@@ -229,6 +232,9 @@ namespace {
         }
 
         const std::string templateLower = toLower(templatePath);
+        if (templateLower.find("boss_02") != std::string::npos || templateLower.find("boss2") != std::string::npos) {
+            return rtp::net::EntityType::Boss2;
+        }
         if (templateLower.find("boss") != std::string::npos) {
             return rtp::net::EntityType::Boss;
         }

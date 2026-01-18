@@ -94,6 +94,7 @@ void RenderSystem::update(float dt)
         if (type.type != net::EntityType::Obstacle &&
             type.type != net::EntityType::ObstacleSolid &&
             type.type != net::EntityType::Boss &&
+            type.type != net::EntityType::Boss2 &&
             type.type != net::EntityType::BossShield &&
             type.type != net::EntityType::Scout &&
             type.type != net::EntityType::Tank) {
@@ -105,6 +106,7 @@ void RenderSystem::update(float dt)
         float posY = trans.position.y;
         
         if (type.type == net::EntityType::Boss ||
+            type.type == net::EntityType::Boss2 ||
             type.type == net::EntityType::BossShield ||
             type.type == net::EntityType::Scout ||
             type.type == net::EntityType::Tank) {
@@ -121,6 +123,9 @@ void RenderSystem::update(float dt)
         } else if (type.type == net::EntityType::Boss) {
             rect.setFillColor(sf::Color::Transparent);
             rect.setOutlineColor(sf::Color(255, 0, 0, 240)); // Rouge pour le boss
+        } else if (type.type == net::EntityType::Boss2) {
+            rect.setFillColor(sf::Color::Transparent);
+            rect.setOutlineColor(sf::Color(200, 50, 200, 240)); // Magenta pour le Kraken
         } else if (type.type == net::EntityType::BossShield) {
             rect.setFillColor(sf::Color::Transparent);
             rect.setOutlineColor(sf::Color(255, 165, 0, 240)); // Orange pour le shield

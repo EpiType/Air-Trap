@@ -29,9 +29,9 @@ namespace rtp::server
     };
 
     void NetworkSyncSystem::bindSessionToEntity(uint32_t sessionId,
-                                                uint32_t entityId)
+                                                ecs::Entity entity)
     {
-        _sessionToEntity[sessionId] = entityId;
+        _sessionToEntity[sessionId] = entity;
     }
 
     void NetworkSyncSystem::unbindSession(uint32_t sessionId)
@@ -51,8 +51,7 @@ namespace rtp::server
             return;
         }
 
-        uint32_t entityIndex = _sessionToEntity[sessionId];
-        ecs::Entity entity(entityIndex, 0);
+        ecs::Entity entity = _sessionToEntity[sessionId];
 
         auto inputsRes =
             _registry.get<ecs::components::server::InputComponent>();
@@ -74,11 +73,10 @@ namespace rtp::server
     void NetworkSyncSystem::handleDisconnect(uint32_t sessionId)
     {
         if (_sessionToEntity.find(sessionId) != _sessionToEntity.end()) {
-            uint32_t entityIndex = _sessionToEntity[sessionId];
-            ecs::Entity entity(entityIndex, 0);
+            ecs::Entity entity = _sessionToEntity[sessionId];
             _sessionToEntity.erase(sessionId);
             log::info("Destroyed entity {} for disconnected session {}",
-                      entityIndex, sessionId);
+                      entity.index(), sessionId);
         }
     }
 
@@ -98,8 +96,8 @@ namespace rtp::server
                                                const net::Packet &packet,
                                                net::NetworkMode mode)
     {
-        for (const auto &[sessionId, eId] : _sessionToEntity) {
-            if (eId == entityId) {
+        for (const auto &[sessionId, entity] : _sessionToEntity) {
+            if (entity.index() == entityId) {
                 log::info("sendPacketToEntity: sending packet to session {} "
                           "for entity {}",
                           sessionId, entityId);

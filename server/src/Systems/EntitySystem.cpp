@@ -202,6 +202,8 @@ namespace rtp::server
             maxHealth = 80;
         } else if (type == net::EntityType::Boss) {
             maxHealth = 500;
+        } else if (type == net::EntityType::Boss2) {
+            maxHealth = 800;  // Kraken is tougher!
         } else if (type == net::EntityType::BossShield) {
             maxHealth = 150;
         }
@@ -223,9 +225,14 @@ namespace rtp::server
             fireRate = 0.4f;
         } else if (type == net::EntityType::Boss) {
             fireRate = 1.2f;
+        } else if (type == net::EntityType::Boss2) {
+            fireRate = 0.8f;  // Kraken shoots faster boomerangs
         }
         ecs::components::SimpleWeapon enemyWeapon;
         enemyWeapon.kind = ecs::components::WeaponKind::Classic;
+        if (type == net::EntityType::Boss2) {
+            enemyWeapon.isBoomerang = true;  // Kraken shoots boomerangs!
+        }
         enemyWeapon.fireRate = fireRate;
         enemyWeapon.lastShotTime = 0.0f;
         enemyWeapon.damage = 0;
@@ -237,6 +244,9 @@ namespace rtp::server
         if (type == net::EntityType::Boss) {
             bboxWidth = 198.0f;
             bboxHeight = 198.0f;
+        } else if (type == net::EntityType::Boss2) {
+            bboxWidth = 350.0f;   // Kraken is huge!
+            bboxHeight = 180.0f;
         } else if (type == net::EntityType::BossShield) {
             bboxWidth = 90.0f;
             bboxHeight = 99.0f;

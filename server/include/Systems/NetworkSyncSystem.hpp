@@ -51,9 +51,9 @@ namespace rtp::server {
             /**
              * @brief Bind a network session to an entity
              * @param sessionId ID of the network session
-             * @param entityId ID of the entity to bind
+             * @param entity The entity to bind (includes both index and generation)
              */
-            void bindSessionToEntity(uint32_t sessionId, uint32_t entityId);
+            void bindSessionToEntity(uint32_t sessionId, ecs::Entity entity);
             void unbindSession(uint32_t sessionId);
 
             /**
@@ -104,7 +104,7 @@ namespace rtp::server {
             ServerNetwork& _network;           /**< Reference to the server network manager */
             ecs::Registry& _registry;     /**< Reference to the entity registry */
             std::unordered_map<uint32_t,
-                uint32_t> _sessionToEntity;    /**< Map of session IDs to entity IDs */
+                ecs::Entity> _sessionToEntity;    /**< Map of session IDs to entities (with generation) */
     };
 }
 

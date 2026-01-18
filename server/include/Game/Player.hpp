@@ -139,6 +139,24 @@ namespace rtp::server
              */
             rtp::ecs::components::WeaponKind getWeaponKind() const;
 
+            /**
+             * @brief Add to player's score (can be negative)
+             * @param delta Score delta
+             */
+            void addScore(int delta);
+
+            /**
+             * @brief Set player's score
+             * @param score New score
+             */
+            void setScore(int score);
+
+            /**
+             * @brief Get player's score
+             * @return Current score
+             */
+            int getScore() const;
+
         private:
             uint32_t _sessionId;         /**< Unique player identifier */
             std::string _username;       /**< Player username */
@@ -150,6 +168,7 @@ namespace rtp::server
             mutable std::mutex _mutex;   /**< Mutex to protect access to player state */
             bool _isMuted = false;       /**< Mute status of the player */
             rtp::ecs::components::WeaponKind _weaponKind{rtp::ecs::components::WeaponKind::Classic}; /**< Selected weapon */
+            int _score{0};               /**< Player score */
     };
 
     /**

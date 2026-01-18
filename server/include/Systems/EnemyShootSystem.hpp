@@ -51,9 +51,13 @@ namespace rtp::server {
              * @brief Spawn a bullet entity at the given transform and room
              * @param tf Transform of the shooter entity
              * @param roomId RoomId of the shooter entity
+             * @param isBoomerang Whether this is a boomerang projectile (Boss2)
+             * @param shooterIndex Index of the shooting entity (for boomerang tracking)
              */
             void spawnBullet(const ecs::components::Transform& tf,
-                             const ecs::components::RoomId& roomId);
+                             const ecs::components::RoomId& roomId,
+                             bool isBoomerang = false,
+                             uint32_t shooterIndex = 0);
 
         private:
             ecs::Registry& _registry;      /**< Reference to the entity registry */

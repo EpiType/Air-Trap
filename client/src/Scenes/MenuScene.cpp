@@ -8,7 +8,9 @@
 #include "Scenes/MenuScene.hpp"
 #include "Game/EntityBuilder.hpp"
 #include "RType/ECS/Components/Audio/AudioSource.hpp"
+#include "RType/ECS/Components/UI/Button.hpp"
 #include "RType/ECS/Components/Transform.hpp"
+#include <algorithm>
 #include <vector>
 #include <cmath>
 #include "RType/Config/WeaponConfig.hpp"
@@ -82,6 +84,56 @@ namespace rtp::client {
                 }
             }
 
+            auto styleButton = [this](ecs::Entity entity,
+                                      const ecs::components::ui::Button &style) {
+                auto buttonsOpt = _uiRegistry.get<ecs::components::ui::Button>();
+                if (!buttonsOpt) {
+                    return;
+                }
+                auto &buttons = buttonsOpt.value().get();
+                if (!buttons.has(entity)) {
+                    return;
+                }
+                auto &button = buttons[entity];
+                std::copy(std::begin(style.idleColor), std::end(style.idleColor),
+                          std::begin(button.idleColor));
+                std::copy(std::begin(style.hoverColor), std::end(style.hoverColor),
+                          std::begin(button.hoverColor));
+                std::copy(std::begin(style.pressedColor), std::end(style.pressedColor),
+                          std::begin(button.pressedColor));
+            };
+
+            ecs::components::ui::Button panelStyle;
+            panelStyle.idleColor[0] = 24;
+            panelStyle.idleColor[1] = 28;
+            panelStyle.idleColor[2] = 36;
+            std::copy(std::begin(panelStyle.idleColor), std::end(panelStyle.idleColor),
+                      std::begin(panelStyle.hoverColor));
+            std::copy(std::begin(panelStyle.idleColor), std::end(panelStyle.idleColor),
+                      std::begin(panelStyle.pressedColor));
+
+            ecs::components::ui::Button primaryStyle;
+            primaryStyle.idleColor[0] = 32;
+            primaryStyle.idleColor[1] = 140;
+            primaryStyle.idleColor[2] = 140;
+            primaryStyle.hoverColor[0] = 48;
+            primaryStyle.hoverColor[1] = 170;
+            primaryStyle.hoverColor[2] = 170;
+            primaryStyle.pressedColor[0] = 20;
+            primaryStyle.pressedColor[1] = 110;
+            primaryStyle.pressedColor[2] = 110;
+
+            ecs::components::ui::Button secondaryStyle;
+            secondaryStyle.idleColor[0] = 70;
+            secondaryStyle.idleColor[1] = 74;
+            secondaryStyle.idleColor[2] = 84;
+            secondaryStyle.hoverColor[0] = 95;
+            secondaryStyle.hoverColor[1] = 100;
+            secondaryStyle.hoverColor[2] = 112;
+            secondaryStyle.pressedColor[0] = 55;
+            secondaryStyle.pressedColor[1] = 60;
+            secondaryStyle.pressedColor[2] = 70;
+
             auto spawnParallaxLayer = [this](const EntityTemplate& base) {
                 EntityTemplate first = base;
                 first.position = {0.0f, 0.0f};
@@ -138,24 +190,38 @@ namespace rtp::client {
 
             _uiFactory.createText(
                 _uiRegistry,
-                {400.0f, 100.0f},
+                {404.0f, 74.0f},
+                _translationManager.get("menu.title"),
+                "assets/fonts/title.ttf",
+                72,
+                9,
+                {12, 14, 18}
+            );
+
+            _uiFactory.createText(
+                _uiRegistry,
+                {400.0f, 70.0f},
                 _translationManager.get("menu.title"),
                 "assets/fonts/title.ttf",
                 72,
                 10,
-                {2, 100, 100}
+                {48, 170, 170}
             );
 
-            // Weapon selector UI (left side)
             _uiFactory.createText(
                 _uiRegistry,
-                {100.0f, 240.0f},
-                "WEAPON:",
+                {470.0f, 150.0f},
+                "Ready for launch",
                 "assets/fonts/main.ttf",
-                24,
-                5,
-                {255, 255, 255}
+                20,
+                10,
+                {170, 180, 190}
             );
+
+            const float weaponPanelX = 80.0f;
+            const float weaponPanelY = 200.0f;
+            const float weaponPanelW = 300.0f;
+            const float weaponPanelH = 320.0f;
 
             // Weapon selection list (explicit available kinds)
             const std::vector<ecs::components::WeaponKind> availableKinds = {
@@ -166,10 +232,39 @@ namespace rtp::client {
             };
 
             // Left arrow button
-            _uiFactory.createButton(
+            auto weaponPanel = _uiFactory.createButton(
                 _uiRegistry,
-                {80.0f, 280.0f},
-                {50.0f, 50.0f},
+                {weaponPanelX, weaponPanelY},
+                {weaponPanelW, weaponPanelH},
+                "",
+                nullptr
+            );
+            styleButton(weaponPanel, panelStyle);
+
+            _uiFactory.createText(
+                _uiRegistry,
+                {weaponPanelX + 20.0f, weaponPanelY + 18.0f},
+                "LOADOUT",
+                "assets/fonts/main.ttf",
+                18,
+                5,
+                {170, 180, 190}
+            );
+
+            _uiFactory.createText(
+                _uiRegistry,
+                {weaponPanelX + 20.0f, weaponPanelY + 50.0f},
+                "WEAPON",
+                "assets/fonts/main.ttf",
+                16,
+                5,
+                {130, 140, 150}
+            );
+
+            auto leftArrow = _uiFactory.createButton(
+                _uiRegistry,
+                {weaponPanelX + 20.0f, weaponPanelY + 85.0f},
+                {44.0f, 44.0f},
                 "<",
                 [this, availableKinds]() {
                     auto currentKind = _settings.getSelectedWeapon();
@@ -185,9 +280,8 @@ namespace rtp::client {
                     _network.sendSelectedWeapon(static_cast<uint8_t>(_settings.getSelectedWeapon()));
                 }
             );
+            styleButton(leftArrow, secondaryStyle);
 
-            // Weapon name text (initially created, will be updated)
-            // Prefer display name from weapon configs when available
             std::string initialWeaponName = _settings.getWeaponName(_settings.getSelectedWeapon());
             if (rtp::config::hasWeaponConfigs()) {
                 auto dn = rtp::config::getWeaponDisplayName(_settings.getSelectedWeapon());
@@ -196,19 +290,18 @@ namespace rtp::client {
 
             _weaponNameText = _uiFactory.createText(
                 _uiRegistry,
-                {150.0f, 290.0f},
+                {weaponPanelX + 80.0f, weaponPanelY + 93.0f},
                 initialWeaponName,
                 "assets/fonts/main.ttf",
                 20,
                 5,
-                {255, 255, 0}
+                {255, 214, 120}
             );
 
-            // Right arrow button
-            _uiFactory.createButton(
+            auto rightArrow = _uiFactory.createButton(
                 _uiRegistry,
-                {330.0f, 280.0f},
-                {50.0f, 50.0f},
+                {weaponPanelX + weaponPanelW - 64.0f, weaponPanelY + 85.0f},
+                {44.0f, 44.0f},
                 ">",
                 [this, availableKinds]() {
                     auto currentKind = _settings.getSelectedWeapon();
@@ -223,16 +316,16 @@ namespace rtp::client {
                     _network.sendSelectedWeapon(static_cast<uint8_t>(_settings.getSelectedWeapon()));
                 }
             );
+            styleButton(rightArrow, secondaryStyle);
 
-            // Weapon stats panel
             _weaponStatsText = _uiFactory.createText(
                 _uiRegistry,
-                {100.0f, 350.0f},
+                {weaponPanelX + 20.0f, weaponPanelY + 150.0f},
                 "",
                 "assets/fonts/main.ttf",
                 14,
                 5,
-                {200, 200, 200}
+                {180, 190, 200}
             );
             updateWeaponDisplay();
 
@@ -245,19 +338,60 @@ namespace rtp::client {
                 {"menu.exit", [this]() { std::exit(0); }}
             };
 
-            const float startX = 490.0f;
-            const float startY = 300.0f;
-            const float spacingY = 70.0f;
-            const graphics::size btnSize{300.0f, 60.0f};
+            const float panelW = 420.0f;
+            const float panelH = 380.0f;
+            const float panelX = (1280.0f - panelW) / 2.0f;
+            const float panelY = 210.0f;
+
+            auto menuPanel = _uiFactory.createButton(
+                _uiRegistry,
+                {panelX, panelY},
+                {panelW, panelH},
+                "",
+                nullptr
+            );
+            styleButton(menuPanel, panelStyle);
+
+            _uiFactory.createText(
+                _uiRegistry,
+                {panelX + 40.0f, panelY + 20.0f},
+                "SELECT MODE",
+                "assets/fonts/main.ttf",
+                18,
+                10,
+                {170, 180, 190}
+            );
+
+            const float startX = panelX + 40.0f;
+            const float startY = panelY + 70.0f;
+            const float spacingY = 68.0f;
+            const graphics::size btnSize{panelW - 80.0f, 60.0f};
 
             for (size_t i = 0; i < buttons.size(); ++i) {
                 float y = startY + static_cast<float>(i) * spacingY;
-                _uiFactory.createButton(_uiRegistry,
-                                        {startX, y},
-                                        btnSize,
-                                        _translationManager.get(buttons[i].key),
-                                        buttons[i].cb);
+                ecs::Entity button = _uiFactory.createButton(
+                    _uiRegistry,
+                    {startX, y},
+                    btnSize,
+                    _translationManager.get(buttons[i].key),
+                    buttons[i].cb
+                );
+                if (i == 0) {
+                    styleButton(button, primaryStyle);
+                } else {
+                    styleButton(button, secondaryStyle);
+                }
             }
+
+            _uiFactory.createText(
+                _uiRegistry,
+                {40.0f, 680.0f},
+                "Tip: Customize sprites in Mods",
+                "assets/fonts/main.ttf",
+                16,
+                10,
+                {120, 130, 140}
+            );
         }
 
         void MenuScene::onExit(void)

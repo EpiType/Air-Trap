@@ -26,7 +26,8 @@ namespace rtp::client
                 auto view = _r.view<ecs::components::Score>();
 
                 for (auto &&score : view) {
-                    score.value += 10;
+                    const int increment = static_cast<int>(dt * 100.0f);
+                    score.value += (increment > 0) ? increment : 1;
                 }
             }
 

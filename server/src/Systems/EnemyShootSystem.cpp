@@ -7,6 +7,7 @@
 
 #include "Systems/EnemyShootSystem.hpp"
 #include "RType/Logger.hpp"
+#include "RType/ECS/Components/Boomerang.hpp"
 
 #include <vector>
 
@@ -25,8 +26,11 @@ namespace rtp::server
 
     void EnemyShootSystem::update(float dt)
     {
-        std::vector<std::pair<ecs::components::Transform,
-                              ecs::components::RoomId>> pendingSpawns;
+        // Tuple: (transform, roomId, isBoomerang, shooterIndex)
+        std::vector<std::tuple<ecs::components::Transform,
+                              ecs::components::RoomId,
+                              bool,
+                              uint32_t>> pendingSpawns;
 
         auto view =
             _registry.zipView<ecs::components::Transform,
@@ -38,6 +42,7 @@ namespace rtp::server
             if (type.type != net::EntityType::Scout &&
                 type.type != net::EntityType::Tank &&
                 type.type != net::EntityType::Boss &&
+                type.type != net::EntityType::Boss2 &&
                 type.type != net::EntityType::BossShield) {
                 continue;
             }
@@ -51,12 +56,16 @@ namespace rtp::server
 
             if (weapon.lastShotTime >= fireInterval) {
                 weapon.lastShotTime = 0.0f;
-                pendingSpawns.emplace_back(tf, roomId);
+                // Boss2 uses boomerang projectiles
+                bool isBoomerang = (type.type == net::EntityType::Boss2);
+                // Get entity index for boomerang tracking - using a simple position hash
+                uint32_t shooterIdx = static_cast<uint32_t>(tf.position.x * 1000 + tf.position.y);
+                pendingSpawns.emplace_back(tf, roomId, isBoomerang, shooterIdx);
             }
         }
 
-        for (const auto& [tf, roomId] : pendingSpawns) {
-            spawnBullet(tf, roomId);
+        for (const auto& [tf, roomId, isBoomerang, shooterIdx] : pendingSpawns) {
+            spawnBullet(tf, roomId, isBoomerang, shooterIdx);
         }
     }
 
@@ -66,7 +75,9 @@ namespace rtp::server
 
     void EnemyShootSystem::spawnBullet(
         const ecs::components::Transform& tf,
-        const ecs::components::RoomId& roomId)
+        const ecs::components::RoomId& roomId,
+        bool isBoomerang,
+        uint32_t shooterIndex)
     {
         auto entityRes = _registry.spawn();
         if (!entityRes) {
@@ -84,19 +95,26 @@ namespace rtp::server
             ecs::components::Transform{ {x, y}, 0.f, {1.f, 1.f} }
         );
 
+        // Boomerang bullets go slower and curve back
+        float bulletSpeed = isBoomerang ? -200.0f : _bulletSpeed;
         _registry.add<ecs::components::Velocity>(
             bullet,
-            ecs::components::Velocity{ {_bulletSpeed, 0.f}, 0.f }
+            ecs::components::Velocity{ {bulletSpeed, 0.f}, 0.f }
         );
 
+        // Larger hitbox for boomerang
+        float bboxW = isBoomerang ? 24.0f : 8.0f;
+        float bboxH = isBoomerang ? 24.0f : 4.0f;
         _registry.add<ecs::components::BoundingBox>(
             bullet,
-            ecs::components::BoundingBox{ 8.0f, 4.0f }
+            ecs::components::BoundingBox{ bboxW, bboxH }
         );
 
+        // More damage for boomerang
+        int damage = isBoomerang ? 25 : 10;
         _registry.add<ecs::components::Damage>(
             bullet,
-            ecs::components::Damage{ 10, ecs::NullEntity }
+            ecs::components::Damage{ damage, ecs::NullEntity }
         );
 
         _registry.add<ecs::components::NetworkId>(
@@ -104,15 +122,26 @@ namespace rtp::server
             ecs::components::NetworkId{ static_cast<uint32_t>(bullet.index()) }
         );
 
+        net::EntityType bulletType = isBoomerang ? net::EntityType::Boss2Bullet : net::EntityType::EnemyBullet;
         _registry.add<ecs::components::EntityType>(
             bullet,
-            ecs::components::EntityType{ net::EntityType::EnemyBullet }
+            ecs::components::EntityType{ bulletType }
         );
 
         _registry.add<ecs::components::RoomId>(
             bullet,
             ecs::components::RoomId{ roomId.id }
         );
+
+        // Add boomerang component for Boss2 bullets
+        if (isBoomerang) {
+            ecs::components::Boomerang boom;
+            boom.ownerIndex = shooterIndex;
+            boom.startPos = {x, y};
+            boom.maxDistance = 500.0f;  // Travel distance before returning
+            boom.returning = false;
+            _registry.add<ecs::components::Boomerang>(bullet, boom);
+        }
 
         auto room = _roomSystem.getRoom(roomId.id);
         if (!room)
@@ -130,7 +159,7 @@ namespace rtp::server
         net::Packet packet(net::OpCode::EntitySpawn);
         net::EntitySpawnPayload payload = {
             static_cast<uint32_t>(bullet.index()),
-            static_cast<uint8_t>(net::EntityType::EnemyBullet),
+            static_cast<uint8_t>(bulletType),
             x,
             y
         };

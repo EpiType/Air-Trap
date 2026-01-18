@@ -110,7 +110,7 @@ namespace rtp::server {
                 const float xOffsets[5] = {0.0f, 100.0f, -40.0f, 80.0f, -80.0f};
                 startPos.x += xOffsets[patternIndex];
                 const float frontX = getFrontPlayerX();
-                const float minAhead = (spawn.type == net::EntityType::Boss)
+                const float minAhead = (spawn.type == net::EntityType::Boss || spawn.type == net::EntityType::Boss2)
                     ? 450.0f   // boss plus éloigné
                     : 200.0f;  // distance standard pour scouts/tanks/etc.
                 if (startPos.x < frontX + minAhead) {

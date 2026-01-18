@@ -6,6 +6,7 @@
  */
 
 #include "Game/GameManager.hpp"
+#include "RType/ECS/Components/Health.hpp"
 #include "RType/ECS/Components/RoomId.hpp"
 
 #include <cctype>
@@ -84,12 +85,32 @@ namespace rtp::server
                     : Vec2f{100.f, 100.f};
 
                 for (auto& player : players) {
+                    player->setScore(0);
+                    net::Packet scorePacket(net::OpCode::ScoreUpdate);
+                    net::ScoreUpdatePayload scorePayload{0};
+                    scorePacket << scorePayload;
+                    _networkSyncSystem->sendPacketToSession(
+                        player->getId(), scorePacket, net::NetworkMode::TCP);
                     auto entity = _entitySystem->createPlayerEntity(player, spawnPos);
                     uint32_t entityId = static_cast<uint32_t>(entity.index());
                     player->setEntityId(entityId);
                     log::info("Spawned Entity {} for Player {}", entity.index(), player->getId());
-                    _networkSyncSystem->bindSessionToEntity(player->getId(), entityId);
+                    _networkSyncSystem->bindSessionToEntity(player->getId(), entity);
                     sendEntitySpawnToSessions(entity, sessions);
+
+                    if (auto healthRes = _registry.get<ecs::components::Health>()) {
+                        auto &healths = healthRes->get();
+                        if (healths.has(entity)) {
+                            net::Packet healthPacket(net::OpCode::HealthUpdate);
+                            net::HealthUpdatePayload hp{
+                                healths[entity].currentHealth,
+                                healths[entity].maxHealth
+                            };
+                            healthPacket << hp;
+                            _networkSyncSystem->sendPacketToSession(
+                                player->getId(), healthPacket, net::NetworkMode::TCP);
+                        }
+                    }
                 }
             }
         );
@@ -214,38 +235,51 @@ namespace rtp::server
         }
 
         if (entityId != 0) {
-            ecs::Entity entity(entityId, 0);
-            auto transformsRes = _registry.get<ecs::components::Transform>();
-            auto typesRes = _registry.get<ecs::components::EntityType>();
+            // Find the entity by scanning NetworkId sparse array for matching id
             auto netsRes = _registry.get<ecs::components::NetworkId>();
-            auto roomsRes = _registry.get<ecs::components::RoomId>();
-
-            if (transformsRes && typesRes && netsRes && roomsRes) {
-                auto &transforms = transformsRes->get();
-                auto &types = typesRes->get();
+            ecs::Entity entity = ecs::NullEntity;
+            if (netsRes) {
                 auto &nets = netsRes->get();
-                auto &rooms = roomsRes->get();
-                if (transforms.has(entity) && types.has(entity) && nets.has(entity) && rooms.has(entity)) {
-                    auto room = _roomSystem->getRoom(rooms[entity].id);
-                    if (room) {
-                        const auto players = room->getPlayers();
-                        if (!players.empty()) {
-                            net::Packet packet(net::OpCode::EntityDeath);
-                            net::EntityDeathPayload payload{};
-                            payload.netId = nets[entity].id;
-                            payload.type = static_cast<uint8_t>(types[entity].type);
-                            payload.position = transforms[entity].position;
-                            packet << payload;
-
-                            for (const auto& player : players) {
-                                _networkSyncSystem->sendPacketToSession(player->getId(), packet, net::NetworkMode::TCP);
-                            }
-                        }
+                for (auto e : nets.entities()) {
+                    if (nets[e].id == entityId) {
+                        entity = e;
+                        break;
                     }
                 }
             }
 
-            _registry.kill(entity);
+            if (!entity.isNull()) {
+                auto transformsRes = _registry.get<ecs::components::Transform>();
+                auto typesRes = _registry.get<ecs::components::EntityType>();
+                auto roomsRes = _registry.get<ecs::components::RoomId>();
+
+                if (transformsRes && typesRes && netsRes && roomsRes) {
+                    auto &transforms = transformsRes->get();
+                    auto &types = typesRes->get();
+                    auto &nets = netsRes->get();
+                    auto &rooms = roomsRes->get();
+                    if (transforms.has(entity) && types.has(entity) && nets.has(entity) && rooms.has(entity)) {
+                        auto room = _roomSystem->getRoom(rooms[entity].id);
+                        if (room) {
+                            const auto players = room->getPlayers();
+                            if (!players.empty()) {
+                                net::Packet packet(net::OpCode::EntityDeath);
+                                net::EntityDeathPayload payload{};
+                                payload.netId = nets[entity].id;
+                                payload.type = static_cast<uint8_t>(types[entity].type);
+                                payload.position = transforms[entity].position;
+                                packet << payload;
+
+                                for (const auto& player : players) {
+                                    _networkSyncSystem->sendPacketToSession(player->getId(), packet, net::NetworkMode::TCP);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                _registry.kill(entity);
+            }
 
             net::Packet disconnectPlayer(net::OpCode::Disconnect);
             disconnectPlayer << entityId;
@@ -524,6 +558,7 @@ namespace rtp::server
         if (cmd == "/help") {
             sendChatToSession(player->getId(), "Commands: /help, /kick <name>, /ban <name>, /mute <name>,");
             sendChatToSession(player->getId(), "/stop, /run, /speed <float>, /debug <true|false>");
+            sendChatToSession(player->getId(), "/debug enables invincibility + hitbox display");
             sendChatToSession(player->getId(), "Examples: /speed 0.5 | /debug true | /kick player1");
             return true;
         }
@@ -561,6 +596,10 @@ namespace rtp::server
                 return true;
             }
             const bool enabled = (v == "true");
+            
+            // Enable invincibility mode in CollisionSystem
+            _collisionSystem->setInvincible(enabled);
+            
             net::Packet packet(net::OpCode::DebugModeUpdate);
             net::DebugModePayload payload{ static_cast<uint8_t>(enabled ? 1 : 0) };
             packet << payload;
@@ -568,7 +607,7 @@ namespace rtp::server
             for (const auto& p : players) {
                 _networkManager.sendPacket(p->getId(), packet, net::NetworkMode::TCP);
             }
-            sendSystemMessageToRoom(roomId, std::string("Debug mode ") + (enabled ? "enabled" : "disabled"));
+            sendSystemMessageToRoom(roomId, std::string("Debug mode ") + (enabled ? "enabled (invincibility ON)" : "disabled (invincibility OFF)"));
             return true;
         }
 

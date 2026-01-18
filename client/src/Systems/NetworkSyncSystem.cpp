@@ -258,6 +258,40 @@ namespace rtp::client {
         return _chatHistory;
     }
 
+    void NetworkSyncSystem::setGameOverSummary(const GameOverSummary& summary)
+    {
+        _gameOverSummary = summary;
+    }
+
+    NetworkSyncSystem::GameOverSummary NetworkSyncSystem::getGameOverSummary(void) const
+    {
+        return _gameOverSummary;
+    }
+
+    bool NetworkSyncSystem::consumeGameOver(void)
+    {
+        if (!_gameOverPending) {
+            return false;
+        }
+        _gameOverPending = false;
+        return true;
+    }
+
+    int NetworkSyncSystem::getScore(void) const
+    {
+        return _score;
+    }
+
+    int NetworkSyncSystem::getHealthCurrent(void) const
+    {
+        return _healthCurrent;
+    }
+
+    int NetworkSyncSystem::getHealthMax(void) const
+    {
+        return _healthMax;
+    }
+
     //////////////////////////////////////////////////////////////////////////
     // Private Methods
     //////////////////////////////////////////////////////////////////////////
@@ -330,6 +364,30 @@ namespace rtp::client {
             }
             case net::OpCode::DebugModeUpdate: {
                 onDebugModeUpdate(event.packet);
+                break;
+            }
+            case net::OpCode::ScoreUpdate: {
+                net::ScoreUpdatePayload payload{};
+                event.packet >> payload;
+                _score = payload.score;
+                break;
+            }
+            case net::OpCode::HealthUpdate: {
+                net::HealthUpdatePayload payload{};
+                event.packet >> payload;
+                _healthCurrent = payload.current;
+                _healthMax = payload.max;
+                break;
+            }
+            case net::OpCode::GameOver: {
+                net::GameOverPayload payload{};
+                event.packet >> payload;
+                GameOverSummary summary;
+                summary.bestPlayer = std::string(payload.bestPlayer);
+                summary.bestScore = payload.bestScore;
+                summary.playerScore = payload.playerScore;
+                _gameOverSummary = summary;
+                _gameOverPending = true;
                 break;
             }
             case net::OpCode::Kicked: {
@@ -483,6 +541,12 @@ namespace rtp::client {
             case net::EntityType::Boss:
                 t = EntityTemplate::createBossShip(pos);
                 break;
+            case net::EntityType::Boss2:
+                t = EntityTemplate::createBoss2Kraken(pos);
+                break;
+            case net::EntityType::Boss2Bullet:
+                t = EntityTemplate::createBoss2Bullet(pos);
+                break;
 
             case net::EntityType::Player:
                 t = EntityTemplate::player_ship(pos);
@@ -626,6 +690,7 @@ namespace rtp::client {
                 uint16_t cur = (wcfg.ammo >= 0) ? static_cast<uint16_t>( (wcfg.ammo > 0) ? wcfg.ammo : max ) : max;
                 _registry.add<ecs::components::Ammo>(e, ecs::components::Ammo{cur, max, 2.0f, 0.0f, false, true});
             }
+
         }
 
         if (payload.sizeX > 0.0f && payload.sizeY > 0.0f) {
