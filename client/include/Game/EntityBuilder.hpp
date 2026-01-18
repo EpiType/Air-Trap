@@ -353,6 +353,30 @@ namespace rtp::client
             2.0f,        {-1.0f, 0.0f},
             {1.0f,  1.0f}
         };
+        // New enemy sprite from r-typesheet23.gif (first row, 8 frames)
+        static constexpr SpriteAnimDef k_rt23_1{
+            "enemy_3",     "assets/sprites/r-typesheet23.gif",
+            0,           0,
+            33,          33,
+            5,           255,         255, 255,
+            true,        33,
+            33,          0,
+            0,           8,
+            2.0f,        {-1.0f, 0.0f},
+            {1.0f,  1.0f}
+        };
+        // New enemy sprite from r-typesheet5.gif (single row, first 8 frames)
+        static constexpr SpriteAnimDef k_rt5_1{
+            "enemy_4",     "assets/sprites/r-typesheet5.gif",
+            0,           0,
+            64,          36,
+            5,           255,         255, 255,
+            true,        64,
+            36,          0,
+            0,           8,
+            2.0f,        {-1.0f, 0.0f},
+            {1.0f,  1.0f}
+        };
         static constexpr SpriteAnimDef k_rt3_1{
             "power_up_heal",     "assets/sprites/r-typesheet3.gif",
             0,           0,           // Red powerup (Heal) - frame 0
@@ -590,6 +614,16 @@ namespace rtp::client
         static EntityTemplate enemy_2(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt2_4);
+        }
+
+        static EntityTemplate enemy_3(const Vec2f &initialPos)
+        {
+            return makeFromDef(initialPos, k_rt23_1);
+        }
+
+        static EntityTemplate enemy_4(const Vec2f &initialPos)
+        {
+            return makeFromDef(initialPos, k_rt5_1);
         }
 
         static EntityTemplate shot_7(const Vec2f &initialPos)

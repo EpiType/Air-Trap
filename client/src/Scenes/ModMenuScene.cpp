@@ -134,6 +134,8 @@ namespace rtp::client {
             enemies.entities = {
                 {"enemy_1", "assets/sprites/r-typesheet2.gif", 159, 35, 24, 16},       // enemy_1
                 {"enemy_2", "assets/sprites/r-typesheet2.gif", 300, 71, 30, 18},       // enemy_2
+                {"enemy_3", "assets/sprites/r-typesheet23.gif", 0, 0, 33, 33},         // enemy_3 (r-typesheet23.gif first row, 8 frames)
+                {"enemy_4", "assets/sprites/r-typesheet5.gif", 0, 0, 64, 36},          // enemy_4 (r-typesheet5.gif first 8 frames)
             };
             
             // Projectiles category (projectiles)
