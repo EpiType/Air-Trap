@@ -6,6 +6,7 @@
  */
 
 #include "Scenes/PlayingScene.hpp"
+#include "RType/ECS/Components/Audio/AudioSource.hpp"
 #include "Game/SpriteCustomizer.hpp"
 #include "RType/ECS/Components/UI/Button.hpp"
 #include "RType/ECS/Components/UI/Slider.hpp"
@@ -46,6 +47,22 @@ namespace rtp::client {
             log::info("Entering PlayingScene");
 
             spawnParallax();
+
+            {
+                auto musicEntity = _worldRegistry.spawn();
+                if (musicEntity) {
+                    ecs::components::audio::AudioSource levelMusic;
+                    levelMusic.audioPath = "assets/musics/lvl1.mp3";
+                    levelMusic.volume = 80.0f;
+                    levelMusic.loop = true;
+                    levelMusic.isPlaying = true;
+                    levelMusic.dirty = true;
+                    _worldRegistry.add<ecs::components::audio::AudioSource>(musicEntity.value(), levelMusic);
+                    log::info("Playing Level 1 music");
+                } else {
+                    log::warning("Failed to spawn entity for Level 1 music");
+                }
+            }
 
             _chatCompactPanel = _uiFactory.createButton(
                 _uiRegistry,
@@ -281,8 +298,40 @@ namespace rtp::client {
                 }
             };
 
-            spawnLayer(EntityTemplate::createParrallaxLayer1());
-            spawnLayer(EntityTemplate::createParrallaxLayer2());
+            const uint32_t levelId = _network.getCurrentLevelId();
+            switch (levelId) {
+                case 1:
+                    spawnLayer(EntityTemplate::createParrallaxLvl1_1());
+                    spawnLayer(EntityTemplate::createParrallaxLvl1_2());
+                    break;
+                case 2:
+                    spawnLayer(EntityTemplate::createParallaxLvl2_1());
+                    //spawnLayer(EntityTemplate::createParallaxLvl2_2());
+                    //spawnLayer(EntityTemplate::createParallaxLvl2_3());
+                    //spawnLayer(EntityTemplate::createParallaxLvl2_4());
+                    //spawnLayer(EntityTemplate::createParallaxLvl2_5());
+                    //spawnLayer(EntityTemplate::createParallaxLvl2_6());
+                    break;
+                case 3:
+                    spawnLayer(EntityTemplate::createParallaxLvl3_1());
+                    spawnLayer(EntityTemplate::createParallaxLvl3_5());
+                    spawnLayer(EntityTemplate::createParallaxLvl3_3());
+                    spawnLayer(EntityTemplate::createParallaxLvl3_2());
+                    spawnLayer(EntityTemplate::createParallaxLvl3_4());
+                    spawnLayer(EntityTemplate::createParallaxLvl3_6());
+                    spawnLayer(EntityTemplate::createParallaxLvl3_7());
+                    spawnLayer(EntityTemplate::createParallaxLvl3_8());
+                    spawnLayer(EntityTemplate::createParallaxLvl3_9());
+                    break;
+                case 4:
+                    spawnLayer(EntityTemplate::createParallaxLvl4_1());
+                    spawnLayer(EntityTemplate::createParallaxLvl4_2());
+                    spawnLayer(EntityTemplate::createParallaxLvl4_3());
+                    spawnLayer(EntityTemplate::createParallaxLvl4_4());
+                    spawnLayer(EntityTemplate::createParallaxLvl4_5());
+                    spawnLayer(EntityTemplate::createParallaxLvl4_6());
+                    break;
+            }
         }
 
         void PlayingScene::sendChatMessage(void)

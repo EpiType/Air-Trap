@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <vector>
 
 namespace rtp::server
@@ -31,6 +32,7 @@ namespace rtp::server
     void CollisionSystem::update(float dt)
     {
         (void)dt;
+        
         auto transformsRes = _registry.get<ecs::components::Transform>();
         auto boxesRes = _registry.get<ecs::components::BoundingBox>();
         auto typesRes = _registry.get<ecs::components::EntityType>();
@@ -39,7 +41,6 @@ namespace rtp::server
         auto speedRes = _registry.get<ecs::components::MovementSpeed>();
         auto powerupRes = _registry.get<ecs::components::Powerup>();
         auto damageRes = _registry.get<ecs::components::Damage>();
-        auto velocityRes = _registry.get<ecs::components::Velocity>();
 
         if (!transformsRes ||
             !boxesRes ||
@@ -48,8 +49,7 @@ namespace rtp::server
             !healthRes ||
             !speedRes ||
             !powerupRes ||
-            !damageRes ||
-            !velocityRes) {
+            !damageRes) {
             return;
         }
 
@@ -61,7 +61,13 @@ namespace rtp::server
         auto &speeds = speedRes->get();
         auto &powerups = powerupRes->get();
         auto &damages = damageRes->get();
-        auto &velocities = velocityRes->get();
+        
+        // Optional components - only some entities have them
+        auto velocitiesRes = _registry.get<ecs::components::Velocity>();
+        auto *velocities = velocitiesRes ? &velocitiesRes->get() : nullptr;
+        
+        auto shieldsRes = _registry.get<ecs::components::Shield>();
+        auto doubleFiresRes = _registry.get<ecs::components::DoubleFire>();
 
         std::unordered_set<uint32_t> removed;
         std::vector<std::pair<ecs::Entity, uint32_t>> pending;
@@ -97,7 +103,10 @@ namespace rtp::server
                        net::EntityType::Scout ||
                        type ==
                        net::EntityType::Tank ||
-                       type == net::EntityType::Boss) {
+                       type ==
+                       net::EntityType::Boss ||
+                       type ==
+                       net::EntityType::BossShield) {
                 if (transforms.has(entity) &&
                     boxes.has(entity) &&
                     rooms.has(entity) &&
@@ -131,7 +140,9 @@ namespace rtp::server
                 }
             } else if (type ==
                        net::EntityType::PowerupHeal ||
-                       type == net::EntityType::PowerupSpeed) {
+                       type == net::EntityType::PowerupSpeed ||
+                       type == net::EntityType::PowerupDoubleFire ||
+                       type == net::EntityType::PowerupShield) {
                 if (transforms.has(entity) &&
                     boxes.has(entity) &&
                     rooms.has(entity) &&
@@ -147,7 +158,7 @@ namespace rtp::server
             auto &proom = rooms[player];
             auto &health = healths[player];
             auto &speed = speeds[player];
-            auto *pvel = velocities.has(player) ? &velocities[player] : nullptr;
+            auto *pvel = (velocities && velocities->has(player)) ? &(*velocities)[player] : nullptr;
 
             for (auto powerEntity : powerupEntities) {
                 if (removed.find(powerEntity.index()) != removed.end()) {
@@ -164,18 +175,56 @@ namespace rtp::server
                 }
 
                 const auto &powerup = powerups[powerEntity];
+                log::info("=== Power-up collision! Type: {} ===", static_cast<int>(powerup.type));
+                
                 if (powerup.type == ecs::components::PowerupType::Heal) {
-                    health.currentHealth = std::min(
-                        health.maxHealth,
-                        health.currentHealth + static_cast<int>(powerup.value));
-                } else if (powerup.type ==
-                           ecs::components::PowerupType::Speed) {
+                    // Red powerup - heal 1 heart (only if not at max health)
+                    int oldHealth = health.currentHealth;
+                    if (health.currentHealth < health.maxHealth) {
+                        health.currentHealth = std::min(
+                            health.maxHealth,
+                            health.currentHealth + 1);
+                        log::info("✚ HEAL: {} HP → {} HP (max: {})", oldHealth, health.currentHealth, health.maxHealth);
+                    } else {
+                        log::info("✚ HEAL: Already at max health ({}/{}), not applied", health.currentHealth, health.maxHealth);
+                    }
+                } else if (powerup.type == ecs::components::PowerupType::Speed) {
                     speed.multiplier =
                         std::max(speed.multiplier, powerup.value);
                     speed.boostRemaining =
                         std::max(speed.boostRemaining, powerup.duration);
+                    log::info("⚡ SPEED: Multiplier={}, Duration={}s", speed.multiplier, speed.boostRemaining);
+                } else if (powerup.type == ecs::components::PowerupType::DoubleFire) {
+                    // Cyan powerup - double fire for 20 seconds
+                    if (doubleFiresRes) {
+                        auto& doubleFires = doubleFiresRes->get();
+                        if (!doubleFires.has(player)) {
+                            _registry.add<ecs::components::DoubleFire>(player, 20.0f);
+                            log::info("🔫 DOUBLE FIRE: Added component (20s duration)");
+                        } else {
+                            doubleFires[player].remainingTime = 20.0f; // Reset timer
+                            log::info("🔫 DOUBLE FIRE: Reset timer to 20s");
+                        }
+                    } else {
+                        log::warning("DoubleFire component storage not available!");
+                    }
+                } else if (powerup.type == ecs::components::PowerupType::Shield) {
+                    // Green powerup - shield that absorbs 1 hit
+                    if (shieldsRes) {
+                        auto& shields = shieldsRes->get();
+                        if (!shields.has(player)) {
+                            _registry.add<ecs::components::Shield>(player, 1);
+                            log::info("🛡️  SHIELD: Added component (1 charge)");
+                        } else {
+                            shields[player].charges = 1; // Reset to 1 charge
+                            log::info("🛡️  SHIELD: Reset to 1 charge");
+                        }
+                    } else {
+                        log::warning("Shield component storage not available!");
+                    }
                 }
 
+                log::info("Despawning power-up entity {}", powerEntity.index());
                 markForDespawn(powerEntity, proom.id);
             }
         }
@@ -184,7 +233,7 @@ namespace rtp::server
             auto &ptf = transforms[player];
             auto &pbox = boxes[player];
             auto &proom = rooms[player];
-            auto *pvel = velocities.has(player) ? &velocities[player] : nullptr;
+            auto *pvel = (velocities && velocities->has(player)) ? &(*velocities)[player] : nullptr;
 
             for (auto obstacle : obstacles) {
                 if (rooms[obstacle].id != proom.id) {
@@ -239,6 +288,7 @@ namespace rtp::server
             const auto &broom = rooms[bullet];
             const auto &damage = damages[bullet];
 
+            auto boomerResLocal = _registry.get<ecs::components::Boomerang>();
             for (auto enemy : enemies) {
                 if (rooms[enemy].id != broom.id) {
                     continue;
@@ -250,9 +300,43 @@ namespace rtp::server
                     continue;
                 }
 
+                // Check if enemy is a Boss and if there are shields protecting it
+                if (types[enemy].type == net::EntityType::Boss) {
+                    // Count living BossShields in the same room
+                    int shieldCount = 0;
+                    for (auto potentialShield : enemies) {
+                        if (rooms[potentialShield].id == broom.id &&
+                            types[potentialShield].type == net::EntityType::BossShield &&
+                            healths[potentialShield].currentHealth > 0) {
+                            shieldCount++;
+                        }
+                    }
+                    
+                    // If shields exist, boss is protected - don't take damage
+                    if (shieldCount > 0) {
+                        bool isBoomer = (boomerResLocal && boomerResLocal->get().has(bullet));
+                        if (!isBoomer) {
+                            // Non-boomerang bullets despawn on shield
+                            markForDespawn(bullet, broom.id);
+                            break;
+                        } else {
+                            // Boomerang should not be destroyed by boss shields; skip damaging
+                            continue;
+                        }
+                    }
+                }
+
                 health.currentHealth -= damage.amount;
-                markForDespawn(bullet, broom.id);
+                bool isBoomer = (boomerResLocal && boomerResLocal->get().has(bullet));
+                if (!isBoomer) {
+                    markForDespawn(bullet, broom.id);
+                }
                 if (health.currentHealth <= 0) {
+                    // Enemy died - chance to drop power-up
+                    const int dropChance = std::rand() % 100;
+                    if (dropChance < 30) { // 30% chance to drop
+                        spawnPowerup(etf.position, broom.id, dropChance);
+                    }
                     markForDespawn(enemy, broom.id);
                 }
                 break;
@@ -276,13 +360,68 @@ namespace rtp::server
                 if (types[obstacle].type == net::EntityType::Obstacle) {
                     health.currentHealth -= damage.amount;
                 }
-                markForDespawn(bullet, broom.id);
+                bool isBoomerObs = (boomerResLocal && boomerResLocal->get().has(bullet));
+                if (!isBoomerObs) {
+                    markForDespawn(bullet, broom.id);
+                }
                 if (types[obstacle].type ==
                     net::EntityType::Obstacle &&
                     health.currentHealth <= 0) {
                     markForDespawn(obstacle, broom.id);
                 }
                 break;
+            }
+        }
+
+        // Handle boomerang returning to owner: recover ammo and despawn
+        if (auto boomResCheck = _registry.get<ecs::components::Boomerang>()) {
+            auto &boomers = boomResCheck->get();
+            for (auto bullet : bullets) {
+                if (removed.find(bullet.index()) != removed.end()) continue;
+                if (!boomers.has(bullet)) continue;
+                auto &b = boomers[bullet];
+                if (!b.returning) continue;
+
+                const auto &btf = transforms[bullet];
+                const auto &bbox = boxes[bullet];
+
+                // find owner entity in players list
+                for (auto player : players) {
+                    if (rooms[player].id != rooms[bullet].id) continue;
+                    if (static_cast<uint32_t>(player.index()) != b.ownerIndex) continue;
+                    const auto &ptf = transforms[player];
+                    const auto &pbox = boxes[player];
+                    if (!overlaps(ptf, pbox, btf, bbox)) continue;
+
+                    // Recover ammo for owner
+                    if (auto ammoRes = _registry.get<ecs::components::Ammo>()) {
+                        auto &ammos = ammoRes->get();
+                        if (ammos.has(player)) {
+                            if (ammos[player].max > 0) {
+                                ammos[player].current = static_cast<uint16_t>(std::min<int>(ammos[player].max, ammos[player].current + 1));
+                            }
+                            ammos[player].dirty = true;
+
+                            // send ammo update packet to owner
+                            net::Packet packet(net::OpCode::AmmoUpdate);
+                            net::AmmoUpdatePayload payload{};
+                            payload.current = ammos[player].current;
+                            payload.max = ammos[player].max;
+                            payload.isReloading = static_cast<uint8_t>(ammos[player].isReloading ? 1 : 0);
+                            payload.cooldownRemaining = ammos[player].isReloading ? (ammos[player].reloadCooldown - ammos[player].reloadTimer) : 0.0f;
+                            packet << payload;
+                            if (auto netRes = _registry.get<ecs::components::NetworkId>()) {
+                                auto &nets = netRes->get();
+                                if (nets.has(player)) {
+                                    _networkSync.sendPacketToSession(nets[player].id, packet, net::NetworkMode::TCP);
+                                }
+                            }
+                        }
+                    }
+
+                    markForDespawn(bullet, rooms[bullet].id);
+                    break;
+                }
             }
         }
 
@@ -306,8 +445,28 @@ namespace rtp::server
                     continue;
                 }
 
-                health.currentHealth =
-                    std::max(0, health.currentHealth - damage.amount);
+                // Check if player has shield
+                bool shieldBlocked = false;
+                if (shieldsRes) {
+                    auto& shields = shieldsRes->get();
+                    if (shields.has(player) && shields[player].charges > 0) {
+                        // Shield absorbs the hit
+                        shields[player].charges--;
+                        if (shields[player].charges <= 0) {
+                            _registry.remove<ecs::components::Shield>(player);
+                            log::info("Player shield depleted");
+                        } else {
+                            log::info("Player shield blocked attack ({} charges left)", shields[player].charges);
+                        }
+                        shieldBlocked = true;
+                    }
+                }
+                
+                if (!shieldBlocked) {
+                    // No shield - take damage
+                    health.currentHealth =
+                        std::max(0, health.currentHealth - damage.amount);
+                }
                 markForDespawn(bullet, broom.id);
                 break;
             }
@@ -342,10 +501,12 @@ namespace rtp::server
 
     void CollisionSystem::despawn(const ecs::Entity &entity, uint32_t roomId)
     {
+        log::debug("despawn() called for entity {}, roomId {}", entity.index(), roomId);
         auto transformRes = _registry.get<ecs::components::Transform>();
         auto typeRes = _registry.get<ecs::components::EntityType>();
         auto netRes = _registry.get<ecs::components::NetworkId>();
         if (!transformRes || !typeRes || !netRes) {
+            log::debug("despawn() early return - missing component arrays");
             return;
         }
 
@@ -381,11 +542,81 @@ namespace rtp::server
         payload.position = transform.position;
         packet << payload;
 
+        log::debug("Sending EntityDeath packet for netId={}, type={} to {} players",
+                   net.id, static_cast<int>(type.type), players.size());
+
         for (const auto &player : players) {
             _networkSync.sendPacketToSession(player->getId(), packet,
                                              net::NetworkMode::TCP);
         }
 
+        log::debug("Killing entity {} from registry", entity.index());
         _registry.kill(entity);
+    }
+
+    void CollisionSystem::spawnPowerup(const Vec2f& position, uint32_t roomId, int dropRoll)
+    {
+        auto entity = _registry.spawn();
+        if (!entity) {
+            log::error("Failed to spawn power-up entity");
+            return;
+        }
+
+        // Determine power-up type based on drop roll (0-29 range for 30% drop)
+        ecs::components::PowerupType type;
+        net::EntityType netType;
+        
+        if (dropRoll < 10) {
+            // 0-9: Red - Health (33% of drops)
+            type = ecs::components::PowerupType::Heal;
+            netType = net::EntityType::PowerupHeal;
+        } else if (dropRoll < 20) {
+            // 10-19: Yellow/White - Double Fire (33% of drops)
+            type = ecs::components::PowerupType::DoubleFire;
+            netType = net::EntityType::PowerupDoubleFire;
+        } else {
+            // 20-29: Green - Shield (33% of drops)
+            type = ecs::components::PowerupType::Shield;
+            netType = net::EntityType::PowerupShield;
+        }
+
+        auto e = entity.value();
+        
+        // Add components
+        _registry.add<ecs::components::Transform>(e, position, 0.0f, Vec2f{1.0f, 1.0f});
+        _registry.add<ecs::components::Velocity>(e, ecs::components::Velocity{Vec2f{-1.0f, 0.0f}, 30.0f}); // Move left slowly
+        _registry.add<ecs::components::BoundingBox>(e, 16.0f, 16.0f);
+        _registry.add<ecs::components::EntityType>(e, netType);
+        _registry.add<ecs::components::RoomId>(e, roomId);
+        _registry.add<ecs::components::Powerup>(e, type, 1.0f, 0.0f);
+        
+        // Assign network ID
+        static uint32_t nextId = 1000;
+        _registry.add<ecs::components::NetworkId>(e, nextId++);
+        
+        log::info("Spawned power-up type {} at ({}, {})", static_cast<int>(type), position.x, position.y);
+        
+        // Notify clients
+        auto room = _roomSystem.getRoom(roomId);
+        if (!room) {
+            return;
+        }
+
+        const auto players = room->getPlayers();
+        if (players.empty()) {
+            return;
+        }
+
+        net::Packet packet(net::OpCode::EntitySpawn);
+        net::EntitySpawnPayload payload{};
+        payload.netId = nextId - 1;
+        payload.type = static_cast<uint8_t>(netType);
+        payload.posX = position.x;
+        payload.posY = position.y;
+        packet << payload;
+
+        for (const auto &player : players) {
+            _networkSync.sendPacketToSession(player->getId(), packet, net::NetworkMode::TCP);
+        }
     }
 }

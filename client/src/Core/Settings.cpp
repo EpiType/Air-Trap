@@ -7,6 +7,7 @@
 */
 
 #include "Core/Settings.hpp"
+#include "RType/Config/WeaponConfig.hpp"
 
 namespace rtp::client
 {
@@ -312,6 +313,29 @@ namespace rtp::client
         }
     }
 
+    std::string Settings::getWeaponName(ecs::components::WeaponKind weapon) const
+    {
+        // Prefer displayName from config if available
+        if (rtp::config::hasWeaponConfigs()) {
+            auto name = rtp::config::getWeaponDisplayName(weapon);
+            if (!name.empty()) return name;
+        }
+
+        switch (weapon) {
+            case ecs::components::WeaponKind::Classic:
+                return "Classic Laser";
+            case ecs::components::WeaponKind::Beam:
+                return "Beam Cannon";
+            // Paddle (Reflector) removed
+            case ecs::components::WeaponKind::Tracker:
+                return "Auto-Tracker";
+            case ecs::components::WeaponKind::Boomerang:
+                return "Boomerang";
+            default:
+                return "Unknown";
+        }
+    }
+
     bool Settings::save(const std::string &filename)
     {
         std::filesystem::create_directories("config");
@@ -332,6 +356,7 @@ namespace rtp::client
         file << "high_contrast=" << (_highContrast ? 1 : 0) << "\n";
 
         file << "difficulty=" << static_cast<int>(_difficulty) << "\n";
+        file << "selected_weapon=" << static_cast<int>(_selectedWeapon) << "\n";
 
         // Gamepad
         file << "gamepad_enabled=" << (_gamepadEnabled ? 1 : 0) << "\n";
@@ -385,6 +410,8 @@ namespace rtp::client
                     _highContrast = (std::stoi(value) != 0);
                 } else if (key == "difficulty") {
                     _difficulty = static_cast<Difficulty>(std::stoi(value));
+                } else if (key == "selected_weapon") {
+                    _selectedWeapon = static_cast<ecs::components::WeaponKind>(std::stoi(value));
                 } else if (key == "gamepad_enabled") {
                     _gamepadEnabled = (std::stoi(value) != 0);
                 } else if (key == "gamepad_deadzone") {

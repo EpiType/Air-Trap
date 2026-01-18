@@ -24,8 +24,16 @@ namespace rtp::server
         >();
 
         for (auto&& [tf, vel] : view) {
-            tf.position.x += vel.direction.x * dt;
-            tf.position.y += vel.direction.y * dt;
+            // Handle both conventions:
+            // 1. Old: direction contains velocity (pixels/sec), speed=0
+            // 2. New: direction is normalized, speed is separate
+            if (vel.speed > 0.0f) {
+                tf.position.x += vel.direction.x * vel.speed * dt;
+                tf.position.y += vel.direction.y * vel.speed * dt;
+            } else {
+                tf.position.x += vel.direction.x * dt;
+                tf.position.y += vel.direction.y * dt;
+            }
         }
 
         auto playerView = _registry.zipView<

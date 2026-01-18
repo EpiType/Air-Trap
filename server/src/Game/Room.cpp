@@ -8,6 +8,7 @@
 #include "Game/Room.hpp"
 #include "RType/Logger.hpp"
 #include "RType/ECS/Components/RoomId.hpp"
+#include "RType/ECS/Components/Velocity.hpp"
 
 #include <cstring>
 
@@ -359,25 +360,43 @@ namespace rtp::server
 
         std::vector<net::EntitySnapshotPayload> snapshots;
 
-        auto view = _registry.zipView<
-            ecs::components::Transform,
-            ecs::components::NetworkId,
-            ecs::components::RoomId
-        >();
+        auto transformsRes = _registry.get<ecs::components::Transform>();
+        auto networkIdsRes = _registry.get<ecs::components::NetworkId>();
+        auto roomIdsRes = _registry.get<ecs::components::RoomId>();
+        auto velocitiesRes = _registry.get<ecs::components::Velocity>();
+        
+        if (!transformsRes || !networkIdsRes || !roomIdsRes)
+            return;
+        
+        auto& transforms = transformsRes->get();
+        auto& networkIds = networkIdsRes->get();
+        auto& roomIds = roomIdsRes->get();
 
-        for (auto&& [tf, net, room] : view) {
-            if (room.id != _id)
+        for (auto entity : transforms.entities()) {
+            if (!networkIds.has(entity) || !roomIds.has(entity))
                 continue;
+            if (roomIds[entity].id != _id)
+                continue;
+            
+            Vec2f velocity{0.0f, 0.0f};
+            if (velocitiesRes) {
+                auto& velocities = velocitiesRes->get();
+                if (velocities.has(entity)) {
+                    const auto& vel = velocities[entity];
+                    velocity = vel.direction * vel.speed;
+                }
+            }
+            
             snapshots.push_back({
-                net.id,
-                tf.position,
-                {0.0f, 0.0f},
-                tf.rotation
+                networkIds[entity].id,
+                transforms[entity].position,
+                velocity,
+                transforms[entity].rotation
             });
         }
 
-        log::debug("Room '{}' (ID: {}) broadcasting {} entity snapshots",
-                       _name, _id, snapshots.size());
+        // log::debug("Room '{}' (ID: {}) broadcasting {} entity snapshots",
+        //                _name, _id, snapshots.size());
         if (snapshots.empty())
             return;
 

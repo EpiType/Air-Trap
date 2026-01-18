@@ -37,6 +37,8 @@
 #include "RType/ECS/Components/UI/Text.hpp"
 #include "RType/ECS/Components/UI/SpritePreview.hpp"
 #include "RType/ECS/Components/Velocity.hpp"
+#include "RType/ECS/Components/Audio/AudioSource.hpp"
+#include "RType/ECS/Components/Audio/SoundEvent.hpp"
 
 /* Utils */
 #include "Utils/GameState.hpp"
@@ -49,8 +51,10 @@
 #include "Systems/ParallaxSystem.hpp"
 #include "Systems/RenderSystem.hpp"
 #include "Systems/AnimationSystem.hpp"
+#include "Systems/AudioSystem.hpp"
 #include "Systems/UISystem.hpp"
 #include "Systems/UIRenderSystem.hpp"
+#include "Systems/ShieldSystem.hpp"
 
 /* ECS */
 #include "RType/ECS/Registry.hpp"

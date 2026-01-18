@@ -9,7 +9,7 @@
 #define RTYPE_CLIENT_DEBUGFLAGS_HPP_
 
 namespace rtp::client {
-    inline bool g_drawDebugBounds = false;
+    inline bool g_drawDebugBounds = true;
 }
 
 #endif // RTYPE_CLIENT_DEBUGFLAGS_HPP_

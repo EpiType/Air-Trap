@@ -31,7 +31,8 @@ namespace rtp::ecs::components::server
             MoveLeft  = 1 << 2,
             MoveRight = 1 << 3,
             Shoot     = 1 << 4,
-            Reload    = 1 << 5
+            Reload    = 1 << 5,
+            DebugPowerup = 1 << 6  // Press P to spawn a random powerup (debug only)
         };
         uint8_t mask = 0;                          /**< Input mask for filtering input types */
         uint8_t lastMask = 0;                      /**< Previous input mask for edge detection */

@@ -9,7 +9,6 @@
 #include "Systems/RenderSystem.hpp"
 #include "Systems/UIRenderSystem.hpp"
 #include "RType/Logger.hpp"
-#include <fstream>
 
 namespace rtp::client {
 
@@ -20,7 +19,7 @@ namespace rtp::client {
     }
 
     SpriteCustomizer::SpriteCustomizer()
-        : _spriteMappingPath("config/sprite_mappings.json")
+        : _spriteMappingPath("config/client/sprite_mappings.json")
     {
         loadMappings();
     }
@@ -33,18 +32,11 @@ namespace rtp::client {
                 return false;
             }
 
-            std::ifstream file(_spriteMappingPath);
-            if (!file.is_open()) {
-                log::error("Failed to open sprite mapping file: {}", _spriteMappingPath.string());
+            _customSpriteMappings = rtp::config::loadSpriteMappings(_spriteMappingPath.string());
+            
+            if (_customSpriteMappings.empty()) {
+                log::warning("Sprite mappings file exists but is empty or invalid");
                 return false;
-            }
-
-            nlohmann::json j;
-            file >> j;
-
-            _customSpriteMappings.clear();
-            for (auto& [key, value] : j.items()) {
-                _customSpriteMappings[key] = value.get<std::string>();
             }
 
             log::info("Loaded {} custom sprite mappings", _customSpriteMappings.size());
@@ -65,10 +57,11 @@ namespace rtp::client {
     bool SpriteCustomizer::hasCustomSprite(const std::string& entityName) const
     {
         bool found = _customSpriteMappings.find(entityName) != _customSpriteMappings.end();
-        if (!found) {
-            log::debug("SpriteCustomizer: No custom sprite for '{}'. Available keys: {}",
-                entityName, _customSpriteMappings.size());
-        }
+        // Log disabled to avoid spam - uncomment for debugging:
+        // if (!found) {
+        //     log::debug("SpriteCustomizer: No custom sprite for '{}'. Available keys: {}",
+        //         entityName, _customSpriteMappings.size());
+        // }
         return found;
     }
 

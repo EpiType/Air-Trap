@@ -66,8 +66,9 @@ namespace rtp::client {
              * @param sessionId ID of the network session
              * @param username Username string
              * @param password Password string
+             * @param weaponKind Selected weapon kind
              */
-            void tryLogin(const std::string& username, const std::string& password) const;
+            void tryLogin(const std::string& username, const std::string& password, uint8_t weaponKind) const;
 
             /**
              * @brief Send a request to server attempting to register with provided credentials
@@ -84,17 +85,18 @@ namespace rtp::client {
             void requestListRooms(void);
 
             /**
-             * @brief Send a request to create a new room on the server
-             * @param roomName Name of the room
-             * @param maxPlayers Maximum number of players allowed
-             * @param difficulty Difficulty level of the room
-             * @param speed Speed multiplier for the game
-             * @param duration Duration of the game session
-             * @param seed Seed for random generation
-             * @param levelId Level identifier
-             */
-            void tryCreateRoom(const std::string& roomName, uint32_t maxPlayers, float difficulty, float speed, uint32_t duration, uint32_t seed, uint32_t levelId);
-
+            * @brief Send a request to create a new room on the server
+            * @param roomName Name of the room
+            * @param maxPlayers Maximum number of players allowed
+            * @param difficulty Difficulty level of the room
+            * @param speed Speed multiplier for the game
+            * @param duration Duration of the game session
+            * @param seed Seed for random generation
+            * @param levelId Level identifier
+            * @param roomType Type of the room (Public/Private)
+            */
+            void tryCreateRoom(const std::string& roomName, uint32_t maxPlayers, float difficulty, float speed, uint32_t duration, uint32_t seed, uint32_t levelId, uint8_t roomType);
+            
             /**
              * @brief Send a request to join an existing room on the server
              * @param roomId Identifier of the room to join
@@ -113,10 +115,21 @@ namespace rtp::client {
             void trySetReady(bool isReady);
 
             /**
+            * @brief Start a solo game by creating a private room and auto-joining/readying
+            */
+            void tryStartSolo(void);
+
+            /**
              * @brief Send a chat message to the server
              * @param message The message string to send
              */
             void trySendMessage(const std::string& message) const;
+            
+            /**
+             * @brief Send currently selected weapon to server to apply immediately
+             * @param weaponKind weapon id (ecs::components::WeaponKind as uint8_t)
+             */
+            void sendSelectedWeapon(uint8_t weaponKind) const;
         
         public:
             /**
@@ -143,6 +156,12 @@ namespace rtp::client {
              */
             bool isLoggedIn(void) const;
 
+            /** 
+             * @brief Check if the client is starting a solo game
+             * @return true if starting solo, false otherwise
+             */
+            bool _isStartingSolo = false;
+
             /**
              * @brief Get the username of the client
              * @return The username string
@@ -166,6 +185,11 @@ namespace rtp::client {
              * @return Current State enum value
              */
             State getState(void) const;
+
+            /**
+             * @brief Get the current level ID for client-side visuals (parallax)
+             */
+            uint32_t getCurrentLevelId(void) const;
 
             /**
              * @brief Get the last received room chat message
@@ -211,6 +235,7 @@ namespace rtp::client {
             float _pingTimer = 0.0f;                                       /**< Ping timer accumulator */
             float _pingInterval = 1.0f;                                    /**< Ping interval in seconds */
             bool _kicked = false;                                          /**< Kicked flag */
+            uint32_t _currentLevelId = 1;                                   /**< Current level id used by client visuals */
         
         private:
             /**
@@ -242,6 +267,11 @@ namespace rtp::client {
             void pushChatMessage(const std::string& message);
 
             void onAmmoUpdate(net::Packet& packet);
+            void onBeamState(net::Packet& packet);
+            // Map ownerNetId -> list of (beamEntity, offsetY)
+            std::unordered_map<uint32_t, std::vector<std::pair<ecs::Entity, float>>> _beamEntities;
+            // Map ownerNetId -> list of beam lengths (parallel to _beamEntities entries)
+            std::unordered_map<uint32_t, std::vector<float>> _beamLengths;
 
             void onPong(net::Packet& packet);
 

@@ -8,6 +8,7 @@
 
 #include "Core/Application.hpp"
 #include "Game/SpriteCustomizer.hpp"
+#include "RType/ECS/Components/ShieldVisual.hpp"
 
 namespace rtp::client
 {
@@ -88,6 +89,11 @@ namespace rtp::client
         _worldSystemManager.add<InputSystem>(_worldRegistry, _uiRegistry, _settings, _clientNetwork, _window);
         _worldSystemManager.add<ParallaxSystem>(_worldRegistry);
         _worldSystemManager.add<AnimationSystem>(_worldRegistry);
+        _worldSystemManager.add<ShieldSystem>(_worldRegistry);
+        auto& worldAudioSystem = _worldSystemManager.add<AudioSystem>(_worldRegistry);
+        worldAudioSystem.setMasterVolume(_settings.getMasterVolume());
+        worldAudioSystem.setMusicVolume(_settings.getMusicVolume());
+        worldAudioSystem.setSfxVolume(_settings.getSfxVolume());
         auto& worldRenderSystem = _worldSystemManager.add<RenderSystem>(_worldRegistry, _window);
         _worldSystemManager.add<ParallaxSystem>(_worldRegistry);
         
@@ -101,6 +107,10 @@ namespace rtp::client
     void Application::initUiSystems(void)
     {
         _uiSystemManager.add<UISystem>(_uiRegistry, _window, _settings);
+        auto& uiAudioSystem = _uiSystemManager.add<AudioSystem>(_uiRegistry);
+        uiAudioSystem.setMasterVolume(_settings.getMasterVolume());
+        uiAudioSystem.setMusicVolume(_settings.getMusicVolume());
+        uiAudioSystem.setSfxVolume(_settings.getSfxVolume());
         // _uiSystemManager.add<systems::SettingsMenuSystem>(_uiRegistry, _window, _settings);
         auto& uiRenderSystem = _uiSystemManager.add<systems::UIRenderSystem>(_uiRegistry, _window);
         
@@ -118,6 +128,8 @@ namespace rtp::client
         _uiRegistry.subscribe<ecs::components::ui::Dropdown>();
         _uiRegistry.subscribe<ecs::components::ui::TextInput>();
         _uiRegistry.subscribe<ecs::components::ui::SpritePreview>();
+        _uiRegistry.subscribe<ecs::components::audio::AudioSource>();
+        _uiRegistry.subscribe<ecs::components::audio::SoundEvent>();
         log::info("OK: UI ECS initialized with components");
     }
 
@@ -132,6 +144,9 @@ namespace rtp::client
         _worldRegistry.subscribe<ecs::components::NetworkId>();
         _worldRegistry.subscribe<ecs::components::EntityType>();
         _worldRegistry.subscribe<ecs::components::BoundingBox>();
+        _worldRegistry.subscribe<ecs::components::ShieldVisual>();
+        _worldRegistry.subscribe<ecs::components::audio::AudioSource>();
+        _worldRegistry.subscribe<ecs::components::audio::SoundEvent>();
         log::info("OK: World ECS initialized with components");
     }
 
@@ -145,7 +160,7 @@ namespace rtp::client
             _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
         );
         _scenes[GameState::Menu] = std::make_unique<scenes::MenuScene>(
-            _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
+            _uiRegistry, _worldRegistry, _settings, _translations, net, _uiFactory, _worldEntityBuilder, changeStateCb
         );
         _scenes[GameState::Lobby] = std::make_unique<scenes::LobbyScene>(
             _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
@@ -193,8 +208,35 @@ namespace rtp::client
         if (_activeScene) {
             _activeScene->onExit();
         }
-        
-        _uiRegistry.clear();
+
+        if (_currentState == GameState::Playing && newState != GameState::Playing) {
+            auto &worldAudio = _worldSystemManager.getSystem<AudioSystem>();
+            worldAudio.stopAllSounds();
+        }
+
+            if (newState == GameState::Playing) {
+                auto &uiAudio = _uiSystemManager.getSystem<AudioSystem>();
+                uiAudio.stopAllSounds();
+                _uiRegistry.clear();
+            } else {
+                std::vector<ecs::Entity> audioSourcesToKeep;
+                std::vector<ecs::components::audio::AudioSource> audioSourceData;
+            
+                auto audioSources = _uiRegistry.get<ecs::components::audio::AudioSource>();
+                if (audioSources) {
+                    auto& sources = audioSources.value().get();
+                    for (const auto& entity : sources.entities()) {
+                        audioSourcesToKeep.push_back(entity);
+                        audioSourceData.push_back(sources[entity]);
+                    }
+                }
+
+                _uiRegistry.clear();
+
+                for (size_t i = 0; i < audioSourcesToKeep.size(); ++i) {
+                    _uiRegistry.add<ecs::components::audio::AudioSource>(audioSourcesToKeep[i], audioSourceData[i]);
+                }
+            }
         
         if (newState != GameState::Playing && newState != GameState::Paused) {
             _worldRegistry.clear();
@@ -257,17 +299,20 @@ namespace rtp::client
     {
         _settings.onMasterVolumeChanged([this](float volume) {
             log::info("Master volume changed to: {:.2f}", volume);
-            // TODO: Appliquer au AudioManager quand il sera implémenté
+            _worldSystemManager.getSystem<AudioSystem>().setMasterVolume(volume);
+            _uiSystemManager.getSystem<AudioSystem>().setMasterVolume(volume);
         });
 
         _settings.onMusicVolumeChanged([this](float volume) {
             log::info("Music volume changed to: {:.2f}", volume);
-            // TODO: Appliquer au AudioManager quand il sera implémenté
+            _worldSystemManager.getSystem<AudioSystem>().setMusicVolume(volume);
+            _uiSystemManager.getSystem<AudioSystem>().setMusicVolume(volume);
         });
 
         _settings.onSfxVolumeChanged([this](float volume) {
             log::info("SFX volume changed to: {:.2f}", volume);
-            // TODO: Appliquer au AudioManager quand il sera implémenté
+            _worldSystemManager.getSystem<AudioSystem>().setSfxVolume(volume);
+            _uiSystemManager.getSystem<AudioSystem>().setSfxVolume(volume);
         });
 
         _settings.onLanguageChanged([this](Language lang) {

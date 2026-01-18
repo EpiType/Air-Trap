@@ -43,13 +43,15 @@ class InputSystem : public ecs::ISystem
         void update(float) override;
 
     private:
+        void playShotSound();
         enum InputBits : uint8_t {              /**< Bitmask for input directions */
             MoveUp    = 1 << 0,
             MoveDown  = 1 << 1,
             MoveLeft  = 1 << 2,
             MoveRight = 1 << 3,
             Shoot     = 1 << 4,
-            Reload    = 1 << 5
+            Reload    = 1 << 5,
+            DebugPowerup = 1 << 6  /**< Debug key to spawn powerup */
         };
 
         ecs::Registry& _r;                 /**< Reference to the entity registry */

@@ -62,6 +62,8 @@ namespace rtp::client
             int rectHeight;
             int zIndex;
             int red;
+            int green;
+            int blue;
             bool withAnimation;
             int frameWidth;
             int frameHeight;
@@ -73,16 +75,18 @@ namespace rtp::client
             Vec2f scale{1.0f, 1.0f};
         };
 
-        // Parallax layer definition
-        struct ParallaxDef {
-                const char *texturePath;
-                float velocitySpeed;
-                Vec2f velocityDir;
-                int opacity;
-                float parallaxSpeed;
-                float textureWidth;
-                Vec2f scale{2.0f, 2.0f};
-        };
+    // Parallax layer definition
+    struct ParallaxDef {
+        const char *texturePath;
+        float velocitySpeed;
+        rtp::Vec2f velocityDir;
+        int opacity;
+        float parallaxSpeed;
+        float textureWidth;
+        rtp::Vec2f scale{2.0f, 2.0f};
+        int rectWidth{1280};
+        int rectHeight{720};
+    };
 
         // Helper: build an EntityTemplate from a SpriteAnimDef
         static EntityTemplate makeFromDef(const Vec2f &initialPos,
@@ -105,6 +109,8 @@ namespace rtp::client
             t.sprite.rectHeight = d.rectHeight;
             t.sprite.zIndex = d.zIndex;
             t.sprite.red = d.red;
+            t.sprite.green = d.green;
+            t.sprite.blue = d.blue;
 
             t.withAnimation = d.withAnimation;
             if (d.withAnimation) {
@@ -130,14 +136,14 @@ namespace rtp::client
             t.velocity.speed = p.velocitySpeed;
             t.velocity.direction = p.velocityDir;
 
-            t.sprite.texturePath = p.texturePath;
-            t.sprite.rectLeft = 0;
-            t.sprite.rectTop = 0;
-            t.sprite.rectWidth = 1280;
-            t.sprite.rectHeight = 720;
-            t.sprite.zIndex = -1000;
-            t.sprite.red = 255;
-            t.sprite.opacity = p.opacity;
+        t.sprite.texturePath = p.texturePath;
+        t.sprite.rectLeft = 0;
+        t.sprite.rectTop = 0;
+        t.sprite.rectWidth = p.rectWidth;
+        t.sprite.rectHeight = p.rectHeight;
+        t.sprite.zIndex = -1000;
+        t.sprite.red = 255;
+        t.sprite.opacity = p.opacity;
 
             t.withParallax = true;
             t.parallax.textureWidth = p.textureWidth;
@@ -145,31 +151,36 @@ namespace rtp::client
             return t;
         }
 
-        // Data tables
-        static constexpr ParallaxDef kParallaxFar{
-            "assets/backgrounds/stars_far.png",
-            10.0f,
-            {-50.0f, 0.0f},
-            200,
-            100.0f,
-            1280.0f,
-            {2.0f,   2.0f}
-        };
-        static constexpr ParallaxDef kParallaxNear{
-            "assets/backgrounds/stars_near.png",
-            20.0f,
-            {-50.0f, 0.0f},
-            255,
-            300.0f,
-            1280.0f,
-            {2.0f,   2.0f}
-        };
+    // Data tables
+    static constexpr ParallaxDef kParallaxLvl1_1{ "assets/backgrounds/lvl1/stars_far.png", 10.0f, {-50.0f, 0.0f}, 200, 100.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl1_2{ "assets/backgrounds/lvl1/stars_near.png", 20.0f, {-50.0f, 0.0f}, 255, 300.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl2_1{ "assets/backgrounds/lvl2/moon_back.png", 10.0f, {0.0f, 0.0f}, 200, 80.0f, 1200.0f, {1.0f, 1.0f}, 1300, 720 };
+    static constexpr ParallaxDef kParallaxLvl2_2{ "assets/backgrounds/lvl2/moon_earth.png", 25.0f, {-30.0f, 0.0f}, 255, 150.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl2_3{ "assets/backgrounds/lvl2/moon_floor.png", 12.0f, {-20.0f, 0.0f}, 200, 60.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl2_4{ "assets/backgrounds/lvl2/moon_front.png", 18.0f, {-40.0f, 0.0f}, 200, 90.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl2_5{ "assets/backgrounds/lvl2/moon_mid.png", 20.0f, {-25.0f, 0.0f}, 255, 70.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl2_6{ "assets/backgrounds/lvl2/moon_sky.png", 10.0f, {-15.0f, 0.0f}, 200, 50.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl3_1{ "assets/backgrounds/lvl3/Sky_back_mountain.png", 15.0f, {-20.0f, 0.0f}, 255, 60.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl3_2{ "assets/backgrounds/lvl3/sky_cloud_floor_2.png", 22.0f, {-35.0f, 0.0f}, 200, 85.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl3_3{ "assets/backgrounds/lvl3/sky_cloud_floor.png", 18.0f, {-25.0f, 0.0f}, 255, 70.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl3_4{ "assets/backgrounds/lvl3/Sky_cloud_single.png", 20.0f, {-30.0f, 0.0f}, 255, 90.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl3_5{ "assets/backgrounds/lvl3/sky_clouds.png", 12.0f, {-15.0f, 0.0f}, 200, 55.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl3_6{ "assets/backgrounds/lvl3/Sky_front_cloud.png", 12.0f, {-15.0f, 0.0f}, 200, 55.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl3_7{ "assets/backgrounds/lvl3/sky_front_mountain.png", 12.0f, {-15.0f, 0.0f}, 200, 55.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl3_8{ "assets/backgrounds/lvl3/sky_moon.png", 12.0f, {-15.0f, 0.0f}, 200, 55.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl3_9{ "assets/backgrounds/lvl3/Sky_sky.png", 12.0f, {-15.0f, 0.0f}, 200, 55.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl4_1{ "assets/backgrounds/lvl4/desert_cloud.png", 15.0f, {-30.0f, 0.0f}, 200, 80.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl4_2{ "assets/backgrounds/lvl4/desert_dunefrontt.png", 25.0f, {-30.0f, 0.0f}, 255, 150.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl4_3{ "assets/backgrounds/lvl4/desert_dunemid.png", 12.0f, {-20.0f, 0.0f}, 200, 60.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl4_4{ "assets/backgrounds/lvl4/desert_moon.png", 18.0f, {-40.0f, 0.0f}, 200, 90.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl4_5{ "assets/backgrounds/lvl4/desert_mountain.png", 20.0f, {-25.0f, 0.0f}, 255, 70.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl4_6{ "assets/backgrounds/lvl4/desert_sky.png", 10.0f, {-15.0f, 0.0f}, 200, 50.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
 
         static constexpr SpriteAnimDef k_rt1_1{
-            "rt1_1",     "assets/sprites/r-typesheet1.gif",
+            "player_ship",     "assets/sprites/r-typesheet1.gif",
             101,         3,
             33,          14,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        33,
             14,          101,
             3,           5,
@@ -177,10 +188,10 @@ namespace rtp::client
             {1.0f,  1.0f}
         };
         static constexpr SpriteAnimDef k_rt1_2{
-            "rt1_2",     "assets/sprites/r-typesheet1.gif",
+            "shot_insane",     "assets/sprites/r-typesheet1.gif",
             134,         18,
             33,          32,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        33,
             32,          134,
             18,          4,
@@ -188,10 +199,10 @@ namespace rtp::client
             {1.0f,  1.0f}
         };
         static constexpr SpriteAnimDef k_rt1_3{
-            "rt1_3",     "assets/sprites/r-typesheet1.gif",
+            "effect_1",     "assets/sprites/r-typesheet1.gif",
             2,           51,
             33,          32,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        33,
             32,          2,
             51,          8,
@@ -199,10 +210,10 @@ namespace rtp::client
             {1.0f,  1.0f}
         };
         static constexpr SpriteAnimDef k_rt1_4{
-            "rt1_4",     "assets/sprites/r-typesheet1.gif",
+            "shot_1",     "assets/sprites/r-typesheet1.gif",
             215,         85,
             18,          12,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        18,
             12,          215,
             85,          3,
@@ -210,10 +221,10 @@ namespace rtp::client
             {1.0f,  1.0f}
         };
         static constexpr SpriteAnimDef k_rt1_5{
-            "rt1_5",     "assets/sprites/r-typesheet1.gif",
+            "shot_2",     "assets/sprites/r-typesheet1.gif",
             232,         103,
             17,          12,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        17,
             12,          232,
             103,         2,
@@ -221,10 +232,10 @@ namespace rtp::client
             {1.0f,  1.0f}
         };
         static constexpr SpriteAnimDef k_rt1_6{
-            "rt1_6",     "assets/sprites/r-typesheet1.gif",
+            "shot_3",     "assets/sprites/r-typesheet1.gif",
             200,         121,
             33,          10,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        33,
             10,          200,
             121,         2,
@@ -232,10 +243,10 @@ namespace rtp::client
             {1.0f,  1.0f}
         };
         static constexpr SpriteAnimDef k_rt1_7{
-            "rt1_7",     "assets/sprites/r-typesheet1.gif",
+            "shot_4",     "assets/sprites/r-typesheet1.gif",
             168,         137,
             49,          12,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        49,
             12,          168,
             137,         2,
@@ -243,10 +254,10 @@ namespace rtp::client
             {1.0f,  1.0f}
         };
         static constexpr SpriteAnimDef k_rt1_8{
-            "rt1_8",     "assets/sprites/r-typesheet1.gif",
+            "shot_5",     "assets/sprites/r-typesheet1.gif",
             104,         171,
             81,          14,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        81,
             14,          104,
             171,         2,
@@ -254,10 +265,10 @@ namespace rtp::client
             {1.0f,  1.0f}
         };
         static constexpr SpriteAnimDef k_rt1_12{
-            "rt1_12",    "assets/sprites/r-typesheet1.gif",
+            "effect_2",    "assets/sprites/r-typesheet1.gif",
             211,         276,
             16,          12,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        16,
             12,          211,
             276,         4,
@@ -265,10 +276,10 @@ namespace rtp::client
             {1.0f,  1.0f}
         };
         static constexpr SpriteAnimDef k_rt1_13{
-            "rt1_13",    "assets/sprites/r-typesheet1.gif",
+            "effect_3",    "assets/sprites/r-typesheet1.gif",
             72,          296,
             37,          30,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        37,
             30,          72,
             296,         6,
@@ -277,10 +288,10 @@ namespace rtp::client
         };
 
         static constexpr SpriteAnimDef k_rt2_2{
-            "rt2_2",     "assets/sprites/r-typesheet2.gif",
+            "enemy_1",     "assets/sprites/r-typesheet2.gif",
             159,         35,
             24,          16,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        24,
             16,          159,
             35,          6,
@@ -288,10 +299,10 @@ namespace rtp::client
             {1.0f,  1.0f}
         };
         static constexpr SpriteAnimDef k_rt2_3{
-            "rt2_3",     "assets/sprites/r-typesheet2.gif",
+            "shot_6",     "assets/sprites/r-typesheet2.gif",
             300,         58,
             18,          6,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             false,       0,
             0,           0,
             0,           0,
@@ -299,10 +310,10 @@ namespace rtp::client
             {1.0f,  1.0f}
         };
         static constexpr SpriteAnimDef k_rt2_4{
-            "rt2_4",     "assets/sprites/r-typesheet2.gif",
+            "enemy_2",     "assets/sprites/r-typesheet2.gif",
             300,         71,
             30,          18,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        30,
             18,          300,
             71,          6,
@@ -310,10 +321,10 @@ namespace rtp::client
             {1.0f,  1.0f}
         };
         static constexpr SpriteAnimDef k_rt2_5{
-            "rt2_5",     "assets/sprites/r-typesheet2.gif",
+            "shot_7",     "assets/sprites/r-typesheet2.gif",
             266,         94,
             17,          10,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        17,
             10,          266,
             94,          2,
@@ -321,10 +332,10 @@ namespace rtp::client
             {1.0f,  1.0f}
         };
         static constexpr SpriteAnimDef k_rt2_6{
-            "rt2_6",     "assets/sprites/r-typesheet2.gif",
+            "effect_4",     "assets/sprites/r-typesheet2.gif",
             101,         118,
             17,          14,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        17,
             14,          101,
             118,         4,
@@ -332,108 +343,266 @@ namespace rtp::client
             {1.0f,  1.0f}
         };
         static constexpr SpriteAnimDef k_rt2_7{
-            "rt2_8",     "assets/sprites/r-typesheet2.gif",
+            "effect_5",     "assets/sprites/r-typesheet2.gif",
             157,         316,
             18,          14,
-            5,           255,
+            5,           255,         255, 255,  // RGB tint (white by default)
             true,        18,
             14,          157,
             316,         8,
             2.0f,        {-1.0f, 0.0f},
             {1.0f,  1.0f}
         };
+        static constexpr SpriteAnimDef k_rt3_1{
+            "power_up_heal",     "assets/sprites/r-typesheet3.gif",
+            0,           0,           // Red powerup (Heal) - frame 0
+            16,          16,          // Each frame is 16x16
+            5,           255,         255, 100,  // zIndex 5, RED tint (R=255, G=255, B=100)
+            true,        16,          // withAnimation, frameWidth 16
+            16,          0,           // frameHeight 16, frameLeft 0
+            0,           12,          // frameTop 0, totalFrames 12
+            2.0f,        {0.0f, 0.0f}, // speed 2.0, no movement
+            {2.0f,  2.0f}             // scale 2x for visibility
+        };
+        static constexpr SpriteAnimDef k_rt3_2{
+            "power_up_double",   "assets/sprites/r-typesheet3.gif",
+            64,          0,           // Cyan powerup (DoubleFire) - frame 4 (16*4=64)
+            16,          16,          // Each frame is 16x16
+            5,           100,         200, 255,  // zIndex 5, CYAN tint (R=100, G=200, B=255)
+            true,        16,          // withAnimation, frameWidth 16
+            16,          64,          // frameHeight 16, frameLeft 64
+            0,           12,          // frameTop 0, totalFrames 12
+            2.0f,        {0.0f, 0.0f}, // speed 2.0, no movement
+            {2.0f,  2.0f}             // scale 2x for visibility
+        };
+        static constexpr SpriteAnimDef k_rt3_3{
+            "power_up_shield",   "assets/sprites/r-typesheet3.gif",
+            128,         0,           // Green powerup (Shield) - frame 8 (16*8=128)
+            16,          16,          // Each frame is 16x16
+            5,           100,         255, 100,  // zIndex 5, GREEN tint (R=100, G=255, B=100)
+            true,        16,          // withAnimation, frameWidth 16
+            16,          128,         // frameHeight 16, frameLeft 128
+            0,           12,          // frameTop 0, totalFrames 12
+            2.0f,        {0.0f, 0.0f}, // speed 2.0, no movement
+            {2.0f,  2.0f}             // scale 2x for visibility
+        };
+        static constexpr SpriteAnimDef k_rt39_1{
+            "boss_ship",    "assets/sprites/r-typesheet39.gif",
+            33,          1,
+            66,         66,
+            5,          255,         255, 255,  // RGB tint (white by default)
+            false,       66,
+            33,         66,
+            1,          0,
+            1.0f,        {-1.0f, 0.0f},
+            {3.0f,  3.0f}
+        };
+        static constexpr SpriteAnimDef k_rt39_2{
+            "boss_shield",    "assets/sprites/r-typesheet39.gif",
+            0,          72,
+            30,         33,
+            5,          255,         255, 255,  // RGB tint (white by default)
+            true,       33,
+            30,         0,
+            72,          4,
+            1.0f,        {-1.0f, 0.0f},
+            {3.0f,  3.0f}
+        };
 
-        static EntityTemplate createParrallaxLayer1()
-        {
-            return makeParallax(kParallaxFar);
-        }
+    static EntityTemplate createParrallaxLvl1_1()
+    {
+        return makeParallax(kParallaxLvl1_1);
+    }
 
-        static EntityTemplate createParrallaxLayer2()
-        {
-            return makeParallax(kParallaxNear);
-        }
+    static EntityTemplate createParrallaxLvl1_2()
+    {
+        return makeParallax(kParallaxLvl1_2);
+    }
 
-        static EntityTemplate rt1_1(const Vec2f &initialPos)
+    static EntityTemplate createParallaxLvl2_1()
+    {
+        return makeParallax(kParallaxLvl2_1);
+    }
+
+    static EntityTemplate createParallaxLvl2_2()
+    {
+        return makeParallax(kParallaxLvl2_2);
+    }
+
+    static EntityTemplate createParallaxLvl2_3()
+    {
+        return makeParallax(kParallaxLvl2_3);
+    }
+
+    static EntityTemplate createParallaxLvl2_4()
+    {
+        return makeParallax(kParallaxLvl2_4);
+    }
+
+    static EntityTemplate createParallaxLvl2_5()
+    {
+        return makeParallax(kParallaxLvl2_5);
+    }
+
+    static EntityTemplate createParallaxLvl2_6()
+    {
+        return makeParallax(kParallaxLvl2_6);
+    }
+
+    static EntityTemplate createParallaxLvl3_1()
+    {
+        return makeParallax(kParallaxLvl3_1);
+    }
+
+    static EntityTemplate createParallaxLvl3_2()
+    {
+        return makeParallax(kParallaxLvl3_2);
+    }
+
+    static EntityTemplate createParallaxLvl3_3()
+    {
+        return makeParallax(kParallaxLvl3_3);
+    }
+
+    static EntityTemplate createParallaxLvl3_4()
+    {
+        return makeParallax(kParallaxLvl3_4);
+    }
+
+    static EntityTemplate createParallaxLvl3_5()
+    {
+        return makeParallax(kParallaxLvl3_5);
+    }
+
+    static EntityTemplate createParallaxLvl3_6()
+    {
+        return makeParallax(kParallaxLvl3_6);
+    }
+
+    static EntityTemplate createParallaxLvl3_7()
+    {
+        return makeParallax(kParallaxLvl3_7);
+    }
+
+    static EntityTemplate createParallaxLvl3_8()
+    {
+        return makeParallax(kParallaxLvl3_8);
+    }
+
+    static EntityTemplate createParallaxLvl3_9()
+    {
+        return makeParallax(kParallaxLvl3_9);
+    }
+
+    static EntityTemplate createParallaxLvl4_1()
+    {
+        return makeParallax(kParallaxLvl4_1);
+    }
+
+    static EntityTemplate createParallaxLvl4_2()
+    {
+        return makeParallax(kParallaxLvl4_2);
+    }
+
+    static EntityTemplate createParallaxLvl4_3()
+    {
+        return makeParallax(kParallaxLvl4_3);
+    }
+
+    static EntityTemplate createParallaxLvl4_4()
+    {
+        return makeParallax(kParallaxLvl4_4);
+    }
+
+    static EntityTemplate createParallaxLvl4_5()
+    {
+        return makeParallax(kParallaxLvl4_5);
+    }
+
+    static EntityTemplate createParallaxLvl4_6()
+    {
+        return makeParallax(kParallaxLvl4_6);
+    }
+
+        static EntityTemplate player_ship(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt1_1);
         }
 
-        static EntityTemplate rt1_2(const Vec2f &initialPos)
+        static EntityTemplate shot_insane(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt1_2);
         }
 
-        static EntityTemplate rt1_3(const Vec2f &initialPos)
+        static EntityTemplate effect_1(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt1_3);
         }
 
-        static EntityTemplate rt1_4(const Vec2f &initialPos)
+        static EntityTemplate shot_1(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt1_4);
         }
 
-        static EntityTemplate rt1_5(const Vec2f &initialPos)
+        static EntityTemplate shot_2(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt1_5);
         }
 
-        static EntityTemplate rt1_6(const Vec2f &initialPos)
+        static EntityTemplate shot_3(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt1_6);
         }
 
-        static EntityTemplate rt1_7(const Vec2f &initialPos)
+        static EntityTemplate shot_4(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt1_7);
         }
 
-        static EntityTemplate rt1_8(const Vec2f &initialPos)
+        static EntityTemplate shot_5(const Vec2f &initialPos)
         {
-            return makeFromDef(initialPos, k_rt1_8);
+            auto t = makeFromDef(initialPos, k_rt1_8);
+            // Default shot_5 sprites point left; flip horizontally so tip faces right
+            t.scale.x = -std::abs(t.scale.x);
+            return t;
         }
 
-        static EntityTemplate rt1_12(const Vec2f &initialPos)
+        static EntityTemplate effect_2(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt1_12);
         }
 
-        static EntityTemplate rt1_13(const Vec2f &initialPos)
+        static EntityTemplate effect_3(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt1_13);
         }
 
-        static EntityTemplate rt2_2(const Vec2f &initialPos)
+        static EntityTemplate enemy_1(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt2_2);
         }
 
-        static EntityTemplate rt2_3(const Vec2f &initialPos)
+        static EntityTemplate shot_6(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt2_3);
         }
 
-        static EntityTemplate rt2_4(const Vec2f &initialPos)
+        static EntityTemplate enemy_2(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt2_4);
         }
 
-        static EntityTemplate rt2_5(const Vec2f &initialPos)
+        static EntityTemplate shot_7(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt2_5);
         }
 
-        static EntityTemplate rt2_6(const Vec2f &initialPos)
+        static EntityTemplate effect_4(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt2_6);
         }
 
-        static EntityTemplate rt2_8(const Vec2f &initialPos)
-        {
-            return makeFromDef(initialPos, k_rt2_7);
-        }
-
-        static EntityTemplate rt2_7(const Vec2f &initialPos)
+        static EntityTemplate effect_5(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt2_7);
         }
@@ -456,6 +625,31 @@ namespace rtp::client
         static EntityTemplate createBasicScout2(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt2_2);
+        }
+
+        static EntityTemplate createPowerUpHeal(const Vec2f &initialPos)
+        {
+            return makeFromDef(initialPos, k_rt3_1);
+        }
+
+        static EntityTemplate createPowerUpDoubleFire(const Vec2f &initialPos)
+        {
+            return makeFromDef(initialPos, k_rt3_2);
+        }
+
+        static EntityTemplate createPowerUpShield(const Vec2f &initialPos)
+        {
+            return makeFromDef(initialPos, k_rt3_3);
+        }
+
+        static EntityTemplate createBossShip(const Vec2f &initialPos)
+        {
+            return makeFromDef(initialPos, k_rt39_1);
+        }
+
+        static EntityTemplate createBossShield(const Vec2f &initialPos)
+        {
+            return makeFromDef(initialPos, k_rt39_2);
         }
     };
 

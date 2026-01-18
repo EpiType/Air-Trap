@@ -1,0 +1,34 @@
+{
+    "level_id": 3,
+    "name": "Crimson Dwarf Run",
+    "game_metadata": {
+        "level_width_in_pixels": 30000,
+        "player_start_position": { "x": 100, "y": 450 },
+        "tileset_path": "config/levels/geometry/level_01_tiles.json"
+    },
+    "theme_data": {
+        "background_texture": "assets/textures/backgrounds/nebula_01.png",
+        "scroll_speed_factor": 0.7,
+        "music_track": "assets/audio/music/theme_A.ogg"
+    },
+    "spawn_triggers": [
+        { "at_time": 2.5, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 260 }, "count": 6, "delay_between_spawn": 0.45, "pattern": "straight", "speed": 170.0 },
+        { "at_time": 8.0, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 180 }, "count": 8, "delay_between_spawn": 0.4, "pattern": "sine", "speed": 180.0 },
+        { "at_time": 14.0, "entity_type": "tank", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 520 }, "count": 4, "delay_between_spawn": 0.75, "pattern": "sine", "speed": 130.0 },
+        { "at_time": 21.0, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 320 }, "count": 7, "delay_between_spawn": 0.4, "pattern": "straight", "speed": 175.0 },
+        { "at_time": 33.0, "entity_type": "boss", "template_path": "templates/enemy/boss/boss_01.json", "start_position": { "x": 1200, "y": 450 }, "count": 1, "pattern": "static", "speed": 0.0 },
+
+        { "at_time": 49.0, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 240 }, "count": 6, "delay_between_spawn": 0.45, "pattern": "straight", "speed": 170.0 },
+        { "at_time": 55.0, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 160 }, "count": 8, "delay_between_spawn": 0.4, "pattern": "sine", "speed": 180.0 },
+        { "at_time": 62.0, "entity_type": "tank", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 520 }, "count": 4, "delay_between_spawn": 0.75, "pattern": "sine", "speed": 130.0 },
+        { "at_time": 70.0, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 300 }, "count": 7, "delay_between_spawn": 0.4, "pattern": "straight", "speed": 175.0 },
+        { "at_time": 82.0, "entity_type": "boss", "template_path": "templates/enemy/boss/boss_01.json", "start_position": { "x": 1200, "y": 450 }, "count": 1, "pattern": "static", "speed": 0.0 }
+    ],
+    "powerup_triggers": [
+        { "at_time": 11.0, "type": "heal", "position": { "x": 900, "y": 300 }, "value": 25.0, "duration": 0.0 },
+        { "at_time": 18.0, "type": "speed", "position": { "x": 900, "y": 500 }, "value": 1.5, "duration": 5.0 },
+        { "at_time": 52.0, "type": "heal", "position": { "x": 900, "y": 300 }, "value": 25.0, "duration": 0.0 },
+        { "at_time": 68.0, "type": "speed", "position": { "x": 900, "y": 500 }, "value": 1.5, "duration": 5.0 }
+    ],
+    "obstacle_triggers": []
+}
