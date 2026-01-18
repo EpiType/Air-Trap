@@ -625,7 +625,13 @@ namespace rtp::client {
                     case ecs::components::WeaponKind::Classic:
                         wcfg.fireRate = 6.0f; wcfg.damage = 10; wcfg.ammo = -1; wcfg.maxAmmo = -1; break;
                     case ecs::components::WeaponKind::Beam:
-                        wcfg.fireRate = 0.0f; wcfg.damage = 4; wcfg.beamDuration = 5.0f; wcfg.beamCooldown = 5.0f; wcfg.ammo = -1; wcfg.maxAmmo = -1; break;
+                        wcfg.fireRate = 0.0f;
+                        wcfg.damage = 4;
+                        wcfg.beamDuration = 5.0f;
+                        wcfg.beamCooldown = 3.0f; // use weapon-specific cooldown
+                        wcfg.ammo = 1;
+                        wcfg.maxAmmo = 1;
+                        break;
                     case ecs::components::WeaponKind::Paddle:
                         wcfg.fireRate = 0.0f; wcfg.damage = 0; wcfg.canReflect = true; wcfg.ammo = -1; wcfg.maxAmmo = -1; break;
                     case ecs::components::WeaponKind::Tracker:
