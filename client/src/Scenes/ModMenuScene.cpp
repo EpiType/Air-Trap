@@ -138,6 +138,16 @@ namespace rtp::client {
                 {"enemy_4", "assets/sprites/r-typesheet5.gif", 0, 0, 66, 36},          // enemy_4 (r-typesheet5.gif first 8 frames)
             };
             
+            // Bosses category
+            EntityCategory bosses;
+            bosses.name = "Bosses";
+            bosses.entities = {
+                     {"boss_ship", "assets/sprites/r-typesheet39.gif", 33, 1, 66, 66}, // boss_ship (main boss)
+                     {"boss_shield", "assets/sprites/r-typesheet39.gif", 0, 72, 30, 30}, // boss_shield (shield, carré pour alignement)
+                     {"boss2_kraken", "assets/sprites/r-typesheet35.gif", 0, 0, 264, 143},  // boss2_kraken (kraken boss, frame complète)
+                     {"boss2_bullet", "assets/sprites/r-typesheet1.gif", 215, 85, 18, 12}  // boss2_bullet (kraken projectile)
+            };
+
             // Projectiles category (projectiles)
             EntityCategory projectiles;
             projectiles.name = "Projectiles";
@@ -152,7 +162,7 @@ namespace rtp::client {
                 {"shot_5", "assets/sprites/r-typesheet1.gif", 104, 171, 81, 14},     // shot_5
                 {"shot_7", "assets/sprites/r-typesheet2.gif", 266, 94, 17, 10},       // shot_7
             };
-            
+
             // Effects category (explosions/effets)
             EntityCategory effects;
             effects.name = "Effects";
@@ -165,7 +175,7 @@ namespace rtp::client {
                 {"power_up", "assets/sprites/r-typesheet3.gif", 0, 0, 16, 16}      // power_up (frame 0 of animation)
             };
 
-            _categories = {players, enemies, projectiles, effects};
+            _categories = {players, enemies, bosses, projectiles, effects};
         }
 
         void ModMenuScene::showCategoryList()
@@ -282,6 +292,16 @@ namespace rtp::client {
                 }
 
                 // Display sprite preview
+                float previewScale = 3.0f;
+                if (entity.name == "boss_ship") {
+                    previewScale = 2.0f;
+                } else if (entity.name == "boss_shield") {
+                    previewScale = 2.5f;
+                } else if (entity.name == "boss2_kraken") {
+                    previewScale = 0.5f;
+                } else if (entity.name == "boss2_bullet") {
+                    previewScale = 4.0f;
+                }
                 _uiFactory.createSpritePreview(
                     _uiRegistry,
                     {x + 50.0f, y + 10.0f},
@@ -290,8 +310,8 @@ namespace rtp::client {
                     displayTop,
                     displayWidth,
                     displayHeight,
-                    3.0f,  // scale - bigger for better visibility
-                    5      // zIndex
+                    previewScale,
+                    5
                 );
 
                 // Entity name text
