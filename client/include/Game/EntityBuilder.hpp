@@ -86,6 +86,7 @@ namespace rtp::client
         rtp::Vec2f scale{2.0f, 2.0f};
         int rectWidth{1280};
         int rectHeight{720};
+        float posY{0.0f};
     };
 
         // Helper: build an EntityTemplate from a SpriteAnimDef
@@ -128,7 +129,7 @@ namespace rtp::client
         {
             EntityTemplate t;
             t.id = "parallax_layer";
-            t.position = {0.0f, 0.0f};
+            t.position = {0.0f, p.posY};
             t.rotation = 0.0f;
             t.scale = p.scale;
 
@@ -152,29 +153,29 @@ namespace rtp::client
         }
 
     // Data tables
-    static constexpr ParallaxDef kParallaxLvl1_1{ "assets/backgrounds/lvl1/stars_far.png", 10.0f, {-50.0f, 0.0f}, 200, 100.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
-    static constexpr ParallaxDef kParallaxLvl1_2{ "assets/backgrounds/lvl1/stars_near.png", 20.0f, {-50.0f, 0.0f}, 255, 300.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
-    static constexpr ParallaxDef kParallaxLvl2_1{ "assets/backgrounds/lvl2/moon_back.png", 10.0f, {0.0f, 0.0f}, 200, 80.0f, 1200.0f, {1.0f, 1.0f}, 1300, 720 };
-    static constexpr ParallaxDef kParallaxLvl2_2{ "assets/backgrounds/lvl2/moon_earth.png", 25.0f, {-30.0f, 0.0f}, 255, 150.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
-    static constexpr ParallaxDef kParallaxLvl2_3{ "assets/backgrounds/lvl2/moon_floor.png", 12.0f, {-20.0f, 0.0f}, 200, 60.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
-    static constexpr ParallaxDef kParallaxLvl2_4{ "assets/backgrounds/lvl2/moon_front.png", 18.0f, {-40.0f, 0.0f}, 200, 90.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
-    static constexpr ParallaxDef kParallaxLvl2_5{ "assets/backgrounds/lvl2/moon_mid.png", 20.0f, {-25.0f, 0.0f}, 255, 70.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
-    static constexpr ParallaxDef kParallaxLvl2_6{ "assets/backgrounds/lvl2/moon_sky.png", 10.0f, {-15.0f, 0.0f}, 200, 50.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
-    static constexpr ParallaxDef kParallaxLvl3_1{ "assets/backgrounds/lvl3/Sky_back_mountain.png", 15.0f, {-20.0f, 0.0f}, 255, 60.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
-    static constexpr ParallaxDef kParallaxLvl3_2{ "assets/backgrounds/lvl3/sky_cloud_floor_2.png", 22.0f, {-35.0f, 0.0f}, 200, 85.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
-    static constexpr ParallaxDef kParallaxLvl3_3{ "assets/backgrounds/lvl3/sky_cloud_floor.png", 18.0f, {-25.0f, 0.0f}, 255, 70.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
-    static constexpr ParallaxDef kParallaxLvl3_4{ "assets/backgrounds/lvl3/Sky_cloud_single.png", 20.0f, {-30.0f, 0.0f}, 255, 90.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
-    static constexpr ParallaxDef kParallaxLvl3_5{ "assets/backgrounds/lvl3/sky_clouds.png", 12.0f, {-15.0f, 0.0f}, 200, 55.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
-    static constexpr ParallaxDef kParallaxLvl3_6{ "assets/backgrounds/lvl3/Sky_front_cloud.png", 12.0f, {-15.0f, 0.0f}, 200, 55.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
-    static constexpr ParallaxDef kParallaxLvl3_7{ "assets/backgrounds/lvl3/sky_front_mountain.png", 12.0f, {-15.0f, 0.0f}, 200, 55.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
-    static constexpr ParallaxDef kParallaxLvl3_8{ "assets/backgrounds/lvl3/sky_moon.png", 12.0f, {-15.0f, 0.0f}, 200, 55.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
-    static constexpr ParallaxDef kParallaxLvl3_9{ "assets/backgrounds/lvl3/Sky_sky.png", 12.0f, {-15.0f, 0.0f}, 200, 55.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
-    static constexpr ParallaxDef kParallaxLvl4_1{ "assets/backgrounds/lvl4/desert_cloud.png", 15.0f, {-30.0f, 0.0f}, 200, 80.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
-    static constexpr ParallaxDef kParallaxLvl4_2{ "assets/backgrounds/lvl4/desert_dunefrontt.png", 25.0f, {-30.0f, 0.0f}, 255, 150.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
-    static constexpr ParallaxDef kParallaxLvl4_3{ "assets/backgrounds/lvl4/desert_dunemid.png", 12.0f, {-20.0f, 0.0f}, 200, 60.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
-    static constexpr ParallaxDef kParallaxLvl4_4{ "assets/backgrounds/lvl4/desert_moon.png", 18.0f, {-40.0f, 0.0f}, 200, 90.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
-    static constexpr ParallaxDef kParallaxLvl4_5{ "assets/backgrounds/lvl4/desert_mountain.png", 20.0f, {-25.0f, 0.0f}, 255, 70.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
-    static constexpr ParallaxDef kParallaxLvl4_6{ "assets/backgrounds/lvl4/desert_sky.png", 10.0f, {-15.0f, 0.0f}, 200, 50.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720 };
+    static constexpr ParallaxDef kParallaxLvl1_1{ "assets/backgrounds/lvl1/stars_far.png", 10.0f, {-50.0f, 0.0f}, 200, 100.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720, 0.0f };
+    static constexpr ParallaxDef kParallaxLvl1_2{ "assets/backgrounds/lvl1/stars_near.png", 20.0f, {-50.0f, 0.0f}, 255, 300.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720, 0.0f };
+    static constexpr ParallaxDef kParallaxLvl2_1{ "assets/backgrounds/lvl2/moon_back.png", 10.0f, {-1.0f, 0.0f}, 200, 80.0f, 3800.0f, {0.72f, 0.72f}, 3800, 1000, 360.0f };
+    static constexpr ParallaxDef kParallaxLvl2_2{ "assets/backgrounds/lvl2/moon_earth.png", 10.0f, {-1.0f, 0.0f}, 200, 80.0f, 3800.0f, {0.72f, 0.72f}, 3800, 1000, 360.0f };
+    static constexpr ParallaxDef kParallaxLvl2_3{ "assets/backgrounds/lvl2/moon_floor.png", 12.0f, {-20.0f, 0.0f}, 200, 60.0f, 1900.0f, {0.72f, 0.72f}, 1900, 1000, 360.0f };
+    static constexpr ParallaxDef kParallaxLvl2_4{ "assets/backgrounds/lvl2/moon_front.png", 10.0f, {-1.0f, 0.0f}, 200, 80.0f, 3800.0f, {0.72f, 0.72f}, 3800, 1000, 360.0f };
+    static constexpr ParallaxDef kParallaxLvl2_5{ "assets/backgrounds/lvl2/moon_mid.png", 10.0f, {-1.0f, 0.0f}, 200, 80.0f, 3800.0f, {0.72f, 0.72f}, 3800, 1000, 360.0f };
+    static constexpr ParallaxDef kParallaxLvl2_6{ "assets/backgrounds/lvl2/moon_sky.png", 10.0f, {-15.0f, 0.0f}, 200, 50.0f, 1280.0f, {2.0f, 2.0f}, 1280, 720, 0.0f };
+    static constexpr ParallaxDef kParallaxLvl3_1{ "assets/backgrounds/lvl3/Sky_back_mountain.png", 12.0f, {-20.0f, 0.0f}, 255, 60.0f, 1900.0f, {0.72f, 0.72f}, 1900, 1000, 360.0f };
+    static constexpr ParallaxDef kParallaxLvl3_2{ "assets/backgrounds/lvl3/sky_cloud_floor_2.png", 12.0f, {-20.0f, 0.0f}, 255, 60.0f, 1900.0f, {0.72f, 0.72f}, 1900, 1000, 360.0f };
+    static constexpr ParallaxDef kParallaxLvl3_3{ "assets/backgrounds/lvl3/sky_cloud_floor.png", 12.0f, {-20.0f, 0.0f}, 255, 60.0f, 1900.0f, {0.72f, 0.72f}, 1900, 1000, 360.0f };
+    static constexpr ParallaxDef kParallaxLvl3_4{ "assets/backgrounds/lvl3/Sky_cloud_single.png", 12.0f, {-20.0f, 0.0f}, 255, 60.0f, 1900.0f, {0.72f, 0.72f}, 1900, 1000, 360.0f };
+    static constexpr ParallaxDef kParallaxLvl3_5{ "assets/backgrounds/lvl3/sky_clouds.png", 12.0f, {-20.0f, 0.0f}, 255, 60.0f, 1900.0f, {0.72f, 0.72f}, 1900, 1000, 360.0f };
+    static constexpr ParallaxDef kParallaxLvl3_6{ "assets/backgrounds/lvl3/Sky_front_cloud.png", 12.0f, {-20.0f, 0.0f}, 255, 60.0f, 1900.0f, {0.72f, 0.72f}, 1900, 1000, 360.0f };
+    static constexpr ParallaxDef kParallaxLvl3_7{ "assets/backgrounds/lvl3/sky_front_mountain.png", 12.0f, {-20.0f, 0.0f}, 255, 60.0f, 1900.0f, {0.72f, 0.72f}, 1900, 1000, 360.0f };
+    static constexpr ParallaxDef kParallaxLvl3_8{ "assets/backgrounds/lvl3/sky_moon.png", 12.0f, {-15.0f, 0.0f}, 255, 55.0f, 3800.0f, {0.72f, 0.72f}, 3800, 2400, 360.0f };
+    static constexpr ParallaxDef kParallaxLvl3_9{ "assets/backgrounds/lvl3/Sky_sky.png", 12.0f, {-20.0f, 0.0f}, 255, 60.0f, 1900.0f, {0.72f, 0.72f}, 1900, 1000, 360.0f };
+    static constexpr ParallaxDef kParallaxLvl4_1{ "assets/backgrounds/lvl4/desert_cloud.png", 15.0f, {-30.0f, 0.0f}, 255, 80.0f, 1900.0f, {0.72f, 0.72f}, 1900, 1000, 360.0f };
+    static constexpr ParallaxDef kParallaxLvl4_2{ "assets/backgrounds/lvl4/desert_dunefrontt.png", 25.0f, {-30.0f, 0.0f}, 255, 150.0f, 3800.0f, {0.72f, 0.72f}, 3800, 1000, 360.0f };
+    static constexpr ParallaxDef kParallaxLvl4_3{ "assets/backgrounds/lvl4/desert_dunemid.png", 12.0f, {-20.0f, 0.0f}, 255, 60.0f, 1900.0f, {0.72f, 0.72f}, 1900, 1000, 360.0f };
+    static constexpr ParallaxDef kParallaxLvl4_4{ "assets/backgrounds/lvl4/desert_moon.png", 18.0f, {-40.0f, 0.0f}, 255, 90.0f, 3800.0f, {0.72f, 0.72f}, 3800, 2400, 360.0f };
+    static constexpr ParallaxDef kParallaxLvl4_5{ "assets/backgrounds/lvl4/desert_mountain.png", 20.0f, {-25.0f, 0.0f}, 255, 70.0f, 3800.0f, {0.72f, 0.72f}, 3800, 1000, 360.0f };
+    static constexpr ParallaxDef kParallaxLvl4_6{ "assets/backgrounds/lvl4/desert_sky.png", 10.0f, {-15.0f, 0.0f}, 255, 50.0f, 1900.0f, {0.72f, 0.72f}, 1900, 1000, 360.0f };
 
         static constexpr SpriteAnimDef k_rt1_1{
             "player_ship",     "assets/sprites/r-typesheet1.gif",

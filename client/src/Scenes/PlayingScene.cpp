@@ -299,16 +299,26 @@ namespace rtp::client {
             constexpr float baseTextureWidth = 1280.0f;
 
             auto spawnLayer = [&](EntityTemplate t) {
-                const float scaledW = baseTextureWidth * t.scale.x;
+                // Use the actual texture width from the parallax component, not baseTextureWidth
+                const float actualTextureWidth = t.withParallax ? t.parallax.textureWidth : baseTextureWidth;
+                const float scaledW = actualTextureWidth * t.scale.x;
+                
+                // Account for centered origin: sprites are centered, so we need to offset by half texture width
+                const float halfWidth = (actualTextureWidth * t.scale.x) / 2.0f;
 
-                t.position.x = 0.0f;
+                // Save initial Y position to ensure both sprites have the same vertical alignment
+                const float savedPosY = t.position.y;
+
+                t.position.x = halfWidth;
                 auto a = _worldBuilder.spawn(t);
                 if (!a) {
                     log::error("Failed to spawn parallax A");
                     return;
                 }
 
-                t.position.x = scaledW;
+                // Restore Y position before spawning B to ensure alignment
+                t.position.y = savedPosY;
+                t.position.x = halfWidth + scaledW - 2.0f;
                 auto b = _worldBuilder.spawn(t);
                 if (!b) {
                     log::error("Failed to spawn parallax B");
@@ -324,30 +334,30 @@ namespace rtp::client {
                     break;
                 case 2:
                     spawnLayer(EntityTemplate::createParallaxLvl2_1());
-                    //spawnLayer(EntityTemplate::createParallaxLvl2_2());
-                    //spawnLayer(EntityTemplate::createParallaxLvl2_3());
-                    //spawnLayer(EntityTemplate::createParallaxLvl2_4());
-                    //spawnLayer(EntityTemplate::createParallaxLvl2_5());
+                    spawnLayer(EntityTemplate::createParallaxLvl2_2());
+                    spawnLayer(EntityTemplate::createParallaxLvl2_4());
+                    spawnLayer(EntityTemplate::createParallaxLvl2_5());
+                    spawnLayer(EntityTemplate::createParallaxLvl2_3());
                     //spawnLayer(EntityTemplate::createParallaxLvl2_6());
                     break;
                 case 3:
-                    spawnLayer(EntityTemplate::createParallaxLvl3_1());
                     spawnLayer(EntityTemplate::createParallaxLvl3_5());
+                    spawnLayer(EntityTemplate::createParallaxLvl3_9());
+                    spawnLayer(EntityTemplate::createParallaxLvl3_8());
+                    spawnLayer(EntityTemplate::createParallaxLvl3_1());
+                    spawnLayer(EntityTemplate::createParallaxLvl3_7());
                     spawnLayer(EntityTemplate::createParallaxLvl3_3());
                     spawnLayer(EntityTemplate::createParallaxLvl3_2());
                     spawnLayer(EntityTemplate::createParallaxLvl3_4());
                     spawnLayer(EntityTemplate::createParallaxLvl3_6());
-                    spawnLayer(EntityTemplate::createParallaxLvl3_7());
-                    spawnLayer(EntityTemplate::createParallaxLvl3_8());
-                    spawnLayer(EntityTemplate::createParallaxLvl3_9());
                     break;
                 case 4:
-                    spawnLayer(EntityTemplate::createParallaxLvl4_1());
-                    spawnLayer(EntityTemplate::createParallaxLvl4_2());
-                    spawnLayer(EntityTemplate::createParallaxLvl4_3());
-                    spawnLayer(EntityTemplate::createParallaxLvl4_4());
-                    spawnLayer(EntityTemplate::createParallaxLvl4_5());
                     spawnLayer(EntityTemplate::createParallaxLvl4_6());
+                    spawnLayer(EntityTemplate::createParallaxLvl4_5());
+                    spawnLayer(EntityTemplate::createParallaxLvl4_4());
+                    spawnLayer(EntityTemplate::createParallaxLvl4_3());
+                    spawnLayer(EntityTemplate::createParallaxLvl4_2());
+                    spawnLayer(EntityTemplate::createParallaxLvl4_1());
                     break;
             }
         }

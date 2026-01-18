@@ -18,7 +18,8 @@ class ParallaxSystem : public ecs::ISystem {
             transform.position.x -= parallax.speed * dt;
 
             float scaledWidth = parallax.textureWidth * transform.scale.x;
-            if (transform.position.x <= -scaledWidth) {
+            // Account for centered origin: move back when position reaches -scaledWidth/2
+            if (transform.position.x <= -scaledWidth / 2.0f) {
                 transform.position.x += scaledWidth * 2.0f;
             }
         }
