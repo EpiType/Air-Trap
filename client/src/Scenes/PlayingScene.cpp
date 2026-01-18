@@ -46,6 +46,8 @@ namespace rtp::client {
         {
             log::info("Entering PlayingScene");
 
+            _uiScore = 0;
+
             spawnParallax();
 
             {
@@ -91,7 +93,7 @@ namespace rtp::client {
                 {220, 220, 220}
             );
 
-            auto makeHudText = [&](const Vec2f& pos, unsigned size) -> ecs::Entity {
+            auto makeHudText = [&](const Vec2f& pos, unsigned size, const graphics::color& color) -> ecs::Entity {
                 auto eRes = _uiRegistry.spawn();
                 if (!eRes) return {};
 
@@ -101,18 +103,20 @@ namespace rtp::client {
                 t.position = pos;
                 t.fontPath = "assets/fonts/main.ttf";
                 t.fontSize = size;
-                t.red = 255; t.green = 255; t.blue = 255;
-                t.alpha = 255;
+                t.red = color.r; t.green = color.g; t.blue = color.b;
+                t.alpha = 220;
                 t.zIndex = 999;
                 _uiRegistry.add<ecs::components::ui::Text>(e, t);
                 return e;
             };
 
-            _hudPing     = makeHudText({1020.0f, 620.0f}, 14);
-            _hudFps      = makeHudText({1020.0f, 640.0f}, 14);
-            _hudScore    = makeHudText({1020.0f, 660.0f}, 14);
-            _hudEntities = makeHudText({1020.0f, 680.0f}, 14);
-            _hudAmmo     = makeHudText({1020.0f, 700.0f}, 14);
+            _hudHealth   = makeHudText({980.0f, 18.0f}, 18, {110, 220, 170});
+            _hudScore    = makeHudText({980.0f, 42.0f}, 18, {120, 190, 230});
+            _hudAmmo     = makeHudText({980.0f, 66.0f}, 16, {230, 190, 120});
+            _hudFps      = makeHudText({980.0f, 90.0f}, 14, {180, 180, 190});
+
+            _hudPing     = makeHudText({1020.0f, 660.0f}, 12, {140, 140, 150});
+            _hudEntities = makeHudText({1020.0f, 678.0f}, 12, {140, 140, 150});
 
             _hudChargeBar = _uiFactory.createSlider(
                 _uiRegistry,
@@ -199,6 +203,10 @@ namespace rtp::client {
                 _changeState(GameState::Menu);
                 return;
             }
+            if (_network.consumeGameOver()) {
+                _changeState(GameState::GameOver);
+                return;
+            }
             if (!_hudInit) return;
 
             _fpsTimer += dt;
@@ -209,25 +217,35 @@ namespace rtp::client {
                 _fpsTimer = 0.0f;
             }
             _uiPing = _network.getPingMs();
+            _uiScore = static_cast<uint32_t>(std::max(0, _network.getScore()));
 
             auto textsOpt = _uiRegistry.get<ecs::components::ui::Text>();
             if (!textsOpt) return;
             auto& texts = textsOpt.value().get();
 
-            if (texts.has(_hudPing))     texts[_hudPing].content = "Ping: " + std::to_string(_uiPing) + " ms";
-            if (texts.has(_hudFps))      texts[_hudFps].content  = "FPS: "  + std::to_string(_uiFps);
-            if (texts.has(_hudScore))    texts[_hudScore].content = "Score: " + std::to_string(_uiScore);
+            if (texts.has(_hudPing))     texts[_hudPing].content = "Ping " + std::to_string(_uiPing) + " ms";
+            if (texts.has(_hudFps))      texts[_hudFps].content  = "FPS "  + std::to_string(_uiFps);
+            if (texts.has(_hudScore))    texts[_hudScore].content = "SCORE " + std::to_string(_uiScore);
+            if (texts.has(_hudHealth)) {
+                const int current = _network.getHealthCurrent();
+                const int max = _network.getHealthMax();
+                if (max > 0) {
+                    texts[_hudHealth].content = "HP " + std::to_string(current) + " / " + std::to_string(max);
+                } else {
+                    texts[_hudHealth].content = "HP --";
+                }
+            }
 
             auto spritesOpt = _worldRegistry.get<ecs::components::Sprite>();
             if (spritesOpt && texts.has(_hudEntities)) {
                 const std::size_t count = spritesOpt.value().get().size();
-                texts[_hudEntities].content = "Entities: " + std::to_string(count + 2);
+                texts[_hudEntities].content = "Entities " + std::to_string(count + 2);
             }
 
             if (texts.has(_hudAmmo)) {
                 const uint16_t current = _network.getAmmoCurrent();
                 const uint16_t max = _network.getAmmoMax();
-                std::string ammoText = "Ammo: " + std::to_string(current) + "/" + std::to_string(max);
+                std::string ammoText = "AMMO " + std::to_string(current) + " / " + std::to_string(max);
                 if (_network.isReloading()) {
                     const float remaining = _network.getReloadCooldownRemaining();
                     ammoText += " (Reloading " + std::to_string(remaining).substr(0, 4) + "s)";

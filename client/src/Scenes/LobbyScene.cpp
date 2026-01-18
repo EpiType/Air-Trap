@@ -6,10 +6,14 @@
  */
 
 #include "Scenes/LobbyScene.hpp"
+#include "RType/ECS/Components/UI/Button.hpp"
 
 #include <cstddef>
 #include <functional>
 #include <list>
+#include <algorithm>
+#include <sstream>
+#include <iomanip>
 #include <string>
 
 namespace rtp::client {
@@ -71,12 +75,115 @@ namespace rtp::client {
 
         void LobbyScene::buildUi(void)
         {
-            float y = 230.0f;
-            int shown = 0;
+            auto styleButton = [this](ecs::Entity entity,
+                                      const ecs::components::ui::Button &style) {
+                auto buttonsOpt = _uiRegistry.get<ecs::components::ui::Button>();
+                if (!buttonsOpt) {
+                    return;
+                }
+                auto &buttons = buttonsOpt.value().get();
+                if (!buttons.has(entity)) {
+                    return;
+                }
+                auto &button = buttons[entity];
+                std::copy(std::begin(style.idleColor), std::end(style.idleColor),
+                          std::begin(button.idleColor));
+                std::copy(std::begin(style.hoverColor), std::end(style.hoverColor),
+                          std::begin(button.hoverColor));
+                std::copy(std::begin(style.pressedColor), std::end(style.pressedColor),
+                          std::begin(button.pressedColor));
+            };
+
+            auto formatFloat = [](float value) -> std::string {
+                std::ostringstream oss;
+                oss << std::fixed << std::setprecision(1) << value;
+                return oss.str();
+            };
+
+            ecs::components::ui::Button panelStyle;
+            panelStyle.idleColor[0] = 22;
+            panelStyle.idleColor[1] = 26;
+            panelStyle.idleColor[2] = 34;
+            std::copy(std::begin(panelStyle.idleColor), std::end(panelStyle.idleColor),
+                      std::begin(panelStyle.hoverColor));
+            std::copy(std::begin(panelStyle.idleColor), std::end(panelStyle.idleColor),
+                      std::begin(panelStyle.pressedColor));
+
+            ecs::components::ui::Button primaryStyle;
+            primaryStyle.idleColor[0] = 32;
+            primaryStyle.idleColor[1] = 140;
+            primaryStyle.idleColor[2] = 140;
+            primaryStyle.hoverColor[0] = 48;
+            primaryStyle.hoverColor[1] = 170;
+            primaryStyle.hoverColor[2] = 170;
+            primaryStyle.pressedColor[0] = 20;
+            primaryStyle.pressedColor[1] = 110;
+            primaryStyle.pressedColor[2] = 110;
+
+            ecs::components::ui::Button secondaryStyle;
+            secondaryStyle.idleColor[0] = 70;
+            secondaryStyle.idleColor[1] = 74;
+            secondaryStyle.idleColor[2] = 84;
+            secondaryStyle.hoverColor[0] = 95;
+            secondaryStyle.hoverColor[1] = 100;
+            secondaryStyle.hoverColor[2] = 112;
+            secondaryStyle.pressedColor[0] = 55;
+            secondaryStyle.pressedColor[1] = 60;
+            secondaryStyle.pressedColor[2] = 70;
+
+            ecs::components::ui::Button joinStyle;
+            joinStyle.idleColor[0] = 40;
+            joinStyle.idleColor[1] = 130;
+            joinStyle.idleColor[2] = 120;
+            joinStyle.hoverColor[0] = 60;
+            joinStyle.hoverColor[1] = 160;
+            joinStyle.hoverColor[2] = 150;
+            joinStyle.pressedColor[0] = 30;
+            joinStyle.pressedColor[1] = 100;
+            joinStyle.pressedColor[2] = 90;
+
+            ecs::components::ui::Button specStyle;
+            specStyle.idleColor[0] = 140;
+            specStyle.idleColor[1] = 110;
+            specStyle.idleColor[2] = 40;
+            specStyle.hoverColor[0] = 180;
+            specStyle.hoverColor[1] = 140;
+            specStyle.hoverColor[2] = 60;
+            specStyle.pressedColor[0] = 120;
+            specStyle.pressedColor[1] = 90;
+            specStyle.pressedColor[2] = 30;
+
+            ecs::components::ui::Button rowStyleA;
+            rowStyleA.idleColor[0] = 28;
+            rowStyleA.idleColor[1] = 30;
+            rowStyleA.idleColor[2] = 36;
+            std::copy(std::begin(rowStyleA.idleColor), std::end(rowStyleA.idleColor),
+                      std::begin(rowStyleA.hoverColor));
+            std::copy(std::begin(rowStyleA.idleColor), std::end(rowStyleA.idleColor),
+                      std::begin(rowStyleA.pressedColor));
+
+            ecs::components::ui::Button rowStyleB;
+            rowStyleB.idleColor[0] = 32;
+            rowStyleB.idleColor[1] = 35;
+            rowStyleB.idleColor[2] = 42;
+            std::copy(std::begin(rowStyleB.idleColor), std::end(rowStyleB.idleColor),
+                      std::begin(rowStyleB.hoverColor));
+            std::copy(std::begin(rowStyleB.idleColor), std::end(rowStyleB.idleColor),
+                      std::begin(rowStyleB.pressedColor));
 
             _uiFactory.createText(
                 _uiRegistry,
-                {390.0f, 60.0f},
+                {404.0f, 44.0f},
+                "LOBBY - ROOMS",
+                "assets/fonts/title.ttf",
+                52,
+                9,
+                {12, 14, 18}
+            );
+
+            _uiFactory.createText(
+                _uiRegistry,
+                {400.0f, 40.0f},
                 "LOBBY - ROOMS",
                 "assets/fonts/title.ttf",
                 52,
@@ -84,60 +191,152 @@ namespace rtp::client {
                 {255, 200, 100}
             );
 
-            _uiFactory.createButton(
+            const auto &rooms = _network.getAvailableRooms();
+            _uiFactory.createText(
                 _uiRegistry,
-                {120.0f, 140.0f},
-                {220.0f, 55.0f},
+                {450.0f, 110.0f},
+                "Rooms available: " + std::to_string(rooms.size()),
+                "assets/fonts/main.ttf",
+                18,
+                10,
+                {170, 180, 190}
+            );
+
+            const float topY = 150.0f;
+            const float topX = 180.0f;
+            const float topBtnW = 200.0f;
+            const float topBtnH = 50.0f;
+            const float topGap = 20.0f;
+
+            auto refreshButton = _uiFactory.createButton(
+                _uiRegistry,
+                {topX, topY},
+                {topBtnW, topBtnH},
                 "REFRESH",
                 [this]() {
                     _network.requestListRooms();
                     _changeState(GameState::Lobby);
                 }
             );
+            styleButton(refreshButton, secondaryStyle);
 
-            _uiFactory.createButton(
+            auto createRoomButton = _uiFactory.createButton(
                 _uiRegistry,
-                {360.0f, 140.0f},
-                {260.0f, 55.0f},
+                {topX + topBtnW + topGap, topY},
+                {topBtnW, topBtnH},
                 "CREATE ROOM",
                 [this]() {
                     _changeState(GameState::CreateRoom);
                 }
             );
+            styleButton(createRoomButton, primaryStyle);
 
-            _uiFactory.createButton(
+            auto backButton = _uiFactory.createButton(
                 _uiRegistry,
-                {650.0f, 140.0f},
-                {220.0f, 55.0f},
+                {topX + (topBtnW + topGap) * 2.0f, topY},
+                {topBtnW, topBtnH},
                 "BACK",
                 [this]() {
                     _changeState(GameState::Menu);
                 }
             );
+            styleButton(backButton, secondaryStyle);
 
-            for (const auto& room : _network.getAvailableRooms()) {
-                if (shown >= 8) {
+            const float panelX = 140.0f;
+            const float panelY = 220.0f;
+            const float panelW = 1000.0f;
+            const float panelH = 420.0f;
+
+            auto listPanel = _uiFactory.createButton(
+                _uiRegistry,
+                {panelX, panelY},
+                {panelW, panelH},
+                "",
+                nullptr
+            );
+            styleButton(listPanel, panelStyle);
+
+            _uiFactory.createText(
+                _uiRegistry,
+                {panelX + 20.0f, panelY + 12.0f},
+                "ROOMS",
+                "assets/fonts/main.ttf",
+                16,
+                10,
+                {150, 160, 170}
+            );
+
+            _uiFactory.createText(
+                _uiRegistry,
+                {panelX + panelW - 250.0f, panelY + 12.0f},
+                "ACTIONS",
+                "assets/fonts/main.ttf",
+                16,
+                10,
+                {150, 160, 170}
+            );
+
+            float y = panelY + 40.0f;
+            int shown = 0;
+
+            for (const auto& room : rooms) {
+                if (shown >= 6) {
                     break;
                 }
 
-                std::string roomInfo = "Room " + std::to_string(room.roomId) +
-                                       " | Players: " + std::to_string(room.currentPlayers) +
-                                       "/" + std::to_string(room.maxPlayers) +
-                                       " | Difficulty: " + std::to_string(room.difficulty);
+                const float rowY = y + static_cast<float>(shown) * 64.0f;
+                auto rowBg = _uiFactory.createButton(
+                    _uiRegistry,
+                    {panelX + 20.0f, rowY},
+                    {panelW - 40.0f, 56.0f},
+                    "",
+                    nullptr
+                );
+                styleButton(rowBg, (shown % 2 == 0) ? rowStyleA : rowStyleB);
+
+                std::string roomName = std::string(room.roomName);
+                if (roomName.empty()) {
+                    roomName = "Room " + std::to_string(room.roomId);
+                }
+
+                std::string line1 = roomName + "  •  " +
+                                    std::to_string(room.currentPlayers) + "/" +
+                                    std::to_string(room.maxPlayers) + " players";
+
+                std::string line2 = "Difficulty " + formatFloat(room.difficulty) +
+                                    "  •  Speed " + formatFloat(room.speed) +
+                                    "  •  Level " + std::to_string(room.levelId);
 
                 _uiFactory.createText(
                     _uiRegistry,
-                    {140.0f, y + 10.0f},
-                    roomInfo,
+                    {panelX + 40.0f, rowY + 8.0f},
+                    line1,
                     "assets/fonts/main.ttf",
-                    22,
-                    10
+                    20,
+                    10,
+                    {220, 230, 240}
                 );
 
-                _uiFactory.createButton(
+                _uiFactory.createText(
                     _uiRegistry,
-                    {900.0f, y},
-                    {140.0f, 50.0f},
+                    {panelX + 40.0f, rowY + 32.0f},
+                    line2,
+                    "assets/fonts/main.ttf",
+                    16,
+                    10,
+                    {150, 160, 170}
+                );
+
+                const float joinW = 110.0f;
+                const float specW = 110.0f;
+                const float actionY = rowY + 10.0f;
+                const float joinX = panelX + panelW - 250.0f;
+                const float specX = joinX + joinW + 10.0f;
+
+                auto joinButton = _uiFactory.createButton(
+                    _uiRegistry,
+                    {joinX, actionY},
+                    {joinW, 36.0f},
                     "JOIN",
                     [this, room]() {
                         _uiSelectedRoomId = room.roomId;
@@ -145,11 +344,12 @@ namespace rtp::client {
                         _network.tryJoinRoom(room.roomId, false);
                     }
                 );
+                styleButton(joinButton, joinStyle);
 
-                _uiFactory.createButton(
+                auto specButton = _uiFactory.createButton(
                     _uiRegistry,
-                    {1060.0f, y},
-                    {120.0f, 50.0f},
+                    {specX, actionY},
+                    {specW, 36.0f},
                     "SPEC",
                     [this, room]() {
                         _uiSelectedRoomId = room.roomId;
@@ -157,9 +357,33 @@ namespace rtp::client {
                         _network.tryJoinRoom(room.roomId, true);
                     }
                 );
+                styleButton(specButton, specStyle);
 
-                y += 60.0f;
+                if (room.inGame) {
+                    _uiFactory.createText(
+                        _uiRegistry,
+                        {panelX + panelW - 360.0f, rowY + 18.0f},
+                        "IN GAME",
+                        "assets/fonts/main.ttf",
+                        14,
+                        10,
+                        {220, 120, 90}
+                    );
+                }
+
                 ++shown;
+            }
+
+            if (shown == 0) {
+                _uiFactory.createText(
+                    _uiRegistry,
+                    {panelX + 40.0f, panelY + 80.0f},
+                    "No rooms found. Create one or refresh.",
+                    "assets/fonts/main.ttf",
+                    18,
+                    10,
+                    {150, 160, 170}
+                );
             }
         }
 

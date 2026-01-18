@@ -6,6 +6,7 @@
  */
 
 #include "Game/Player.hpp"
+#include <algorithm>
 
 namespace rtp::server
 {
@@ -118,5 +119,23 @@ namespace rtp::server
     {
         std::lock_guard lock(_mutex);
         return _weaponKind;
+    }
+
+    void Player::addScore(int delta)
+    {
+        std::lock_guard lock(_mutex);
+        _score = std::max(0, _score + delta);
+    }
+
+    void Player::setScore(int score)
+    {
+        std::lock_guard lock(_mutex);
+        _score = std::max(0, score);
+    }
+
+    int Player::getScore() const
+    {
+        std::lock_guard lock(_mutex);
+        return _score;
     }
 } // namespace rtp::server

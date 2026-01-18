@@ -115,7 +115,10 @@ namespace rtp::net
         DebugModeUpdate = 0x26,         /**< Debug mode toggle */
         Kicked = 0x27                   /**< Player kicked notification */
         ,
-        BeamState = 0x28               /**< Beam start/stop notification */
+        BeamState = 0x28,              /**< Beam start/stop notification */
+        ScoreUpdate = 0x29,            /**< Player score update */
+        GameOver = 0x2A,               /**< Game over summary */
+        HealthUpdate = 0x2B            /**< Player health update */
     };
 
     #pragma pack(push, 1)
@@ -382,6 +385,33 @@ namespace rtp::net
         float timeRemaining;            /**< Remaining beam active time (seconds) */
         float length;                   /**< Visual length of the beam in pixels */
         float offsetY;                  /**< Vertical offset relative to owner (px) */
+    };
+
+    /**
+     * @struct ScoreUpdatePayload
+     * @brief Player score update notification data
+     */
+    struct ScoreUpdatePayload {
+        int32_t score;                  /**< Player score */
+    };
+
+    /**
+     * @struct GameOverPayload
+     * @brief Game over summary data
+     */
+    struct GameOverPayload {
+        char bestPlayer[32];            /**< Best player username */
+        int32_t bestScore;              /**< Best score */
+        int32_t playerScore;            /**< Receiver player score */
+    };
+
+    /**
+     * @struct HealthUpdatePayload
+     * @brief Player health update data
+     */
+    struct HealthUpdatePayload {
+        int32_t current;                /**< Current health */
+        int32_t max;                    /**< Max health */
     };
 
     /**

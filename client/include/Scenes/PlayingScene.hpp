@@ -105,6 +105,7 @@ namespace rtp::client {
                 ecs::Entity _hudScore{};               /**< Entity for displaying score in the HUD */
                 ecs::Entity _hudEntities{};            /**< Parent entity for HUD elements */
                 ecs::Entity _hudAmmo{};                /**< Entity for displaying ammo */
+                ecs::Entity _hudHealth{};              /**< Entity for displaying health */
                 ecs::Entity _hudChargeBar{};           /**< Entity for charged shot HUD bar */
                 bool _hudInit{false};                       /**< Flag indicating if HUD is initialized */
 
