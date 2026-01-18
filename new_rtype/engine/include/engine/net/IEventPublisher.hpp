@@ -11,10 +11,10 @@
     #include "engine/net/NetworkUtils.hpp"
 
 /**
- * @namespace engine::net
+ * @namespace aer::net
  * @brief Network layer for network
  */
-namespace engine::net
+namespace aer::net
 {
     /**
      * @class IEventPublisher
@@ -33,8 +33,8 @@ namespace engine::net
              * @brief Get buffer sequence for network transmission
              * @return Buffer sequence containing header and body
              */
-            virtual void publishEvent(engine::net::NetworkEvent event) = 0;
+            virtual void publishEvent(aer::net::NetworkEvent event) = 0;
     };
-} // namespace engine::net
+} // namespace aer::net
 
 #endif /* !ENGINE_EVENT_SESSION_HPP_ */

@@ -6,9 +6,9 @@
  */
 
 #include "engine/ecs/SystemManager.hpp"
-#include "engine/core/Logger.hpp"
+#include "engine/log/Logger.hpp"
 
-namespace engine::ecs
+namespace aer::ecs
 {
     //////////////////////////////////////////////////
     // Public API

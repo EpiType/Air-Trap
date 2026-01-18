@@ -36,16 +36,16 @@
  * @author Robin Toillon
  */
 
-namespace engine::plugin
+namespace aer::plugin
 {
     template <typename T>
     auto DynamicLibrary::get(std::string_view name) const
-        -> std::expected<T, engine::core::Error>
+        -> std::expected<T, aer::core::Error>
     {
         if (!this->_handle)
             return std::unexpected{
-                engine::core::Error::failure(
-                    engine::core::ErrorCode::LibraryLoadFailed,
+                aer::core::Error::failure(
+                    aer::core::ErrorCode::LibraryLoadFailed,
                     "Dynamic library handle is null")};
 
         auto symbol = this->getSymbolAddress(name);

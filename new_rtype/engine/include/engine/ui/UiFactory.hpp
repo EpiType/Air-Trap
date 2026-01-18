@@ -18,7 +18,7 @@
     #include "engine/ecs/components/ui/Dropdown.hpp"
     #include "engine/ecs/components/ui/TextInput.hpp"
 
-namespace engine::ui
+namespace aer::ui
 {
     /**
      * @class UiFactory
@@ -44,7 +44,7 @@ namespace engine::ui
              * @param onClick Callback function to be called when the button is clicked.
              * @return The created entity representing the button.
              */
-            static engine::ecs::Entity createButton(engine::ecs::Registry& registry,
+            static aer::ecs::Entity createButton(aer::ecs::Registry& registry,
                                                 const position& position,
                                                 const size& size,
                                                 const textContainer& textInfo,
@@ -59,7 +59,7 @@ namespace engine::ui
              * @param textColor Color of the text.
              * @return The created entity representing the text.
              */
-            static engine::ecs::Entity createText(engine::ecs::Registry& registry,
+            static aer::ecs::Entity createText(aer::ecs::Registry& registry,
                                                 const position& position,
                                                 const textContainer& textInfo,
                                                 const std::uint8_t zIndex = 0,
@@ -77,7 +77,7 @@ namespace engine::ui
              * @param onChange Callback function to be called when the slider value changes.
              * @return The created entity representing the slider.
              */
-            static engine::ecs::Entity createSlider(engine::ecs::Registry& registry,
+            static aer::ecs::Entity createSlider(aer::ecs::Registry& registry,
                                                 const position& position,
                                                 const size& size,
                                                 float minValue,
@@ -96,7 +96,7 @@ namespace engine::ui
              * @param onSelect Callback function to be called when an option is selected.
              * @return The created entity representing the dropdown.
              */
-            static engine::ecs::Entity createDropdown(engine::ecs::Registry& registry,
+            static aer::ecs::Entity createDropdown(aer::ecs::Registry& registry,
                                                     const position& position,
                                                     const size& size,
                                                     const std::vector<std::string>& options,
@@ -113,7 +113,7 @@ namespace engine::ui
              * @param onTextChange Callback function to be called when the text changes.
              * @return The created entity representing the text input.
              */
-            static engine::ecs::Entity createTextInput(engine::ecs::Registry& registry,
+            static aer::ecs::Entity createTextInput(aer::ecs::Registry& registry,
                                                     const position& position,
                                                     const size& size,
                                                     std::size_t maxLength = 64,
@@ -121,6 +121,6 @@ namespace engine::ui
                                                     std::function<void(const std::string&)> onSumbit = nullptr,
                                                     std::function<void(const std::string&)> onChange = nullptr);
     }; // class UiFactory
-}; // namespace engine::ui
+}; // namespace aer::ui
 
 #endif /* !ENGINE_GRAPHICS_UIFACTORY_HPP_ */

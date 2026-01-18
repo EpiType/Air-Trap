@@ -17,6 +17,12 @@
     #include <memory>
     #include <string>
 
+#if defined(_WIN32)
+    #define RTYPE_SERVER_API __declspec(dllexport)
+#else
+    #define RTYPE_SERVER_API __attribute__((visibility("default")))
+#endif
+
 namespace rtp::server
 {
     class ServerApp {
@@ -71,13 +77,20 @@ namespace rtp::server
 
         private:
             Config _config{};
-            engine::plugin::LibraryManager _libraries;
-            std::shared_ptr<engine::plugin::DynamicLibrary> _networkLib{};
-            engine::net::INetworkEngine *_networkEngine{nullptr};
+            aer::plugin::LibraryManager _libraries;
+            std::shared_ptr<aer::plugin::DynamicLibrary> _networkLib{};
+            aer::net::INetworkEngine *_networkEngine{nullptr};
             std::unique_ptr<rtp::server::net::NetworkBootstrap> _network;
             std::unique_ptr<GameManager> _gameManager;
             bool _running{false};
         };
+}
+
+extern "C"
+{
+    RTYPE_SERVER_API rtp::server::ServerApp *CreateServerApp(
+        rtp::server::ServerApp::Config config);
+    RTYPE_SERVER_API void DestroyServerApp(rtp::server::ServerApp *app);
 }
 
 #endif /* !RTYPE_SERVER_APP_HPP_ */

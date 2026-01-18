@@ -26,14 +26,14 @@ namespace rtp::server::net
      * @details This class sets up the network engine and wraps a server
      * INetwork instance for the R-Type server.
      */
-    class NetworkBootstrap : public engine::net::INetwork {
+    class NetworkBootstrap : public aer::net::INetwork {
         public:
             /**
              * @brief Constructor for NetworkBootstrap
              * @param networkEngine Pointer to the network engine implementation
              */
-            explicit NetworkBootstrap(engine::net::INetworkEngine &networkEngine,
-                                      engine::net::ServerConfig config);
+            explicit NetworkBootstrap(aer::net::INetworkEngine &networkEngine,
+                                      aer::net::ServerConfig config);
 
             /**
              * @brief Destructor for NetworkBootstrap
@@ -58,26 +58,26 @@ namespace rtp::server::net
              * @param channel Network channel
              */
             void sendPacket(uint32_t sessionId,
-                            engine::net::ByteSpan payload,
-                            engine::net::NetChannel channel) override;
+                            aer::net::ByteSpan payload,
+                            aer::net::NetChannel channel) override;
 
             /**
              * @brief Poll for incoming network events.
              * @return Optional network event
              */
-            std::optional<engine::net::NetworkEvent> pollEvent(void) override;
+            std::optional<aer::net::NetworkEvent> pollEvent(void) override;
 
             /**
              * @brief Send a packet to a specific session.
              * @param packet Packet to send
              * @param channel Network channel
              */
-            void sendPacket(const rtp::net::Packet &packet, engine::net::NetChannel channel);
+            void sendPacket(const rtp::net::Packet &packet, aer::net::NetChannel channel);
 
         private:
-            engine::net::INetworkEngine &_networkEngine; /**< Network engine instance */
-            engine::net::ServerConfig _config;           /**< Server configuration */
-            engine::net::INetwork *_network{nullptr};    /**< Network instance */
+            aer::net::INetworkEngine &_networkEngine; /**< Network engine instance */
+            aer::net::ServerConfig _config;           /**< Server configuration */
+            aer::net::INetwork *_network{nullptr};    /**< Network instance */
     };
 
 } // namespace rtp::server::net

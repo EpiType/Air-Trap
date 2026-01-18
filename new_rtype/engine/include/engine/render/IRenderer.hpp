@@ -15,10 +15,10 @@
     #include "engine/render/RenderFrame.hpp"
 
 /**
- * @namespace engine::render
+ * @namespace aer::render
  * @brief Rendering components and structures for the engine
  */
-namespace engine::render
+namespace aer::render
 {
     /**
      * @class IRenderer
@@ -111,7 +111,7 @@ namespace engine::render
              * @param outEvents Output vector to append events into
              * @return true if the window is still open, false otherwise
              */
-            virtual std::vector<engine::input::Event> pollEvents(void) = 0;
+            virtual std::vector<aer::input::Event> pollEvents(void) = 0;
     };
 }
 

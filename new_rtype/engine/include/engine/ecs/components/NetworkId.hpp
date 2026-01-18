@@ -11,10 +11,10 @@
     #include <cstdint>
 
 /**
- * @namespace engine::ecs::components::server
+ * @namespace aer::ecs::components::server
  * @brief ECS components for R-Type server
  */
-namespace engine::ecs::components {
+namespace aer::ecs::components {
     /**
      * @struct NetworkId
      * @brief Component representing a network identifier for an entity.
@@ -22,6 +22,6 @@ namespace engine::ecs::components {
     struct NetworkId {
         uint32_t id;     /**< Unique network identifier for the entity */
     };
-} // namespace engine::ecs::components
+} // namespace aer::ecs::components
 
 #endif /* !ENGINE_ECS_COMPONENTS_NETWORKID_HPP_ */

@@ -7,7 +7,7 @@
 
 #include "rtype/ClientApp.hpp"
 
-#include "engine/core/Logger.hpp"
+#include "engine/log/Logger.hpp"
 
 #include <chrono>
 
@@ -25,8 +25,8 @@ namespace rtp::client
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
-    ClientApp::ClientApp(engine::render::IRenderer& renderer,
-                         engine::net::INetwork& network)
+    ClientApp::ClientApp(aer::render::IRenderer& renderer,
+                         aer::net::INetwork& network)
         : _renderer(renderer),
           _network(network),
           _worldRegistry(),
@@ -74,7 +74,7 @@ namespace rtp::client
         _uiSystem.update(dt);
     }
 
-    void ClientApp::render(engine::render::RenderFrame& frame)
+    void ClientApp::render(aer::render::RenderFrame& frame)
     {
         _renderSystem.update(0.0f);
         _uiRenderSystem.update(0.0f);
@@ -159,23 +159,23 @@ namespace rtp::client
             (void)_uiRegistry.registerComponent<T>();
         };
 
-        register_world.template operator()<engine::ecs::components::Transform>();
-        register_world.template operator()<engine::ecs::components::Velocity>();
-        register_world.template operator()<engine::ecs::components::Sprite>();
-        register_world.template operator()<engine::ecs::components::Animation>();
-        register_world.template operator()<engine::ecs::components::NetworkId>();
-        register_world.template operator()<engine::ecs::components::BoundingBox>();
-        register_world.template operator()<engine::ecs::components::Hitbox>();
+        register_world.template operator()<aer::ecs::components::Transform>();
+        register_world.template operator()<aer::ecs::components::Velocity>();
+        register_world.template operator()<aer::ecs::components::Sprite>();
+        register_world.template operator()<aer::ecs::components::Animation>();
+        register_world.template operator()<aer::ecs::components::NetworkId>();
+        register_world.template operator()<aer::ecs::components::BoundingBox>();
+        register_world.template operator()<aer::ecs::components::Hitbox>();
         register_world.template operator()<rtp::ecs::components::ParallaxLayer>();
 
-        register_ui.template operator()<engine::ecs::components::Button>();
-        register_ui.template operator()<engine::ecs::components::Text>();
-        register_ui.template operator()<engine::ecs::components::Slider>();
-        register_ui.template operator()<engine::ecs::components::Dropdown>();
-        register_ui.template operator()<engine::ecs::components::TextInput>();
+        register_ui.template operator()<aer::ecs::components::Button>();
+        register_ui.template operator()<aer::ecs::components::Text>();
+        register_ui.template operator()<aer::ecs::components::Slider>();
+        register_ui.template operator()<aer::ecs::components::Dropdown>();
+        register_ui.template operator()<aer::ecs::components::TextInput>();
     }
 
-    void ClientApp::handleEvents(const engine::input::Event& event)
+    void ClientApp::handleEvents(const aer::input::Event& event)
     {
         _uiSystem.handleEvent(event);
         if (auto it = _scenes.find(_activeScene); it != _scenes.end()) {
@@ -183,3 +183,19 @@ namespace rtp::client
         }
     }
 } // namespace rtp::client
+
+extern "C"
+{
+    RTYPE_CLIENT_API rtp::client::ClientApp *CreateClientApp(
+        aer::render::IRenderer *renderer,
+        aer::net::INetwork *network)
+    {
+        if (!renderer || !network) return nullptr;
+        return new rtp::client::ClientApp(*renderer, *network);
+    }
+
+    RTYPE_CLIENT_API void DestroyClientApp(rtp::client::ClientApp *app)
+    {
+        delete app;
+    }
+}

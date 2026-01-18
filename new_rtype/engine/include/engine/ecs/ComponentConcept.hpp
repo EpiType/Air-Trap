@@ -45,7 +45,7 @@
     #include <type_traits>
     #include <cstddef>
 
-namespace engine::ecs
+namespace aer::ecs
 {
     /**
      * @concept Component

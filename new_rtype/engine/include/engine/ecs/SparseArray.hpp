@@ -42,14 +42,14 @@
 #ifndef ENGINE_SPARSEARRAY_HPP_
     #define ENGINE_SPARSEARRAY_HPP_
 
-    #include "engine/core/Assert.hpp"
+    #include "engine/log/Assert.hpp"
     #include "engine/ecs/ComponentConcept.hpp"
     #include "engine/ecs/Entity.hpp"
 
     #include <vector>
     #include <limits>
 
-namespace engine::ecs
+namespace aer::ecs
 {
     /**
      * @class ISparseArray

@@ -9,10 +9,10 @@
     #define ENGINE_ECS_COMPONENTS_BOUNDINGBOX_HPP_
  
 /**
- * @namespace engine::ecs::components
+ * @namespace aer::ecs::components
  * @brief ECS components for R-Type engine
  */
-namespace engine::ecs::components
+namespace aer::ecs::components
 {
     /**
      * @struct Rect
@@ -23,6 +23,6 @@ namespace engine::ecs::components
         float width{0.0f};      /**< Width of the rectangle */
         float height{0.0f};     /**< Height of the rectangle */
     };
-}  // namespace engine::ecs::components
+}  // namespace aer::ecs::components
 
 #endif /* !ENGINE_ECS_COMPONENTS_BOUNDINGBOX_HPP_ */

@@ -39,7 +39,7 @@
  * timestamp formatting.
  */
 
-#include "engine/core/Logger.hpp"
+#include "engine/log/Logger.hpp"
 
 #include <chrono>
 #include <filesystem>
@@ -48,7 +48,7 @@
 #include <mutex>
 #include <print>
 
-namespace engine::core
+namespace aer::core
 {
     namespace detail
     {

@@ -38,7 +38,7 @@
  * @brief Inline implementations for LogLevel.hpp
  */
 
-namespace engine::core
+namespace aer::log
 {
     constexpr std::string_view toString(Level level) noexcept
     {

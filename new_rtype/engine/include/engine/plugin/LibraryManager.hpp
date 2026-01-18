@@ -43,7 +43,7 @@
 #ifndef ENGINE_LIBRARYMANAGER_HPP_
     #define ENGINE_LIBRARYMANAGER_HPP_
 
-    #include "engine/core/Error.hpp"
+    #include "engine/log/Error.hpp"
     #include "engine/plugin/DynamicLibrary.hpp"
 
     #include <expected>
@@ -53,7 +53,7 @@
     #include <string_view>
     #include <unordered_map>
 
-namespace engine::plugin
+namespace aer::plugin
 {
     /**
      * @class LibraryManager
@@ -76,11 +76,11 @@ namespace engine::plugin
              * Load a dynamic library, and return a raw pointer to the instance
              * (Observer).
              * @param path The path to the dynamic library.
-             * @return std::expected<const DynamicLibrary *, engine::core::Error>
+             * @return std::expected<const DynamicLibrary *, aer::core::Error>
              */
             [[nodiscard]]
             auto load(std::string_view path)
-                -> std::expected<const DynamicLibrary *, engine::core::Error>;
+                -> std::expected<const DynamicLibrary *, aer::core::Error>;
 
             /**
              * @brief Shared API.
@@ -88,11 +88,11 @@ namespace engine::plugin
              * If the library is already loaded, return the existing instance.
              * @param path The path to the dynamic library.
              * @return std::expected<std::shared_ptr<DynamicLibrary>,
-             *                       engine::core::Error>
+             *                       aer::core::Error>
              */
             [[nodiscard]]
             auto loadShared(std::string_view path)
-                -> std::expected<std::shared_ptr<DynamicLibrary>, engine::core::Error>;
+                -> std::expected<std::shared_ptr<DynamicLibrary>, aer::core::Error>;
 
             /**
              * @brief Isolated API (Factory).
@@ -100,10 +100,10 @@ namespace engine::plugin
              * out of the manager's cache nor tracking.
              * @param path The path to the dynamic library.
              * @return std::expected<std::unique_ptr<DynamicLibrary>,
-             *                       engine::core::Error>
+             *                       aer::core::Error>
              */
             static auto loadStandalone(std::string_view path)
-                -> std::expected<std::unique_ptr<DynamicLibrary>, engine::core::Error>;
+                -> std::expected<std::unique_ptr<DynamicLibrary>, aer::core::Error>;
 
         private:
             std::unordered_map<std::string,
@@ -115,12 +115,12 @@ namespace engine::plugin
              * @brief Get an existing library or load it if not present.
              * @param path The path to the dynamic library.
              * @return std::expected<std::shared_ptr<DynamicLibrary>,
-             *                       engine::core::Error>
+             *                       aer::core::Error>
              */
             [[nodiscard]]
             auto getOrLoadInternal(std::string_view path)
                 -> std::expected<std::shared_ptr<DynamicLibrary>,
-                                 engine::core::Error>;
+                                 aer::core::Error>;
 
     };
 }

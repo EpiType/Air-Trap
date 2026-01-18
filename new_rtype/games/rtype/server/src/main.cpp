@@ -5,7 +5,7 @@
  * Date   : 16/01/2026
  */
 
-#include "engine/core/Logger.hpp"
+#include "engine/log/Logger.hpp"
 #include "rtype/ServerApp.hpp"
 
 #include <cstdlib>
@@ -45,7 +45,7 @@ int main(int argc, char **argv)
 
     rtp::server::ServerApp server(config);
     if (!server.init()) {
-        engine::core::error("Server: init failed");
+        aer::log::error("Server: init failed");
         return EXIT_FAILURE;
     }
 

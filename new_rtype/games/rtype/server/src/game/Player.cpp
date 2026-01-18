@@ -74,22 +74,22 @@ namespace rtp::server
         _entityId = entityId;
     }
 
-    engine::math::Vec2f Player::position(void) const
+    aer::math::Vec2f Player::position(void) const
     {
         return _position;
     }
 
-    void Player::setPosition(const engine::math::Vec2f &position)
+    void Player::setPosition(const aer::math::Vec2f &position)
     {
         _position = position;
     }
 
-    engine::math::Vec2f Player::velocity(void) const
+    aer::math::Vec2f Player::velocity(void) const
     {
         return _velocity;
     }
 
-    void Player::setVelocity(const engine::math::Vec2f &velocity)
+    void Player::setVelocity(const aer::math::Vec2f &velocity)
     {
         _velocity = velocity;
     }

@@ -8,10 +8,10 @@
 #ifndef RTYPE_CORE_HPP_
     #define RTYPE_CORE_HPP_
 
-    #include "engine/core/LogLevel.hpp"
-    #include "engine/core/Logger.hpp"
+    #include "engine/log/LogLevel.hpp"
+    #include "engine/log/Logger.hpp"
     #include "engine/core/Time.hpp"
-    #include "engine/core/Error.hpp"
+    #include "engine/log/Error.hpp"
     #include "engine/plugin/LibraryManager.hpp"
     #include "engine/net/INetworkEngine.hpp"
     #include "engine/render/IRenderer.hpp"
@@ -22,7 +22,7 @@
     #include <string>
     #include <set>
 
-namespace engine::core
+namespace aer::core
 {
     class Core {
         public:

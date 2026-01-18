@@ -38,9 +38,9 @@
  * integration and error code conversion functions.
  */
 
-#include "engine/core/Error.hpp"
+#include "engine/log/Error.hpp"
 
-namespace engine::core
+namespace aer::log
 {
     namespace
     {

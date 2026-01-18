@@ -15,7 +15,7 @@
     #include <iterator>
     #include <span>
 
-namespace engine::ecs {
+namespace aer::ecs {
 
     /**
      * @class ZipView
@@ -168,6 +168,6 @@ namespace engine::ecs {
             return result;
         }
     };
-} // namespace engine::ecs
+} // namespace aer::ecs
 
 #endif /* ENGINE_ECS_ZIPVIEW_HPP_ */

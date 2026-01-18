@@ -12,10 +12,10 @@
     #include <cstdint>
 
 /**
- * @namespace engine::ecs::components
+ * @namespace aer::ecs::components
  * @brief ECS components for R-Type engine
  */
-namespace engine::ecs::components {
+namespace aer::ecs::components {
     /**
      * @struct Sprite
      * @brief Component representing a sprite.
@@ -38,6 +38,6 @@ namespace engine::ecs::components {
         uint8_t green{255};      /**< Green color component */
         uint8_t blue{255};       /**< Blue color component */
     };
-}  // namespace engine::ecs::components
+}  // namespace aer::ecs::components
 
 #endif /* !ENGINE_ECS_COMPONENTS_SPRITE_HPP_ */

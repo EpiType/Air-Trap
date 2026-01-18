@@ -40,13 +40,13 @@
 #ifndef ENGINE_DYNAMICLIBRARY_HPP_
     #define ENGINE_DYNAMICLIBRARY_HPP_
 
-    #include "engine/core/Error.hpp"
+    #include "engine/log/Error.hpp"
 
     #include <expected>
     #include <string>
     #include <string_view>
 
-namespace engine::plugin
+namespace aer::plugin
 {
     /**
      * @class DynamicLibrary
@@ -78,12 +78,12 @@ namespace engine::plugin
              * @brief Get a symbol from the dynamic library.
              * @tparam T The expected type of the symbol.
              * @param name The name of the symbol to retrieve.
-             * @return std::expected<T, engine::core::Error>
+             * @return std::expected<T, aer::core::Error>
              */
             template <typename T>
             [[nodiscard]]
             auto get(std::string_view name) const
-                -> std::expected<T, engine::core::Error>;
+                -> std::expected<T, aer::core::Error>;
 
         private:
             void *_handle{nullptr}; /**< The handle to the dynamic library. */
@@ -91,11 +91,11 @@ namespace engine::plugin
             /**
              * @brief Get the address of a symbol from the dynamic library.
              * @param name The name of the symbol to retrieve.
-             * @return std::expected<void *, engine::core::Error>
+             * @return std::expected<void *, aer::core::Error>
              */
             [[nodiscard]]
             auto getSymbolAddress(std::string_view name) const 
-                -> std::expected<void *, engine::core::Error>;
+                -> std::expected<void *, aer::core::Error>;
 
     };
 }

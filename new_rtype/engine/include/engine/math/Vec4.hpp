@@ -12,7 +12,7 @@
     #include <type_traits>
     #include <concepts>
 
-namespace engine::math {
+namespace aer::math {
 
     /**
      * @brief 4D vector class template
@@ -59,6 +59,6 @@ namespace engine::math {
     using Vec4f = Vec4<float>;   /**< 4D vector with float components */
     using Vec4d = Vec4<double>;  /**< 4D vector with double components */
 
-} // namespace engine::math
+} // namespace aer::math
 
 #endif /* !RTYPE_MATH_VEC4_HPP_ */

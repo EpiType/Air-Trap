@@ -39,12 +39,12 @@
  * of entity IDs.
  */
 
-#include "engine/core/Assert.hpp"
+#include "engine/log/Assert.hpp"
 #include "engine/ecs/Registry.hpp"
 
 using namespace engine;
 
-namespace engine::ecs
+namespace aer::ecs
 {
     ///////////////////////////////////////////////////////////////////////////
     // Public API

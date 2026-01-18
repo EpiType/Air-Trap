@@ -47,7 +47,7 @@
     #include <limits>
     #include <functional>
 
-namespace engine::ecs
+namespace aer::ecs
 {
     /**
      * @class Entity
@@ -94,8 +94,8 @@ namespace engine::ecs
 namespace std
 {
     template <>
-    struct hash<engine::ecs::Entity> {
-        size_t operator()(const engine::ecs::Entity &e) const
+    struct hash<aer::ecs::Entity> {
+        size_t operator()(const aer::ecs::Entity &e) const
         {
             return hash<std::uint64_t>{}(e._id);
         }
@@ -104,7 +104,7 @@ namespace std
 
     #include "Entity.inl"
 
-namespace engine::ecs
+namespace aer::ecs
 {
     constexpr Entity NullEntity{};
 }

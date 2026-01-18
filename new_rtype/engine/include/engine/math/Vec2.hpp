@@ -12,7 +12,7 @@
     #include <type_traits>
     #include <concepts>
 
-namespace engine::math {
+namespace aer::math {
 
     /**
      * @brief 2D vector class template
@@ -57,6 +57,6 @@ namespace engine::math {
     using Vec2f = Vec2<float>;   /**< 2D vector with float components */
     using Vec2d = Vec2<double>;  /**< 2D vector with double components */
 
-} // namespace engine::math
+} // namespace aer::math
 
 #endif /* !RTYPE_MATH_VEC2_HPP_ */

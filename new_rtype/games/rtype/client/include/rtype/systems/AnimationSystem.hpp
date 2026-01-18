@@ -20,14 +20,14 @@ namespace rtp::client::systems
      * @class AnimationSystem
      * @brief System to update sprite animations.
      */
-    class AnimationSystem : public engine::ecs::ISystem
+    class AnimationSystem : public aer::ecs::ISystem
     {
         public:
             /**
              * @brief Constructor for AnimationSystem
              * @param registry Reference to the entity registry
              */
-            explicit AnimationSystem(engine::ecs::Registry& registry);
+            explicit AnimationSystem(aer::ecs::Registry& registry);
 
             /**
              * @brief Update animation frames based on elapsed time.
@@ -36,7 +36,7 @@ namespace rtp::client::systems
             void update(float dt) override;
 
         private:
-            engine::ecs::Registry& _registry;  /**< Reference to the entity registry */
+            aer::ecs::Registry& _registry;  /**< Reference to the entity registry */
     };
 }
 

@@ -13,7 +13,7 @@
     #include "engine/math/Vec2.hpp"
     #include "engine/ui/UiUtilities.hpp"
 
-namespace engine::ecs::components
+namespace aer::ecs::components
 {
     /**
      * @enum ButtonState
@@ -40,6 +40,6 @@ namespace engine::ecs::components
         ui::color hoverColor{150, 150, 150};    /**< RGB color when hovered */
         ui::color pressedColor{50, 50, 50};     /**< RGB color when pressed */
     };
-}  // namespace engine::ecs::components
+}  // namespace aer::ecs::components
 
 #endif /* !ENGINE_ECS_COMPONENTS_BUTTON_HPP_ */

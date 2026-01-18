@@ -7,14 +7,16 @@
 
 #include "rtype/ServerApp.hpp"
 
-#include "engine/core/Logger.hpp"
+#include "engine/log/Logger.hpp"
+
+#include <utility>
 
 namespace rtp::server
 {
     namespace
     {
-        using CreateNetworkEngineFn = engine::net::INetworkEngine* (*)();
-        using DestroyNetworkEngineFn = void (*)(engine::net::INetworkEngine*);
+        using CreateNetworkEngineFn = aer::net::INetworkEngine* (*)();
+        using DestroyNetworkEngineFn = void (*)(aer::net::INetworkEngine*);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -32,7 +34,7 @@ namespace rtp::server
             return false;
         }
 
-        engine::net::ServerConfig netConfig{};
+        aer::net::ServerConfig netConfig{};
         netConfig.bindAddress = _config.bindAddress;
         netConfig.tcpPort = _config.tcpPort;
         netConfig.udpPort = _config.udpPort;
@@ -49,7 +51,7 @@ namespace rtp::server
             return;
         }
         if (!_network->start()) {
-            engine::core::error("Server: failed to start network");
+            aer::log::error("Server: failed to start network");
             return;
         }
 
@@ -108,13 +110,13 @@ namespace rtp::server
     bool ServerApp::loadNetworkEngine(void)
     {
         if (_config.networkPluginPath.empty()) {
-            engine::core::error("Server: network plugin path is empty");
+            aer::log::error("Server: network plugin path is empty");
             return false;
         }
 
         auto libRes = _libraries.loadShared(_config.networkPluginPath);
         if (!libRes) {
-            engine::core::error("Server: failed to load network plugin: {}",
+            aer::log::error("Server: failed to load network plugin: {}",
                                 _config.networkPluginPath);
             return false;
         }
@@ -122,16 +124,30 @@ namespace rtp::server
 
         auto create = _networkLib->get<CreateNetworkEngineFn>("CreateNetworkEngine");
         if (!create) {
-            engine::core::error("Server: CreateNetworkEngine not found");
+            aer::log::error("Server: CreateNetworkEngine not found");
             return false;
         }
 
         _networkEngine = create.value()();
         if (!_networkEngine) {
-            engine::core::error("Server: CreateNetworkEngine failed");
+            aer::log::error("Server: CreateNetworkEngine failed");
             return false;
         }
 
         return true;
+    }
+}
+
+extern "C"
+{
+    RTYPE_SERVER_API rtp::server::ServerApp *CreateServerApp(
+        rtp::server::ServerApp::Config config)
+    {
+        return new rtp::server::ServerApp(std::move(config));
+    }
+
+    RTYPE_SERVER_API void DestroyServerApp(rtp::server::ServerApp *app)
+    {
+        delete app;
     }
 }

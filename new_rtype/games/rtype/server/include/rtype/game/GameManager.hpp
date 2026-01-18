@@ -30,13 +30,13 @@ namespace rtp::server
              * @brief Constructor for GameManager
              * @param network Reference to the network instance
              */
-            explicit GameManager(engine::net::INetwork &network);
+            explicit GameManager(aer::net::INetwork &network);
 
             /**
              * @brief Handle a network event.
              * @param event The network event to handle
              */
-            void handleEvent(const engine::net::NetworkEvent &event);
+            void handleEvent(const aer::net::NetworkEvent &event);
 
             /**
              * @brief Update the game manager.
@@ -52,7 +52,7 @@ namespace rtp::server
              * @param packet The received packet
              */
             void handlePacket(uint32_t sessionId,
-                              engine::net::NetChannel channel,
+                              aer::net::NetChannel channel,
                               rtp::net::Packet packet);
 
             void handlePlayerConnect(uint32_t sessionId);
@@ -75,7 +75,7 @@ namespace rtp::server
             void broadcastRoomState(float dt);
 
         private:
-            engine::net::INetwork &_network;        /**< Network instance for communication */
+            aer::net::INetwork &_network;        /**< Network instance for communication */
             systems::AuthSystem _authSystem;        /**< Authentication system */
             systems::PlayerSystem _playerSystem;    /**< Player management system */
             systems::RoomSystem _roomSystem;        /**< Room management system */

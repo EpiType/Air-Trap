@@ -39,7 +39,7 @@
  * entity checks.
  */
 
-namespace engine::ecs
+namespace aer::ecs
 {
     constexpr Entity::Entity(std::uint32_t index, std::uint32_t generation)
         : _id{static_cast<std::uint64_t>(generation) << GEN_SHIFT |

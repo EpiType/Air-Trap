@@ -29,15 +29,15 @@ namespace rtp::client {
      * This class wraps the engine network plugin to provide a simple
      * client-facing INetwork implementation for R-Type.
      */
-    class NetworkBootstrap : public engine::net::INetwork {
+    class NetworkBootstrap : public aer::net::INetwork {
         public:
             /**
              * @brief Constructor for NetworkBootstrap
              * @param engine Network engine plugin to use
              * @param config Client configuration
              */
-            NetworkBootstrap(engine::net::INetworkEngine &engine,
-                             engine::net::ClientConfig config);
+            NetworkBootstrap(aer::net::INetworkEngine &engine,
+                             aer::net::ClientConfig config);
 
             /**
              * @brief Destructor for NetworkBootstrap
@@ -63,26 +63,26 @@ namespace rtp::client {
              * @param channel The network channel to use for sending
              */
             void sendPacket(uint32_t sessionId,
-                            engine::net::ByteSpan payload,
-                            engine::net::NetChannel channel) override;
+                            aer::net::ByteSpan payload,
+                            aer::net::NetChannel channel) override;
 
             /**
              * @brief Poll for an incoming network event.
              * @return An optional network event
              */
-            std::optional<engine::net::NetworkEvent> pollEvent(void) override;
+            std::optional<aer::net::NetworkEvent> pollEvent(void) override;
 
             /**
              * @brief Send a packet using the specified network mode.
              * @param packet The packet to send
              * @param mode The network channel to use for sending
              */
-            void sendPacket(const net::Packet &packet, engine::net::NetChannel mode);
+            void sendPacket(const net::Packet &packet, aer::net::NetChannel mode);
 
         private:
-            engine::net::INetworkEngine &_engine;       /**< Network engine plugin */
-            engine::net::ClientConfig _config;          /**< Client configuration */
-            engine::net::INetwork *_network{nullptr};   /**< Active network instance */
+            aer::net::INetworkEngine &_engine;       /**< Network engine plugin */
+            aer::net::ClientConfig _config;          /**< Client configuration */
+            aer::net::INetwork *_network{nullptr};   /**< Active network instance */
     };
 } // namespace rtp::client
 

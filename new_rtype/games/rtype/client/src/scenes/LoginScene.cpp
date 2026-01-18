@@ -11,11 +11,11 @@ namespace rtp::client::scenes
 {
     namespace
     {
-        engine::ui::textContainer makeText(const std::string &content,
+        aer::ui::textContainer makeText(const std::string &content,
                                            const std::string &font,
                                            unsigned int size)
         {
-            engine::ui::textContainer text;
+            aer::ui::textContainer text;
             text.content = content;
             text.FontPath = font;
             text.fontSize = size;
@@ -27,7 +27,7 @@ namespace rtp::client::scenes
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
-    LoginScene::LoginScene(engine::ecs::Registry& uiRegistry,
+    LoginScene::LoginScene(aer::ecs::Registry& uiRegistry,
                            Settings& settings,
                            TranslationManager& translation,
                            NetworkSyncSystem& network,
@@ -48,7 +48,7 @@ namespace rtp::client::scenes
         const std::string loginLabel = _translation.get("login.action");
         const std::string registerLabel = _translation.get("register.action");
 
-        engine::ui::UiFactory::createText(
+        aer::ui::UiFactory::createText(
             _uiRegistry,
             {520.0f, 80.0f},
             makeText(title == "login.title" ? "LOGIN" : title, "assets/fonts/title.ttf", 64),
@@ -56,14 +56,14 @@ namespace rtp::client::scenes
             {255, 200, 100}
         );
 
-        engine::ui::UiFactory::createText(
+        aer::ui::UiFactory::createText(
             _uiRegistry,
             {380.0f, 200.0f},
             makeText(usernameLabel == "login.username" ? "Username" : usernameLabel,
                      "assets/fonts/main.ttf", 24)
         );
 
-        engine::ui::UiFactory::createTextInput(
+        aer::ui::UiFactory::createTextInput(
             _uiRegistry,
             {360.0f, 235.0f},
             {560.0f, 45.0f},
@@ -73,14 +73,14 @@ namespace rtp::client::scenes
             [this](const std::string& text) { _username = text; }
         );
 
-        engine::ui::UiFactory::createText(
+        aer::ui::UiFactory::createText(
             _uiRegistry,
             {380.0f, 310.0f},
             makeText(passwordLabel == "login.password" ? "Password" : passwordLabel,
                      "assets/fonts/main.ttf", 24)
         );
 
-        engine::ui::UiFactory::createTextInput(
+        aer::ui::UiFactory::createTextInput(
             _uiRegistry,
             {360.0f, 345.0f},
             {560.0f, 45.0f},
@@ -90,7 +90,7 @@ namespace rtp::client::scenes
             [this](const std::string& text) { _password = text; }
         );
 
-        engine::ui::UiFactory::createButton(
+        aer::ui::UiFactory::createButton(
             _uiRegistry,
             {360.0f, 430.0f},
             {270.0f, 60.0f},
@@ -99,7 +99,7 @@ namespace rtp::client::scenes
             [this]() { _networkSystem.tryLogin(_username, _password); }
         );
 
-        engine::ui::UiFactory::createButton(
+        aer::ui::UiFactory::createButton(
             _uiRegistry,
             {650.0f, 430.0f},
             {270.0f, 60.0f},
@@ -117,7 +117,7 @@ namespace rtp::client::scenes
         _uiRegistry.purge();
     }
 
-    void LoginScene::handleEvent(const engine::input::Event &)
+    void LoginScene::handleEvent(const aer::input::Event &)
     {
     }
 

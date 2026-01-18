@@ -9,12 +9,12 @@
     #define ENGINE_INPUT_INPUT_HPP_
 
     #include "engine/input/Event.hpp"
-    #include "engine/core/Logger.hpp"
+    #include "engine/log/Logger.hpp"
 
     #include <array>
     #include <vector>
 
-namespace engine::input
+namespace aer::input
 {
     class Input final {
         public:

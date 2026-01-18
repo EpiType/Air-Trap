@@ -41,7 +41,7 @@
 #ifndef ENGINE_ASSERT_HPP_
     #define ENGINE_ASSERT_HPP_
 
-    #include "engine/core/Logger.hpp"
+    #include "engine/log/Logger.hpp"
     #include <cstdlib>
 
     /**
@@ -94,7 +94,7 @@
         #define RTP_VERIFY(condition, msg, ...) \
             do { \
                 if (!(condition)) [[unlikely]] { \
-                    engine::core::error("Verify failed: " msg, ##__VA_ARGS__); \
+                    aer::log::error("Verify failed: " msg, ##__VA_ARGS__); \
                 } \
             } while(0)
 
@@ -113,7 +113,7 @@
         #define RTP_ASSERT(condition, msg, ...) \
             do { \
                 if (!(condition)) [[unlikely]] { \
-                    engine::core::fatal("ASSERTION FAILED: " msg, ##__VA_ARGS__); \
+                    aer::log::fatal("ASSERTION FAILED: " msg, ##__VA_ARGS__); \
                     RTP_DEBUG_BREAK(); \
                 } \
             } while(0)

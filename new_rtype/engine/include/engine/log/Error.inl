@@ -41,7 +41,7 @@
 
 #include "Error.hpp"
 
-namespace engine::core
+namespace aer::log
 {
     constexpr std::string_view toString(ErrorCode e) noexcept
     {

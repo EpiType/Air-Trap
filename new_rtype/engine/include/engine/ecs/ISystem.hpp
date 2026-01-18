@@ -44,7 +44,7 @@
 
     #include "engine/ecs/Registry.hpp"
 
-namespace engine::ecs
+namespace aer::ecs
 {
     /**
      * @class ISystem

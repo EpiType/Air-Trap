@@ -100,26 +100,26 @@ namespace rtp::server
              * @return Position vector
              */
             [[nodiscard]]
-            engine::math::Vec2f position(void) const;
+            aer::math::Vec2f position(void) const;
 
             /**
              * @brief Set the player's position.
              * @param position New position vector
              */
-            void setPosition(const engine::math::Vec2f &position);
+            void setPosition(const aer::math::Vec2f &position);
 
             /**
              * @brief Get the player's velocity.
              * @return Velocity vector
              */
             [[nodiscard]]
-            engine::math::Vec2f velocity(void) const;
+            aer::math::Vec2f velocity(void) const;
 
             /**<
              * @brief Set the player's velocity.
              * @param velocity New velocity vector
              */
-            void setVelocity(const engine::math::Vec2f &velocity);
+            void setVelocity(const aer::math::Vec2f &velocity);
 
             /**
              * @brief Get the input mask representing player inputs.
@@ -141,9 +141,9 @@ namespace rtp::server
             bool _ready{false};                 /**< Flag indicating if the player is ready */
             uint32_t _roomId{0};                /**< Identifier of the room the player is in */
             uint32_t _entityId{0};              /**< Identifier of the player's entity in the game */
-            engine::math::Vec2f
+            aer::math::Vec2f
                 _position{0.f, 0.f};            /**< Player's position in the game world */
-            engine::math::Vec2f
+            aer::math::Vec2f
                 _velocity{0.f, 0.f};            /**< Player's velocity in the game world */
             uint8_t _inputMask{0};              /**< Input mask representing player inputs */
     };

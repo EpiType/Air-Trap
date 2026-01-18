@@ -28,10 +28,10 @@ namespace rtp::client::scenes
      * @class MenuScene
      * @brief Scene for the main menu.
      */
-    class MenuScene : public engine::scenes::IScene
+    class MenuScene : public aer::scenes::IScene
     {
         public:
-            MenuScene(engine::ecs::Registry& uiRegistry,
+            MenuScene(aer::ecs::Registry& uiRegistry,
                       Settings& settings,
                       TranslationManager& translation,
                       NetworkSyncSystem& network,
@@ -39,11 +39,11 @@ namespace rtp::client::scenes
 
             void onEnter(void) override;
             void onExit(void) override;
-            void handleEvent(const engine::input::Event &event) override;
+            void handleEvent(const aer::input::Event &event) override;
             void update(float dt) override;
 
         private:
-            engine::ecs::Registry& _uiRegistry;
+            aer::ecs::Registry& _uiRegistry;
             Settings& _settings;
             TranslationManager& _translation;
             NetworkSyncSystem& _networkSystem;

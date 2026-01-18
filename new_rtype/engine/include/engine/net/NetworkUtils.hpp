@@ -12,7 +12,7 @@
     #include <span>
     #include <vector>
 
-namespace engine::net
+namespace aer::net
 {
     using Byte = std::uint8_t;              /**< Definition of a byte type */
     using ByteBuffer = std::vector<Byte>;   /**< Dynamic buffer of bytes */

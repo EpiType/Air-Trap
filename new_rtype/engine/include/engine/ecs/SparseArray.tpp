@@ -41,7 +41,7 @@
 
 #include <algorithm>
 
-namespace engine::ecs
+namespace aer::ecs
 {
     template <Component T>
     void SparseArray<T>::erase(Entity entity) noexcept

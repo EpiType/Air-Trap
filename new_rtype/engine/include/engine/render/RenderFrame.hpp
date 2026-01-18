@@ -12,10 +12,10 @@
     #include "engine/render/RenderEntity.hpp"
 
 /**
- * @namespace engine::render
+ * @namespace aer::render
  * @brief Rendering components and structures for the engine
  */
-namespace engine::render
+namespace aer::render
 {
     /**
      * @struct RenderFrame

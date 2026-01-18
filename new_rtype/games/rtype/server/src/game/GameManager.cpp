@@ -7,7 +7,7 @@
 
 #include "rtype/game/GameManager.hpp"
 
-#include "engine/core/Logger.hpp"
+#include "engine/log/Logger.hpp"
 
 #include <cstring>
 
@@ -27,7 +27,7 @@ namespace rtp::server
     // Public API
     /////////////////////////////////////////////////////////////////////////
 
-    GameManager::GameManager(engine::net::INetwork &network)
+    GameManager::GameManager(aer::net::INetwork &network)
         : _network(network),
           _authSystem(network),
           _playerSystem(),
@@ -38,13 +38,13 @@ namespace rtp::server
         });
     }
 
-    void GameManager::handleEvent(const engine::net::NetworkEvent &event)
+    void GameManager::handleEvent(const aer::net::NetworkEvent &event)
     {
         try {
             auto packet = rtp::net::Packet::deserialize(event.payload);
             handlePacket(event.sessionId, event.channel, std::move(packet));
         } catch (const std::exception &e) {
-            engine::core::warning("Server: failed to parse packet: {}", e.what());
+            aer::log::warning("Server: failed to parse packet: {}", e.what());
         }
     }
 
@@ -60,7 +60,7 @@ namespace rtp::server
     /////////////////////////////////////////////////////////////////////////
 
     void GameManager::handlePacket(uint32_t sessionId,
-                                   engine::net::NetChannel channel,
+                                   aer::net::NetChannel channel,
                                    rtp::net::Packet packet)
     {
         switch (packet.header.opCode) {
@@ -101,7 +101,7 @@ namespace rtp::server
                 handlePing(sessionId, packet);
                 break;
             default:
-                engine::core::debug("Server: unhandled opcode {}", static_cast<uint32_t>(packet.header.opCode));
+                aer::core::debug("Server: unhandled opcode {}", static_cast<uint32_t>(packet.header.opCode));
                 break;
         }
 
@@ -110,7 +110,7 @@ namespace rtp::server
 
     void GameManager::handlePlayerConnect(uint32_t sessionId)
     {
-        engine::core::info("Client with Session ID {} connected", sessionId);
+        aer::log::info("Client with Session ID {} connected", sessionId);
     }
 
     void GameManager::handlePlayerDisconnect(uint32_t sessionId)
@@ -166,7 +166,7 @@ namespace rtp::server
         if (!player) {
             response << rtp::net::BooleanPayload{0};
             const auto data = response.serialize();
-            _network.sendPacket(sessionId, data, engine::net::NetChannel::TCP);
+            _network.sendPacket(sessionId, data, aer::net::NetChannel::TCP);
             return;
         }
 
@@ -182,7 +182,7 @@ namespace rtp::server
         const bool joined = _roomSystem.joinRoom(player, roomId, false);
         response << rtp::net::BooleanPayload{static_cast<uint8_t>(joined ? 1 : 0)};
         const auto data = response.serialize();
-        _network.sendPacket(sessionId, data, engine::net::NetChannel::TCP);
+        _network.sendPacket(sessionId, data, aer::net::NetChannel::TCP);
     }
 
     void GameManager::handleJoinRoom(uint32_t sessionId, rtp::net::Packet &packet)
@@ -207,7 +207,7 @@ namespace rtp::server
         if (room->state() == Room::State::InGame) {
             rtp::net::Packet startPacket(rtp::net::OpCode::StartGame);
             const auto data = startPacket.serialize();
-            _network.sendPacket(sessionId, data, engine::net::NetChannel::TCP);
+            _network.sendPacket(sessionId, data, aer::net::NetChannel::TCP);
             sendRoomEntitiesToSession(payload.roomId, sessionId);
         }
     }
@@ -266,7 +266,7 @@ namespace rtp::server
             return;
         }
         for (const auto sid : room->players()) {
-            _network.sendPacket(sid, data, engine::net::NetChannel::TCP);
+            _network.sendPacket(sid, data, aer::net::NetChannel::TCP);
         }
     }
 
@@ -290,7 +290,7 @@ namespace rtp::server
         rtp::net::Packet response(rtp::net::OpCode::Pong);
         response << payload;
         const auto data = response.serialize();
-        _network.sendPacket(sessionId, data, engine::net::NetChannel::TCP);
+        _network.sendPacket(sessionId, data, aer::net::NetChannel::TCP);
     }
 
     void GameManager::spawnRoomEntities(uint32_t roomId)
@@ -340,7 +340,7 @@ namespace rtp::server
             rtp::net::Packet packet(rtp::net::OpCode::EntitySpawn);
             packet << payload;
             const auto data = packet.serialize();
-            _network.sendPacket(sessionId, data, engine::net::NetChannel::TCP);
+            _network.sendPacket(sessionId, data, aer::net::NetChannel::TCP);
         }
     }
 
@@ -366,7 +366,7 @@ namespace rtp::server
         const auto data = packet.serialize();
 
         for (const auto sid : room->players()) {
-            _network.sendPacket(sid, data, engine::net::NetChannel::TCP);
+            _network.sendPacket(sid, data, aer::net::NetChannel::TCP);
         }
     }
 
@@ -391,7 +391,7 @@ namespace rtp::server
                     continue;
                 }
 
-                engine::math::Vec2f velocity{0.f, 0.f};
+                aer::math::Vec2f velocity{0.f, 0.f};
                 const uint8_t mask = player->inputMask();
                 if (mask & kMoveUp) {
                     velocity.y -= speed;
@@ -436,7 +436,7 @@ namespace rtp::server
             const auto data = packet.serialize();
 
             for (const auto sid : room->players()) {
-                _network.sendPacket(sid, data, engine::net::NetChannel::UDP);
+                _network.sendPacket(sid, data, aer::net::NetChannel::UDP);
             }
         }
     }

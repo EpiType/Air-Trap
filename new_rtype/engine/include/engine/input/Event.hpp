@@ -9,10 +9,10 @@
     #define ENGINE_INPUT_EVENT_HPP_
 
 /**
- * @namespace engine::input
+ * @namespace aer::input
  * @brief Input handling for the engine
  */
-namespace engine::input
+namespace aer::input
 {
     /**
      * @enum KeyCode

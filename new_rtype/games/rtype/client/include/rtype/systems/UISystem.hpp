@@ -27,7 +27,7 @@ namespace rtp::client::systems
      * @class UISystem
      * @brief System to handle UI interactions.
      */
-    class UISystem : public engine::ecs::ISystem
+    class UISystem : public aer::ecs::ISystem
     {
         public:
             /**
@@ -35,8 +35,8 @@ namespace rtp::client::systems
              * @param registry Reference to the UI registry
              * @param settings Reference to client settings
              */
-            UISystem(engine::ecs::Registry& registry,
-                     engine::render::IRenderer& renderer,
+            UISystem(aer::ecs::Registry& registry,
+                     aer::render::IRenderer& renderer,
                      Settings& settings);
 
             /**
@@ -49,53 +49,53 @@ namespace rtp::client::systems
              * @brief Handle input event for UI interactions.
              * @param event Input event to process
              */
-            void handleEvent(const engine::input::Event& event);
+            void handleEvent(const aer::input::Event& event);
 
             /**
              * @brief Render the gamepad cursor on the screen.
              * @param renderer Reference to the renderer
              */
-            void renderGamepadCursor(engine::render::IRenderer& renderer);
+            void renderGamepadCursor(aer::render::IRenderer& renderer);
 
         private:
-            void handleMouseMove(engine::math::Vec2f mousePos);
-            void handleMouseClick(engine::math::Vec2f mousePos);
+            void handleMouseMove(aer::math::Vec2f mousePos);
+            void handleMouseClick(aer::math::Vec2f mousePos);
 
-            bool isMouseOverButton(const engine::ecs::components::Button& button,
-                                 const engine::math::Vec2f& mousePos);
+            bool isMouseOverButton(const aer::ecs::components::Button& button,
+                                 const aer::math::Vec2f& mousePos);
 
-            bool isMouseOverSlider(const engine::ecs::components::Slider& slider,
-                                 const engine::math::Vec2f& mousePos);
+            bool isMouseOverSlider(const aer::ecs::components::Slider& slider,
+                                 const aer::math::Vec2f& mousePos);
 
-            bool isMouseOverDropdown(const engine::ecs::components::Dropdown& dropdown,
-                                     const engine::math::Vec2f& mousePos);
+            bool isMouseOverDropdown(const aer::ecs::components::Dropdown& dropdown,
+                                     const aer::math::Vec2f& mousePos);
 
-            bool updateSliderValue(engine::ecs::components::Slider& slider,
-                                 const engine::math::Vec2f& mousePos);
+            bool updateSliderValue(aer::ecs::components::Slider& slider,
+                                 const aer::math::Vec2f& mousePos);
 
-            int getDropdownOptionAtMouse(const engine::ecs::components::Dropdown& dropdown,
-                                         const engine::math::Vec2f& mousePos);
+            int getDropdownOptionAtMouse(const aer::ecs::components::Dropdown& dropdown,
+                                         const aer::math::Vec2f& mousePos);
 
-            bool isMouseOverTextInput(const engine::ecs::components::TextInput& input,
-                                     const engine::math::Vec2f& mousePos) const;
+            bool isMouseOverTextInput(const aer::ecs::components::TextInput& input,
+                                     const aer::math::Vec2f& mousePos) const;
 
-            void focusTextInputAt(const engine::math::Vec2f& mousePos);
+            void focusTextInputAt(const aer::math::Vec2f& mousePos);
             void clearAllTextInputFocus();
 
             void handleTextInput(std::uint32_t unicode);
 
-            void handleKeyPressed(engine::input::KeyCode key);
+            void handleKeyPressed(aer::input::KeyCode key);
 
             void updateGamepadCursor(float dt);
 
             void handleGamepadInput();
 
         private:
-            engine::ecs::Registry& _registry;
-            engine::render::IRenderer& _renderer;
+            aer::ecs::Registry& _registry;
+            aer::render::IRenderer& _renderer;
             Settings& _settings;
 
-            engine::math::Vec2f _gamepadCursorPos;
+            aer::math::Vec2f _gamepadCursorPos;
             bool _gamepadMode{false};
     };
 }

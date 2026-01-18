@@ -14,7 +14,7 @@
 #include "engine/math/Vec2.hpp"
 #include "engine/ui/UiUtilities.hpp"
 
-namespace engine::ecs::components
+namespace aer::ecs::components
 {
     /**
      * @struct Dropdown
@@ -45,6 +45,6 @@ namespace engine::ecs::components
             return "";
         }
     };
-}  // namespace engine::ecs::components
+}  // namespace aer::ecs::components
 
 #endif /* !ENGINE_ECS_COMPONENTS_DROPDOWN_HPP_ */

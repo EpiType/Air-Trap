@@ -39,19 +39,19 @@
  * for Unix-like systems.
  */
 
-#include "engine/core/Assert.hpp"
+#include "engine/log/Assert.hpp"
 #include "engine/plugin/LibraryBackend.hpp"
 
 #include <dlfcn.h>
 
-namespace engine::plugin::impl
+namespace aer::plugin::impl
 {
     ///////////////////////////////////////////////////////////////////////////
     // Public API
     ///////////////////////////////////////////////////////////////////////////
 
     auto LibraryBackend::open(std::string_view path)
-        -> std::expected<void *, engine::core::Error>
+        -> std::expected<void *, aer::core::Error>
     {
         std::string safeNullTerminatedPath(path);
         void *handle = dlopen(safeNullTerminatedPath.c_str(),
@@ -59,8 +59,8 @@ namespace engine::plugin::impl
         if (!handle) [[unlikely]] {
             const char *err = dlerror();
             return std::unexpected{
-                engine::core::Error::failure(
-                    engine::core::ErrorCode::LibraryLoadFailed,
+                aer::core::Error::failure(
+                    aer::core::ErrorCode::LibraryLoadFailed,
                     "dlopen error: {}",
                     err ? err : "Unknown dlopen error")};
         }
@@ -69,14 +69,14 @@ namespace engine::plugin::impl
     }
 
     auto LibraryBackend::close(void *handle) noexcept
-        -> std::expected<void, engine::core::Error>
+        -> std::expected<void, aer::core::Error>
     {
         if (dlclose(handle) != 0) [[unlikely]] {
             const char *err = dlerror();
             if (err) {
                 return std::unexpected{
-                    engine::core::Error::failure(
-                        engine::core::ErrorCode::LibraryLoadFailed,
+                    aer::core::Error::failure(
+                        aer::core::ErrorCode::LibraryLoadFailed,
                         "dlclose error: {}",
                         err ? err : "Unknown dlclose error")};
             }
@@ -86,7 +86,7 @@ namespace engine::plugin::impl
     }
 
     auto LibraryBackend::getSymbol(void *handle, std::string_view name)
-        -> std::expected<void *, engine::core::Error>
+        -> std::expected<void *, aer::core::Error>
     {
         RTP_ASSERT(handle != nullptr,
                    "LoaderBackend: Handle cannot be null during symbol lookup");
@@ -98,8 +98,8 @@ namespace engine::plugin::impl
         const char *err = dlerror();
         if (err) [[unlikely]] {
             return std::unexpected{
-                engine::core::Error::failure(
-                    engine::core::ErrorCode::SymbolNotFound,
+                aer::core::Error::failure(
+                    aer::core::ErrorCode::SymbolNotFound,
                     "dlsym error: {}", err)};
         }
 

@@ -11,20 +11,20 @@
         #include "engine/math/Vec2.hpp"
 
 /**
- * @namespace engine::ecs::components
+ * @namespace aer::ecs::components
  * @brief ECS components for R-Type protocol
  */
-namespace engine::ecs::components
+namespace aer::ecs::components
 {
     /**
      * @struct Transform
      * @brief Component representing position, rotation, and scale of an entity.
      */
     struct Transform {
-        engine::math::Vec2f position{0.0f, 0.0f};   /**< X and Y coordinates */
-        engine::math::Vec2f scale{1.0f, 1.0f};      /**< Scale factors for X and Y axes */
+        aer::math::Vec2f position{0.0f, 0.0f};   /**< X and Y coordinates */
+        aer::math::Vec2f scale{1.0f, 1.0f};      /**< Scale factors for X and Y axes */
         float rotation{0.0f};                       /**< Rotation in degrees */
     };
-} // namespace engine::ecs::components
+} // namespace aer::ecs::components
 
 #endif /* !ENGINE_ECS_COMPONENTS_TRANSFORM_HPP_ */

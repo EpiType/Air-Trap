@@ -39,7 +39,7 @@
  * source location capture.
  */
 
-namespace engine::core
+namespace aer::log
 {
     ///////////////////////////////////////////////////////////////////////////
     // Private API

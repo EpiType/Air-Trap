@@ -9,11 +9,11 @@
 
 namespace rtp::client {
 
-    EntityBuilder::EntityBuilder(engine::ecs::Registry &registry)
+    EntityBuilder::EntityBuilder(aer::ecs::Registry &registry)
         : _registry(registry) {}
 
     auto EntityBuilder::spawn(const EntityTemplate &t)
-        -> std::expected<engine::ecs::Entity, engine::core::Error>
+        -> std::expected<aer::ecs::Entity, aer::core::Error>
     {
         auto e = _registry.spawn();
         if (!e) {
@@ -21,18 +21,18 @@ namespace rtp::client {
         }
         auto entity = e.value();
 
-        _registry.add<engine::ecs::components::Transform>(
+        _registry.add<aer::ecs::components::Transform>(
             entity,
-            engine::ecs::components::Transform{t.position, t.scale, t.rotation});
+            aer::ecs::components::Transform{t.position, t.scale, t.rotation});
 
         if (t.withVelocity) {
-            _registry.add<engine::ecs::components::Velocity>(entity, t.velocity);
+            _registry.add<aer::ecs::components::Velocity>(entity, t.velocity);
         }
 
-        _registry.add<engine::ecs::components::Sprite>(entity, t.sprite);
+        _registry.add<aer::ecs::components::Sprite>(entity, t.sprite);
 
         if (t.withAnimation) {
-            _registry.add<engine::ecs::components::Animation>(entity, t.animation);
+            _registry.add<aer::ecs::components::Animation>(entity, t.animation);
         }
 
         if (t.withParallax) {
@@ -42,14 +42,14 @@ namespace rtp::client {
         return entity;
     }
 
-    void EntityBuilder::kill(engine::ecs::Entity entity)
+    void EntityBuilder::kill(aer::ecs::Entity entity)
     {
         _registry.kill(entity);
     }
 
-    void EntityBuilder::update(engine::ecs::Entity entity, const EntityTemplate &t)
+    void EntityBuilder::update(aer::ecs::Entity entity, const EntityTemplate &t)
     {
-        if (auto arr = _registry.getComponents<engine::ecs::components::Transform>(); arr) {
+        if (auto arr = _registry.getComponents<aer::ecs::components::Transform>(); arr) {
             auto &sa = arr->get();
             if (entity < sa.size() && sa.has(entity)) {
                 auto &tr = sa[entity];
@@ -60,7 +60,7 @@ namespace rtp::client {
         }
 
         if (t.withVelocity) {
-            if (auto arr = _registry.getComponents<engine::ecs::components::Velocity>(); arr) {
+            if (auto arr = _registry.getComponents<aer::ecs::components::Velocity>(); arr) {
                 auto &sa = arr->get();
                 if (entity < sa.size() && sa.has(entity)) {
                     sa[entity] = t.velocity;
@@ -68,7 +68,7 @@ namespace rtp::client {
             }
         }
 
-        if (auto arr = _registry.getComponents<engine::ecs::components::Sprite>(); arr) {
+        if (auto arr = _registry.getComponents<aer::ecs::components::Sprite>(); arr) {
             auto &sa = arr->get();
             if (entity < sa.size() && sa.has(entity)) {
                 sa[entity] = t.sprite;
@@ -76,7 +76,7 @@ namespace rtp::client {
         }
 
         if (t.withAnimation) {
-            if (auto arr = _registry.getComponents<engine::ecs::components::Animation>(); arr) {
+            if (auto arr = _registry.getComponents<aer::ecs::components::Animation>(); arr) {
                 auto &sa = arr->get();
                 if (entity < sa.size() && sa.has(entity)) {
                     sa[entity] = t.animation;

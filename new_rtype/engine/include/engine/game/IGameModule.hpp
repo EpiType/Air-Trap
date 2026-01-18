@@ -14,12 +14,12 @@
     #include <vector>
 
 /**
- * @namespace engine::game
+ * @namespace aer::game
  * @brief Game module interface for the engine
  * @note This interface defines the contract for game it can be used
  *       in both client and server contexts.
  */
-namespace engine::game
+namespace aer::game
 {
     /**
      * @class IGameModule

@@ -14,7 +14,7 @@
     #include "engine/math/Vec2.hpp"
     #include "engine/ui/UiUtilities.hpp"
 
-namespace engine::ecs::components
+namespace aer::ecs::components
 {
     struct TextInput {
         math::Vec2f position;
@@ -47,6 +47,6 @@ namespace engine::ecs::components
             return std::string(value.size(), '*');
         }
     };
-} // namespace engine::ecs::components
+} // namespace aer::ecs::components
 
 #endif /* !ENGINE_ECS_COMPONENTS_TEXTINPUT_HPP_ */

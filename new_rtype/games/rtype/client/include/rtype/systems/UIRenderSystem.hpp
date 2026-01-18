@@ -28,7 +28,7 @@ namespace rtp::client::systems
      * @class UIRenderSystem
      * @brief System to build render frames for UI elements.
      */
-    class UIRenderSystem : public engine::ecs::ISystem
+    class UIRenderSystem : public aer::ecs::ISystem
     {
         public:
             /**
@@ -37,9 +37,9 @@ namespace rtp::client::systems
              * @param renderer Reference to the renderer
              * @param frame Render frame to fill
              */
-            UIRenderSystem(engine::ecs::Registry& registry,
-                           engine::render::IRenderer& renderer,
-                           engine::render::RenderFrame& frame);
+            UIRenderSystem(aer::ecs::Registry& registry,
+                           aer::render::IRenderer& renderer,
+                           aer::render::RenderFrame& frame);
 
             /**
              * @brief Build render frame for UI components.
@@ -82,9 +82,9 @@ namespace rtp::client::systems
             std::uint32_t getFontId(const std::string& path);
 
         private:
-            engine::ecs::Registry& _registry;   /**< Reference to the UI registry */
-            engine::render::IRenderer& _renderer; /**< Reference to the renderer */
-            engine::render::RenderFrame& _frame;  /**< Render frame to fill */
+            aer::ecs::Registry& _registry;   /**< Reference to the UI registry */
+            aer::render::IRenderer& _renderer; /**< Reference to the renderer */
+            aer::render::RenderFrame& _frame;  /**< Render frame to fill */
             std::unordered_map<std::string, std::uint32_t> _fontCache; /**< Font cache */
     };
 }

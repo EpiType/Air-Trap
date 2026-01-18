@@ -21,13 +21,13 @@ namespace rtp::client::systems {
      * @class ParallaxSystem
      * @brief System to handle parallax of background layers.
      */
-    class ParallaxSystem : public engine::ecs::ISystem {
+    class ParallaxSystem : public aer::ecs::ISystem {
         public:
             /**
              * @brief Constructor for ParallaxSystem
              * @param registry Reference to the entity registry
              */
-            explicit ParallaxSystem(engine::ecs::Registry& registry)
+            explicit ParallaxSystem(aer::ecs::Registry& registry)
                 : _registry(registry) {}
 
             /**
@@ -37,7 +37,7 @@ namespace rtp::client::systems {
             void update(float dt) override;
 
         private:
-            engine::ecs::Registry& _registry;  /**< Reference to the entity registry */
+            aer::ecs::Registry& _registry;  /**< Reference to the entity registry */
     };
 }
 

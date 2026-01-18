@@ -15,7 +15,7 @@ namespace rtp::client::systems
 
     void ParallaxSystem::update(float dt)
     {
-        auto view = _registry.zipView<engine::ecs::components::Transform, rtp::ecs::components::ParallaxLayer>();
+        auto view = _registry.zipView<aer::ecs::components::Transform, rtp::ecs::components::ParallaxLayer>();
 
         for (auto&& [transform, parallax] : view) {
             transform.position.x -= parallax.speed * dt;

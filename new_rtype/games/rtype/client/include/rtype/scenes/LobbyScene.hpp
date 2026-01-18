@@ -28,10 +28,10 @@ namespace rtp::client::scenes
      * @class LobbyScene
      * @brief Scene for the lobby and room list.
      */
-    class LobbyScene : public engine::scenes::IScene
+    class LobbyScene : public aer::scenes::IScene
     {
         public:
-            LobbyScene(engine::ecs::Registry& uiRegistry,
+            LobbyScene(aer::ecs::Registry& uiRegistry,
                        Settings& settings,
                        TranslationManager& translation,
                        NetworkSyncSystem& network,
@@ -39,11 +39,11 @@ namespace rtp::client::scenes
 
             void onEnter(void) override;
             void onExit(void) override;
-            void handleEvent(const engine::input::Event &event) override;
+            void handleEvent(const aer::input::Event &event) override;
             void update(float dt) override;
 
         private:
-            engine::ecs::Registry& _uiRegistry;
+            aer::ecs::Registry& _uiRegistry;
             Settings& _settings;
             TranslationManager& _translation;
             NetworkSyncSystem& _networkSystem;

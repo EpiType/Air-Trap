@@ -10,15 +10,15 @@
 
 #include "engine/math/Vec2.hpp"
 
-namespace engine::ecs::components {
+namespace aer::ecs::components {
     /**
      * @struct Velocity
      * @brief Component representing a 2D velocity.
      */
     struct Velocity {
-        engine::math::Vec2f direction{0.0f, 0.0f};      /**< Velocity in X and Y directions */
+        aer::math::Vec2f direction{0.0f, 0.0f};      /**< Velocity in X and Y directions */
         float speed{0.0f};                              /**< Speed multiplier */
     };
-}  // namespace engine::ecs::components
+}  // namespace aer::ecs::components
 
 #endif /* !ENGINE_ECS_COMPONENTS_VELOCITY_HPP_ */

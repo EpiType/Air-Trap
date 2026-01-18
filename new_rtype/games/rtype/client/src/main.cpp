@@ -6,8 +6,8 @@
  */
 
 #include "engine/core/Core.hpp"
-#include "engine/core/Error.hpp"
-#include "engine/core/Logger.hpp"
+#include "engine/log/Error.hpp"
+#include "engine/log/Logger.hpp"
 #include "rtype/ClientApp.hpp"
 #include "rtype/net/NetworkBootstrap.hpp"
 
@@ -22,32 +22,32 @@ int main(int argc, char **argv)
         const std::string networkOverride =
             ((argc > 2) && argv[2] && *argv[2]) ? argv[2] : "";
 
-        auto &core = engine::core::Core::instance();
-        engine::core::Core::Config config{};
+        auto &core = aer::core::Core::instance();
+        aer::core::Core::Config config{};
         config.title = "RType";
         config.rendererPluginPath = rendererOverride;
         config.networkPluginPath = networkOverride;
 
         if (!core.init(config)) {
-            engine::core::error("Client: failed to init core");
+            aer::log::error("Client: failed to init core");
             return EXIT_FAILURE;
         }
         const auto &coreConfig = core.config();
         const std::string networkPath =
             !networkOverride.empty() ? networkOverride : coreConfig.networkPluginPath;
         if (!core.loadNetworkPlugin(networkPath)) {
-            engine::core::error("Client: failed to load network plugin: {}", networkPath);
+            aer::log::error("Client: failed to load network plugin: {}", networkPath);
             return EXIT_FAILURE;
         }
 
         auto *renderer = core.getCurrentRendereEngine();
         auto *networkEngine = core.getCurrentNetworkEngine();
         if (!renderer || !networkEngine) {
-            engine::core::error("Client: core missing renderer or network engine");
+            aer::log::error("Client: core missing renderer or network engine");
             return EXIT_FAILURE;
         }
 
-        engine::net::ClientConfig netConfig{};
+        aer::net::ClientConfig netConfig{};
         netConfig.host = coreConfig.networkIp.empty()
             ? "127.0.0.1"
             : coreConfig.networkIp;
@@ -58,7 +58,7 @@ int main(int argc, char **argv)
 
         rtp::client::NetworkBootstrap network(*networkEngine, netConfig);
         if (!network.start()) {
-            engine::core::error("Client: failed to start network");
+            aer::log::error("Client: failed to start network");
             return EXIT_FAILURE;
         }
 
@@ -66,10 +66,10 @@ int main(int argc, char **argv)
         app.init();
 
         core.setUpdateCallback([&](float dt) { app.update(dt); });
-        core.setRenderCallback([&](engine::render::RenderFrame &frame) {
+        core.setRenderCallback([&](aer::render::RenderFrame &frame) {
             app.render(frame);
         });
-        core.setEventCallback([&](const engine::input::Event &event) {
+        core.setEventCallback([&](const aer::input::Event &event) {
             app.handleEvents(event);
         });
         core.run();
@@ -78,10 +78,10 @@ int main(int argc, char **argv)
         network.stop();
         core.shutdown();
         return EXIT_SUCCESS;
-    } catch (const engine::core::Error &err) {
-        engine::core::error("Client: exception: {}", err);
+    } catch (const aer::core::Error &err) {
+        aer::log::error("Client: exception: {}", err);
     } catch (const std::exception &err) {
-        engine::core::error("Client: exception: {}", err.what());
+        aer::log::error("Client: exception: {}", err.what());
     }
 
     return EXIT_FAILURE;

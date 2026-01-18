@@ -36,6 +36,12 @@
     #include <unordered_map>
     #include <vector>
 
+#if defined(_WIN32)
+    #define RTYPE_CLIENT_API __declspec(dllexport)
+#else
+    #define RTYPE_CLIENT_API __attribute__((visibility("default")))
+#endif
+
 namespace rtp::client
 {
     /**
@@ -50,8 +56,8 @@ namespace rtp::client
              * @param renderer Renderer instance for graphics
              * @param network Network instance for communication
              */
-            ClientApp(engine::render::IRenderer& renderer,
-                      engine::net::INetwork& network);
+            ClientApp(aer::render::IRenderer& renderer,
+                      aer::net::INetwork& network);
 
             /** 
              * @brief Initialize the client application.
@@ -73,7 +79,7 @@ namespace rtp::client
              * @brief Build the render frame for this tick.
              * @param frame Output render frame
              */
-            void render(engine::render::RenderFrame& frame);
+            void render(aer::render::RenderFrame& frame);
 
             /** 
              * @brief Render the current frame.
@@ -84,7 +90,7 @@ namespace rtp::client
              * @brief Handle input events.
              * @param event Input event to handle
              */
-            void handleEvents(const engine::input::Event& event);
+            void handleEvents(const aer::input::Event& event);
 
         private:
             /** 
@@ -98,13 +104,13 @@ namespace rtp::client
             void registerComponents(void);
 
         private:
-            engine::render::IRenderer& _renderer;                   /**< Renderer instance */
-            engine::net::INetwork& _network;                        /**< Network instance */
+            aer::render::IRenderer& _renderer;                   /**< Renderer instance */
+            aer::net::INetwork& _network;                        /**< Network instance */
 
-            engine::ecs::Registry _worldRegistry;                   /**< World ECS registry */
-            engine::ecs::Registry _uiRegistry;                      /**< UI ECS registry */
-            engine::render::RenderFrame _worldFrame;                /**< Frame for world rendering */
-            engine::render::RenderFrame _uiFrame;                   /**< Frame for UI rendering */
+            aer::ecs::Registry _worldRegistry;                   /**< World ECS registry */
+            aer::ecs::Registry _uiRegistry;                      /**< UI ECS registry */
+            aer::render::RenderFrame _worldFrame;                /**< Frame for world rendering */
+            aer::render::RenderFrame _uiFrame;                   /**< Frame for UI rendering */
 
             Settings _settings;                                     /**< Client settings manager */
             TranslationManager _translation;                        /**< Translation manager */
@@ -118,10 +124,18 @@ namespace rtp::client
             systems::AnimationSystem _animationSystem;              /**< Animation system for handling entity animations */
 
             std::unordered_map<SceneId,
-                std::unique_ptr<engine::scenes::IScene>> _scenes;   /**< All available scenes */
+                std::unique_ptr<aer::scenes::IScene>> _scenes;   /**< All available scenes */
             SceneId _activeScene{SceneId::Login};                   /**< Currently active scene */
             bool _sceneActive{false};                               /**< True once onEnter ran */
     };
+}
+
+extern "C"
+{
+    RTYPE_CLIENT_API rtp::client::ClientApp *CreateClientApp(
+        aer::render::IRenderer *renderer,
+        aer::net::INetwork *network);
+    RTYPE_CLIENT_API void DestroyClientApp(rtp::client::ClientApp *app);
 }
 
 #endif /* !RTYPE_CLIENT_APP_HPP_ */

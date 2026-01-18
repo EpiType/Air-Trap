@@ -9,10 +9,10 @@
     #define ENGINE_ECS_COMPONENTS_ANIMATION_HPP_
 
 /**
- * @namespace engine::ecs::components
+ * @namespace aer::ecs::components
  * @brief ECS components for R-Type engine
  */
-namespace engine::ecs::components {
+namespace aer::ecs::components {
     /**
      * @struct Animation
      * @brief Component representing an animation.
@@ -28,6 +28,6 @@ namespace engine::ecs::components {
         int frameWidth{0};          /**< Width of the current frame */
         int frameHeight{0};         /**< Height of the current frame */
     };
-}  // namespace engine::ecs::components
+}  // namespace aer::ecs::components
 
 #endif /* !ENGINE_ECS_COMPONENTS_ANIMATION_HPP_ */

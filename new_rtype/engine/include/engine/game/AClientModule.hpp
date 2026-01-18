@@ -11,14 +11,14 @@
     #include "engine/game/IGameModule.hpp"
 
 /**
- * @namespace engine::game
+ * @namespace aer::game
  * @brief Game module interface for the engine
  * @note This abstract class provides a base implementation for game modules
  *       that can be used in both client and server contexts.
  *      It implements the IGameModule interface and can be extended by
  *      specific game module implementations.
  */
-namespace engine::game
+namespace aer::game
 {
     /**
      * @class AClientModule
@@ -56,6 +56,6 @@ namespace engine::game
 
             virtual void shutdownServer() override {};
     };
-} // namespace engine::game
+} // namespace aer::game
 
 #endif /* !ENGINE_GAME_AClientModule_HPP_ */

@@ -7,15 +7,15 @@
 
 #include "rtype/systems/NetworkSyncSystem.hpp"
 
-#include "engine/core/Logger.hpp"
+#include "engine/log/Logger.hpp"
 
 #include <chrono>
 #include <cstring>
 
 namespace rtp::client
 {
-    NetworkSyncSystem::NetworkSyncSystem(engine::net::INetwork& network,
-                                         engine::ecs::Registry& registry,
+    NetworkSyncSystem::NetworkSyncSystem(aer::net::INetwork& network,
+                                         aer::ecs::Registry& registry,
                                          EntityBuilder builder)
         : _network(network),
           _registry(registry),
@@ -44,14 +44,14 @@ namespace rtp::client
             rtp::net::PingPayload payload{ms};
             rtp::net::Packet packet(rtp::net::OpCode::Ping);
             packet << payload;
-            _network.sendPacket(0, packet.serialize(), engine::net::NetChannel::TCP);
+            _network.sendPacket(0, packet.serialize(), aer::net::NetChannel::TCP);
         }
 
         if (!_udpReady) {
             rtp::net::PingPayload payload{};
             rtp::net::Packet packet(rtp::net::OpCode::Ping);
             packet << payload;
-            _network.sendPacket(0, packet.serialize(), engine::net::NetChannel::UDP);
+            _network.sendPacket(0, packet.serialize(), aer::net::NetChannel::UDP);
             _udpReady = true;
         }
     }
@@ -67,7 +67,7 @@ namespace rtp::client
 
         rtp::net::Packet packet(rtp::net::OpCode::LoginRequest);
         packet << payload;
-        _network.sendPacket(0, packet.serialize(), engine::net::NetChannel::TCP);
+        _network.sendPacket(0, packet.serialize(), aer::net::NetChannel::TCP);
     }
 
     void NetworkSyncSystem::tryRegister(const std::string& username,
@@ -81,13 +81,13 @@ namespace rtp::client
 
         rtp::net::Packet packet(rtp::net::OpCode::RegisterRequest);
         packet << payload;
-        _network.sendPacket(0, packet.serialize(), engine::net::NetChannel::TCP);
+        _network.sendPacket(0, packet.serialize(), aer::net::NetChannel::TCP);
     }
 
     void NetworkSyncSystem::requestListRooms(void)
     {
         rtp::net::Packet packet(rtp::net::OpCode::ListRooms);
-        _network.sendPacket(0, packet.serialize(), engine::net::NetChannel::TCP);
+        _network.sendPacket(0, packet.serialize(), aer::net::NetChannel::TCP);
     }
 
     void NetworkSyncSystem::tryCreateRoom(const std::string& roomName,
@@ -111,7 +111,7 @@ namespace rtp::client
         _currentState = State::CreatingRoom;
         rtp::net::Packet packet(rtp::net::OpCode::CreateRoom);
         packet << payload;
-        _network.sendPacket(0, packet.serialize(), engine::net::NetChannel::TCP);
+        _network.sendPacket(0, packet.serialize(), aer::net::NetChannel::TCP);
     }
 
     void NetworkSyncSystem::tryJoinRoom(uint32_t roomId, bool asSpectator)
@@ -123,13 +123,13 @@ namespace rtp::client
         _currentState = State::JoiningRoom;
         rtp::net::Packet packet(rtp::net::OpCode::JoinRoom);
         packet << payload;
-        _network.sendPacket(0, packet.serialize(), engine::net::NetChannel::TCP);
+        _network.sendPacket(0, packet.serialize(), aer::net::NetChannel::TCP);
     }
 
     void NetworkSyncSystem::tryLeaveRoom(void)
     {
         rtp::net::Packet packet(rtp::net::OpCode::LeaveRoom);
-        _network.sendPacket(0, packet.serialize(), engine::net::NetChannel::TCP);
+        _network.sendPacket(0, packet.serialize(), aer::net::NetChannel::TCP);
         _isInRoom = false;
         _currentState = State::InLobby;
     }
@@ -142,7 +142,7 @@ namespace rtp::client
 
         rtp::net::Packet packet(rtp::net::OpCode::SetReady);
         packet << payload;
-        _network.sendPacket(0, packet.serialize(), engine::net::NetChannel::TCP);
+        _network.sendPacket(0, packet.serialize(), aer::net::NetChannel::TCP);
     }
 
     void NetworkSyncSystem::trySendMessage(const std::string& message) const
@@ -153,7 +153,7 @@ namespace rtp::client
 
         rtp::net::Packet packet(rtp::net::OpCode::RoomChatSended);
         packet << payload;
-        _network.sendPacket(0, packet.serialize(), engine::net::NetChannel::TCP);
+        _network.sendPacket(0, packet.serialize(), aer::net::NetChannel::TCP);
     }
 
     bool NetworkSyncSystem::isInRoom(void) const { return _isInRoom; }
@@ -191,11 +191,11 @@ namespace rtp::client
     // Private API
     /////////////////////////////////////////////////////////////////////////
 
-    void NetworkSyncSystem::handleEvent(engine::net::NetworkEvent& event)
+    void NetworkSyncSystem::handleEvent(aer::net::NetworkEvent& event)
     {
         try {
             auto packet = rtp::net::Packet::deserialize(event.payload);
-            if (event.channel == engine::net::NetChannel::UDP) {
+            if (event.channel == aer::net::NetChannel::UDP) {
                 _udpReady = true;
             }
             switch (packet.header.opCode) {
@@ -251,7 +251,7 @@ namespace rtp::client
                     break;
             }
         } catch (const std::exception &e) {
-            engine::core::warning("Client: invalid packet: {}", e.what());
+            aer::log::warning("Client: invalid packet: {}", e.what());
         }
 
         (void)event;
@@ -334,8 +334,8 @@ namespace rtp::client
             return;
         }
 
-        _registry.add<engine::ecs::components::NetworkId>(
-            entity.value(), engine::ecs::components::NetworkId{payload.netId});
+        _registry.add<aer::ecs::components::NetworkId>(
+            entity.value(), aer::ecs::components::NetworkId{payload.netId});
         _netIdToEntity[payload.netId] = entity.value();
     }
 
@@ -360,15 +360,15 @@ namespace rtp::client
         std::vector<rtp::net::EntitySnapshotPayload> snapshots;
         packet >> snapshots;
 
-        auto transforms = _registry.getComponents<engine::ecs::components::Transform>();
-        auto velocities = _registry.getComponents<engine::ecs::components::Velocity>();
+        auto transforms = _registry.getComponents<aer::ecs::components::Transform>();
+        auto velocities = _registry.getComponents<aer::ecs::components::Velocity>();
 
         for (const auto &snapshot : snapshots) {
             auto it = _netIdToEntity.find(snapshot.netId);
             if (it == _netIdToEntity.end()) {
                 continue;
             }
-            engine::ecs::Entity entity = it->second;
+            aer::ecs::Entity entity = it->second;
 
             if (transforms) {
                 auto &sa = transforms->get();

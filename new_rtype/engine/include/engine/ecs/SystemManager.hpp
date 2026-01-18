@@ -52,7 +52,7 @@
     #include <optional>
     #include <functional>
 
-namespace engine::ecs
+namespace aer::ecs
 {
     class SystemManager {
         public:

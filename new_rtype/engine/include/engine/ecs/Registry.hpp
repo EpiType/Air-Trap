@@ -13,8 +13,8 @@
     #include "engine/ecs/SparseArray.hpp"
     #include "engine/ecs/ZipView.hpp"
     #include "engine/ecs/Signature.hpp"
-    #include "engine/core/Logger.hpp"
-    #include "engine/core/Error.hpp"
+    #include "engine/log/Logger.hpp"
+    #include "engine/log/Error.hpp"
 
     #include <array>
     #include <concepts>
@@ -33,7 +33,7 @@
     #include <utility>
     #include <vector>
 
-namespace engine::ecs
+namespace aer::ecs
 {
     template <typename From, typename To>
     using ConstLike =
@@ -48,7 +48,7 @@ namespace engine::ecs
             ~Registry() noexcept = default;
 
             [[nodiscard]]
-            auto spawn(void) -> std::expected<Entity, engine::core::Error>;
+            auto spawn(void) -> std::expected<Entity, aer::core::Error>;
 
             void kill(Entity entity);
 
@@ -56,27 +56,27 @@ namespace engine::ecs
             auto registerComponent(this Self &self)
                 -> std::expected<std::reference_wrapper<ConstLike<Self,
                                                                   SparseArray<T>>>,
-                                 engine::core::Error>;
+                                 aer::core::Error>;
 
             template <Component T, typename Self>
             auto getComponents(this Self &self)
                 -> std::expected<std::reference_wrapper<ConstLike<Self,
                                                                   SparseArray<T>>>,
-                                 engine::core::Error>;
+                                 aer::core::Error>;
 
             [[nodiscard]]
             bool isAlive(Entity entity) const noexcept;
 
             template <Component T, typename... Args>
             auto add(Entity entity, Args &&...args)
-                -> std::expected<std::reference_wrapper<T>, engine::core::Error>;
+                -> std::expected<std::reference_wrapper<T>, aer::core::Error>;
 
             template <Component T, typename Self>
             [[nodiscard]]
             auto get(this Self &self)
                 -> std::expected<std::reference_wrapper<ConstLike<Self,
                                                                   SparseArray<T>>>,
-                                 engine::core::Error>;
+                                 aer::core::Error>;
 
             template <Component T>
             [[nodiscard]]

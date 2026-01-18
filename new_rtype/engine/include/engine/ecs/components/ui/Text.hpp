@@ -12,7 +12,7 @@
     #include "engine/math/Vec2.hpp"
     #include "engine/ui/UiUtilities.hpp"
 
-namespace engine::ecs::components
+namespace aer::ecs::components
 {
     /**
      * @struct Text
@@ -24,6 +24,6 @@ namespace engine::ecs::components
         ui::color color{255, 255, 255, 255};    /**< RGB color of the text */
         int zIndex{0};                          /**< Rendering order */
     };
-}  // namespace engine::ecs::components
+}  // namespace aer::ecs::components
 
 #endif /* !ENGINE_ECS_COMPONENTS_TEXT_HPP_ */

@@ -45,7 +45,7 @@
 #ifndef ENGINE_CORE_ERROR_HPP_
     #define ENGINE_CORE_ERROR_HPP_
 
-    #include "engine/core/LogLevel.hpp"
+    #include "engine/log/LogLevel.hpp"
 
     #include <cstdint>
     #include <format>
@@ -54,7 +54,7 @@
     #include <system_error>
     #include <utility>
 
-namespace engine::core
+namespace aer::log
 {
     /**
      * @enum ErrorCode
@@ -114,24 +114,24 @@ namespace std
      * enables automatic conversion to std::error_code when needed.
      */
     template <>
-    struct is_error_code_enum<engine::core::ErrorCode> : true_type {};
+    struct is_error_code_enum<aer::log::ErrorCode> : true_type {};
 }
 
 template <>
-struct std::formatter<engine::core::ErrorCode> : std::formatter<std::string_view> {
+struct std::formatter<aer::log::ErrorCode> : std::formatter<std::string_view> {
     /**
      * @brief Format an ErrorCode enum value
      * @param e The error code to format
      * @param ctx The format context
      * @return Iterator to the end of the formatted output
      */
-    auto format(engine::core::ErrorCode e, std::format_context &ctx) const
+    auto format(aer::log::ErrorCode e, std::format_context &ctx) const
     {
-        return std::formatter<std::string_view>::format(engine::core::toString(e), ctx);
+        return std::formatter<std::string_view>::format(aer::log::toString(e), ctx);
     }
 };
 
-namespace engine::core
+namespace aer::log
 {
     /**
      * @brief Get the RType error category for std::error_code
@@ -209,7 +209,7 @@ namespace engine::core
              * @return The log level representing error severity
              */
             [[nodiscard]]
-            core::Level severity(void) const noexcept;
+            log::Level severity(void) const noexcept;
             
             /**
              * @brief Get the current retry count
@@ -234,7 +234,7 @@ namespace engine::core
 
         private:
             ErrorCode _code;             /**< The error code */
-            core::Level _severity;        /**< Severity level of the error */
+            log::Level _severity;        /**< Severity level of the error */
             std::uint8_t _retryCount{0}; /**< Number of retry attempts */
             std::string _message;        /**< Formatted error message */
 
@@ -245,7 +245,7 @@ namespace engine::core
              * @param severity The severity level
              * @param msg The error message
              */
-            Error(ErrorCode code, core::Level severity, std::string_view msg);
+            Error(ErrorCode code, log::Level severity, std::string_view msg);
 
     };
 }
@@ -256,23 +256,23 @@ namespace engine::core
  * std::print.
  */
 template <>
-struct std::formatter<engine::core::Error> : std::formatter<std::string> {
+struct std::formatter<aer::log::Error> : std::formatter<std::string> {
     /**
      * @brief Format an Error object
      * @param e The error to format
      * @param ctx The format context
      * @return Iterator to the end of the formatted output
      */
-    inline auto format(const engine::core::Error &e, format_context &ctx) const
+    inline auto format(const aer::log::Error &e, format_context &ctx) const
     {
         return std::format_to(ctx.out(), "[{}] {}: {}",
                               e.severity(),
-                              engine::core::toString(e.code()),
+                              aer::log::toString(e.code()),
                               e.message());
     }
 };
 
-    #include "engine/core/Error.inl" /* Inline/Constexpr implementations */
-    #include "engine/core/Error.tpp" /* Template implementations */
+    #include "engine/log/Error.inl" /* Inline/Constexpr implementations */
+    #include "engine/log/Error.tpp" /* Template implementations */
 
 #endif /* !RTYPE_CORE_ERROR_HPP_ */

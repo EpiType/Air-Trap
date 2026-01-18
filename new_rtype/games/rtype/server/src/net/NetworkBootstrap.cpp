@@ -6,7 +6,7 @@
  */
 
 #include "server/include/rtype/net/NetworkBootstrap.hpp"
-#include "engine/core/Logger.hpp"
+#include "engine/log/Logger.hpp"
 
 namespace rtp::server::net
 {
@@ -15,8 +15,8 @@ namespace rtp::server::net
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
-    NetworkBootstrap::NetworkBootstrap(engine::net::INetworkEngine &networkEngine,
-                                       engine::net::ServerConfig config)
+    NetworkBootstrap::NetworkBootstrap(aer::net::INetworkEngine &networkEngine,
+                                       aer::net::ServerConfig config)
         : _networkEngine(networkEngine),
           _config(std::move(config))
     {
@@ -30,15 +30,15 @@ namespace rtp::server::net
     bool NetworkBootstrap::start(void)
     {
         if (_network) {
-            engine::core::info("NetworkBootstrap: Network already started");
+            aer::log::info("NetworkBootstrap: Network already started");
             return _network->start();
         }
-        engine::core::info("NetworkBootstrap: Creating network server");
+        aer::log::info("NetworkBootstrap: Creating network server");
         _network = _networkEngine.createServer(_config);
         if (!_network) {
             return false;
         }
-        engine::core::info("NetworkBootstrap: Starting network server");
+        aer::log::info("NetworkBootstrap: Starting network server");
         return _network->start();
     }
 
@@ -52,15 +52,15 @@ namespace rtp::server::net
     }
 
     void NetworkBootstrap::sendPacket(uint32_t sessionId,
-                                      engine::net::ByteSpan payload,
-                                      engine::net::NetChannel channel)
+                                      aer::net::ByteSpan payload,
+                                      aer::net::NetChannel channel)
     {
         if (_network) {
             _network->sendPacket(sessionId, payload, channel);
         }
     }
 
-    std::optional<engine::net::NetworkEvent> NetworkBootstrap::pollEvent(void)
+    std::optional<aer::net::NetworkEvent> NetworkBootstrap::pollEvent(void)
     {
         if (!_network) {
             return std::nullopt;
@@ -69,7 +69,7 @@ namespace rtp::server::net
     }
 
     void NetworkBootstrap::sendPacket(const rtp::net::Packet &packet,
-                                      engine::net::NetChannel channel)
+                                      aer::net::NetChannel channel)
     {
         const auto data = packet.serialize();
         sendPacket(packet.header.sessionId, data, channel);

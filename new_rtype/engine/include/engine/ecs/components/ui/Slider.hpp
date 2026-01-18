@@ -12,7 +12,7 @@
     #include "engine/math/Vec2.hpp"
     #include "engine/ui/UiUtilities.hpp"
 
-namespace engine::ecs::components
+namespace aer::ecs::components
 {
     /**
      * @struct Slider

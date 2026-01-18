@@ -12,7 +12,7 @@
     #include <type_traits>
     #include <concepts>
 
-namespace engine::math {
+namespace aer::math {
 
     /**
      * @brief 3D vector class template
@@ -58,6 +58,6 @@ namespace engine::math {
     using Vec3f = Vec3<float>;   /**< 3D vector with float components */
     using Vec3d = Vec3<double>;  /**< 3D vector with double components */
 
-} // namespace engine::math
+} // namespace aer::math
 
 #endif /* !RTYPE_MATH_VEC3_HPP_ */

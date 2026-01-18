@@ -93,7 +93,7 @@ namespace rtp::net
         uint32_t sessionId = 0;             /**< Session identifier */
     };
 
-    using Vec2f = engine::math::Vec2f;      /**< 2D vector with float components */
+    using Vec2f = aer::math::Vec2f;      /**< 2D vector with float components */
 
     struct ConnectPayload {
         uint32_t sessionId;                 /**< Session identifier */
@@ -227,10 +227,10 @@ namespace rtp::net
             void resetRead(void) { _readPos = 0; }
 
             [[nodiscard]]
-            engine::net::ByteBuffer serialize(void) const;
+            aer::net::ByteBuffer serialize(void) const;
 
             [[nodiscard]]
-            static Packet deserialize(engine::net::ByteSpan data);
+            static Packet deserialize(aer::net::ByteSpan data);
 
             template <typename T>
             static inline T to_network(T v);

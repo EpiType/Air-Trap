@@ -13,8 +13,8 @@ namespace rtp::client::systems
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
-    UISystem::UISystem(engine::ecs::Registry& registry,
-                       engine::render::IRenderer& renderer,
+    UISystem::UISystem(aer::ecs::Registry& registry,
+                       aer::render::IRenderer& renderer,
                        Settings& settings)
         : _registry(registry),
           _renderer(renderer),
@@ -28,11 +28,11 @@ namespace rtp::client::systems
         updateGamepadCursor(dt);
         handleGamepadInput();
 
-        const auto &input = engine::input::Input::instance();
+        const auto &input = aer::input::Input::instance();
         const int mouseX = input.mouseX();
         const int mouseY = input.mouseY();
 
-        engine::math::Vec2f cursorPos{
+        aer::math::Vec2f cursorPos{
             static_cast<float>(mouseX),
             static_cast<float>(mouseY)
         };
@@ -40,28 +40,28 @@ namespace rtp::client::systems
             cursorPos = _gamepadCursorPos;
         }
 
-        if (_registry.getComponents<engine::ecs::components::Button>()) {
+        if (_registry.getComponents<aer::ecs::components::Button>()) {
             handleMouseMove(cursorPos);
         }
 
         const bool isPressed =
-            input.isMousePressed(engine::input::MouseButton::Left);
+            input.isMousePressed(aer::input::MouseButton::Left);
         if (isPressed) {
             handleMouseClick(cursorPos);
         }
         // updateTextInputs(dt, mouseX, mouseY, isPressed);
     }
 
-    void UISystem::handleEvent(const engine::input::Event& event)
+    void UISystem::handleEvent(const aer::input::Event& event)
     {
-        if (event.type == engine::input::EventType::TextEntered) {
+        if (event.type == aer::input::EventType::TextEntered) {
             handleTextInput(static_cast<std::uint32_t>(event.text));
-        } else if (event.type == engine::input::EventType::KeyDown) {
+        } else if (event.type == aer::input::EventType::KeyDown) {
             handleKeyPressed(event.key);
         }
     }
 
-    void UISystem::renderGamepadCursor(engine::render::IRenderer& renderer)
+    void UISystem::renderGamepadCursor(aer::render::IRenderer& renderer)
     {
         (void)renderer;
     }
@@ -70,10 +70,10 @@ namespace rtp::client::systems
     // Private API
     //////////////////////////////////////////////////////////////////////////
 
-    void UISystem::handleMouseMove(engine::math::Vec2f mousePos)
+    void UISystem::handleMouseMove(aer::math::Vec2f mousePos)
     {
         auto buttonsResult =
-            _registry.getComponents<engine::ecs::components::Button>();
+            _registry.getComponents<aer::ecs::components::Button>();
         if (!buttonsResult) {
             return;
         }
@@ -82,17 +82,17 @@ namespace rtp::client::systems
         for (const auto &entity : buttons.entities()) {
             auto &button = buttons[entity];
             if (isMouseOverButton(button, mousePos)) {
-                button.state = engine::ecs::components::ButtonState::Hovered;
+                button.state = aer::ecs::components::ButtonState::Hovered;
             } else {
-                button.state = engine::ecs::components::ButtonState::Idle;
+                button.state = aer::ecs::components::ButtonState::Idle;
             }
         }
     }
 
-    void UISystem::handleMouseClick(engine::math::Vec2f mousePos)
+    void UISystem::handleMouseClick(aer::math::Vec2f mousePos)
     {
         auto dropdownsResult =
-            _registry.getComponents<engine::ecs::components::Dropdown>();
+            _registry.getComponents<aer::ecs::components::Dropdown>();
         if (dropdownsResult) {
             auto &dropdowns = dropdownsResult.value().get();
 
@@ -137,7 +137,7 @@ namespace rtp::client::systems
         }
 
         auto inputsResult =
-            _registry.getComponents<engine::ecs::components::TextInput>();
+            _registry.getComponents<aer::ecs::components::TextInput>();
         if (inputsResult) {
             auto &inputs = inputsResult.value().get();
             bool clickedOnAnyInput = false;
@@ -157,7 +157,7 @@ namespace rtp::client::systems
         }
 
         auto buttonsResult =
-            _registry.getComponents<engine::ecs::components::Button>();
+            _registry.getComponents<aer::ecs::components::Button>();
         if (buttonsResult) {
             auto &buttons = buttonsResult.value().get();
             std::function<void()> callback;
@@ -168,7 +168,7 @@ namespace rtp::client::systems
                     continue;
                 }
                 if (isMouseOverButton(button, mousePos)) {
-                    button.state = engine::ecs::components::ButtonState::Pressed;
+                    button.state = aer::ecs::components::ButtonState::Pressed;
                     if (button.onClick) {
                         callback = button.onClick;
                     }
@@ -183,7 +183,7 @@ namespace rtp::client::systems
         }
 
         auto slidersResult =
-            _registry.getComponents<engine::ecs::components::Slider>();
+            _registry.getComponents<aer::ecs::components::Slider>();
         if (slidersResult) {
             auto &sliders = slidersResult.value().get();
             for (const auto &entity : sliders.entities()) {
@@ -197,8 +197,8 @@ namespace rtp::client::systems
         }
     }
 
-    bool UISystem::isMouseOverButton(const engine::ecs::components::Button& button,
-                                     const engine::math::Vec2f& mousePos)
+    bool UISystem::isMouseOverButton(const aer::ecs::components::Button& button,
+                                     const aer::math::Vec2f& mousePos)
     {
         return mousePos.x >= button.position.x &&
                mousePos.x <= button.position.x + button.size.x &&
@@ -206,8 +206,8 @@ namespace rtp::client::systems
                mousePos.y <= button.position.y + button.size.y;
     }
 
-    bool UISystem::isMouseOverSlider(const engine::ecs::components::Slider& slider,
-                                     const engine::math::Vec2f& mousePos)
+    bool UISystem::isMouseOverSlider(const aer::ecs::components::Slider& slider,
+                                     const aer::math::Vec2f& mousePos)
     {
         return mousePos.x >= slider.position.x &&
                mousePos.x <= slider.position.x + slider.size.x &&
@@ -215,8 +215,8 @@ namespace rtp::client::systems
                mousePos.y <= slider.position.y + slider.size.y;
     }
 
-    bool UISystem::isMouseOverDropdown(const engine::ecs::components::Dropdown& dropdown,
-                                       const engine::math::Vec2f& mousePos)
+    bool UISystem::isMouseOverDropdown(const aer::ecs::components::Dropdown& dropdown,
+                                       const aer::math::Vec2f& mousePos)
     {
         return mousePos.x >= dropdown.position.x &&
                mousePos.x <= dropdown.position.x + dropdown.size.x &&
@@ -224,8 +224,8 @@ namespace rtp::client::systems
                mousePos.y <= dropdown.position.y + dropdown.size.y;
     }
 
-    bool UISystem::updateSliderValue(engine::ecs::components::Slider& slider,
-                                     const engine::math::Vec2f& mousePos)
+    bool UISystem::updateSliderValue(aer::ecs::components::Slider& slider,
+                                     const aer::math::Vec2f& mousePos)
     {
         float relativeX = mousePos.x - slider.position.x;
         float normalized = relativeX / slider.size.x;
@@ -248,8 +248,8 @@ namespace rtp::client::systems
         return true;
     }
 
-    int UISystem::getDropdownOptionAtMouse(const engine::ecs::components::Dropdown& dropdown,
-                                           const engine::math::Vec2f& mousePos)
+    int UISystem::getDropdownOptionAtMouse(const aer::ecs::components::Dropdown& dropdown,
+                                           const aer::math::Vec2f& mousePos)
     {
         float optionHeight = dropdown.size.y;
         float startY = dropdown.position.y + dropdown.size.y;
@@ -267,8 +267,8 @@ namespace rtp::client::systems
         return -1;
     }
 
-    bool UISystem::isMouseOverTextInput(const engine::ecs::components::TextInput& input,
-                                        const engine::math::Vec2f& mousePos) const
+    bool UISystem::isMouseOverTextInput(const aer::ecs::components::TextInput& input,
+                                        const aer::math::Vec2f& mousePos) const
     {
         return mousePos.x >= input.position.x &&
                mousePos.x <= input.position.x + input.size.x &&
@@ -279,7 +279,7 @@ namespace rtp::client::systems
     void UISystem::clearAllTextInputFocus()
     {
         auto inputsResult =
-            _registry.getComponents<engine::ecs::components::TextInput>();
+            _registry.getComponents<aer::ecs::components::TextInput>();
         if (!inputsResult) {
             return;
         }
@@ -292,16 +292,16 @@ namespace rtp::client::systems
         }
     }
 
-    void UISystem::focusTextInputAt(const engine::math::Vec2f& mousePos)
+    void UISystem::focusTextInputAt(const aer::math::Vec2f& mousePos)
     {
         auto inputsResult =
-            _registry.getComponents<engine::ecs::components::TextInput>();
+            _registry.getComponents<aer::ecs::components::TextInput>();
         if (!inputsResult) {
             return;
         }
 
         auto &inputs = inputsResult.value().get();
-        engine::ecs::Entity focused = engine::ecs::NullEntity;
+        aer::ecs::Entity focused = aer::ecs::NullEntity;
         int focusedZ = 0;
         bool found = false;
 
@@ -328,7 +328,7 @@ namespace rtp::client::systems
     void UISystem::handleTextInput(std::uint32_t unicode)
     {
         auto inputsResult =
-            _registry.getComponents<engine::ecs::components::TextInput>();
+            _registry.getComponents<aer::ecs::components::TextInput>();
         if (!inputsResult) {
             return;
         }
@@ -385,16 +385,16 @@ namespace rtp::client::systems
         }
     }
 
-    void UISystem::handleKeyPressed(engine::input::KeyCode key)
+    void UISystem::handleKeyPressed(aer::input::KeyCode key)
     {
-        if (key == engine::input::KeyCode::Escape) {
+        if (key == aer::input::KeyCode::Escape) {
             clearAllTextInputFocus();
             return;
         }
 
-        if (key == engine::input::KeyCode::Return) {
+        if (key == aer::input::KeyCode::Return) {
             auto inputsResult =
-                _registry.getComponents<engine::ecs::components::TextInput>();
+                _registry.getComponents<aer::ecs::components::TextInput>();
             if (!inputsResult) {
                 return;
             }
@@ -415,13 +415,13 @@ namespace rtp::client::systems
     // bool UISystem::updateTextInputs(float dt, int, int, bool)
     // {
     //     auto inputsOpt =
-    //         _registry.getComponents<engine::ecs::components::TextInput>();
+    //         _registry.getComponents<aer::ecs::components::TextInput>();
     //     if (!inputsOpt) {
     //         return false;
     //     }
     //     auto &inputs = inputsOpt.value().get();
 
-    //     engine::ecs::Entity focused = engine::ecs::NullEntity;
+    //     aer::ecs::Entity focused = aer::ecs::NullEntity;
     //     for (const auto &e : inputs.entities()) {
     //         if (inputs[e].isFocused) {
     //             focused = e;
@@ -439,11 +439,11 @@ namespace rtp::client::systems
     //         focusedInput.showCursor = !focusedInput.showCursor;
     //     }
 
-    //     const auto &events = engine::input::Input::instance().events();
+    //     const auto &events = aer::input::Input::instance().events();
     //     for (const auto &event : events) {
-    //         if (event.type == engine::input::EventType::TextEntered) {
+    //         if (event.type == aer::input::EventType::TextEntered) {
     //             handleTextInput(static_cast<std::uint32_t>(event.text));
-    //         } else if (event.type == engine::input::EventType::KeyDown) {
+    //         } else if (event.type == aer::input::EventType::KeyDown) {
     //             handleKeyPressed(event.key);
     //         }
     //     }
@@ -459,8 +459,8 @@ namespace rtp::client::systems
     {
     }
 
-    // bool UISystem::isMouseOver(const engine::math::Vec2f& pos,
-    //                            const engine::math::Vec2f& size,
+    // bool UISystem::isMouseOver(const aer::math::Vec2f& pos,
+    //                            const aer::math::Vec2f& size,
     //                            int mouseX,
     //                            int mouseY) const
     // {

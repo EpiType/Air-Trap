@@ -15,10 +15,10 @@
     #include "engine/net/NetworkUtils.hpp"
 
 /**
- * @namespace engine::net
+ * @namespace aer::net
  * @brief Networking components and structures for the engine
  */
-namespace engine::net
+namespace aer::net
 {
     /**
      * @class INetwork

@@ -14,7 +14,7 @@
     /* Engine */
     #include "engine/ecs/Entity.hpp"
     #include "engine/ecs/Registry.hpp"
-    #include "engine/core/Error.hpp"
+    #include "engine/log/Error.hpp"
     #include "engine/math/Vec2.hpp"
     #include "engine/ecs/components/ImportAllEngineComponents.hpp"
 
@@ -31,17 +31,17 @@ namespace rtp::client
     struct EntityTemplate {
         std::string id;                                     /**< Enemy type identifier */
 
-        engine::math::Vec2f position{0.0f, 0.0f};           /**< Spawn position */
+        aer::math::Vec2f position{0.0f, 0.0f};           /**< Spawn position */
         float rotation{0.0f};                               /**< Spawn rotation */
-        engine::math::Vec2f scale{1.0f, 1.0f};              /**< Spawn scale */
+        aer::math::Vec2f scale{1.0f, 1.0f};              /**< Spawn scale */
 
         bool withVelocity{false};                           /**< Whether to add Velocity component */
-        engine::ecs::components::Velocity velocity{};       /**< Initial velocity */
+        aer::ecs::components::Velocity velocity{};       /**< Initial velocity */
 
-        engine::ecs::components::Sprite sprite{};           /**< Sprite data */
+        aer::ecs::components::Sprite sprite{};           /**< Sprite data */
 
         bool withAnimation{false};                          /**< Whether to add Animation component */
-        engine::ecs::components::Animation animation{};     /**< Initial animation data */
+        aer::ecs::components::Animation animation{};     /**< Initial animation data */
 
         bool withParallax{false};                           /**< Whether to add ParallaxLayer component */
         rtp::ecs::components::ParallaxLayer parallax{};     /**< Parallax layer data */
@@ -62,21 +62,21 @@ namespace rtp::client
             int frameTop;
             int totalFrames;
             float speed;
-            engine::math::Vec2f direction;
-            engine::math::Vec2f scale{1.0f, 1.0f};
+            aer::math::Vec2f direction;
+            aer::math::Vec2f scale{1.0f, 1.0f};
         };
 
         struct ParallaxDef {
             const char *texturePath;
             float velocitySpeed;
-            engine::math::Vec2f velocityDir;
+            aer::math::Vec2f velocityDir;
             int opacity;
             float parallaxSpeed;
             float textureWidth;
-            engine::math::Vec2f scale{2.0f, 2.0f};
+            aer::math::Vec2f scale{2.0f, 2.0f};
         };
 
-        static EntityTemplate makeFromDef(const engine::math::Vec2f &initialPos, const SpriteAnimDef &d)
+        static EntityTemplate makeFromDef(const aer::math::Vec2f &initialPos, const SpriteAnimDef &d)
         {
             EntityTemplate t;
             t.id = d.id;
@@ -165,97 +165,97 @@ namespace rtp::client
             return makeParallax(kParallaxNear);
         }
 
-        static EntityTemplate rt1_1(const engine::math::Vec2f& initialPos)
+        static EntityTemplate rt1_1(const aer::math::Vec2f& initialPos)
         {
             return makeFromDef(initialPos, k_rt1_1);
         }
 
-        static EntityTemplate rt1_2(const engine::math::Vec2f& initialPos)
+        static EntityTemplate rt1_2(const aer::math::Vec2f& initialPos)
         {
             return makeFromDef(initialPos, k_rt1_2);
         }
 
-        static EntityTemplate rt1_3(const engine::math::Vec2f& initialPos)
+        static EntityTemplate rt1_3(const aer::math::Vec2f& initialPos)
         {
             return makeFromDef(initialPos, k_rt1_3);
         }
 
-        static EntityTemplate rt1_4(const engine::math::Vec2f& initialPos)
+        static EntityTemplate rt1_4(const aer::math::Vec2f& initialPos)
         {
             return makeFromDef(initialPos, k_rt1_4);
         }
 
-        static EntityTemplate rt1_5(const engine::math::Vec2f& initialPos)
+        static EntityTemplate rt1_5(const aer::math::Vec2f& initialPos)
         {
             return makeFromDef(initialPos, k_rt1_5);
         }
 
-        static EntityTemplate rt1_6(const engine::math::Vec2f& initialPos)
+        static EntityTemplate rt1_6(const aer::math::Vec2f& initialPos)
         {
             return makeFromDef(initialPos, k_rt1_6);
         }
 
-        static EntityTemplate rt1_7(const engine::math::Vec2f& initialPos)
+        static EntityTemplate rt1_7(const aer::math::Vec2f& initialPos)
         {
             return makeFromDef(initialPos, k_rt1_7);
         }
 
-        static EntityTemplate rt1_8(const engine::math::Vec2f& initialPos)
+        static EntityTemplate rt1_8(const aer::math::Vec2f& initialPos)
         {
             return makeFromDef(initialPos, k_rt1_8);
         }
 
-        static EntityTemplate rt1_12(const engine::math::Vec2f& initialPos)
+        static EntityTemplate rt1_12(const aer::math::Vec2f& initialPos)
         {
             return makeFromDef(initialPos, k_rt1_12);
         }
 
-        static EntityTemplate rt1_13(const engine::math::Vec2f& initialPos)
+        static EntityTemplate rt1_13(const aer::math::Vec2f& initialPos)
         {
             return makeFromDef(initialPos, k_rt1_13);
         }
 
-        static EntityTemplate rt2_2(const engine::math::Vec2f& initialPos)
+        static EntityTemplate rt2_2(const aer::math::Vec2f& initialPos)
         {
             return makeFromDef(initialPos, k_rt2_2);
         }
 
-        static EntityTemplate rt2_3(const engine::math::Vec2f& initialPos)
+        static EntityTemplate rt2_3(const aer::math::Vec2f& initialPos)
         {
             return makeFromDef(initialPos, k_rt2_3);
         }
 
-        static EntityTemplate rt2_4(const engine::math::Vec2f& initialPos)
+        static EntityTemplate rt2_4(const aer::math::Vec2f& initialPos)
         {
             return makeFromDef(initialPos, k_rt2_4);
         }
 
-        static EntityTemplate rt2_5(const engine::math::Vec2f& initialPos)
+        static EntityTemplate rt2_5(const aer::math::Vec2f& initialPos)
         {
             return makeFromDef(initialPos, k_rt2_5);
         }
 
-        static EntityTemplate rt2_6(const engine::math::Vec2f& initialPos)
+        static EntityTemplate rt2_6(const aer::math::Vec2f& initialPos)
         {
             return makeFromDef(initialPos, k_rt2_6);
         }
 
-        static EntityTemplate rt2_8(const engine::math::Vec2f& initialPos)
+        static EntityTemplate rt2_8(const aer::math::Vec2f& initialPos)
         {
             return makeFromDef(initialPos, k_rt2_7);
         }
 
-        static EntityTemplate rt2_7(const engine::math::Vec2f& initialPos)
+        static EntityTemplate rt2_7(const aer::math::Vec2f& initialPos)
         {
             return makeFromDef(initialPos, k_rt2_7);
         }
 
-        static EntityTemplate createBulletEnemy(const engine::math::Vec2f& initialPos)
+        static EntityTemplate createBulletEnemy(const aer::math::Vec2f& initialPos)
         {
             return makeFromDef(initialPos, k_rt2_3);
         }
 
-        static EntityTemplate createBasicScout2(const engine::math::Vec2f& initialPos)
+        static EntityTemplate createBasicScout2(const aer::math::Vec2f& initialPos)
         {
             return makeFromDef(initialPos, k_rt2_2);
         }
@@ -268,16 +268,16 @@ namespace rtp::client
      */
     class EntityBuilder {
     public:
-        explicit EntityBuilder(engine::ecs::Registry &registry);
+        explicit EntityBuilder(aer::ecs::Registry &registry);
 
         [[nodiscard]]
-        auto spawn(const EntityTemplate &t) -> std::expected<engine::ecs::Entity, engine::core::Error>;
+        auto spawn(const EntityTemplate &t) -> std::expected<aer::ecs::Entity, aer::core::Error>;
 
-        void kill(engine::ecs::Entity entity);
+        void kill(aer::ecs::Entity entity);
 
-        void update(engine::ecs::Entity entity, const EntityTemplate &t);
+        void update(aer::ecs::Entity entity, const EntityTemplate &t);
     private:
-        engine::ecs::Registry &_registry;
+        aer::ecs::Registry &_registry;
     };
 }
 

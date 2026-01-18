@@ -35,7 +35,7 @@ namespace rtp::server::systems
              * @param network Reference to the network instance
              * @param players Reference to the PlayerSystem instance
              */
-            RoomSystem(engine::net::INetwork &network, PlayerSystem &players);
+            RoomSystem(aer::net::INetwork &network, PlayerSystem &players);
 
             /**
              * @brief Create a new room.
@@ -127,7 +127,7 @@ namespace rtp::server::systems
             void setOnRoomStarted(OnRoomStarted cb);
 
         private:
-            engine::net::INetwork &_network;        /**< Network instance for communication */
+            aer::net::INetwork &_network;        /**< Network instance for communication */
             PlayerSystem &_players;                 /**< Reference to the PlayerSystem instance */
             std::unordered_map<uint32_t,
                 RoomPtr> _rooms;                    /**< Map of room ID to Room instances */

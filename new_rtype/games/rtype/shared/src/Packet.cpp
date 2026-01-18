@@ -13,7 +13,7 @@ namespace rtp::net
     // Public API
     ///////////////////////////////////////////////////////////////////////////
 
-    engine::net::ByteBuffer Packet::serialize() const
+    aer::net::ByteBuffer Packet::serialize() const
     {
         Header net = header;
         net.magic = to_network(net.magic);
@@ -22,7 +22,7 @@ namespace rtp::net
         net.ackId = to_network(net.ackId);
         net.sessionId = to_network(net.sessionId);
 
-        engine::net::ByteBuffer data;
+        aer::net::ByteBuffer data;
         data.resize(sizeof(Header) + body.size());
         std::memcpy(data.data(), &net, sizeof(Header));
         if (!body.empty()) {
@@ -31,7 +31,7 @@ namespace rtp::net
         return data;
     }
 
-    Packet Packet::deserialize(engine::net::ByteSpan data)
+    Packet Packet::deserialize(aer::net::ByteSpan data)
     {
         if (data.size() < sizeof(Header)) {
             throw std::runtime_error("Packet deserialize: buffer too small");

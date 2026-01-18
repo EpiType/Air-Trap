@@ -7,7 +7,7 @@
 
 #include "engine/input/Input.hpp"
 
-namespace engine::input
+namespace aer::input
 {
     Input &Input::instance()
     {

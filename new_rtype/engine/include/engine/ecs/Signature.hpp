@@ -45,7 +45,7 @@
     #include <cstdint>
     #include <cstddef>
 
-namespace engine::ecs
+namespace aer::ecs
 {
     /**
      * @brief Maximum number of unique component types supported

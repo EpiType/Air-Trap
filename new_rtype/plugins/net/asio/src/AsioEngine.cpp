@@ -7,7 +7,7 @@
 
 #include "plugins/net/asio/include/AsioEngine.hpp"
 
-#include "engine/core/Logger.hpp"
+#include "engine/log/Logger.hpp"
 #include "engine/net/ANetwork.hpp"
 
 #include <asio.hpp>
@@ -22,7 +22,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace engine::net::asio {
+namespace aer::net::asio {
 namespace {
 using tcp = ::asio::ip::tcp;
 using udp = ::asio::ip::udp;
@@ -41,7 +41,7 @@ std::uint32_t from_network_u32(std::uint32_t value) {
   return to_network_u32(value);
 }
 
-bool send_with_length(tcp::socket &socket, engine::net::ByteSpan payload) {
+bool send_with_length(tcp::socket &socket, aer::net::ByteSpan payload) {
   std::uint32_t size = static_cast<std::uint32_t>(payload.size());
   std::uint32_t net = to_network_u32(size);
   std::array<std::uint8_t, kHeaderSize> header{};
@@ -61,9 +61,9 @@ bool send_with_length(tcp::socket &socket, engine::net::ByteSpan payload) {
   return true;
 }
 
-class AsioClientNetwork final : public engine::net::ANetwork {
+class AsioClientNetwork final : public aer::net::ANetwork {
 public:
-  explicit AsioClientNetwork(engine::net::ClientConfig config)
+  explicit AsioClientNetwork(aer::net::ClientConfig config)
       : _config(std::move(config)), _tcp(_io), _udp(_io) {}
 
   ~AsioClientNetwork() override { stop(); }
@@ -130,16 +130,16 @@ public:
     }
   }
 
-  void sendPacket(uint32_t, engine::net::ByteSpan payload,
-                  engine::net::NetChannel channel) override {
+  void sendPacket(uint32_t, aer::net::ByteSpan payload,
+                  aer::net::NetChannel channel) override {
     if (!_running) {
       return;
     }
 
-    auto data = std::make_shared<engine::net::ByteBuffer>(payload.begin(),
+    auto data = std::make_shared<aer::net::ByteBuffer>(payload.begin(),
                                                           payload.end());
     ::asio::post(_io, [this, data, channel]() {
-      if (channel == engine::net::NetChannel::TCP) {
+      if (channel == aer::net::NetChannel::TCP) {
         std::lock_guard lock(_writeMutex);
         send_with_length(_tcp, *data);
       } else {
@@ -172,7 +172,7 @@ private:
   void startTcpReadBody() {
     auto self = this;
     if (_tcpBody.empty()) {
-      pushEvent(engine::net::NetworkEvent{0, {}, engine::net::NetChannel::TCP});
+      pushEvent(aer::net::NetworkEvent{0, {}, aer::net::NetChannel::TCP});
       startTcpReadHeader();
       return;
     }
@@ -181,8 +181,8 @@ private:
                          if (ec || !_running) {
                            return;
                          }
-                         pushEvent(engine::net::NetworkEvent{
-                             0, _tcpBody, engine::net::NetChannel::TCP});
+                         pushEvent(aer::net::NetworkEvent{
+                             0, _tcpBody, aer::net::NetChannel::TCP});
                          startTcpReadHeader();
                        });
   }
@@ -194,10 +194,10 @@ private:
         ::asio::buffer(_udpBuffer), _udpSender,
         [this, self](const ::asio::error_code &ec, std::size_t size) {
           if (!ec && size > 0 && _running) {
-            engine::net::ByteBuffer payload(_udpBuffer.begin(),
+            aer::net::ByteBuffer payload(_udpBuffer.begin(),
                                             _udpBuffer.begin() + size);
-            pushEvent(engine::net::NetworkEvent{0, std::move(payload),
-                                                engine::net::NetChannel::UDP});
+            pushEvent(aer::net::NetworkEvent{0, std::move(payload),
+                                                aer::net::NetChannel::UDP});
           }
           if (_running) {
             startUdpRead();
@@ -206,7 +206,7 @@ private:
   }
 
 private:
-  engine::net::ClientConfig _config{};
+  aer::net::ClientConfig _config{};
   ::asio::io_context _io;
   tcp::socket _tcp;
   udp::socket _udp;
@@ -217,15 +217,15 @@ private:
   std::mutex _writeMutex;
 
   std::array<std::uint8_t, kHeaderSize> _tcpHeader{};
-  engine::net::ByteBuffer _tcpBody{};
+  aer::net::ByteBuffer _tcpBody{};
 
   std::array<std::uint8_t, kMaxMessageSize> _udpBuffer{};
   udp::endpoint _udpSender{};
 };
 
-class AsioServerNetwork final : public engine::net::ANetwork {
+class AsioServerNetwork final : public aer::net::ANetwork {
 public:
-  explicit AsioServerNetwork(engine::net::ServerConfig config)
+  explicit AsioServerNetwork(aer::net::ServerConfig config)
       : _config(std::move(config)), _acceptor(_io), _udp(_io) {}
 
   ~AsioServerNetwork() override { stop(); }
@@ -296,8 +296,8 @@ public:
     }
   }
 
-  void sendPacket(uint32_t sessionId, engine::net::ByteSpan payload,
-                  engine::net::NetChannel channel) override {
+  void sendPacket(uint32_t sessionId, aer::net::ByteSpan payload,
+                  aer::net::NetChannel channel) override {
     if (!_running) {
       return;
     }
@@ -307,13 +307,13 @@ public:
       return;
     }
 
-    auto data = std::make_shared<engine::net::ByteBuffer>(payload.begin(),
+    auto data = std::make_shared<aer::net::ByteBuffer>(payload.begin(),
                                                           payload.end());
     ::asio::post(_io, [this, session, data, channel]() {
       if (!session) {
         return;
       }
-      if (channel == engine::net::NetChannel::TCP) {
+      if (channel == aer::net::NetChannel::TCP) {
         std::lock_guard lock(session->writeMutex);
         send_with_length(session->socket, *data);
         return;
@@ -335,7 +335,7 @@ private:
     std::mutex writeMutex;
     std::optional<udp::endpoint> udpEndpoint;
     std::array<std::uint8_t, kHeaderSize> header{};
-    engine::net::ByteBuffer body{};
+    aer::net::ByteBuffer body{};
 
     Session(uint32_t sid, tcp::socket sock)
         : id(sid), socket(std::move(sock)) {}
@@ -380,7 +380,7 @@ private:
     _acceptor.async_accept(*socket, [this,
                                      socket](const ::asio::error_code &ec) {
       if (!ec && _running) {
-        engine::core::info("AsioServerNetwork: New TCP connection accepted");
+        aer::log::info("AsioServerNetwork: New TCP connection accepted");
         const uint32_t id = _nextSessionId++;
         auto session = std::make_shared<Session>(id, std::move(*socket));
         {
@@ -417,8 +417,8 @@ private:
 
   void startTcpReadBody(const std::shared_ptr<Session> &session) {
     if (session->body.empty()) {
-      pushEvent(engine::net::NetworkEvent{
-          session->id, {}, engine::net::NetChannel::TCP});
+      pushEvent(aer::net::NetworkEvent{
+          session->id, {}, aer::net::NetChannel::TCP});
       startTcpReadHeader(session);
       return;
     }
@@ -431,8 +431,8 @@ private:
             removeSession(session->id);
             return;
           }
-          pushEvent(engine::net::NetworkEvent{session->id, session->body,
-                                              engine::net::NetChannel::TCP});
+          pushEvent(aer::net::NetworkEvent{session->id, session->body,
+                                              aer::net::NetChannel::TCP});
           startTcpReadHeader(session);
         });
   }
@@ -445,11 +445,11 @@ private:
           if (!ec && size > 0 && _running) {
             auto session = matchSession(_udpSender);
             if (session) {
-              engine::net::ByteBuffer payload(_udpBuffer.begin(),
+              aer::net::ByteBuffer payload(_udpBuffer.begin(),
                                               _udpBuffer.begin() + size);
               pushEvent(
-                  engine::net::NetworkEvent{session->id, std::move(payload),
-                                            engine::net::NetChannel::UDP});
+                  aer::net::NetworkEvent{session->id, std::move(payload),
+                                            aer::net::NetChannel::UDP});
             }
           }
           if (_running) {
@@ -477,7 +477,7 @@ private:
   }
 
 private:
-  engine::net::ServerConfig _config{};
+  aer::net::ServerConfig _config{};
   ::asio::io_context _io;
   tcp::acceptor _acceptor;
   udp::socket _udp;
@@ -495,25 +495,25 @@ private:
 
 } // namespace
 
-std::string AsioEngine::getName(void) const { return "asio"; }
+std::string Asioaer::getName(void) const { return "asio"; }
 
-INetwork *AsioEngine::createClient(const ClientConfig &config) {
+INetwork *Asioaer::createClient(const ClientConfig &config) {
   return new AsioClientNetwork(config);
 }
 
-INetwork *AsioEngine::createServer(const ServerConfig &config) {
+INetwork *Asioaer::createServer(const ServerConfig &config) {
   return new AsioServerNetwork(config);
 }
 
-void AsioEngine::destroy(INetwork *network) { delete network; }
-} // namespace engine::net::asio
+void Asioaer::destroy(INetwork *network) { delete network; }
+} // namespace aer::net::asio
 
 extern "C" {
-    engine::net::INetworkEngine *CreateNetworkEngine() {
-        return new engine::net::asio::AsioEngine();
+    aer::net::INetworkEngine *CreateNetworkEngine() {
+        return new aer::net::asio::AsioEngine();
     }
 
-    void DestroyNetworkEngine(engine::net::INetworkEngine *engine) {
+    void DestroyNetworkEngine(aer::net::INetworkEngine *engine) {
         delete engine;
     }
 }

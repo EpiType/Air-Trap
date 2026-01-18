@@ -8,7 +8,7 @@
 #include "RenderSFML.hpp"
 #include <unordered_map>
 
-namespace engine::render
+namespace aer::render
 {
     namespace
     {
@@ -86,7 +86,7 @@ namespace engine::render
 
     bool RenderSFML::init(int width, int height, const std::string& title)
     {
-        engine::core::info("Initializing SFML Renderer: {}x{} - '{}'", width, height, title);
+        aer::log::info("Initializing SFML Renderer: {}x{} - '{}'", width, height, title);
         _window.create(
             sf::VideoMode({static_cast<unsigned int>(width),
                            static_cast<unsigned int>(height)}),
@@ -157,7 +157,7 @@ namespace engine::render
     {
         sf::Font font;
         if (!font.openFromFile(path)) {
-            engine::core::warning("RenderSFML: failed to load font '{}'", path);
+            aer::log::warning("RenderSFML: failed to load font '{}'", path);
             return 0;
         }
         std::uint32_t id = _nextFontId++;
@@ -170,7 +170,7 @@ namespace engine::render
         _fonts.erase(id);
     }
 
-    std::vector<engine::input::Event> RenderSFML::pollEvents(void)
+    std::vector<aer::input::Event> RenderSFML::pollEvents(void)
     {
         std::vector<input::Event> outEvents;
         if (!_window.isOpen()) {
@@ -330,16 +330,16 @@ namespace engine::render
         }
     }
 
-} // namespace engine::render
+} // namespace aer::render
 
 extern "C"
 {
-    engine::render::IRenderer* CreateRenderer()
+    aer::render::IRenderer* CreateRenderer()
     {
-        return new engine::render::RenderSFML();
+        return new aer::render::RenderSFML();
     }
 
-    void DestroyRenderer(engine::render::IRenderer* renderer)
+    void DestroyRenderer(aer::render::IRenderer* renderer)
     {
         delete renderer;
     }

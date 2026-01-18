@@ -13,10 +13,10 @@
     #include "engine/math/Vec2.hpp"
 
 /**
- * @namespace engine::render
+ * @namespace aer::render
  * @brief Rendering components and structures for the engine
  */
-namespace engine::render
+namespace aer::render
 {
     /** 
      * @struct RenderEntity

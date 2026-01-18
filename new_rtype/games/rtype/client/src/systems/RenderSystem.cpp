@@ -13,9 +13,9 @@ namespace rtp::client::systems
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
-    RenderSystem::RenderSystem(engine::ecs::Registry& registry,
-                               engine::render::IRenderer& renderer,
-                               engine::render::RenderFrame& frame)
+    RenderSystem::RenderSystem(aer::ecs::Registry& registry,
+                               aer::render::IRenderer& renderer,
+                               aer::render::RenderFrame& frame)
         : _registry(registry), _renderer(renderer), _frame(frame)
     {
     }
@@ -24,11 +24,11 @@ namespace rtp::client::systems
     {
         _frame.sprites.clear();
 
-        auto view = _registry.zipView<engine::ecs::components::Transform,
-                                      engine::ecs::components::Sprite>();
+        auto view = _registry.zipView<aer::ecs::components::Transform,
+                                      aer::ecs::components::Sprite>();
 
         for (auto&& [transform, sprite] : view) {
-            engine::render::RenderSprite renderSprite;
+            aer::render::RenderSprite renderSprite;
             renderSprite.textureId = getTextureId(sprite.texturePath);
             renderSprite.position = { transform.position.x, transform.position.y };
             renderSprite.scale = { transform.scale.x, transform.scale.y };

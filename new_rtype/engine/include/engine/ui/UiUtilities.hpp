@@ -13,7 +13,7 @@
     #include <optional>
     #include <string>
 
-namespace engine::ui
+namespace aer::ui
 {
     ////////////////////////////////////////////////////////////////////////////
     // Structs
@@ -32,9 +32,9 @@ namespace engine::ui
         unsigned int fontSize;
     };
 
-    using position = engine::math::Vec2f;
+    using position = aer::math::Vec2f;
 
-    using size = engine::math::Vec2f;
+    using size = aer::math::Vec2f;
 
 }
 

@@ -11,11 +11,11 @@ namespace rtp::client::scenes
 {
     namespace
     {
-        engine::ui::textContainer makeText(const std::string &content,
+        aer::ui::textContainer makeText(const std::string &content,
                                            const std::string &font,
                                            unsigned int size)
         {
-            engine::ui::textContainer text;
+            aer::ui::textContainer text;
             text.content = content;
             text.FontPath = font;
             text.fontSize = size;
@@ -27,7 +27,7 @@ namespace rtp::client::scenes
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
-    LobbyScene::LobbyScene(engine::ecs::Registry& uiRegistry,
+    LobbyScene::LobbyScene(aer::ecs::Registry& uiRegistry,
                            Settings& settings,
                            TranslationManager& translation,
                            NetworkSyncSystem& network,
@@ -47,7 +47,7 @@ namespace rtp::client::scenes
         const std::string refreshLabel = _translation.get("lobby.refresh");
         const std::string backLabel = _translation.get("common.back");
 
-        engine::ui::UiFactory::createText(
+        aer::ui::UiFactory::createText(
             _uiRegistry,
             {520.0f, 80.0f},
             makeText(title == "lobby.title" ? "LOBBY" : title, "assets/fonts/title.ttf", 64),
@@ -55,13 +55,13 @@ namespace rtp::client::scenes
             {255, 200, 100}
         );
 
-        engine::ui::UiFactory::createText(
+        aer::ui::UiFactory::createText(
             _uiRegistry,
             {360.0f, 210.0f},
             makeText("Room name", "assets/fonts/main.ttf", 22)
         );
 
-        engine::ui::UiFactory::createTextInput(
+        aer::ui::UiFactory::createTextInput(
             _uiRegistry,
             {360.0f, 245.0f},
             {560.0f, 45.0f},
@@ -71,7 +71,7 @@ namespace rtp::client::scenes
             [this](const std::string &text) { _roomName = text; }
         );
 
-        engine::ui::UiFactory::createButton(
+        aer::ui::UiFactory::createButton(
             _uiRegistry,
             {360.0f, 320.0f},
             {270.0f, 60.0f},
@@ -88,7 +88,7 @@ namespace rtp::client::scenes
             }
         );
 
-        engine::ui::UiFactory::createButton(
+        aer::ui::UiFactory::createButton(
             _uiRegistry,
             {650.0f, 320.0f},
             {270.0f, 60.0f},
@@ -97,7 +97,7 @@ namespace rtp::client::scenes
             [this]() { _networkSystem.requestListRooms(); }
         );
 
-        engine::ui::UiFactory::createButton(
+        aer::ui::UiFactory::createButton(
             _uiRegistry,
             {360.0f, 410.0f},
             {560.0f, 60.0f},
@@ -113,7 +113,7 @@ namespace rtp::client::scenes
         _uiRegistry.purge();
     }
 
-    void LobbyScene::handleEvent(const engine::input::Event &)
+    void LobbyScene::handleEvent(const aer::input::Event &)
     {
     }
 

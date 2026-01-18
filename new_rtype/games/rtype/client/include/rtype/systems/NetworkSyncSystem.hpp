@@ -35,7 +35,7 @@ namespace rtp::client {
      * @class NetworkSyncSystem
      * @brief System to handle network-related operations on the client side.
      */
-    class NetworkSyncSystem : public engine::ecs::ISystem
+    class NetworkSyncSystem : public aer::ecs::ISystem
     {
         public:
             enum class State {
@@ -55,8 +55,8 @@ namespace rtp::client {
              * @param network Reference to the client network manager
              * @param registry Reference to the entity registry
              */
-            NetworkSyncSystem(engine::net::INetwork& network,
-                            engine::ecs::Registry& registry,
+            NetworkSyncSystem(aer::net::INetwork& network,
+                            aer::ecs::Registry& registry,
                             EntityBuilder builder);
 
             //////////////////////////////////////////////////////////////////////////////
@@ -229,9 +229,9 @@ namespace rtp::client {
             bool consumeKicked(void);
 
         private:
-            engine::net::INetwork& _network;                                       /**< Reference to the client network manager */
-            engine::ecs::Registry& _registry;                                 /**< Reference to the entity registry */
-            std::unordered_map<uint32_t, engine::ecs::Entity> _netIdToEntity; /**< Map of network IDs to entities */
+            aer::net::INetwork& _network;                                       /**< Reference to the client network manager */
+            aer::ecs::Registry& _registry;                                 /**< Reference to the entity registry */
+            std::unordered_map<uint32_t, aer::ecs::Entity> _netIdToEntity; /**< Map of network IDs to entities */
             EntityBuilder _builder;                                        /**< Entity builder for spawning entities */
 
         private:
@@ -259,7 +259,7 @@ namespace rtp::client {
              * @brief Handle a network event
              * @param event Reference to the network event to handle
              */
-            void handleEvent(engine::net::NetworkEvent& event);
+            void handleEvent(aer::net::NetworkEvent& event);
 
             //////////////////////////////////////////////////////////////////////////////
             // Packet handlers

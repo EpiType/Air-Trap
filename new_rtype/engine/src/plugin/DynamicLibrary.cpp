@@ -39,11 +39,11 @@
  * symbol resolution.
  */
 
-#include "engine/core/Logger.hpp"
+#include "engine/log/Logger.hpp"
 #include "engine/plugin/DynamicLibrary.hpp"
 #include "engine/plugin/LibraryBackend.hpp"
 
-namespace engine::plugin
+namespace aer::plugin
 {
     ///////////////////////////////////////////////////////////////////////////
     // Public API
@@ -58,7 +58,7 @@ namespace engine::plugin
         if (this->_handle) [[likely]] {
             auto result = impl::LibraryBackend::close(this->_handle);
             if (!result.has_value()) {
-                engine::core::warning("Failed to close dynamic library: {}",
+                aer::log::warning("Failed to close dynamic library: {}",
                                       result.error().message());
             }
         }
@@ -76,7 +76,7 @@ namespace engine::plugin
             if (this->_handle) [[unlikely]] {
                 auto result = impl::LibraryBackend::close(this->_handle);
                 if (!result.has_value()) {
-                    engine::core::warning("Failed to close dynamic library: {}",
+                    aer::log::warning("Failed to close dynamic library: {}",
                                           result.error().message());
                 }
             }
@@ -88,7 +88,7 @@ namespace engine::plugin
     }
 
     auto DynamicLibrary::getSymbolAddress(std::string_view name) const 
-        -> std::expected<void *, engine::core::Error>
+        -> std::expected<void *, aer::core::Error>
     {
         return impl::LibraryBackend::getSymbol(this->_handle, name);
     }

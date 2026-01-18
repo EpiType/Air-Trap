@@ -41,14 +41,14 @@
 
 #include "Error.hpp"
 
-namespace engine::core
+namespace aer::log
 {           
     template <typename ...Args>
     auto Error::failure(ErrorCode code,
                         std::format_string<Args...> fmt,
                         Args &&...args) -> Error
     {
-        return Error(code, engine::core::Level::Error,
+        return Error(code, aer::core::Level::Error,
                      std::format(fmt, std::forward<Args>(args)...));
     }
             
@@ -57,7 +57,7 @@ namespace engine::core
                         std::format_string<Args...> fmt,
                         Args &&...args) -> Error
     {
-        return Error(code, engine::core::Level::Warning,
+        return Error(code, aer::core::Level::Warning,
                      std::format(fmt, std::forward<Args>(args)...));
     }
             
@@ -66,7 +66,7 @@ namespace engine::core
                       std::format_string<Args...> fmt,
                       Args &&...args) -> Error
     {
-        return Error(code, engine::core::Level::Fatal,
+        return Error(code, aer::core::Level::Fatal,
                      std::format(fmt, std::forward<Args>(args)...));
     }
 }

@@ -6,12 +6,12 @@
  */
 
 #include "rtype/net/NetworkBootstrap.hpp"
-#include "engine/core/Logger.hpp"
+#include "engine/log/Logger.hpp"
 
 namespace rtp::client
 {
-    NetworkBootstrap::NetworkBootstrap(engine::net::INetworkEngine &engine,
-                                       engine::net::ClientConfig config)
+    NetworkBootstrap::NetworkBootstrap(aer::net::INetworkEngine &engine,
+                                       aer::net::ClientConfig config)
         : _engine(engine),
           _config(std::move(config))
     {
@@ -31,12 +31,12 @@ namespace rtp::client
         if (_network) {
             return _network->start();
         }
-        engine::core::info("NetworkBootstrap: Creating network client");
+        aer::log::info("NetworkBootstrap: Creating network client");
         _network = _engine.createClient(_config);
         if (!_network) {
             return false;
         }
-        engine::core::info("NetworkBootstrap: Starting network client");
+        aer::log::info("NetworkBootstrap: Starting network client");
         return _network->start();
     }
 
@@ -54,21 +54,21 @@ namespace rtp::client
     ////////////////////////////////////////////////////////////////////////
 
     void NetworkBootstrap::sendPacket(uint32_t sessionId,
-                                      engine::net::ByteSpan payload,
-                                      engine::net::NetChannel channel)
+                                      aer::net::ByteSpan payload,
+                                      aer::net::NetChannel channel)
     {
         if (_network) {
             _network->sendPacket(sessionId, payload, channel);
         }
     }
 
-    void NetworkBootstrap::sendPacket(const net::Packet &packet, engine::net::NetChannel mode)
+    void NetworkBootstrap::sendPacket(const net::Packet &packet, aer::net::NetChannel mode)
     {
         const auto data = packet.serialize();
         sendPacket(packet.header.sessionId, data, mode);
     }
 
-    std::optional<engine::net::NetworkEvent> NetworkBootstrap::pollEvent(void)
+    std::optional<aer::net::NetworkEvent> NetworkBootstrap::pollEvent(void)
     {
         if (!_network) {
             return std::nullopt;

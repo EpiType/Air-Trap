@@ -7,7 +7,7 @@
 
 #include "engine/net/ANetwork.hpp"
 
-namespace engine::net
+namespace aer::net
 {
     ////////////////////////////////////////////////////////////////////////////
     // Public Methods

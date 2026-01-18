@@ -10,7 +10,7 @@
 
     #include "engine/input/Event.hpp"
 
-namespace engine::scenes {
+namespace aer::scenes {
     /**
      * @interface IScene
      * @brief Interface for different scenes in the client application.

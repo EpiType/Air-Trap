@@ -16,7 +16,7 @@
 #include <utility>
 #include <vector>
 
-namespace engine::core
+namespace aer::core
 {
     namespace
     {
@@ -43,7 +43,7 @@ namespace engine::core
         try {
             loadConfiguration("./engine/config.json");
         } catch (const std::exception& e) {
-            engine::core::error("Exception while loading configuration: {}", e.what());
+            aer::log::error("Exception while loading configuration: {}", e.what());
             return false;
         }
 
@@ -245,12 +245,12 @@ namespace engine::core
     {
         std::ifstream file(path, std::ios::binary);
         if (!file) {
-            engine::core::error("Failed to open configuration file: {}, impossible to launch engine without any configuration file.", path);
+            aer::log::error("Failed to open configuration file: {}, impossible to launch engine without any configuration file.", path);
             return;
         }
 
-        engine::core::info("=============== Engine Configuration ===============", path);
-        engine::core::info("Loading configuration from file: {}", path);
+        aer::log::info("=============== Engine Configuration ===============", path);
+        aer::log::info("Loading configuration from file: {}", path);
         file.seekg(0, std::ios::end);
         const std::streamsize size = file.tellg();
         if (size <= 0) return;
@@ -338,47 +338,47 @@ namespace engine::core
         if (std::size_t pos = findValueStart("availableRendererEngines");
             pos != std::string_view::npos) {
             parseStringArray(pos, _config.availableRenderers);
-            engine::core::info("Available Renderers:");
+            aer::log::info("Available Renderers:");
             for (const auto &renderer : _config.availableRenderers) {
-                engine::core::info(" - {}", renderer);
+                aer::log::info(" - {}", renderer);
             }
         }
         if (std::size_t pos = findValueStart("availableNetworkEngines");
             pos != std::string_view::npos) {
             parseStringArray(pos, _config.availableNetworkEngines);
-            engine::core::info("Available Network Engines:");
+            aer::log::info("Available Network Engines:");
             for (const auto &network : _config.availableNetworkEngines) {
-                engine::core::info(" - {}", network);
+                aer::log::info(" - {}", network);
             }
         }
         if (std::size_t pos = findValueStart("defaultRenderPlugin");
             pos != std::string_view::npos) {
             parseString(pos, _config.defaultRendererPluginPath);
-            engine::core::info("Default Renderer Plugin Path: {}",
+            aer::log::info("Default Renderer Plugin Path: {}",
                              _config.defaultRendererPluginPath);
             _config.rendererPluginPath = _config.defaultRendererPluginPath;
         }
         if (std::size_t pos = findValueStart("defaultNetworkPlugin");
             pos != std::string_view::npos) {
             parseString(pos, _config.defaultNetworkPluginPath);
-            engine::core::info("Default Network Plugin Path: {}",
+            aer::log::info("Default Network Plugin Path: {}",
                              _config.defaultNetworkPluginPath);
             _config.networkPluginPath = _config.defaultNetworkPluginPath;
         }
         if (std::size_t pos = findValueStart("title");
             pos != std::string_view::npos) {
             parseString(pos, _config.title);
-            engine::core::info("Window Title: {}", _config.title);
+            aer::log::info("Window Title: {}", _config.title);
         }
         if (std::size_t pos = findValueStart("assetsPath");
             pos != std::string_view::npos) {
             parseString(pos, _config.assetsPath);
-            engine::core::info("Assets Path: {}", _config.assetsPath);
+            aer::log::info("Assets Path: {}", _config.assetsPath);
         }
         if (std::size_t pos = findValueStart("networkIp");
             pos != std::string_view::npos) {
             parseString(pos, _config.networkIp);
-            engine::core::info("Network IP: {}", _config.networkIp);
+            aer::log::info("Network IP: {}", _config.networkIp);
         }
         if (std::size_t pos = findValueStart("width");
             pos != std::string_view::npos) {
@@ -386,7 +386,7 @@ namespace engine::core
             if (parseInt(pos, value)) {
                 _config.width = value;
             }
-            engine::core::info("Window Width: {}", _config.width);
+            aer::log::info("Window Width: {}", _config.width);
         }
         if (std::size_t pos = findValueStart("height");
             pos != std::string_view::npos) {
@@ -394,7 +394,7 @@ namespace engine::core
             if (parseInt(pos, value)) {
                 _config.height = value;
             }
-            engine::core::info("Window Height : {}", _config.height);
+            aer::log::info("Window Height : {}", _config.height);
         }
         if (std::size_t pos = findValueStart("networkPort");
             pos != std::string_view::npos) {
@@ -402,8 +402,8 @@ namespace engine::core
             if (parseInt(pos, value)) {
                 _config.networkPort = static_cast<std::uint16_t>(value);
             }
-            engine::core::info("Network Port: {}", _config.networkPort);
+            aer::log::info("Network Port: {}", _config.networkPort);
         }
-        engine::core::info("====================================================");
+        aer::log::info("====================================================");
     }
 }

@@ -13,10 +13,10 @@ namespace rtp::client::systems
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
-    InputSystem::InputSystem(engine::ecs::Registry& worldRegistry,
-                             engine::ecs::Registry& uiRegistry,
+    InputSystem::InputSystem(aer::ecs::Registry& worldRegistry,
+                             aer::ecs::Registry& uiRegistry,
                              Settings& settings,
-                             engine::net::INetwork& network,
+                             aer::net::INetwork& network,
                              uint32_t sessionId)
         : _worldRegistry(worldRegistry),
           _uiRegistry(uiRegistry),
@@ -32,7 +32,7 @@ namespace rtp::client::systems
             return;
         }
 
-        if (auto inputsOpt = _uiRegistry.getComponents<engine::ecs::components::TextInput>()) {
+        if (auto inputsOpt = _uiRegistry.getComponents<aer::ecs::components::TextInput>()) {
             auto &inputs = inputsOpt.value().get();
             for (const auto &e : inputs.entities()) {
                 if (inputs[e].isFocused) {
@@ -41,7 +41,7 @@ namespace rtp::client::systems
                         rtp::net::InputPayload payload{0};
                         packet << payload;
                         const auto data = packet.serialize();
-                        _network.sendPacket(_sessionId, data, engine::net::NetChannel::UDP);
+                        _network.sendPacket(_sessionId, data, aer::net::NetChannel::UDP);
                         _lastMask = 0;
                     }
                     return;
@@ -49,29 +49,29 @@ namespace rtp::client::systems
             }
         }
 
-        const auto &input = engine::input::Input::instance();
+        const auto &input = aer::input::Input::instance();
         uint8_t mask = 0;
 
-        if (input.isKeyDown(engine::input::KeyCode::W) ||
-            input.isKeyDown(engine::input::KeyCode::Up)) {
+        if (input.isKeyDown(aer::input::KeyCode::W) ||
+            input.isKeyDown(aer::input::KeyCode::Up)) {
             mask |= InputBits::MoveUp;
         }
-        if (input.isKeyDown(engine::input::KeyCode::S) ||
-            input.isKeyDown(engine::input::KeyCode::Down)) {
+        if (input.isKeyDown(aer::input::KeyCode::S) ||
+            input.isKeyDown(aer::input::KeyCode::Down)) {
             mask |= InputBits::MoveDown;
         }
-        if (input.isKeyDown(engine::input::KeyCode::A) ||
-            input.isKeyDown(engine::input::KeyCode::Left)) {
+        if (input.isKeyDown(aer::input::KeyCode::A) ||
+            input.isKeyDown(aer::input::KeyCode::Left)) {
             mask |= InputBits::MoveLeft;
         }
-        if (input.isKeyDown(engine::input::KeyCode::D) ||
-            input.isKeyDown(engine::input::KeyCode::Right)) {
+        if (input.isKeyDown(aer::input::KeyCode::D) ||
+            input.isKeyDown(aer::input::KeyCode::Right)) {
             mask |= InputBits::MoveRight;
         }
-        if (input.isKeyDown(engine::input::KeyCode::Space)) {
+        if (input.isKeyDown(aer::input::KeyCode::Space)) {
             mask |= InputBits::Shoot;
         }
-        if (input.isKeyDown(engine::input::KeyCode::R)) {
+        if (input.isKeyDown(aer::input::KeyCode::R)) {
             mask |= InputBits::Reload;
         }
 
@@ -85,7 +85,7 @@ namespace rtp::client::systems
         rtp::net::InputPayload payload{mask};
         packet << payload;
         const auto data = packet.serialize();
-        _network.sendPacket(_sessionId, data, engine::net::NetChannel::UDP);
+        _network.sendPacket(_sessionId, data, aer::net::NetChannel::UDP);
     }
 
     void InputSystem::setSessionId(uint32_t sessionId)

@@ -11,11 +11,11 @@ namespace rtp::client::scenes
 {
     namespace
     {
-        engine::ui::textContainer makeText(const std::string &content,
+        aer::ui::textContainer makeText(const std::string &content,
                                            const std::string &font,
                                            unsigned int size)
         {
-            engine::ui::textContainer text;
+            aer::ui::textContainer text;
             text.content = content;
             text.FontPath = font;
             text.fontSize = size;
@@ -27,7 +27,7 @@ namespace rtp::client::scenes
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
-    MenuScene::MenuScene(engine::ecs::Registry& uiRegistry,
+    MenuScene::MenuScene(aer::ecs::Registry& uiRegistry,
                          Settings& settings,
                          TranslationManager& translation,
                          NetworkSyncSystem& network,
@@ -42,7 +42,7 @@ namespace rtp::client::scenes
 
     void MenuScene::onEnter(void)
     {
-        engine::ui::UiFactory::createText(
+        aer::ui::UiFactory::createText(
             _uiRegistry,
             {400.0f, 100.0f},
             makeText(_translation.get("menu.title"), "assets/fonts/title.ttf", 72),
@@ -50,7 +50,7 @@ namespace rtp::client::scenes
             {2, 100, 100}
         );
 
-        engine::ui::UiFactory::createButton(
+        aer::ui::UiFactory::createButton(
             _uiRegistry,
             {490.0f, 300.0f},
             {300.0f, 60.0f},
@@ -61,7 +61,7 @@ namespace rtp::client::scenes
             }
         );
 
-        engine::ui::UiFactory::createButton(
+        aer::ui::UiFactory::createButton(
             _uiRegistry,
             {490.0f, 380.0f},
             {300.0f, 60.0f},
@@ -69,7 +69,7 @@ namespace rtp::client::scenes
             [this]() { if (_changeScene) { _changeScene(SceneId::Settings); } }
         );
 
-        engine::ui::UiFactory::createButton(
+        aer::ui::UiFactory::createButton(
             _uiRegistry,
             {490.0f, 460.0f},
             {300.0f, 60.0f},
@@ -84,7 +84,7 @@ namespace rtp::client::scenes
         _uiRegistry.purge();
     }
 
-    void MenuScene::handleEvent(const engine::input::Event &)
+    void MenuScene::handleEvent(const aer::input::Event &)
     {
     }
 

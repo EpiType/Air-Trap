@@ -28,7 +28,7 @@ namespace rtp::client::scenes
      * @class LoginScene
      * @brief Scene responsible for login/register UI.
      */
-    class LoginScene : public engine::scenes::IScene
+    class LoginScene : public aer::scenes::IScene
     {
         public:
             /**
@@ -39,7 +39,7 @@ namespace rtp::client::scenes
              * @param network Client network system
              * @param onLoggedIn Callback when login succeeds
              */
-            LoginScene(engine::ecs::Registry& uiRegistry,
+            LoginScene(aer::ecs::Registry& uiRegistry,
                        Settings& settings,
                        TranslationManager& translation,
                        NetworkSyncSystem& network,
@@ -47,11 +47,11 @@ namespace rtp::client::scenes
 
             void onEnter(void) override;
             void onExit(void) override;
-            void handleEvent(const engine::input::Event &event) override;
+            void handleEvent(const aer::input::Event &event) override;
             void update(float dt) override;
 
         private:
-            engine::ecs::Registry& _uiRegistry;
+            aer::ecs::Registry& _uiRegistry;
             Settings& _settings;
             TranslationManager& _translation;
             NetworkSyncSystem& _networkSystem;

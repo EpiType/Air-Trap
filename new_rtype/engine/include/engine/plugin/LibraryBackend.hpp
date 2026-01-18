@@ -43,14 +43,14 @@
 #ifndef ENGINE_LIBRARYBACKEND_HPP_
     #define ENGINE_LIBRARYBACKEND_HPP_
 
-    #include "engine/core/Error.hpp"
+    #include "engine/log/Error.hpp"
     #include <expected>
     #include <string>
     #include <string_view>
 
     // #include "LibraryBackend.hpp"
 
-namespace engine::plugin::impl
+namespace aer::plugin::impl
 {
     /**
      * @class LibraryBackend
@@ -66,30 +66,30 @@ namespace engine::plugin::impl
             /**
              * @brief Open a dynamic library from the given path.
              * @param path The path to the dynamic library.
-             * @return std::expected<void *, engine::core::Error>
+             * @return std::expected<void *, aer::core::Error>
              */
             [[nodiscard]]
             static auto open(std::string_view path)
-                -> std::expected<void *, engine::core::Error>;
+                -> std::expected<void *, aer::core::Error>;
 
             /**
              * @brief Close the dynamic library handle.
              * @param handle The handle to close.
-             * @return std::expected<void, engine::core::Error>
+             * @return std::expected<void, aer::core::Error>
              */
             [[nodiscard]]
             static auto close(void *handle) noexcept
-                -> std::expected<void, engine::core::Error>;
+                -> std::expected<void, aer::core::Error>;
 
             /**
              * @brief Get a symbol from the dynamic library.
              * @param handle The dynamic library handle.
              * @param name The name of the symbol to get.
-             * @return std::expected<void *, engine::core::Error>
+             * @return std::expected<void *, aer::core::Error>
              */
             [[nodiscard]]
             static auto getSymbol(void *handle, std::string_view name)
-                -> std::expected<void *, engine::core::Error>;
+                -> std::expected<void *, aer::core::Error>;
     };
 }
 

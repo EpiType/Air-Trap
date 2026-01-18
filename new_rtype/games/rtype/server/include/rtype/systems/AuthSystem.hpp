@@ -26,7 +26,7 @@ namespace rtp::server::systems
              * @brief Constructor for AuthSystem
              * @param network Reference to the network instance
              */
-            explicit AuthSystem(engine::net::INetwork &network);
+            explicit AuthSystem(aer::net::INetwork &network);
 
             /**
              * @brief Handle a login request packet.
@@ -68,7 +68,7 @@ namespace rtp::server::systems
                                       const std::string &username);
 
         private:
-            engine::net::INetwork &_network;        /**< Network instance for communication */
+            aer::net::INetwork &_network;        /**< Network instance for communication */
     };
 }
 

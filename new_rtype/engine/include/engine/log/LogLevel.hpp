@@ -46,7 +46,7 @@
     #include <string_view>
     #include <utility>
 
-namespace engine::core
+namespace aer::log
 {
     /**
      * @enum Level
@@ -67,7 +67,7 @@ namespace engine::core
 }
 
 template <>
-struct std::formatter<engine::core::Level> : std::formatter<std::string_view> {
+struct std::formatter<aer::log::Level> : std::formatter<std::string_view> {
     constexpr auto parse(std::format_parse_context& ctx) {
         return ctx.begin();
     }
@@ -77,9 +77,9 @@ struct std::formatter<engine::core::Level> : std::formatter<std::string_view> {
      * @param ctx The format context
      * @return Iterator to the end of the formatted output
      */
-    auto format(engine::core::Level level, std::format_context &ctx) const
+    auto format(aer::log::Level level, std::format_context &ctx) const
     {
-        return std::format_to(ctx.out(), "{}", engine::core::toString(level));
+        return std::format_to(ctx.out(), "{}", aer::log::toString(level));
     }
 };
 

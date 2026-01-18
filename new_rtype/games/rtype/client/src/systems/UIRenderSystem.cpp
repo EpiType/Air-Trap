@@ -18,7 +18,7 @@ namespace rtp::client::systems
             return static_cast<float>(value) / 255.0f;
         }
 
-        void applyColor(engine::render::RenderRect &shape, const engine::ui::color &color)
+        void applyColor(aer::render::RenderRect &shape, const aer::ui::color &color)
         {
             shape.r = toUnit(color.r);
             shape.g = toUnit(color.g);
@@ -26,7 +26,7 @@ namespace rtp::client::systems
             shape.a = toUnit(color.a.value_or(255));
         }
 
-        void applyColor(engine::render::RenderText &text, const engine::ui::color &color)
+        void applyColor(aer::render::RenderText &text, const aer::ui::color &color)
         {
             text.r = toUnit(color.r);
             text.g = toUnit(color.g);
@@ -39,9 +39,9 @@ namespace rtp::client::systems
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
-    UIRenderSystem::UIRenderSystem(engine::ecs::Registry& registry,
-                                   engine::render::IRenderer& renderer,
-                                   engine::render::RenderFrame& frame)
+    UIRenderSystem::UIRenderSystem(aer::ecs::Registry& registry,
+                                   aer::render::IRenderer& renderer,
+                                   aer::render::RenderFrame& frame)
         : _registry(registry), _renderer(renderer), _frame(frame)
     {
     }
@@ -64,7 +64,7 @@ namespace rtp::client::systems
 
     void UIRenderSystem::renderButtons()
     {
-        auto buttonsOpt = _registry.getComponents<engine::ecs::components::Button>();
+        auto buttonsOpt = _registry.getComponents<aer::ecs::components::Button>();
         if (!buttonsOpt) {
             return;
         }
@@ -73,17 +73,17 @@ namespace rtp::client::systems
         for (const auto &e : buttons.entities()) {
             const auto &button = buttons[e];
 
-            engine::render::RenderRect rect;
+            aer::render::RenderRect rect;
             rect.position = { button.position.x, button.position.y };
             rect.size = { button.size.x, button.size.y };
             rect.filled = true;
             rect.z = 10;
 
             switch (button.state) {
-                case engine::ecs::components::ButtonState::Pressed:
+                case aer::ecs::components::ButtonState::Pressed:
                     applyColor(rect, button.pressedColor);
                     break;
-                case engine::ecs::components::ButtonState::Hovered:
+                case aer::ecs::components::ButtonState::Hovered:
                     applyColor(rect, button.hoverColor);
                     break;
                 default:
@@ -93,20 +93,20 @@ namespace rtp::client::systems
 
             _frame.shapes.push_back(rect);
 
-            engine::render::RenderText text;
+            aer::render::RenderText text;
             text.content = button.text.content;
             text.fontId = getFontId(button.text.FontPath);
             text.size = static_cast<int>(button.text.fontSize);
             text.position = { button.position.x + 12.0f, button.position.y + 6.0f };
             text.z = 11;
-            applyColor(text, engine::ui::color{255, 255, 255, 255});
+            applyColor(text, aer::ui::color{255, 255, 255, 255});
             _frame.texts.push_back(text);
         }
     }
 
     void UIRenderSystem::renderTexts()
     {
-        auto textsOpt = _registry.getComponents<engine::ecs::components::Text>();
+        auto textsOpt = _registry.getComponents<aer::ecs::components::Text>();
         if (!textsOpt) {
             return;
         }
@@ -115,7 +115,7 @@ namespace rtp::client::systems
         for (const auto &e : texts.entities()) {
             const auto &textComp = texts[e];
 
-            engine::render::RenderText text;
+            aer::render::RenderText text;
             text.content = textComp.text.content;
             text.fontId = getFontId(textComp.text.FontPath);
             text.size = static_cast<int>(textComp.text.fontSize);
@@ -128,7 +128,7 @@ namespace rtp::client::systems
 
     void UIRenderSystem::renderSliders()
     {
-        auto slidersOpt = _registry.getComponents<engine::ecs::components::Slider>();
+        auto slidersOpt = _registry.getComponents<aer::ecs::components::Slider>();
         if (!slidersOpt) {
             return;
         }
@@ -137,7 +137,7 @@ namespace rtp::client::systems
         for (const auto &e : sliders.entities()) {
             const auto &slider = sliders[e];
 
-            engine::render::RenderRect track;
+            aer::render::RenderRect track;
             track.position = { slider.position.x, slider.position.y };
             track.size = { slider.size.x, slider.size.y };
             track.filled = true;
@@ -145,7 +145,7 @@ namespace rtp::client::systems
             applyColor(track, slider.trackColor);
             _frame.shapes.push_back(track);
 
-            engine::render::RenderRect fill;
+            aer::render::RenderRect fill;
             const float filledWidth = slider.size.x * slider.getNormalized();
             fill.position = { slider.position.x, slider.position.y };
             fill.size = { filledWidth, slider.size.y };
@@ -154,7 +154,7 @@ namespace rtp::client::systems
             applyColor(fill, slider.fillColor);
             _frame.shapes.push_back(fill);
 
-            engine::render::RenderRect handle;
+            aer::render::RenderRect handle;
             handle.position = { slider.position.x + filledWidth - 5.0f, slider.position.y - 2.0f };
             handle.size = { 10.0f, slider.size.y + 4.0f };
             handle.filled = true;
@@ -166,7 +166,7 @@ namespace rtp::client::systems
 
     void UIRenderSystem::renderDropdowns()
     {
-        auto dropdownsOpt = _registry.getComponents<engine::ecs::components::Dropdown>();
+        auto dropdownsOpt = _registry.getComponents<aer::ecs::components::Dropdown>();
         if (!dropdownsOpt) {
             return;
         }
@@ -175,7 +175,7 @@ namespace rtp::client::systems
         for (const auto &e : dropdowns.entities()) {
             const auto &dropdown = dropdowns[e];
 
-            engine::render::RenderRect base;
+            aer::render::RenderRect base;
             base.position = { dropdown.position.x, dropdown.position.y };
             base.size = { dropdown.size.x, dropdown.size.y };
             base.filled = true;
@@ -183,7 +183,7 @@ namespace rtp::client::systems
             applyColor(base, dropdown.bgColor);
             _frame.shapes.push_back(base);
 
-            engine::render::RenderText label;
+            aer::render::RenderText label;
             label.content = dropdown.getSelected();
             label.fontId = getFontId("assets/fonts/main.ttf");
             label.size = 16;
@@ -197,7 +197,7 @@ namespace rtp::client::systems
             }
 
             for (std::size_t i = 0; i < dropdown.options.size(); ++i) {
-                engine::render::RenderRect opt;
+                aer::render::RenderRect opt;
                 opt.position = { dropdown.position.x,
                                  dropdown.position.y + dropdown.size.y * static_cast<float>(i + 1) };
                 opt.size = { dropdown.size.x, dropdown.size.y };
@@ -207,7 +207,7 @@ namespace rtp::client::systems
                                    dropdown.hoverColor : dropdown.bgColor);
                 _frame.shapes.push_back(opt);
 
-                engine::render::RenderText optText;
+                aer::render::RenderText optText;
                 optText.content = dropdown.options[i];
                 optText.fontId = label.fontId;
                 optText.size = 16;
@@ -222,7 +222,7 @@ namespace rtp::client::systems
     void UIRenderSystem::renderTextInputs(float dt)
     {
         (void)dt;
-        auto inputsOpt = _registry.getComponents<engine::ecs::components::TextInput>();
+        auto inputsOpt = _registry.getComponents<aer::ecs::components::TextInput>();
         if (!inputsOpt) {
             return;
         }
@@ -231,7 +231,7 @@ namespace rtp::client::systems
         for (const auto &e : inputs.entities()) {
             const auto &input = inputs[e];
 
-            engine::render::RenderRect background;
+            aer::render::RenderRect background;
             background.position = { input.position.x, input.position.y };
             background.size = { input.size.x, input.size.y };
             background.filled = true;
@@ -239,7 +239,7 @@ namespace rtp::client::systems
             applyColor(background, input.bgColor);
             _frame.shapes.push_back(background);
 
-            engine::render::RenderRect border;
+            aer::render::RenderRect border;
             border.position = { input.position.x, input.position.y };
             border.size = { input.size.x, input.size.y };
             border.filled = false;
@@ -248,7 +248,7 @@ namespace rtp::client::systems
             applyColor(border, input.isFocused ? input.focusBorderColor : input.borderColor);
             _frame.shapes.push_back(border);
 
-            engine::render::RenderText text;
+            aer::render::RenderText text;
             text.fontId = getFontId(input.placeholder.FontPath);
             text.size = static_cast<int>(input.placeholder.fontSize);
             text.position = { input.position.x + 10.0f, input.position.y + 10.0f };
@@ -263,7 +263,7 @@ namespace rtp::client::systems
             _frame.texts.push_back(text);
 
             if (input.isFocused && input.showCursor) {
-                engine::render::RenderRect cursor;
+                aer::render::RenderRect cursor;
                 cursor.position = { text.position.x + 8.0f * static_cast<float>(text.content.size()),
                                     input.position.y + 8.0f };
                 cursor.size = { 2.0f, input.size.y - 16.0f };

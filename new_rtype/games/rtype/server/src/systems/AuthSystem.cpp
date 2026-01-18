@@ -7,7 +7,7 @@
 
 #include "rtype/systems/AuthSystem.hpp"
 
-#include "engine/core/Logger.hpp"
+#include "engine/log/Logger.hpp"
 
 #include <cstring>
 #include <fstream>
@@ -19,7 +19,7 @@ namespace rtp::server::systems
     // Public API
     /////////////////////////////////////////////////////////////////////////
 
-    AuthSystem::AuthSystem(engine::net::INetwork &network)
+    AuthSystem::AuthSystem(aer::net::INetwork &network)
         : _network(network)
     {
     }
@@ -36,11 +36,11 @@ namespace rtp::server::systems
         std::string username(payload.username);
         std::string password(payload.password);
 
-        engine::core::info("Login attempt: session={} username='{}' password='{}'",
+        aer::log::info("Login attempt: session={} username='{}' password='{}'",
                            sessionId, username, password);
 
         if (!inFile) {
-            engine::core::error("Failed to open login.txt for reading");
+            aer::log::error("Failed to open login.txt for reading");
             sendLoginResponse(sessionId, false, username);
             return {false, username};
         }
@@ -49,13 +49,13 @@ namespace rtp::server::systems
         std::string line;
         while (std::getline(inFile, line)) {
             if (line == record) {
-                engine::core::info("Login successful for username '{}'", username);
+                aer::log::info("Login successful for username '{}'", username);
                 sendLoginResponse(sessionId, true, username);
                 return {true, username};
             }
         }
 
-        engine::core::warning("Login failed for username '{}'", username);
+        aer::log::warning("Login failed for username '{}'", username);
         sendLoginResponse(sessionId, false, username);
         return {false, username};
     }
@@ -72,17 +72,17 @@ namespace rtp::server::systems
         std::string username(payload.username);
         std::string password(payload.password);
 
-        engine::core::info("Registration attempt: username='{}' password='{}'",
+        aer::log::info("Registration attempt: username='{}' password='{}'",
                            username, password);
 
         if (!outFile) {
-            engine::core::error("Failed to open login.txt for writing");
+            aer::log::error("Failed to open login.txt for writing");
             sendRegisterResponse(sessionId, false, username);
             return {false, username};
         }
 
         if (username.find(':') != std::string::npos || password.find(':') != std::string::npos) {
-            engine::core::warning("Registration failed: username or password contains ':'");
+            aer::log::warning("Registration failed: username or password contains ':'");
             sendRegisterResponse(sessionId, false, username);
             return {false, username};
         }
@@ -93,7 +93,7 @@ namespace rtp::server::systems
             auto delimPos = line.find(':');
             if (delimPos != std::string::npos) {
                 if (line.substr(0, delimPos) == username) {
-                    engine::core::warning("Registration failed: username '{}' already exists", username);
+                    aer::log::warning("Registration failed: username '{}' already exists", username);
                     sendRegisterResponse(sessionId, false, username);
                     return {false, username};
                 }
@@ -101,7 +101,7 @@ namespace rtp::server::systems
         }
 
         outFile << username << ':' << password << '\n';
-        engine::core::info("Registration successful for username '{}'", username);
+        aer::log::info("Registration successful for username '{}'", username);
         sendRegisterResponse(sessionId, true, username);
         return {true, username};
     }
@@ -122,7 +122,7 @@ namespace rtp::server::systems
         response << payload;
 
         const auto data = response.serialize();
-        _network.sendPacket(sessionId, data, engine::net::NetChannel::TCP);
+        _network.sendPacket(sessionId, data, aer::net::NetChannel::TCP);
     }
 
     void AuthSystem::sendRegisterResponse(uint32_t sessionId,
@@ -137,6 +137,6 @@ namespace rtp::server::systems
         response << payload;
 
         const auto data = response.serialize();
-        _network.sendPacket(sessionId, data, engine::net::NetChannel::TCP);
+        _network.sendPacket(sessionId, data, aer::net::NetChannel::TCP);
     }
 }

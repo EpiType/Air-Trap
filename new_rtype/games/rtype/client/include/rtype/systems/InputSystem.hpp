@@ -25,7 +25,7 @@ namespace rtp::client::systems
      * @class InputSystem
      * @brief System responsible for sending input ticks to the server.
      */
-    class InputSystem : public engine::ecs::ISystem
+    class InputSystem : public aer::ecs::ISystem
     {
         public:
             /**
@@ -36,10 +36,10 @@ namespace rtp::client::systems
              * @param network Reference to the client network
              * @param sessionId Session id to target
              */
-            InputSystem(engine::ecs::Registry& worldRegistry,
-                        engine::ecs::Registry& uiRegistry,
+            InputSystem(aer::ecs::Registry& worldRegistry,
+                        aer::ecs::Registry& uiRegistry,
                         Settings& settings,
-                        engine::net::INetwork& network,
+                        aer::net::INetwork& network,
                         uint32_t sessionId);
 
             /**
@@ -64,10 +64,10 @@ namespace rtp::client::systems
                 Reload    = 1 << 5
             };
 
-            engine::ecs::Registry& _worldRegistry;  /**< Reference to the world registry */
-            engine::ecs::Registry& _uiRegistry;     /**< Reference to the UI registry */
+            aer::ecs::Registry& _worldRegistry;  /**< Reference to the world registry */
+            aer::ecs::Registry& _uiRegistry;     /**< Reference to the UI registry */
             Settings& _settings;                    /**< Reference to client settings */
-            engine::net::INetwork& _network;        /**< Reference to the client network */
+            aer::net::INetwork& _network;        /**< Reference to the client network */
             uint32_t _sessionId{0};                 /**< Session id to target */
             uint8_t _lastMask{0};                   /**< Last sent input mask */
     };

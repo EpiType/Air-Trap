@@ -5,7 +5,7 @@
  * Date   : 11/12/2025
  */
 
-namespace engine::ecs
+namespace aer::ecs
 {
     template <typename T, typename... Args>
     T &SystemManager::add(Args &&...args)

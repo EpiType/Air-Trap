@@ -13,10 +13,10 @@
     #include "engine/net/INetwork.hpp"
 
 /**
- * @namespace engine::net
+ * @namespace aer::net
  * @brief Networking components and structures for the engine
  */
-namespace engine::net
+namespace aer::net
 {
     /**
      * @struct ClientConfig
@@ -83,8 +83,8 @@ namespace engine::net
  */
 extern "C"
 {
-    engine::net::INetworkEngine *CreateNetworkEngine();
-    void DestroyNetworkEngine(engine::net::INetworkEngine *engine);
+    aer::net::INetworkEngine *CreateNetworkEngine();
+    void DestroyNetworkEngine(aer::net::INetworkEngine *engine);
 }
 
 #endif /* !RTYPE_ENGINE_NET_INETWORKENGINE_HPP_ */

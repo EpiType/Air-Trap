@@ -42,8 +42,8 @@
 #ifndef RTYPE_LOGGER_HPP_
     #define RTYPE_LOGGER_HPP_
 
-    #include "engine/core/LogLevel.hpp"
-    #include "engine/core/Error.hpp"
+    #include "engine/log/LogLevel.hpp"
+    #include "engine/log/Error.hpp"
 
     #include <expected>
     #include <format>
@@ -53,7 +53,7 @@
     #include <type_traits>
     #include <utility>
 
-namespace engine::core
+namespace aer::log
 {
     template <typename... Args>
     struct LogFmt {
@@ -83,7 +83,7 @@ namespace engine::core
      */
     [[nodiscard]]
     auto configure(std::string_view logFilePath) noexcept
-        -> std::expected<void, core::Error>;
+        -> std::expected<void, log::Error>;
 
     /**
      * @brief Log a debug message
@@ -146,6 +146,6 @@ namespace engine::core
     }
 }
 
-    #include "engine/core/Logger.tpp" /* Logger template implementations */
+    #include "engine/log/Logger.tpp" /* Logger template implementations */
 
 #endif /* !RTYPE_LOGGER_HPP_ */

@@ -7,7 +7,7 @@
 
 #include "rtype/systems/PlayerSystem.hpp"
 
-#include "engine/core/Logger.hpp"
+#include "engine/log/Logger.hpp"
 
 namespace rtp::server::systems
 {

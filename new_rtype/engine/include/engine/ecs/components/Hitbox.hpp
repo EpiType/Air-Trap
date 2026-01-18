@@ -9,10 +9,10 @@
     #define ENGINE_ECS_COMPONENTS_HITBOX_HPP_
 
 /**
- * @namespace engine::ecs::components
+ * @namespace aer::ecs::components
  * @brief ECS components for R-Type engine
  */
-namespace engine::ecs::components
+namespace aer::ecs::components
 {
     /**
      * @enum CollisionType
@@ -48,6 +48,6 @@ namespace engine::ecs::components
         CollisionShape shape{CollisionShape::Rectangle};        /**< Shape of the hitbox */
         CollisionType collisionType{CollisionType::Solid};      /**< Type of collision behavior */
     };
-}  // namespace engine::ecs::components
+}  // namespace aer::ecs::components
 
 #endif /* !ENGINE_ECS_COMPONENTS_HITBOX_HPP_ */

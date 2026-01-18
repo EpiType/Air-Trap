@@ -7,7 +7,7 @@
 
 #include "rtype/systems/RoomSystem.hpp"
 
-#include "engine/core/Logger.hpp"
+#include "engine/log/Logger.hpp"
 
 #include <cstring>
 
@@ -18,7 +18,7 @@ namespace rtp::server::systems
     // Public API
     /////////////////////////////////////////////////////////////////////////
 
-    RoomSystem::RoomSystem(engine::net::INetwork &network, PlayerSystem &players)
+    RoomSystem::RoomSystem(aer::net::INetwork &network, PlayerSystem &players)
         : _network(network),
           _players(players)
     {
@@ -67,7 +67,7 @@ namespace rtp::server::systems
         }
 
         if (!leaveRoom(player)) {
-            engine::core::warning("Could not leave previous room for session {}", player->id());
+            aer::log::warning("Could not leave previous room for session {}", player->id());
         }
 
         std::shared_ptr<Room> room;
@@ -78,7 +78,7 @@ namespace rtp::server::systems
                 rtp::net::Packet response(rtp::net::OpCode::JoinRoom);
                 response << rtp::net::BooleanPayload{0};
                 const auto data = response.serialize();
-                _network.sendPacket(player->id(), data, engine::net::NetChannel::TCP);
+                _network.sendPacket(player->id(), data, aer::net::NetChannel::TCP);
                 return false;
             }
 
@@ -89,7 +89,7 @@ namespace rtp::server::systems
                     rtp::net::Packet response(rtp::net::OpCode::JoinRoom);
                     response << rtp::net::BooleanPayload{0};
                     const auto data = response.serialize();
-                    _network.sendPacket(player->id(), data, engine::net::NetChannel::TCP);
+                    _network.sendPacket(player->id(), data, aer::net::NetChannel::TCP);
                 }
                 return false;
             }
@@ -99,7 +99,7 @@ namespace rtp::server::systems
                     rtp::net::Packet response(rtp::net::OpCode::JoinRoom);
                     response << rtp::net::BooleanPayload{0};
                     const auto data = response.serialize();
-                    _network.sendPacket(player->id(), data, engine::net::NetChannel::TCP);
+                    _network.sendPacket(player->id(), data, aer::net::NetChannel::TCP);
                 }
                 return false;
             }
@@ -109,7 +109,7 @@ namespace rtp::server::systems
                     rtp::net::Packet response(rtp::net::OpCode::JoinRoom);
                     response << rtp::net::BooleanPayload{0};
                     const auto data = response.serialize();
-                    _network.sendPacket(player->id(), data, engine::net::NetChannel::TCP);
+                    _network.sendPacket(player->id(), data, aer::net::NetChannel::TCP);
                 }
                 return false;
             }
@@ -131,7 +131,7 @@ namespace rtp::server::systems
             rtp::net::Packet response(rtp::net::OpCode::JoinRoom);
             response << rtp::net::BooleanPayload{1};
             const auto data = response.serialize();
-            _network.sendPacket(player->id(), data, engine::net::NetChannel::TCP);
+            _network.sendPacket(player->id(), data, aer::net::NetChannel::TCP);
         }
         return true;
     }
@@ -160,7 +160,7 @@ namespace rtp::server::systems
             if (roomIt != _rooms.end()) {
                 previousRoom = roomIt->second;
                 if (!previousRoom->removePlayer(player->id())) {
-                    engine::core::warning("Room {}: failed to remove session {}",
+                    aer::log::warning("Room {}: failed to remove session {}",
                                           previousRoom->id(),
                                           player->id());
                 }
@@ -203,7 +203,7 @@ namespace rtp::server::systems
         rtp::net::Packet response(rtp::net::OpCode::RoomList);
         response << infos;
         const auto data = response.serialize();
-        _network.sendPacket(sessionId, data, engine::net::NetChannel::TCP);
+        _network.sendPacket(sessionId, data, aer::net::NetChannel::TCP);
     }
 
     void RoomSystem::launchReadyRooms(float)
@@ -241,7 +241,7 @@ namespace rtp::server::systems
             rtp::net::Packet start(rtp::net::OpCode::StartGame);
             const auto data = start.serialize();
             for (const auto sessionId : room->players()) {
-                _network.sendPacket(sessionId, data, engine::net::NetChannel::TCP);
+                _network.sendPacket(sessionId, data, aer::net::NetChannel::TCP);
             }
 
             if (_onRoomStarted) {

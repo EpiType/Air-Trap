@@ -9,11 +9,11 @@
     #define ENGINE_RENDER_SFML_HPP_
 
     #include "engine/render/IRenderer.hpp"
-    #include "engine/core/Logger.hpp"
+    #include "engine/log/Logger.hpp"
     #include <SFML/Graphics.hpp>
     #include <unordered_map>
 
-namespace engine::render
+namespace aer::render
 {
     /**
      * @class RenderSFML
@@ -52,7 +52,7 @@ namespace engine::render
 
             void unloadFont(std::uint32_t id) override;
 
-            std::vector<engine::input::Event> pollEvents(void) override;
+            std::vector<aer::input::Event> pollEvents(void) override;
 
         private:
             /**
@@ -95,20 +95,20 @@ namespace engine::render
             std::uint32_t _nextTextureId{1};        /**< Next available texture ID */
             std::uint32_t _nextFontId{1};           /**< Next available font ID */
     };
-} // namespace engine::render
+} // namespace aer::render
 
 extern "C" {
     /**
      * @brief Factory function to create an instance of the SFML renderer
      * @return Pointer to the created IRenderer instance
      */
-    engine::render::IRenderer* CreateRenderer();
+    aer::render::IRenderer* CreateRenderer();
 
     /**
      * @brief Function to destroy an instance of the SFML renderer
      * @param renderer Pointer to the IRenderer instance to be destroyed
      */
-    void DestroyRenderer(engine::render::IRenderer* renderer);
+    void DestroyRenderer(aer::render::IRenderer* renderer);
 }
 
 #endif // ENGINE_RENDER_SFML_HPP_

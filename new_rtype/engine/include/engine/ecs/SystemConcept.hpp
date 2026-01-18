@@ -14,7 +14,7 @@
 
 #include <type_traits>
 
-namespace engine::ecs
+namespace aer::ecs
 {
     /**
      * @brief Concept defining the requirements for a System type

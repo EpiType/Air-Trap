@@ -13,13 +13,13 @@ namespace rtp::client::systems
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
-    AnimationSystem::AnimationSystem(engine::ecs::Registry& registry)
+    AnimationSystem::AnimationSystem(aer::ecs::Registry& registry)
         : _registry(registry)
     {
     }
 
     void AnimationSystem::update(float dt) {
-        auto view = _registry.zipView<engine::ecs::components::Sprite, engine::ecs::components::Animation>();
+        auto view = _registry.zipView<aer::ecs::components::Sprite, aer::ecs::components::Animation>();
 
         for (auto&& [sprite, animation] : view) {
             animation.elapsedTime += dt;

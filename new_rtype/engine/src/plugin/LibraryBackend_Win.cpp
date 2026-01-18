@@ -39,28 +39,28 @@
  * error handling using GetLastError for Windows systems.
  */
 
-#include "engine/core/Assert.hpp"
+#include "engine/log/Assert.hpp"
 #include "engine/plugin/LibraryBackend.hpp"
 
 #include <system_error>
 #include <windows.h>
 
-namespace engine::plugin::impl
+namespace aer::plugin::impl
 {
     ///////////////////////////////////////////////////////////////////////////
     // Public API
     ///////////////////////////////////////////////////////////////////////////
 
     auto LibraryBackend::open(std::string_view path)
-        -> std::expected<void *, engine::core::Error>
+        -> std::expected<void *, aer::core::Error>
     {
         std::string safeNullTerminatedPath(path);
         HMODULE handle = LoadLibraryA(safeNullTerminatedPath.c_str());
         if (!handle) [[unlikely]] {
             DWORD errorCode = GetLastError();
             return std::unexpected{
-                engine::core::Error::failure(
-                    engine::core::ErrorCode::LibraryLoadFailed,
+                aer::core::Error::failure(
+                    aer::core::ErrorCode::LibraryLoadFailed,
                     "LoadLibrary error: {} (code: {})",
                     std::system_category().message(errorCode), errorCode)};
         }
@@ -69,13 +69,13 @@ namespace engine::plugin::impl
     }
 
     auto LibraryBackend::close(void *handle) noexcept
-        -> std::expected<void, engine::core::Error>
+        -> std::expected<void, aer::core::Error>
     {
         if (!FreeLibrary(reinterpret_cast<HMODULE>(handle))) [[unlikely]] {
             DWORD errorCode = GetLastError();
             return std::unexpected{
-                engine::core::Error::failure(
-                    engine::core::ErrorCode::LibraryLoadFailed,
+                aer::core::Error::failure(
+                    aer::core::ErrorCode::LibraryLoadFailed,
                     "FreeLibrary error: {} (code: {})",
                     std::system_category().message(errorCode), errorCode)};
         }
@@ -84,7 +84,7 @@ namespace engine::plugin::impl
     }
 
     auto LibraryBackend::getSymbol(void *handle, std::string_view name)
-        -> std::expected<void *, engine::core::Error>
+        -> std::expected<void *, aer::core::Error>
     {
         RTP_ASSERT(handle != nullptr,
                    "LoaderBackend: Handle cannot be null during symbol lookup");
@@ -96,8 +96,8 @@ namespace engine::plugin::impl
         if (!symbol) [[unlikely]] {
             DWORD errorCode = GetLastError();
             return std::unexpected{
-                engine::core::Error::failure(
-                    engine::core::ErrorCode::SymbolNotFound,
+                aer::core::Error::failure(
+                    aer::core::ErrorCode::SymbolNotFound,
                     "GetProcAddress error: {} (code: {})",
                     std::system_category().message(errorCode), errorCode)};
         }

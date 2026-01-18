@@ -48,14 +48,14 @@
 
 #include <mutex>
 
-namespace engine::plugin
+namespace aer::plugin
 {
     ///////////////////////////////////////////////////////////////////////////
     // Public API
     ///////////////////////////////////////////////////////////////////////////
 
     auto LibraryManager::load(std::string_view path)
-        -> std::expected<const DynamicLibrary *, engine::core::Error>
+        -> std::expected<const DynamicLibrary *, aer::core::Error>
     {
         return this->getOrLoadInternal(path).transform(
             [](const std::shared_ptr<DynamicLibrary> &libPtr) 
@@ -66,19 +66,19 @@ namespace engine::plugin
     }
 
     auto LibraryManager::loadShared(std::string_view path)
-        -> std::expected<std::shared_ptr<DynamicLibrary>, engine::core::Error>
+        -> std::expected<std::shared_ptr<DynamicLibrary>, aer::core::Error>
     {
         return this->getOrLoadInternal(path);
     }
 
     auto LibraryManager::loadStandalone(std::string_view path)
-        -> std::expected<std::unique_ptr<DynamicLibrary>, engine::core::Error>
+        -> std::expected<std::unique_ptr<DynamicLibrary>, aer::core::Error>
     {
         auto handle = impl::LibraryBackend::open(path);
         if (!handle.has_value()) [[unlikely]] {
             return std::unexpected{
-                engine::core::Error::failure(
-                    engine::core::ErrorCode::LibraryLoadFailed,
+                aer::core::Error::failure(
+                    aer::core::ErrorCode::LibraryLoadFailed,
                     "Failed to load dynamic library at '{}': {}",
                     path, handle.error())};
         }
@@ -91,7 +91,7 @@ namespace engine::plugin
     ///////////////////////////////////////////////////////////////////////////
 
     auto LibraryManager::getOrLoadInternal(std::string_view path)
-        -> std::expected<std::shared_ptr<DynamicLibrary>, engine::core::Error>
+        -> std::expected<std::shared_ptr<DynamicLibrary>, aer::core::Error>
     {
         const std::string pathStr{path}; // TODO: avoid copy, by adding HashStringView
                                          //       as key in unordered_map
@@ -113,8 +113,8 @@ namespace engine::plugin
             auto handle = impl::LibraryBackend::open(path);
             if (!handle.has_value()) [[unlikely]] {
                 return std::unexpected{
-                    engine::core::Error::failure(
-                        engine::core::ErrorCode::LibraryLoadFailed,
+                    aer::core::Error::failure(
+                        aer::core::ErrorCode::LibraryLoadFailed,
                         "Failed to load dynamic library at '{}': {}",
                         path, handle.error())};
             }
