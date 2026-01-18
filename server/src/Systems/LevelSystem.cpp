@@ -112,6 +112,26 @@ namespace rtp::server {
             if (!anyPlayerAlive || (active.bossHasSpawnedInWorld && !anyBossAlive)) {
                 log::info("Level completed for room {}: players alive={}, boss alive={}", 
                           roomId, anyPlayerAlive, anyBossAlive);
+                // Envoie le GameOver à tous les joueurs de la room
+                auto players = room->getPlayers();
+                int32_t bestScore = 0;
+                std::string bestPlayer;
+                for (const auto& p : players) {
+                    if (p->getScore() > bestScore || bestPlayer.empty()) {
+                        bestScore = p->getScore();
+                        bestPlayer = p->getUsername();
+                    }
+                }
+                for (const auto& p : players) {
+                    rtp::net::Packet packet(rtp::net::OpCode::GameOver);
+                    rtp::net::GameOverPayload payload{};
+                    std::strncpy(payload.bestPlayer, bestPlayer.c_str(), sizeof(payload.bestPlayer) - 1);
+                    payload.bestPlayer[sizeof(payload.bestPlayer) - 1] = '\0';
+                    payload.bestScore = bestScore;
+                    payload.playerScore = p->getScore();
+                    packet << payload;
+                    _networkSync.sendPacketToSession(p->getId(), packet, rtp::net::NetworkMode::TCP);
+                }
                 room->forceFinishGame();
                 continue;
             }
