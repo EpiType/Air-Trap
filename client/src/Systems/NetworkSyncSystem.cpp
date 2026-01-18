@@ -84,8 +84,7 @@ namespace rtp::client {
         _network.sendPacket(packet, net::NetworkMode::TCP);
     }
 
-    void NetworkSyncSystem::tryCreateRoom(const std::string& roomName, uint32_t maxPlayers, float difficulty, float speed, uint32_t duration, uint32_t seed, uint32_t levelId)
-    {
+    void NetworkSyncSystem::tryCreateRoom(const std::string& roomName, uint32_t maxPlayers, float difficulty, float speed, uint32_t duration, uint32_t seed, uint32_t levelId, uint8_t roomType) {
         log::info("Attempting to create room '{}' on server...", roomName);
         _currentState = State::CreatingRoom;
         _currentLevelId = levelId;
@@ -97,7 +96,7 @@ namespace rtp::client {
         payload.duration = duration;
         payload.seed = seed;
         payload.levelId = levelId;
-
+        payload.roomType = roomType;  // Set room type
         net::Packet packet(net::OpCode::CreateRoom);
         packet << payload;
 
@@ -137,6 +136,11 @@ namespace rtp::client {
         packet << static_cast<uint8_t>(isReady ? 1 : 0);
 
         _network.sendPacket(packet, net::NetworkMode::TCP);
+    }
+
+    void NetworkSyncSystem::tryStartSolo(void) {
+        _isStartingSolo = true;
+        tryCreateRoom("Solo Game", 1, 0.5f, 1.0f, 10, 0, 1, static_cast<uint8_t>(net::roomType::Private));
     }
     
     void NetworkSyncSystem::trySendMessage(const std::string& message) const
@@ -413,12 +417,16 @@ namespace rtp::client {
     {
         uint8_t success = 0;
         packet >> success;
-
         if (success) {
             log::info("Room created successfully.");
             _currentState = State::InRoom;
+            if (_isStartingSolo) {
+                trySetReady(true);
+                _isStartingSolo = false;
+            }
         } else {
             log::warning("Failed to create the room.");
+            _isStartingSolo = false;
         }
     }
 

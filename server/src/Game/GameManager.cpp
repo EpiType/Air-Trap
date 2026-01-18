@@ -312,7 +312,7 @@ namespace rtp::server
                 static_cast<uint8_t>(payload.maxPlayers),
                 payload.difficulty,
                 payload.speed,
-                Room::RoomType::Public,
+                static_cast<Room::RoomType>(payload.roomType),
                 payload.levelId,
                 payload.seed,
                 payload.duration
@@ -321,6 +321,12 @@ namespace rtp::server
         }
         if (success) {
             success = _roomSystem->joinRoom(player, newId, false) ? 1 : 0;
+            
+            if (success && payload.roomType == static_cast<uint8_t>(net::roomType::Private) && 
+                payload.maxPlayers == 1) {
+                player->setReady(true);
+                log::info("Auto-ready player {} for solo game", sessionId);
+            }
         }
         net::Packet response(net::OpCode::CreateRoom);
         response << success;

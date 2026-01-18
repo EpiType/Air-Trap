@@ -84,17 +84,18 @@ namespace rtp::client {
             void requestListRooms(void);
 
             /**
-             * @brief Send a request to create a new room on the server
-             * @param roomName Name of the room
-             * @param maxPlayers Maximum number of players allowed
-             * @param difficulty Difficulty level of the room
-             * @param speed Speed multiplier for the game
-             * @param duration Duration of the game session
-             * @param seed Seed for random generation
-             * @param levelId Level identifier
-             */
-            void tryCreateRoom(const std::string& roomName, uint32_t maxPlayers, float difficulty, float speed, uint32_t duration, uint32_t seed, uint32_t levelId);
-
+            * @brief Send a request to create a new room on the server
+            * @param roomName Name of the room
+            * @param maxPlayers Maximum number of players allowed
+            * @param difficulty Difficulty level of the room
+            * @param speed Speed multiplier for the game
+            * @param duration Duration of the game session
+            * @param seed Seed for random generation
+            * @param levelId Level identifier
+            * @param roomType Type of the room (Public/Private)
+            */
+            void tryCreateRoom(const std::string& roomName, uint32_t maxPlayers, float difficulty, float speed, uint32_t duration, uint32_t seed, uint32_t levelId, uint8_t roomType);
+            
             /**
              * @brief Send a request to join an existing room on the server
              * @param roomId Identifier of the room to join
@@ -111,6 +112,11 @@ namespace rtp::client {
              * @param isReady true to set as ready, false to set as not ready
              */
             void trySetReady(bool isReady);
+
+            /**
+            * @brief Start a solo game by creating a private room and auto-joining/readying
+            */
+            void tryStartSolo(void);
 
             /**
              * @brief Send a chat message to the server
@@ -142,6 +148,12 @@ namespace rtp::client {
              * @return true if logged in, false otherwise
              */
             bool isLoggedIn(void) const;
+
+            /** 
+             * @brief Check if the client is starting a solo game
+             * @return true if starting solo, false otherwise
+             */
+            bool _isStartingSolo = false;
 
             /**
              * @brief Get the username of the client

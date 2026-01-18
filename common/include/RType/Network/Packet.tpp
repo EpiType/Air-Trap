@@ -262,6 +262,7 @@ namespace rtp::net
         *this << data.levelId;
         *this << data.seed;
         *this << data.duration;
+        *this << data.roomType;
         return *this;
     }
 
@@ -279,6 +280,7 @@ namespace rtp::net
         *this >> data.levelId;
         *this >> data.seed;
         *this >> data.duration;
+        *this >> data.roomType;
         return *this;
     }
 

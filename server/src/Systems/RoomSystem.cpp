@@ -241,7 +241,15 @@ namespace rtp::server
         uint32_t roomCount = 0;
         for (const auto &[roomId, roomPtr] : _rooms) {
             (void)roomId;
-            if (roomPtr->getType() == Room::RoomType::Lobby)
+            auto roomType = roomPtr->getType();
+            log::info("Room ID {}: Type={} (Lobby={}, Public={}, Private={})", 
+                      roomId, static_cast<int>(roomType),
+                      static_cast<int>(Room::RoomType::Lobby),
+                      static_cast<int>(Room::RoomType::Public),
+                      static_cast<int>(Room::RoomType::Private));
+            if (roomType == Room::RoomType::Lobby)
+                continue;
+            if (roomType == Room::RoomType::Private)
                 continue;
             ++roomCount;
         }
@@ -252,6 +260,8 @@ namespace rtp::server
             (void)roomId;
 
             if (roomPtr->getType() == Room::RoomType::Lobby)
+                continue;
+            if (roomPtr->getType() == Room::RoomType::Private)
                 continue;
 
             net::RoomInfo roomInfo{};
@@ -268,6 +278,7 @@ namespace rtp::server
             roomInfo.duration = roomPtr->getDurationMinutes();
             roomInfo.seed = roomPtr->getSeed();
             roomInfo.levelId = roomPtr->getLevelId();
+            roomInfo.roomType = static_cast<uint8_t>(roomPtr->getType());
 
             responsePacket << roomInfo;
 

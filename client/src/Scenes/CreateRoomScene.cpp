@@ -143,8 +143,8 @@ namespace rtp::client {
                         _uiRoomName.empty() ? "Room" : _uiRoomName;
 
                     _network.tryCreateRoom(name, _uiMaxPlayers, _uiDifficulty,
-                                      _uiSpeed, _uiDuration, _uiSeed,
-                                      _uiLevelId);
+                      _uiSpeed, _uiDuration, _uiSeed,
+                      _uiLevelId, static_cast<uint8_t>(net::roomType::Public));
                 }
             );
 

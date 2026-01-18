@@ -220,6 +220,11 @@ namespace rtp::net
     };
 
     /***** Lobby Management *****/
+    enum class roomType : uint8_t {
+        Lobby = 0,                      /**< Lobby room (system) */
+        Public = 1,                     /**< Public room */
+        Private = 2                     /**< Private room */
+    };
     /**
      * @struct RoomInfo
      * @brief Information about a game room
@@ -237,6 +242,7 @@ namespace rtp::net
         uint32_t duration;              /**< Duration of the game session */
         uint32_t seed;                  /**< Seed for random generation */
         uint32_t levelId;               /**< Level identifier */
+        uint8_t roomType;               /**< Room type (public/private) */
     };
 
     /**
@@ -253,6 +259,7 @@ namespace rtp::net
         uint32_t levelId;               /**< Level identifier */ // not used
         uint32_t seed;                  /**< Seed for random generation */ // not used
         uint32_t duration;              /**< Duration of the game session */ // not used
+        uint8_t roomType;               /**< Room type (public/private) */
     };
 
     /**

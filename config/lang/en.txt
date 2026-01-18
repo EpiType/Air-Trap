@@ -3,6 +3,7 @@
 # Menu
 menu.title=AIR-TRAP
 menu.play=PLAY
+menu.singleplayer=SINGLEPLAYER
 menu.settings=SETTINGS
 menu.mods=MODS
 menu.exit=EXIT
