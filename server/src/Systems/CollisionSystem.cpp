@@ -314,8 +314,15 @@ namespace rtp::server
                     
                     // If shields exist, boss is protected - don't take damage
                     if (shieldCount > 0) {
-                        markForDespawn(bullet, broom.id);
-                        break;
+                        bool isBoomer = (boomerResLocal && boomerResLocal->get().has(bullet));
+                        if (!isBoomer) {
+                            // Non-boomerang bullets despawn on shield
+                            markForDespawn(bullet, broom.id);
+                            break;
+                        } else {
+                            // Boomerang should not be destroyed by boss shields; skip damaging
+                            continue;
+                        }
                     }
                 }
 
