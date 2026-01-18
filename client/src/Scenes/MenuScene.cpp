@@ -7,6 +7,7 @@
 
 #include "Scenes/MenuScene.hpp"
 #include "RType/ECS/Components/Audio/AudioSource.hpp"
+#include <vector>
 
 namespace rtp::client {
     namespace scenes {
@@ -77,46 +78,28 @@ namespace rtp::client {
                 {2, 100, 100}
             );
 
-            _uiFactory.createButton(
-                _uiRegistry,
-                {490.0f, 300.0f},
-                {300.0f, 60.0f},
-                _translationManager.get("menu.play"),
-                [this]() {
-                    _network.requestListRooms();
-                    _changeState(GameState::Lobby);
-                }
-            );
+            struct BtnDef { std::string key; std::function<void()> cb; };
+            std::vector<BtnDef> buttons{
+                {"menu.play", [this]() { _network.requestListRooms(); _changeState(GameState::Lobby); }},
+                {"menu.singleplayer", [this]() { _network.tryStartSolo(); _changeState(GameState::RoomWaiting); }},
+                {"menu.settings", [this]() { _changeState(GameState::Settings); }},
+                {"menu.mods", [this]() { _changeState(GameState::ModMenu); }},
+                {"menu.exit", [this]() { std::exit(0); }}
+            };
 
-            _uiFactory.createButton(
-                _uiRegistry,
-                {490.0f, 380.0f},
-                {300.0f, 60.0f},
-                _translationManager.get("menu.settings"),
-                [this]() {
-                    _changeState(GameState::Settings);
-                }
-            );
+            const float startX = 490.0f;
+            const float startY = 300.0f;
+            const float spacingY = 70.0f;
+            const graphics::size btnSize{300.0f, 60.0f};
 
-            _uiFactory.createButton(
-                _uiRegistry,
-                {490.0f, 460.0f},
-                {300.0f, 60.0f},
-                _translationManager.get("menu.mods"),
-                [this]() {
-                    _changeState(GameState::ModMenu);
-                }
-            );
-
-            _uiFactory.createButton(
-                _uiRegistry,
-                {490.0f, 540.0f},
-                {300.0f, 60.0f},
-                _translationManager.get("menu.exit"),
-                [this]() {
-                    std::exit(0);
-                }
-            );
+            for (size_t i = 0; i < buttons.size(); ++i) {
+                float y = startY + static_cast<float>(i) * spacingY;
+                _uiFactory.createButton(_uiRegistry,
+                                        {startX, y},
+                                        btnSize,
+                                        _translationManager.get(buttons[i].key),
+                                        buttons[i].cb);
+            }
         }
 
         void MenuScene::onExit(void)
