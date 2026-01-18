@@ -71,7 +71,7 @@ namespace rtp::server
                 const auto &otf = transforms[owner];
                 rtp::Vec2f desired{otf.position.x - btf.position.x, otf.position.y - btf.position.y};
                 if (bvel.speed > 0.0f) {
-                    desired.normalize();
+                    static_cast<void>(desired.normalize());
                     bvel.direction = desired; // maintain speed scalar
                 } else {
                     const float sp = bvel.direction.length();
