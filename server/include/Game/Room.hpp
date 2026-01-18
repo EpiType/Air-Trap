@@ -164,6 +164,12 @@ namespace rtp::server
             void setPlayerType(uint32_t sessionId, PlayerType type);
 
             /**
+             * @brief Check if there are any active players (non-spectators)
+             * @return true if at least one active player remains
+             */
+            bool hasActivePlayers() const;
+
+            /**
              * @brief Get the name of the room
              * @return Current room name
              */
@@ -242,6 +248,7 @@ namespace rtp::server
             uint32_t _currentTimeSeconds;     /**< Current time in seconds since the game started */
             mutable std::mutex _mutex;        /**< Mutex to protect access to room state */
             std::unordered_set<std::string> _bannedUsers; /**< Banned usernames */
+            float _scoreTick{0.0f};          /**< Score tick accumulator */
     };
 } // namespace rtp::server
 

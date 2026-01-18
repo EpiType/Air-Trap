@@ -1,6 +1,3 @@
 {
-  "enemy_shot_6": "assets/sprites/custom/projectiles/enemy_shot_6.png",
-  "player_shot_6": "assets/sprites/custom/projectiles/player_shot_6.png",
-  "enemy_2": "assets/sprites/custom/enemies/enemy_2.png",
-  "player_ship": "assets/sprites/custom/players/player_ship.png"
+  "enemy_2": "assets/sprites/custom/enemies/enemy_2.png"
 }

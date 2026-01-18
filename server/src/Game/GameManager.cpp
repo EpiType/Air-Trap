@@ -6,6 +6,7 @@
  */
 
 #include "Game/GameManager.hpp"
+#include "RType/ECS/Components/Health.hpp"
 #include "RType/ECS/Components/RoomId.hpp"
 
 #include <cctype>
@@ -80,12 +81,32 @@ namespace rtp::server
                     : Vec2f{100.f, 100.f};
 
                 for (auto& player : players) {
+                    player->setScore(0);
+                    net::Packet scorePacket(net::OpCode::ScoreUpdate);
+                    net::ScoreUpdatePayload scorePayload{0};
+                    scorePacket << scorePayload;
+                    _networkSyncSystem->sendPacketToSession(
+                        player->getId(), scorePacket, net::NetworkMode::TCP);
                     auto entity = _entitySystem->createPlayerEntity(player, spawnPos);
                     uint32_t entityId = static_cast<uint32_t>(entity.index());
                     player->setEntityId(entityId);
                     log::info("Spawned Entity {} for Player {}", entity.index(), player->getId());
                     _networkSyncSystem->bindSessionToEntity(player->getId(), entityId);
                     sendEntitySpawnToSessions(entity, sessions);
+
+                    if (auto healthRes = _registry.get<ecs::components::Health>()) {
+                        auto &healths = healthRes->get();
+                        if (healths.has(entity)) {
+                            net::Packet healthPacket(net::OpCode::HealthUpdate);
+                            net::HealthUpdatePayload hp{
+                                healths[entity].currentHealth,
+                                healths[entity].maxHealth
+                            };
+                            healthPacket << hp;
+                            _networkSyncSystem->sendPacketToSession(
+                                player->getId(), healthPacket, net::NetworkMode::TCP);
+                        }
+                    }
                 }
             }
         );

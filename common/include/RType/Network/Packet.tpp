@@ -486,6 +486,57 @@ namespace rtp::net
     }
 
     template <>
+    inline auto Packet::operator<<(ScoreUpdatePayload data) -> Packet &
+    {
+        *this << data.score;
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator>>(ScoreUpdatePayload &data) -> Packet &
+    {
+        *this >> data.score;
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator<<(GameOverPayload data) -> Packet &
+    {
+        *this << std::string_view(data.bestPlayer, strnlen(data.bestPlayer, sizeof(data.bestPlayer)));
+        *this << data.bestScore;
+        *this << data.playerScore;
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator>>(GameOverPayload &data) -> Packet &
+    {
+        std::string bestPlayer;
+        *this >> bestPlayer;
+        std::strncpy(data.bestPlayer, bestPlayer.c_str(), sizeof(data.bestPlayer) - 1);
+        data.bestPlayer[sizeof(data.bestPlayer) - 1] = '\0';
+        *this >> data.bestScore;
+        *this >> data.playerScore;
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator<<(HealthUpdatePayload data) -> Packet &
+    {
+        *this << data.current;
+        *this << data.max;
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator>>(HealthUpdatePayload &data) -> Packet &
+    {
+        *this >> data.current;
+        *this >> data.max;
+        return *this;
+    }
+
+    template <>
     inline auto Packet::operator<<(PingPayload data) -> Packet &
     {
         *this << data.clientTimeMs;

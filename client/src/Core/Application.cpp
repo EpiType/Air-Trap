@@ -186,6 +186,9 @@ namespace rtp::client
         _scenes[GameState::Paused] = std::make_unique<scenes::PauseScene>(
             _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
         );
+        _scenes[GameState::GameOver] = std::make_unique<scenes::GameOverScene>(
+            _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
+        );
         _scenes[GameState::Playing] = std::make_unique<scenes::PlayingScene>(
             _worldRegistry, _uiRegistry, _settings, _translations, net, _uiFactory, _worldEntityBuilder, changeStateCb
         );

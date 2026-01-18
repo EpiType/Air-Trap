@@ -12,6 +12,7 @@
 #include "RType/ECS/Components/Powerup.hpp"
 #include "RType/ECS/Components/Health.hpp"
 #include "RType/ECS/Components/BoundingBox.hpp"
+#include "RType/Network/Packet.hpp"
 #include <cmath>
 
 #include <algorithm>
@@ -21,6 +22,20 @@
 
 namespace rtp::server
 {
+    namespace {
+        int getKillScore(net::EntityType type)
+        {
+            switch (type) {
+                case net::EntityType::Scout: return 10;
+                case net::EntityType::Tank: return 25;
+                case net::EntityType::Boss: return 100;
+                case net::EntityType::Obstacle: return 5;
+                case net::EntityType::ObstacleSolid: return 15;
+                default: return 0;
+            }
+        }
+    } // namespace
+
     //////////////////////////////////////////////////////////////////////////
     // Public API
     //////////////////////////////////////////////////////////////////////////
@@ -43,6 +58,31 @@ namespace rtp::server
                        ecs::components::RoomId,
                        float,
                        bool>> pendingChargedSpawns; // owner, transform, roomId, ratio, doubleFire
+
+        auto updatePlayerScore = [&](uint32_t roomId, ecs::Entity owner, int delta) {
+            if (delta == 0 || owner == ecs::NullEntity) {
+                return;
+            }
+            auto room = _roomSystem.getRoom(roomId);
+            if (!room) {
+                return;
+            }
+            const auto playersInRoom = room->getPlayers();
+            for (const auto &player : playersInRoom) {
+                if (!player) {
+                    continue;
+                }
+                if (player->getEntityId() != static_cast<uint32_t>(owner.index())) {
+                    continue;
+                }
+                player->addScore(delta);
+                net::Packet packet(net::OpCode::ScoreUpdate);
+                net::ScoreUpdatePayload payload{player->getScore()};
+                packet << payload;
+                _networkSync.sendPacketToSession(player->getId(), packet, net::NetworkMode::TCP);
+                break;
+            }
+        };
 
         constexpr float kChargeMax = 2.0f;
         constexpr float kChargeMin = 0.2f;
@@ -174,6 +214,8 @@ namespace rtp::server
                                     ht.currentHealth -= weapon.damage;
                                     log::info("Beam: applied {} damage to entity {} (hp left={})", weapon.damage, t.index(), ht.currentHealth);
                                     if (ht.currentHealth <= 0) {
+                                        const int award = getKillScore(types[t].type);
+                                        updatePlayerScore(roomId.id, entity, award);
                                         // 30% chance to drop a power-up (beam kills should drop too)
                                         const int dropChance = std::rand() % 100;
                                         if (dropChance < 30) {
