@@ -7,6 +7,7 @@
  */
 
 #include "Systems/EntitySystem.hpp"
+#include "RType/Config/WeaponConfig.hpp"
 
 namespace rtp::server
 {
@@ -61,8 +62,55 @@ namespace rtp::server
                         0.f
         });
 
-        _registry.add<ecs::components::SimpleWeapon>(
-            entity, ecs::components::SimpleWeapon{6.0f, 0.0f, 10});
+        ecs::components::SimpleWeapon weapon;
+        auto weaponKind = player->getWeaponKind();
+        weapon.kind = weaponKind;
+
+        // Prefer configuration file values if available, otherwise fallback to hardcoded defaults
+        if (rtp::config::hasWeaponConfigs()) {
+            weapon = rtp::config::getWeaponDef(weaponKind);
+            weapon.kind = weaponKind;
+        } else {
+            switch (weaponKind) {
+                case ecs::components::WeaponKind::Classic:
+                    weapon.fireRate = 6.0f;
+                    weapon.damage = 10;
+                    weapon.ammo = -1;  // Infinite
+                    weapon.maxAmmo = -1;
+                    break;
+                case ecs::components::WeaponKind::Beam:
+                    weapon.fireRate = 0.0f;  // Continuous
+                    weapon.damage = 4;  // Per tick
+                    weapon.beamDuration = 5.0f;
+                    weapon.beamCooldown = 5.0f;
+                    weapon.ammo = -1;
+                    weapon.maxAmmo = -1;
+                    break;
+                case ecs::components::WeaponKind::Paddle:
+                    weapon.fireRate = 0.0f;
+                    weapon.damage = 0;
+                    weapon.canReflect = true;
+                    weapon.ammo = -1;
+                    weapon.maxAmmo = -1;
+                    break;
+                case ecs::components::WeaponKind::Tracker:
+                    weapon.fireRate = 2.0f;
+                    weapon.damage = 6;
+                    weapon.homing = true;
+                    weapon.ammo = 50;
+                    weapon.maxAmmo = 50;
+                    break;
+                case ecs::components::WeaponKind::Boomerang:
+                    weapon.fireRate = 0.5f;  // Slow single throw
+                    weapon.damage = 18;
+                    weapon.isBoomerang = true;
+                    weapon.ammo = -1;
+                    weapon.maxAmmo = -1;
+                    break;
+            }
+        }
+
+        _registry.add<ecs::components::SimpleWeapon>(entity, weapon);
 
         _registry.add<ecs::components::Ammo>(
             entity,
@@ -91,6 +139,54 @@ namespace rtp::server
             entity, ecs::components::RoomId{player->getRoomId()});
 
         return entity;
+    }
+
+    void EntitySystem::applyWeaponToEntity(ecs::Entity entity, ecs::components::WeaponKind weaponKind)
+    {
+        ecs::components::SimpleWeapon wcfg;
+        wcfg.kind = weaponKind;
+
+        if (rtp::config::hasWeaponConfigs()) {
+            wcfg = rtp::config::getWeaponDef(weaponKind);
+            wcfg.kind = weaponKind;
+        } else {
+            switch (weaponKind) {
+                case ecs::components::WeaponKind::Classic:
+                    wcfg.fireRate = 6.0f; wcfg.damage = 10; wcfg.ammo = -1; wcfg.maxAmmo = -1; break;
+                case ecs::components::WeaponKind::Beam:
+                    wcfg.fireRate = 0.0f; wcfg.damage = 4; wcfg.beamDuration = 5.0f; wcfg.beamCooldown = 5.0f; wcfg.ammo = -1; wcfg.maxAmmo = -1; break;
+                case ecs::components::WeaponKind::Paddle:
+                    wcfg.fireRate = 0.0f; wcfg.damage = 0; wcfg.canReflect = true; wcfg.ammo = -1; wcfg.maxAmmo = -1; break;
+                case ecs::components::WeaponKind::Tracker:
+                    wcfg.fireRate = 2.0f; wcfg.damage = 6; wcfg.homing = true; wcfg.ammo = 50; wcfg.maxAmmo = 50; break;
+                case ecs::components::WeaponKind::Boomerang:
+                    wcfg.fireRate = 0.5f; wcfg.damage = 18; wcfg.isBoomerang = true; wcfg.ammo = -1; wcfg.maxAmmo = -1; break;
+            }
+        }
+
+        auto weaponRes = _registry.get<ecs::components::SimpleWeapon>();
+        if (weaponRes) {
+            auto &weapons = weaponRes->get();
+            if (weapons.has(entity)) {
+                weapons[entity] = wcfg;
+            } else {
+                _registry.add<ecs::components::SimpleWeapon>(entity, wcfg);
+            }
+        } else {
+            _registry.add<ecs::components::SimpleWeapon>(entity, wcfg);
+        }
+
+        // Update Ammo component defaults if present
+        auto ammoRes = _registry.get<ecs::components::Ammo>();
+        if (ammoRes) {
+            auto &ammos = ammoRes->get();
+            if (ammos.has(entity) && wcfg.maxAmmo >= 0) {
+                ammos[entity].max = static_cast<uint16_t>(wcfg.maxAmmo);
+                ammos[entity].current = static_cast<uint16_t>(wcfg.ammo > 0 ? wcfg.ammo : ammos[entity].current);
+            }
+        }
+
+        log::info("Applied weapon {} to entity {}", static_cast<int>(weaponKind), entity.index());
     }
 
     ecs::Entity EntitySystem::createEnemyEntity(
@@ -151,8 +247,12 @@ namespace rtp::server
         } else if (type == net::EntityType::Boss) {
             fireRate = 1.2f;
         }
-        _registry.add<ecs::components::SimpleWeapon>(
-            entity, ecs::components::SimpleWeapon{fireRate, 0.0f, 0});
+        ecs::components::SimpleWeapon enemyWeapon;
+        enemyWeapon.kind = ecs::components::WeaponKind::Classic;
+        enemyWeapon.fireRate = fireRate;
+        enemyWeapon.lastShotTime = 0.0f;
+        enemyWeapon.damage = 0;
+        _registry.add<ecs::components::SimpleWeapon>(entity, enemyWeapon);
 
         _registry.add<ecs::components::BoundingBox>(
             entity, ecs::components::BoundingBox{30.0f, 18.0f});

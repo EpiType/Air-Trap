@@ -290,6 +290,7 @@ namespace rtp::server
             static_cast<uint8_t>(net::EntityType::Bullet),
             x,
             y
+            , 0.0f, 0.0f, 0
         };
         packet << payload;
         _networkSync.sendPacketToSessions(sessions, packet, net::NetworkMode::TCP);

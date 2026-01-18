@@ -15,6 +15,9 @@
 #include "RType/ECS/Components/BoundingBox.hpp"
 #include "RType/ECS/Components/ShieldVisual.hpp"
 #include "RType/ECS/Components/Controllable.hpp"
+#include "RType/ECS/Components/SimpleWeapon.hpp"
+#include "RType/ECS/Components/Ammo.hpp"
+#include "RType/Config/WeaponConfig.hpp"
 #include "RType/Network/Packet.hpp"
 #include "Game/EntityBuilder.hpp"
 #include "Utils/DebugFlags.hpp"
@@ -51,11 +54,12 @@ namespace rtp::client {
         }
     }
 
-    void NetworkSyncSystem::tryLogin(const std::string& username, const std::string& password) const
+    void NetworkSyncSystem::tryLogin(const std::string& username, const std::string& password, uint8_t weaponKind) const
     {
         net::LoginPayload payload;
         std::strncpy(payload.username, username.c_str(), sizeof(payload.username) - 1);
         std::strncpy(payload.password, password.c_str(), sizeof(payload.password) - 1);
+        payload.weaponKind = weaponKind;
 
         net::Packet packet(net::OpCode::LoginRequest);
         packet << payload;
@@ -151,6 +155,14 @@ namespace rtp::client {
         payload.message[sizeof(payload.message) - 1] = '\0';
         packet << payload;
 
+        _network.sendPacket(packet, net::NetworkMode::TCP);
+    }
+
+    void NetworkSyncSystem::sendSelectedWeapon(uint8_t weaponKind) const
+    {
+        log::info("Sending selected weapon {} to server", static_cast<int>(weaponKind));
+        net::Packet packet(net::OpCode::UpdateSelectedWeapon);
+        packet << weaponKind;
         _network.sendPacket(packet, net::NetworkMode::TCP);
     }
 
@@ -536,6 +548,64 @@ namespace rtp::client {
         _registry.add<ecs::components::EntityType>(
             e, ecs::components::EntityType{entityType}
         );
+
+            // If server sent a weaponKind for this spawn, apply it to player entities
+        if (entityType == net::EntityType::Player) {
+            ecs::components::SimpleWeapon wcfg;
+            wcfg.kind = static_cast<ecs::components::WeaponKind>(payload.weaponKind);
+
+            if (rtp::config::hasWeaponConfigs()) {
+                wcfg = rtp::config::getWeaponDef(wcfg.kind);
+                wcfg.kind = static_cast<ecs::components::WeaponKind>(payload.weaponKind);
+            } else {
+                switch (wcfg.kind) {
+                    case ecs::components::WeaponKind::Classic:
+                        wcfg.fireRate = 6.0f; wcfg.damage = 10; wcfg.ammo = -1; wcfg.maxAmmo = -1; break;
+                    case ecs::components::WeaponKind::Beam:
+                        wcfg.fireRate = 0.0f; wcfg.damage = 4; wcfg.beamDuration = 5.0f; wcfg.beamCooldown = 5.0f; wcfg.ammo = -1; wcfg.maxAmmo = -1; break;
+                    case ecs::components::WeaponKind::Paddle:
+                        wcfg.fireRate = 0.0f; wcfg.damage = 0; wcfg.canReflect = true; wcfg.ammo = -1; wcfg.maxAmmo = -1; break;
+                    case ecs::components::WeaponKind::Tracker:
+                        wcfg.fireRate = 2.0f; wcfg.damage = 6; wcfg.homing = true; wcfg.ammo = 50; wcfg.maxAmmo = 50; break;
+                    case ecs::components::WeaponKind::Boomerang:
+                        wcfg.fireRate = 0.5f; wcfg.damage = 18; wcfg.isBoomerang = true; wcfg.ammo = -1; wcfg.maxAmmo = -1; break;
+                    default:
+                        break;
+                }
+            }
+
+            // Add or replace SimpleWeapon component
+            if (auto weaponsOpt = _registry.get<ecs::components::SimpleWeapon>()) {
+                auto &weapons = weaponsOpt.value().get();
+                if (weapons.has(e)) {
+                    weapons[e] = wcfg;
+                } else {
+                    _registry.add<ecs::components::SimpleWeapon>(e, wcfg);
+                }
+            } else {
+                _registry.add<ecs::components::SimpleWeapon>(e, wcfg);
+            }
+
+            // Ensure Ammo component matches weapon config where applicable
+            if (auto ammoOpt = _registry.get<ecs::components::Ammo>()) {
+                auto &ammos = ammoOpt.value().get();
+                if (ammos.has(e)) {
+                    if (wcfg.maxAmmo >= 0) {
+                        ammos[e].max = static_cast<uint16_t>(wcfg.maxAmmo);
+                        if (wcfg.ammo > 0)
+                            ammos[e].current = static_cast<uint16_t>(wcfg.ammo);
+                    }
+                } else {
+                    uint16_t max = (wcfg.maxAmmo >= 0) ? static_cast<uint16_t>(wcfg.maxAmmo) : 100;
+                    uint16_t cur = (wcfg.ammo >= 0) ? static_cast<uint16_t>( (wcfg.ammo > 0) ? wcfg.ammo : max ) : max;
+                    _registry.add<ecs::components::Ammo>(e, ecs::components::Ammo{cur, max, 2.0f, 0.0f, false, true});
+                }
+            } else {
+                uint16_t max = (wcfg.maxAmmo >= 0) ? static_cast<uint16_t>(wcfg.maxAmmo) : 100;
+                uint16_t cur = (wcfg.ammo >= 0) ? static_cast<uint16_t>( (wcfg.ammo > 0) ? wcfg.ammo : max ) : max;
+                _registry.add<ecs::components::Ammo>(e, ecs::components::Ammo{cur, max, 2.0f, 0.0f, false, true});
+            }
+        }
 
         if (payload.sizeX > 0.0f && payload.sizeY > 0.0f) {
             _registry.add<ecs::components::BoundingBox>(

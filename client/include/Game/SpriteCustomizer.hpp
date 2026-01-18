@@ -11,7 +11,7 @@
     #include <string>
     #include <unordered_map>
     #include <filesystem>
-    #include <nlohmann/json.hpp>
+    #include "RType/Config/SpriteMapConfig.hpp"
 
 namespace rtp::client {
 
