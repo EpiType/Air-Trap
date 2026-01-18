@@ -103,6 +103,7 @@ namespace rtp::net
 
         // Gameplay (C -> S)
         InputTick = 0x10,               /**< Client input state */
+        UpdateSelectedWeapon = 0x11,    /**< Client selected weapon changed */
 
         // Game State (S -> C)
         // RoomUpdate = 0x20,             /**< Entity state snapshot */
@@ -113,6 +114,8 @@ namespace rtp::net
         Pong = 0x25,                    /**< Ping response */
         DebugModeUpdate = 0x26,         /**< Debug mode toggle */
         Kicked = 0x27                   /**< Player kicked notification */
+        ,
+        BeamState = 0x28               /**< Beam start/stop notification */
     };
 
     #pragma pack(push, 1)
@@ -184,6 +187,7 @@ namespace rtp::net
     struct LoginPayload {
         char username[32];              /**< Player username */
         char password[32];              /**< Player password */
+        uint8_t weaponKind;             /**< Selected weapon kind */
     };
 
     /**
@@ -342,6 +346,7 @@ namespace rtp::net
         float posY;                     /**< Spawn Y position */
         float sizeX{0.0f};              /**< Optional width for static entities */
         float sizeY{0.0f};              /**< Optional height for static entities */
+        uint8_t weaponKind{0};          /**< Optional weapon kind for player entities */
     };
 
     /**
@@ -365,6 +370,18 @@ namespace rtp::net
         uint16_t max;                   /**< Max ammo */
         uint8_t isReloading;            /**< 1 if reloading */
         float cooldownRemaining;        /**< Remaining reload time */
+    };
+
+    /**
+     * @struct BeamStatePayload
+     * @brief Notify clients that an entity's beam started or stopped
+     */
+    struct BeamStatePayload {
+        uint32_t ownerNetId;            /**< Network id of the player owning the beam */
+        uint8_t active;                 /**< 1 if beam active, 0 if stopped */
+        float timeRemaining;            /**< Remaining beam active time (seconds) */
+        float length;                   /**< Visual length of the beam in pixels */
+        float offsetY;                  /**< Vertical offset relative to owner (px) */
     };
 
     /**

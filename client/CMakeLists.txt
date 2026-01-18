@@ -66,7 +66,6 @@ endif()
 
 # --- DEPENDENCIES ---
 find_package(SFML REQUIRED COMPONENTS graphics window system)
-find_package(nlohmann_json REQUIRED)
 
 # --- LINKING ---
 target_link_libraries(r-type_client
@@ -76,7 +75,6 @@ target_link_libraries(r-type_client
         SFML::Audio
         SFML::Window
         SFML::System
-        nlohmann_json::nlohmann_json
 )
 
 # --- PLUGINS ---

@@ -101,6 +101,10 @@ namespace rtp::client {
                 std::vector<ecs::Entity> _menuWorldEntities; /**< Menu background entities */
                 std::vector<MenuEnemy> _menuEnemies;        /**< Moving enemies for menu decor */
                 float _menuTime{0.0f};                      /**< Menu animation timer */
+                ecs::Entity _weaponNameText;                /**< Entity for weapon name display */
+                ecs::Entity _weaponStatsText;               /**< Entity for weapon stats display */
+
+                void updateWeaponDisplay();                 /**< Update weapon name and stats texts */
         };
     } // namespace scenes
 } // namespace rtp::client

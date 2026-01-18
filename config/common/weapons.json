@@ -1,0 +1,52 @@
+{
+  "Classic": {
+    "kind": 0,
+    "displayName": "Classic Laser",
+    "fireRate": 6.0,
+    "damage": 10,
+    "difficulty": 2,
+    "ammo": 100,
+    "maxAmmo": 100
+  },
+  "Beam": {
+    "kind": 1,
+    "displayName": "Beam Cannon",
+    "fireRate": 0.0,
+    "damage": 4,
+    "difficulty": 3,
+    "beamDuration": 5.0,
+    "beamCooldown": 3.0,
+    "ammo": 1,
+    "maxAmmo": 1
+  },
+  "Paddle": {
+    "kind": 2,
+    "displayName": "Reflector Paddle",
+    "fireRate": 0.0,
+    "damage": 0,
+    "difficulty": 4,
+    "canReflect": true,
+    "ammo": -1,
+    "maxAmmo": -1
+  },
+  "Tracker": {
+    "kind": 3,
+    "displayName": "Auto-Tracker",
+    "fireRate": 2.0,
+    "damage": 6,
+    "difficulty": 1,
+    "homing": true,
+    "ammo": 50,
+    "maxAmmo": 50
+  },
+  "Boomerang": {
+    "kind": 4,
+    "displayName": "Boomerang",
+    "fireRate": 0.5,
+    "damage": 18,
+    "difficulty": 4,
+    "isBoomerang": true,
+    "ammo": 1,
+    "maxAmmo": 1
+  }
+}

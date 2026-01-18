@@ -47,8 +47,9 @@ namespace rtp::server {
              * @brief Handle a login request from a client
              * @param sessionId ID of the network session
              * @param packet Packet containing the login request data
+             * @return tuple<success, username, weaponKind>
              */
-            std::pair<bool, std::string> handleLoginRequest(uint32_t sessionId, const net::Packet& packet);
+            std::tuple<bool, std::string, uint8_t> handleLoginRequest(uint32_t sessionId, const net::Packet& packet);
 
             /**
              * @brief Handle a registration request from a client

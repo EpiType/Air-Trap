@@ -128,6 +128,13 @@ namespace rtp::server {
                 int health,
                 net::EntityType type = net::EntityType::Obstacle
             );
+            
+                /**
+                 * @brief Apply a weapon configuration to an existing entity (player)
+                 * @param entity Target entity
+                 * @param weaponKind Weapon kind to apply
+                 */
+                void applyWeaponToEntity(ecs::Entity entity, ecs::components::WeaponKind weaponKind);
 
         protected:
             ecs::Registry& _registry;   /**< Reference to the entity registry */
