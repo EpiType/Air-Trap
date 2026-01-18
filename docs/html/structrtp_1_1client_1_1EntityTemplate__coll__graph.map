@@ -1,0 +1,34 @@
+<map id="rtp::client::EntityTemplate" name="rtp::client::EntityTemplate">
+<area shape="rect" id="Node000001" title=" " alt="" coords="411,1794,570,2349"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="42,1027,110,1093"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="63,1095,45,1159,28,1236,10,1393,8,1459,14,1519,27,1578,50,1637,84,1700,131,1769,193,1841,262,1906,333,1963,399,2011,394,2012,330,1967,259,1910,189,1844,127,1772,80,1703,45,1639,22,1579,8,1520,3,1459,5,1392,23,1235,40,1157,64,1090"/>
+<area shape="rect" id="Node000010" href="$structrtp_1_1ecs_1_1components_1_1Sprite.html" title="Component representing a sprite." alt="" coords="72,1256,205,1500"/>
+<area shape="poly" id="edge12_Node000010_Node000002" title=" " alt="" coords="82,1090,114,1239,109,1239,82,1095"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="19,790,133,872"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="76,884,79,1027,73,1027,76,889"/>
+<area shape="rect" id="Node000004" href="$structrtp_1_1Vec2.html" title=" " alt="" coords="434,976,547,1144"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="433,1088,391,1113,344,1147,301,1188,283,1211,268,1237,251,1276,241,1311,237,1343,238,1373,250,1439,268,1519,294,1621,328,1722,366,1818,406,1906,401,1905,362,1820,323,1724,288,1623,263,1521,245,1440,233,1374,232,1342,236,1310,246,1274,263,1234,278,1208,297,1184,341,1142,389,1109,436,1084"/>
+<area shape="rect" id="Node000009" href="$structrtp_1_1ecs_1_1components_1_1Velocity.html" title="Component representing a 2D velocity." alt="" coords="338,1337,472,1418"/>
+<area shape="poly" id="edge10_Node000009_Node000004" title=" " alt="" coords="469,1141,423,1322,418,1320,467,1146"/>
+<area shape="rect" id="Node000013" href="$structrtp_1_1client_1_1EntityTemplate_1_1ParallaxDef.html" title=" " alt="" coords="496,1276,656,1479"/>
+<area shape="poly" id="edge16_Node000013_Node000004" title=" " alt="" coords="521,1141,530,1167,554,1259,549,1259,525,1169,520,1146"/>
+<area shape="rect" id="Node000014" href="$structrtp_1_1client_1_1EntityTemplate_1_1SpriteAnimDef.html" title=" " alt="" coords="680,1235,840,1520"/>
+<area shape="poly" id="edge18_Node000014_Node000004" title=" " alt="" coords="546,1098,587,1130,624,1166,673,1228,668,1228,621,1170,583,1134,547,1103"/>
+<area shape="rect" id="Node000005" href="$structrtp_1_1details_1_1VecBase.html" title=" " alt="" coords="467,361,600,666"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="534,678,530,814,517,952,513,977,508,976,512,952,525,813,533,683"/>
+<area shape="rect" id="Node000007" href="$structrtp_1_1Vec2.html" title="A 2&#45;dimensional vector." alt="" coords="400,757,496,905"/>
+<area shape="poly" id="edge7_Node000007_Node000005" title=" " alt="" coords="489,678,470,758,465,757,488,683"/>
+<area shape="rect" id="Node000006" href="$structrtp_1_1details_1_1VecBase.html" title="CRTP base class for vectors." alt="" coords="467,5,600,290"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="534,302,536,361,531,361,533,307"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="453,917,460,952,466,977,460,976,455,952,452,923"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="424,480,443,547"/>
+<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="435,544,446,741,441,740,434,549"/>
+<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="410,1416,449,1770,450,1778,445,1777,444,1771,408,1420"/>
+<area shape="poly" id="edge11_Node000001_Node000010" title=" " alt="" coords="133,1497,139,1564,147,1633,163,1703,189,1769,232,1839,285,1902,343,1958,400,2005,395,2006,340,1962,281,1906,228,1842,184,1772,158,1705,142,1634,133,1564,133,1502"/>
+<area shape="rect" id="Node000011" href="$structrtp_1_1ecs_1_1components_1_1Animation.html" title="Component representing an animation." alt="" coords="864,1256,997,1500"/>
+<area shape="poly" id="edge13_Node000001_Node000011" title=" " alt="" coords="909,1497,893,1565,871,1635,842,1705,806,1772,757,1839,700,1902,641,1957,585,2004,582,2000,637,1953,696,1898,753,1836,802,1769,837,1703,866,1633,888,1563,906,1502"/>
+<area shape="rect" id="Node000012" href="$structrtp_1_1ecs_1_1components_1_1ParallaxLayer.html" title="Tag component indicating that an entity should loop its position when it exits the screen (infinite s..." alt="" coords="1021,1327,1155,1428"/>
+<area shape="poly" id="edge14_Node000001_Node000012" title=" " alt="" coords="1086,1426,1078,1501,1058,1590,1044,1638,1026,1685,1003,1730,975,1772,934,1820,887,1863,837,1903,784,1938,680,1996,587,2038,585,2033,678,1991,782,1933,834,1898,884,1859,930,1816,971,1769,998,1728,1021,1683,1039,1636,1053,1589,1073,1500,1083,1430"/>
+<area shape="poly" id="edge15_Node000001_Node000013" title=" " alt="" coords="565,1477,529,1778,524,1777,562,1481"/>
+<area shape="poly" id="edge17_Node000001_Node000014" title=" " alt="" coords="740,1518,713,1644,694,1709,672,1771,630,1860,581,1943,577,1940,625,1857,667,1769,689,1707,708,1643,737,1522"/>
+</map>

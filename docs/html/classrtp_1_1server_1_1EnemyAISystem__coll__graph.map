@@ -1,0 +1,34 @@
+<map id="rtp::server::EnemyAISystem" name="rtp::server::EnemyAISystem">
+<area shape="rect" id="Node000001" title="System to handle enemy AI behavior." alt="" coords="330,1202,507,1289"/>
+<area shape="rect" id="Node000002" href="$classrtp_1_1ecs_1_1ISystem.html" title="Abstract base class for all ECS systems." alt="" coords="342,882,453,968"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="403,981,419,1203,413,1202,399,985"/>
+<area shape="rect" id="Node000003" href="$classrtp_1_1ecs_1_1Registry.html" title=" " alt="" coords="477,719,619,1131"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="479,1100,468,1132,445,1188,441,1185,463,1130,475,1104"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="249,537,386,648"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="357,645,382,671,408,693,423,700,438,703,452,707,467,717,469,719,463,720,464,721,450,712,437,708,422,705,405,697,378,675,357,650"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="250,341,385,422"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="316,420,318,446,318,513,318,520,313,519,313,513,313,446,315,425"/>
+<area shape="rect" id="Node000006" href="$classrtp_1_1ecs_1_1ISparseArray.html" title="Type&#45;erased base interface for sparse arrays." alt="" coords="307,143,446,270"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="362,267,349,318,346,326,341,324,344,316,361,272"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="154,173,283,240"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="186,255,178,285,178,301,183,315,252,349,248,352,180,319,173,302,173,285,187,250"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="440,5,459,72"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="439,48,380,87,296,145,271,164,267,161,293,141,377,83,442,43"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="5,166,131,247"/>
+<area shape="poly" id="edge10_Node000009_Node000008" title=" " alt="" coords="438,43,393,54,318,73,230,103,186,123,144,145,127,156,122,154,141,140,184,118,228,98,316,68,392,48,442,40"/>
+<area shape="rect" id="Node000012" title=" " alt="" coords="469,173,574,240"/>
+<area shape="poly" id="edge13_Node000012_Node000008" title=" " alt="" coords="459,58,504,158,498,158,459,64"/>
+<area shape="rect" id="Node000014" title=" " alt="" coords="598,173,701,240"/>
+<area shape="poly" id="edge16_Node000014_Node000008" title=" " alt="" coords="458,41,504,60,559,94,592,125,621,160,615,160,588,129,556,98,502,65,460,46"/>
+<area shape="poly" id="edge8_Node000004_Node000009" title=" " alt="" coords="60,259,61,299,63,340,71,382,87,421,120,466,162,504,207,535,251,560,247,563,204,540,158,508,116,469,82,424,66,384,58,341,56,299,60,264"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="58,5,78,72"/>
+<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="68,69,71,149,66,149,68,74"/>
+<area shape="rect" id="Node000011" title=" " alt="" coords="396,446,564,513"/>
+<area shape="poly" id="edge11_Node000003_Node000011" title=" " alt="" coords="484,510,502,648,510,703,505,702,497,648,482,515"/>
+<area shape="poly" id="edge12_Node000011_Node000012" title=" " alt="" coords="515,252,488,447,482,446,513,257"/>
+<area shape="rect" id="Node000013" title=" " alt="" coords="571,446,728,513"/>
+<area shape="poly" id="edge14_Node000003_Node000013" title=" " alt="" coords="638,510,630,537,589,704,585,701,625,536,635,515"/>
+<area shape="poly" id="edge15_Node000013_Node000014" title=" " alt="" coords="651,252,652,447,647,446,648,257"/>
+<area shape="rect" id="Node000015" title=" " alt="" coords="722,559,841,626"/>
+<area shape="poly" id="edge17_Node000003_Node000015" title=" " alt="" coords="761,623,631,811,627,808,757,627"/>
+</map>

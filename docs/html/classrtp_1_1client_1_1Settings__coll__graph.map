@@ -1,0 +1,19 @@
+<map id="rtp::client::Settings" name="rtp::client::Settings">
+<area shape="rect" id="Node000001" title="Manages game settings and preferences." alt="" coords="206,544,374,1139"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,315,170,432"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="113,429,202,631,197,632,112,435"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="36,143,161,224"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="95,236,94,316,88,315,95,241"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="88,5,108,72"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="98,69,101,126,96,126,98,74"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="225,5,244,72"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="224,52,150,132,145,129,226,47"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="238,150,343,216"/>
+<area shape="poly" id="edge7_Node000007_Node000005" title=" " alt="" coords="243,59,259,95,275,134,270,135,255,97,244,65"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="194,340,386,407"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="291,404,293,528,288,527,290,409"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="291,229,293,341,288,340,290,234"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="410,340,614,407"/>
+<area shape="poly" id="edge9_Node000008_Node000007" title=" " alt="" coords="355,206,392,224,424,246,467,292,498,341,492,341,462,296,421,250,389,228,357,211"/>
+<area shape="poly" id="edge8_Node000001_Node000008" title=" " alt="" coords="505,404,490,461,467,521,428,605,385,686,380,683,423,602,463,519,485,459,502,409"/>
+</map>

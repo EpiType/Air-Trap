@@ -1,0 +1,9 @@
+<map id="rtp::Vec3&lt; T &gt;" name="rtp::Vec3&lt; T &gt;">
+<area shape="rect" id="Node000001" title="A 3&#45;dimensional vector." alt="" coords="73,778,169,946"/>
+<area shape="rect" id="Node000002" href="$structrtp_1_1details_1_1VecBase.html" title=" " alt="" coords="5,361,138,666"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="97,678,112,778,107,778,94,683"/>
+<area shape="rect" id="Node000003" href="$structrtp_1_1details_1_1VecBase.html" title="CRTP base class for vectors." alt="" coords="5,5,138,290"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="72,302,74,361,69,361,72,307"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="162,480,181,547"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="168,544,153,666,139,762,134,760,148,666,166,549"/>
+</map>

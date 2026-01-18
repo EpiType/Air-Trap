@@ -1,0 +1,3 @@
+<map id="rtp::client::graphics::UiFactory" name="rtp::client::graphics::UiFactory">
+<area shape="rect" id="Node000001" title="Factory class for creating UI components in the ECS registry." alt="" coords="5,5,154,229"/>
+</map>

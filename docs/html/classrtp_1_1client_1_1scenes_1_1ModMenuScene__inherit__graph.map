@@ -1,0 +1,5 @@
+<map id="rtp::client::scenes::ModMenuScene" name="rtp::client::scenes::ModMenuScene">
+<area shape="rect" id="Node000001" title="Scene for customizing game sprites." alt="" coords="5,216,170,826"/>
+<area shape="rect" id="Node000002" href="$classrtp_1_1client_1_1interfaces_1_1IScene.html" title="Interface for different scenes in the client application." alt="" coords="23,5,153,168"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="88,180,90,216,85,216,88,185"/>
+</map>

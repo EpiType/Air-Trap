@@ -1,0 +1,15 @@
+<map id="rtp::Vec3&lt; T &gt;" name="rtp::Vec3&lt; T &gt;">
+<area shape="rect" id="Node000001" title="A 3&#45;dimensional vector." alt="" coords="224,715,320,924"/>
+<area shape="rect" id="Node000004" href="$structrtp_1_1Vec3.html" title=" " alt="" coords="5,1002,118,1211"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="214,889,132,997,120,1013,116,1011,128,993,216,884"/>
+<area shape="rect" id="Node000005" href="$structrtp_1_1Vec3.html" title=" " alt="" coords="142,1002,267,1211"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="246,936,231,1004,226,1002,243,941"/>
+<area shape="rect" id="Node000006" href="$structrtp_1_1Vec3.html" title=" " alt="" coords="291,1002,392,1211"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="311,936,315,947,327,1003,322,1002,310,949,309,941"/>
+<area shape="rect" id="Node000007" href="$structrtp_1_1Vec3.html" title=" " alt="" coords="416,995,544,1219"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="330,892,406,993,419,1013,414,1012,402,997,328,897"/>
+<area shape="rect" id="Node000002" href="$structrtp_1_1details_1_1VecBase.html" title=" " alt="" coords="206,361,339,666"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="273,678,275,716,270,715,272,684"/>
+<area shape="rect" id="Node000003" href="$structrtp_1_1details_1_1VecBase.html" title="CRTP base class for vectors." alt="" coords="206,5,339,290"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="273,302,275,361,270,361,272,307"/>
+</map>

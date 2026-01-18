@@ -1,0 +1,14 @@
+<map id="rtp::ecs::components::Velocity" name="rtp::ecs::components::Velocity">
+<area shape="rect" id="Node000001" title="Component representing a 2D velocity." alt="" coords="29,1215,163,1296"/>
+<area shape="rect" id="Node000002" href="$structrtp_1_1Vec2.html" title=" " alt="" coords="40,976,152,1144"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="97,1141,98,1199,93,1198,94,1146"/>
+<area shape="rect" id="Node000003" href="$structrtp_1_1details_1_1VecBase.html" title=" " alt="" coords="72,361,205,666"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="139,678,136,814,122,952,119,977,113,976,117,952,130,813,138,683"/>
+<area shape="rect" id="Node000005" href="$structrtp_1_1Vec2.html" title="A 2&#45;dimensional vector." alt="" coords="5,757,101,905"/>
+<area shape="poly" id="edge5_Node000005_Node000003" title=" " alt="" coords="93,683,75,758,70,757,94,678"/>
+<area shape="rect" id="Node000004" href="$structrtp_1_1details_1_1VecBase.html" title="CRTP base class for vectors." alt="" coords="72,5,205,290"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="139,302,141,361,136,361,138,307"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="58,917,65,952,71,976,66,977,60,952,58,923"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="29,480,48,547"/>
+<area shape="poly" id="edge6_Node000005_Node000006" title=" " alt="" coords="40,544,52,741,46,741,40,549"/>
+</map>

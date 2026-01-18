@@ -1,0 +1,3 @@
+<map id="rtp::ecs::components::ParallaxLayer" name="rtp::ecs::components::ParallaxLayer">
+<area shape="rect" id="Node000001" title="Tag component indicating that an entity should loop its position when it exits the screen (infinite s..." alt="" coords="5,5,139,107"/>
+</map>
