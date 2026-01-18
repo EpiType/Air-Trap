@@ -397,6 +397,7 @@ namespace rtp::server
             const auto &broom = rooms[bullet];
             const auto &damage = damages[bullet];
 
+            auto boomerResLocal = _registry.get<ecs::components::Boomerang>();
             for (auto enemy : enemies) {
                 if (rooms[enemy].id != broom.id) {
                     continue;
@@ -409,7 +410,10 @@ namespace rtp::server
                 }
 
                 health.currentHealth -= damage.amount;
-                markForDespawn(bullet, broom.id);
+                bool isBoomer = (boomerResLocal && boomerResLocal->get().has(bullet));
+                if (!isBoomer) {
+                    markForDespawn(bullet, broom.id);
+                }
                 if (health.currentHealth <= 0) {
                     const int award = getKillScore(types[enemy].type);
                     updatePlayerScore(broom.id, damage.sourceEntity, award);
@@ -441,13 +445,68 @@ namespace rtp::server
                 if (types[obstacle].type == net::EntityType::Obstacle) {
                     health.currentHealth -= damage.amount;
                 }
-                markForDespawn(bullet, broom.id);
+                bool isBoomerObs = (boomerResLocal && boomerResLocal->get().has(bullet));
+                if (!isBoomerObs) {
+                    markForDespawn(bullet, broom.id);
+                }
                 if (types[obstacle].type ==
                     net::EntityType::Obstacle &&
                     health.currentHealth <= 0) {
                     markForDespawn(obstacle, broom.id);
                 }
                 break;
+            }
+        }
+
+        // Handle boomerang returning to owner: recover ammo and despawn
+        if (auto boomResCheck = _registry.get<ecs::components::Boomerang>()) {
+            auto &boomers = boomResCheck->get();
+            for (auto bullet : bullets) {
+                if (removed.find(bullet.index()) != removed.end()) continue;
+                if (!boomers.has(bullet)) continue;
+                auto &b = boomers[bullet];
+                if (!b.returning) continue;
+
+                const auto &btf = transforms[bullet];
+                const auto &bbox = boxes[bullet];
+
+                // find owner entity in players list
+                for (auto player : players) {
+                    if (rooms[player].id != rooms[bullet].id) continue;
+                    if (static_cast<uint32_t>(player.index()) != b.ownerIndex) continue;
+                    const auto &ptf = transforms[player];
+                    const auto &pbox = boxes[player];
+                    if (!overlaps(ptf, pbox, btf, bbox)) continue;
+
+                    // Recover ammo for owner
+                    if (auto ammoRes = _registry.get<ecs::components::Ammo>()) {
+                        auto &ammos = ammoRes->get();
+                        if (ammos.has(player)) {
+                            if (ammos[player].max > 0) {
+                                ammos[player].current = static_cast<uint16_t>(std::min<int>(ammos[player].max, ammos[player].current + 1));
+                            }
+                            ammos[player].dirty = true;
+
+                            // send ammo update packet to owner
+                            net::Packet packet(net::OpCode::AmmoUpdate);
+                            net::AmmoUpdatePayload payload{};
+                            payload.current = ammos[player].current;
+                            payload.max = ammos[player].max;
+                            payload.isReloading = static_cast<uint8_t>(ammos[player].isReloading ? 1 : 0);
+                            payload.cooldownRemaining = ammos[player].isReloading ? (ammos[player].reloadCooldown - ammos[player].reloadTimer) : 0.0f;
+                            packet << payload;
+                            if (auto netRes = _registry.get<ecs::components::NetworkId>()) {
+                                auto &nets = netRes->get();
+                                if (nets.has(player)) {
+                                    _networkSync.sendPacketToSession(nets[player].id, packet, net::NetworkMode::TCP);
+                                }
+                            }
+                        }
+                    }
+
+                    markForDespawn(bullet, rooms[bullet].id);
+                    break;
+                }
             }
         }
 

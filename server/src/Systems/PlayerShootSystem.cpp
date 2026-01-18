@@ -13,6 +13,8 @@
 #include "RType/ECS/Components/Health.hpp"
 #include "RType/ECS/Components/BoundingBox.hpp"
 #include "RType/Network/Packet.hpp"
+#include "RType/ECS/Components/Homing.hpp"
+#include "RType/ECS/Components/Boomerang.hpp"
 #include <cmath>
 
 #include <algorithm>
@@ -120,12 +122,11 @@ namespace rtp::server
         auto healthRes = _registry.get<ecs::components::Health>();
         auto boxRes = _registry.get<ecs::components::BoundingBox>();
         
-        for (size_t i = 0; i < transforms.size(); ++i) {
-            ecs::Entity entity{static_cast<uint32_t>(i), 0};
-            
-            if (!transforms.has(entity) || !inputs.has(entity) || !types.has(entity) ||
-                !roomIds.has(entity) || !weapons.has(entity) || !netIds.has(entity) || !ammos.has(entity))
+        for (const auto &entity : transforms.entities()) {
+            if (!inputs.has(entity) || !types.has(entity) || !roomIds.has(entity) ||
+                !weapons.has(entity) || !netIds.has(entity) || !ammos.has(entity)) {
                 continue;
+            }
                 
             auto& tf = transforms[entity];
             auto& input = inputs[entity];
@@ -318,7 +319,8 @@ namespace rtp::server
             }
             
             // Progress reload only when beam is not active (pause reload during beam)
-            if (ammo.isReloading && !weapon.beamActive) {
+            // Also do not progress reload if the equipped weapon is a boomerang
+            if (ammo.isReloading && !weapon.beamActive && !weapon.isBoomerang) {
                 ammo.reloadTimer += dt;
                 if (ammo.reloadTimer >= ammo.reloadCooldown) {
                     ammo.current = ammo.max;
@@ -342,7 +344,8 @@ namespace rtp::server
             }
 
             // Do not allow starting a reload while beam is active
-            if ((input.mask & Bits::Reload) && !ammo.isReloading && ammo.current < ammo.max && !weapon.beamActive) {
+            // Also disallow starting a reload if the current weapon is a boomerang
+            if ((input.mask & Bits::Reload) && !ammo.isReloading && ammo.current < ammo.max && !weapon.beamActive && !weapon.isBoomerang) {
                 ammo.isReloading = true;
                 ammo.reloadTimer = 0.0f;
                 ammo.dirty = true;
@@ -448,7 +451,7 @@ namespace rtp::server
                         }
                         ammo.dirty = true;
                         weapon.lastShotTime = 0.0f;
-                    } else if (weapon.lastShotTime >= fireInterval) {
+                    } else if (weapon.kind != ecs::components::WeaponKind::Beam && weapon.lastShotTime >= fireInterval) {
                         pendingSpawns.emplace_back(entity, tf, roomId, hasDoubleFire);
                         if (!hasInfiniteAmmo && ammo.current > 0) {
                             ammo.current -= 1;
@@ -559,6 +562,54 @@ namespace rtp::server
             ecs::components::RoomId{ roomId.id }
         );
 
+        // Attach boomerang component for charged bullet if applicable
+        if (auto weaponRes = _registry.get<ecs::components::SimpleWeapon>()) {
+            auto &weapons = weaponRes->get();
+            if (weapons.has(owner) && weapons[owner].isBoomerang) {
+                ecs::components::Boomerang b;
+                b.ownerIndex = static_cast<uint32_t>(owner.index());
+                b.startPos = {x, y};
+                b.maxDistance = 400.0f;
+                b.returning = false;
+                _registry.add<ecs::components::Boomerang>(bullet, b);
+            }
+        }
+
+        // Attach boomerang component if owner's weapon is a boomerang
+        if (auto weaponRes = _registry.get<ecs::components::SimpleWeapon>()) {
+            auto &weapons = weaponRes->get();
+            if (weapons.has(owner) && weapons[owner].isBoomerang) {
+                ecs::components::Boomerang b;
+                b.ownerIndex = static_cast<uint32_t>(owner.index());
+                b.startPos = {x, y};
+                b.maxDistance = 400.0f; // default max distance, could be configurable
+                b.returning = false;
+                _registry.add<ecs::components::Boomerang>(bullet, b);
+            }
+        }
+
+        // Attach homing component for charged bullet if owner's weapon supports homing
+        if (auto weaponRes = _registry.get<ecs::components::SimpleWeapon>()) {
+            auto &weapons = weaponRes->get();
+            if (weapons.has(owner) && weapons[owner].homing) {
+                ecs::components::Homing h;
+                h.steering = weapons[owner].homingSteering;
+                h.range = weapons[owner].homingRange;
+                _registry.add<ecs::components::Homing>(bullet, h);
+            }
+        }
+
+        // Attach homing component if owner's weapon supports homing
+        if (auto weaponRes = _registry.get<ecs::components::SimpleWeapon>()) {
+            auto &weapons = weaponRes->get();
+            if (weapons.has(owner) && weapons[owner].homing) {
+                ecs::components::Homing h;
+                h.steering = weapons[owner].homingSteering;
+                h.range = weapons[owner].homingRange;
+                _registry.add<ecs::components::Homing>(bullet, h);
+            }
+        }
+
         auto room = _roomSystem.getRoom(roomId.id);
         if (!room)
             return;
@@ -573,12 +624,22 @@ namespace rtp::server
         }
 
         net::Packet packet(net::OpCode::EntitySpawn);
+        uint8_t weaponKind = 0;
+        if (auto weaponRes = _registry.get<ecs::components::SimpleWeapon>()) {
+            auto &weapons = weaponRes->get();
+            if (weapons.has(owner)) {
+                weaponKind = static_cast<uint8_t>(weapons[owner].kind);
+            }
+        }
+
         net::EntitySpawnPayload payload = {
             static_cast<uint32_t>(bullet.index()),
             static_cast<uint8_t>(net::EntityType::Bullet),
             x,
-            y
-            , 0.0f, 0.0f, 0
+            y,
+            0.0f,
+            0.0f,
+            weaponKind
         };
         packet << payload;
         _networkSync.sendPacketToSessions(sessions, packet, net::NetworkMode::TCP);
@@ -630,12 +691,49 @@ namespace rtp::server
                 ecs::components::RoomId{ roomId.id }
             );
 
+                
+
+            // Attach boomerang for second bullet if owner's weapon is boomerang
+            if (auto weaponRes2 = _registry.get<ecs::components::SimpleWeapon>()) {
+                auto &weapons = weaponRes2->get();
+                if (weapons.has(owner) && weapons[owner].isBoomerang) {
+                    ecs::components::Boomerang b2;
+                    b2.ownerIndex = static_cast<uint32_t>(owner.index());
+                    b2.startPos = {x, y2};
+                    b2.maxDistance = 400.0f;
+                    b2.returning = false;
+                    _registry.add<ecs::components::Boomerang>(bullet2, b2);
+                }
+            }
+
+            // Attach homing for second bullet if applicable
+            if (auto weaponRes2 = _registry.get<ecs::components::SimpleWeapon>()) {
+                auto &weapons = weaponRes2->get();
+                if (weapons.has(owner) && weapons[owner].homing) {
+                    ecs::components::Homing h2;
+                    h2.steering = weapons[owner].homingSteering;
+                    h2.range = weapons[owner].homingRange;
+                    _registry.add<ecs::components::Homing>(bullet2, h2);
+                }
+            }
+
             net::Packet packet2(net::OpCode::EntitySpawn);
+            uint8_t weaponKind2 = 0;
+            if (auto weaponRes2 = _registry.get<ecs::components::SimpleWeapon>()) {
+                auto &weapons = weaponRes2->get();
+                if (weapons.has(owner)) {
+                    weaponKind2 = static_cast<uint8_t>(weapons[owner].kind);
+                }
+            }
+
             net::EntitySpawnPayload payload2 = {
                 static_cast<uint32_t>(bullet2.index()),
                 static_cast<uint8_t>(net::EntityType::Bullet),
                 x,
-                y2
+                y2,
+                0.0f,
+                0.0f,
+                weaponKind2
             };
             packet2 << payload2;
             _networkSync.sendPacketToSessions(sessions, packet2, net::NetworkMode::TCP);
@@ -666,22 +764,43 @@ namespace rtp::server
         }
         const float ratio = std::clamp(chargeRatio, 0.0f, 1.0f);
 
-        const float scale = (ratio < 0.34f) ? 0.5f : (ratio < 0.67f ? 1.0f : 2.0f);
+        // Determine discrete charge tiers:
+        // Tier 1: normal shot (no change)
+        // Tier 2: slightly larger hitbox, damage x2
+        // Tier 3: larger hitbox, damage x4
         const float baseW = 8.0f;
         const float baseH = 4.0f;
-        const float sizeX = baseW * scale;
-        const float sizeY = baseH * scale;
-        const int minDamage = 25;
-        const int maxDamage = 120;
-        int damage = static_cast<int>(minDamage + (maxDamage - minDamage) * ratio);
-        // Incorporate owner's weapon base damage if available
+
+        float tierScale = 1.0f;
+        int damageMultiplier = 1;
+
+        if (ratio < 0.34f) {
+            // Tier 1
+            tierScale = 1.0f;
+            damageMultiplier = 1;
+        } else if (ratio < 0.67f) {
+            // Tier 2
+            tierScale = 1.5f; // a bit bigger
+            damageMultiplier = 2;
+        } else {
+            // Tier 3
+            tierScale = 2.0f; // biggest
+            damageMultiplier = 4;
+        }
+
+        const float sizeX = baseW * tierScale;
+        const float sizeY = baseH * tierScale;
+
+        // Base damage comes from owner's weapon if available, otherwise fallback
+        int baseDamage = 25;
         if (auto weaponRes = _registry.get<ecs::components::SimpleWeapon>()) {
             auto &weapons = weaponRes->get();
             if (weapons.has(owner)) {
-                const auto &w = weapons[owner];
-                damage += w.damage; // add base damage
+                baseDamage = weapons[owner].damage;
             }
         }
+
+        int damage = baseDamage * damageMultiplier;
 
         _registry.add<ecs::components::Transform>(
             bullet,
@@ -718,6 +837,30 @@ namespace rtp::server
             ecs::components::RoomId{ roomId.id }
         );
 
+        // Attach boomerang component for charged bullet if applicable
+        if (auto weaponRes = _registry.get<ecs::components::SimpleWeapon>()) {
+            auto &weapons = weaponRes->get();
+            if (weapons.has(owner) && weapons[owner].isBoomerang) {
+                ecs::components::Boomerang b;
+                b.ownerIndex = static_cast<uint32_t>(owner.index());
+                b.startPos = {x, y};
+                b.maxDistance = 400.0f * tierScale; // farther for bigger tiers
+                b.returning = false;
+                _registry.add<ecs::components::Boomerang>(bullet, b);
+            }
+        }
+
+        // Attach homing component for charged bullet if owner's weapon supports homing
+        if (auto weaponRes = _registry.get<ecs::components::SimpleWeapon>()) {
+            auto &weapons = weaponRes->get();
+            if (weapons.has(owner) && weapons[owner].homing) {
+                ecs::components::Homing h;
+                h.steering = weapons[owner].homingSteering;
+                h.range = weapons[owner].homingRange;
+                _registry.add<ecs::components::Homing>(bullet, h);
+            }
+        }
+
         auto room = _roomSystem.getRoom(roomId.id);
         if (!room)
             return;
@@ -740,6 +883,13 @@ namespace rtp::server
             sizeX,
             sizeY
         };
+        // Include owner's weapon kind for client-side visuals
+        if (auto weaponRes = _registry.get<ecs::components::SimpleWeapon>()) {
+            auto &weapons = weaponRes->get();
+            if (weapons.has(owner)) {
+                payload.weaponKind = static_cast<uint8_t>(weapons[owner].kind);
+            }
+        }
         packet << payload;
         _networkSync.sendPacketToSessions(sessions, packet, net::NetworkMode::TCP);
         
@@ -796,8 +946,15 @@ namespace rtp::server
                 x,
                 y2,
                 sizeX,
-                sizeY
+                sizeY,
+                0
             };
+            if (auto weaponRes2 = _registry.get<ecs::components::SimpleWeapon>()) {
+                auto &weapons = weaponRes2->get();
+                if (weapons.has(owner)) {
+                    payload2.weaponKind = static_cast<uint8_t>(weapons[owner].kind);
+                }
+            }
             packet2 << payload2;
             _networkSync.sendPacketToSessions(sessions, packet2, net::NetworkMode::TCP);
         }
