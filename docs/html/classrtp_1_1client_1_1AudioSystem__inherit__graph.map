@@ -1,0 +1,5 @@
+<map id="rtp::client::AudioSystem" name="rtp::client::AudioSystem">
+<area shape="rect" id="Node000001" title="System responsible for handling audio playback (music, SFX, ambient)." alt="" coords="5,140,175,654"/>
+<area shape="rect" id="Node000002" href="$classrtp_1_1ecs_1_1ISystem.html" title="Abstract base class for all ECS systems." alt="" coords="34,5,146,92"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="91,104,93,140,88,140,90,110"/>
+</map>

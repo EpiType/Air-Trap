@@ -1,0 +1,9 @@
+<map id="rtp::server::Player" name="rtp::server::Player">
+<area shape="rect" id="Node000001" title="Represents a player in the game server." alt="" coords="59,273,173,685"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="28,136,97,202"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="62,199,67,249,68,257,62,257,61,250,62,205"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,5,120,87"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="63,99,65,136,60,136,63,104"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="133,136,206,202"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="165,200,157,257,152,256,163,205"/>
+</map>

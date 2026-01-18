@@ -1,0 +1,3 @@
+<map id="rtp::ecs::components::ShieldVisual" name="rtp::ecs::components::ShieldVisual">
+<area shape="rect" id="Node000001" title="Component for visual shield effect displayed around the player." alt="" coords="5,5,139,107"/>
+</map>

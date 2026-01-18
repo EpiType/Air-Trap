@@ -1,0 +1,5 @@
+<map id="rtp::client::systems::UIRenderSystem" name="rtp::client::systems::UIRenderSystem">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,140,161,486"/>
+<area shape="rect" id="Node000002" href="$classrtp_1_1ecs_1_1ISystem.html" title="Abstract base class for all ECS systems." alt="" coords="28,5,139,92"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="84,104,86,140,81,140,83,109"/>
+</map>

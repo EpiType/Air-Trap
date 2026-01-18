@@ -1,0 +1,9 @@
+<map id="client/include/Game/AssetManager.hpp" name="client/include/Game/AssetManager.hpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="126,5,262,46"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,94,143,120"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="167,46,106,88,104,83,162,47"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="167,94,221,120"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="196,44,196,80,192,77,192,48"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="244,94,354,120"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="221,44,274,84,268,84,219,49"/>
+</map>

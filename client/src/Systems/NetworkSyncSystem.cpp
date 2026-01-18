@@ -541,6 +541,12 @@ namespace rtp::client {
             case net::EntityType::Boss:
                 t = EntityTemplate::createBossShip(pos);
                 break;
+            case net::EntityType::Boss2:
+                t = EntityTemplate::createBoss2Kraken(pos);
+                break;
+            case net::EntityType::Boss2Bullet:
+                t = EntityTemplate::createBoss2Bullet(pos);
+                break;
 
             case net::EntityType::Player:
                 t = EntityTemplate::player_ship(pos);

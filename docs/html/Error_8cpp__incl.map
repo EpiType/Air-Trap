@@ -1,0 +1,29 @@
+<map id="common/src/Error.cpp" name="common/src/Error.cpp">
+<area shape="rect" id="Node000001" title="Implementation of the Error handling system." alt="" coords="308,5,457,31"/>
+<area shape="rect" id="Node000002" href="$Error_8hpp.html" title="Error handling system with categorized error codes." alt="" coords="324,79,440,105"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="384,29,385,64,380,62,381,33"/>
+<area shape="rect" id="Node000003" href="$LogLevel_8hpp.html" title="Log severity levels for the logging system." alt="" coords="153,153,294,178"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="358,104,265,148,263,144,353,106"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="5,226,66,252"/>
+<area shape="poly" id="edge8_Node000002_Node000004" title=" " alt="" coords="321,98,226,116,173,132,122,155,84,184,55,216,51,212,81,180,119,150,171,127,225,111,326,96"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="90,226,149,252"/>
+<area shape="poly" id="edge9_Node000002_Node000005" title=" " alt="" coords="322,102,219,123,172,138,143,155,134,167,127,181,122,212,117,209,122,180,129,164,139,151,170,133,218,118,327,99"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="288,226,375,252"/>
+<area shape="poly" id="edge11_Node000002_Node000006" title=" " alt="" coords="380,104,343,213,339,210,376,106"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="399,226,451,252"/>
+<area shape="poly" id="edge13_Node000002_Node000007" title=" " alt="" coords="387,103,420,212,414,210,384,107"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="420,153,473,178"/>
+<area shape="poly" id="edge10_Node000002_Node000009" title=" " alt="" coords="394,102,428,142,423,141,392,107"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="498,153,595,178"/>
+<area shape="poly" id="edge12_Node000002_Node000010" title=" " alt="" coords="410,103,507,146,502,146,410,108"/>
+<area shape="rect" id="Node000011" title=" " alt="" coords="619,153,684,178"/>
+<area shape="poly" id="edge14_Node000002_Node000011" title=" " alt="" coords="428,103,606,151,601,152,428,108"/>
+<area shape="rect" id="Node000012" href="$Error_8tpp.html" title=" " alt="" coords="708,153,779,178"/>
+<area shape="poly" id="edge15_Node000002_Node000012" title=" " alt="" coords="441,101,696,151,691,153,440,106"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="192,181,82,223,80,218,191,176"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="208,178,151,220,148,215,203,180"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="243,176,303,217,298,217,241,181"/>
+<area shape="poly" id="edge6_Node000003_Node000007" title=" " alt="" coords="258,176,387,223,381,224,257,181"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="173,226,263,252"/>
+<area shape="poly" id="edge7_Node000003_Node000008" title=" " alt="" coords="225,177,222,212,218,209,221,180"/>
+</map>

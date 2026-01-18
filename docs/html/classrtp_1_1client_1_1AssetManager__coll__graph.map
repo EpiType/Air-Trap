@@ -1,0 +1,19 @@
+<map id="rtp::client::AssetManager" name="rtp::client::AssetManager">
+<area shape="rect" id="Node000001" title="Manages loading and storage of graphical assets." alt="" coords="96,483,253,651"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,330,168,412"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="105,409,133,467,127,467,104,414"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="43,165,112,232"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="50,234,37,264,33,285,37,306,41,315,36,316,32,307,27,285,32,262,51,229"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="192,330,338,412"/>
+<area shape="poly" id="edge8_Node000008_Node000003" title=" " alt="" coords="77,228,87,269,94,288,106,304,121,316,136,320,178,328,174,331,135,326,118,321,102,308,90,291,82,271,77,234"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="20,5,135,87"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="78,99,80,166,75,165,77,104"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="149,158,275,239"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="183,254,156,308,134,332,129,329,151,305,185,249"/>
+<area shape="poly" id="edge9_Node000008_Node000005" title=" " alt="" coords="282,248,292,262,297,279,297,297,288,332,284,330,292,297,292,280,287,264,281,253"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="273,13,292,79"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="275,76,256,135,251,144,246,142,251,133,273,81"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="173,13,192,79"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="181,76,187,133,189,142,184,142,182,134,180,81"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="249,409,223,469,218,466,245,413"/>
+</map>

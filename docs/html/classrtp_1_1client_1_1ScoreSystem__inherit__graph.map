@@ -1,0 +1,5 @@
+<map id="rtp::client::ScoreSystem" name="rtp::client::ScoreSystem">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,140,157,227"/>
+<area shape="rect" id="Node000002" href="$classrtp_1_1ecs_1_1ISystem.html" title="Abstract base class for all ECS systems." alt="" coords="25,5,137,92"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="82,105,84,141,79,139,80,109"/>
+</map>

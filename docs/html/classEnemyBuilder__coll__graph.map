@@ -1,0 +1,3 @@
+<map id="EnemyBuilder" name="EnemyBuilder">
+<area shape="rect" id="Node000001" title="Spawns enemy entities from an EnemyTemplate." alt="" coords="5,5,97,72"/>
+</map>

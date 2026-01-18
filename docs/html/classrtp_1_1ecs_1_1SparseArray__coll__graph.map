@@ -1,0 +1,19 @@
+<map id="rtp::ecs::SparseArray&lt; T &gt;" name="rtp::ecs::SparseArray&lt; T &gt;">
+<area shape="rect" id="Node000001" title="Sparse array container for component storage." alt="" coords="226,661,393,931"/>
+<area shape="rect" id="Node000002" href="$classrtp_1_1ecs_1_1ISparseArray.html" title="Type&#45;erased base interface for sparse arrays." alt="" coords="5,463,144,590"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="140,599,229,700,224,701,139,604"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="321,494,452,560"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="379,558,355,646,350,644,376,562"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="346,234,451,300"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="398,313,391,494,386,493,395,318"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="168,486,296,567"/>
+<area shape="poly" id="edge7_Node000006_Node000004" title=" " alt="" coords="351,313,310,360,270,417,254,452,243,487,238,485,249,450,265,415,306,357,354,308"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="477,486,592,567"/>
+<area shape="poly" id="edge9_Node000008_Node000004" title=" " alt="" coords="423,311,517,486,511,486,421,316"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="389,5,408,72"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="399,69,401,218,396,217,398,74"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="244,564,269,645,263,645,242,569"/>
+<area shape="rect" id="Node000007" href="$classrtp_1_1ecs_1_1Entity.html" title="Represents an entity in the ECS (Entity&#45;Component&#45;System) architecture." alt="" coords="72,143,227,392"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="140,389,153,438,175,473,170,474,149,440,140,394"/>
+<area shape="poly" id="edge8_Node000001_Node000008" title=" " alt="" coords="504,565,405,686,401,682,500,568"/>
+</map>

@@ -1,0 +1,3 @@
+<map id="rtp::ecs::components::server::InputComponent" name="rtp::ecs::components::server::InputComponent">
+<area shape="rect" id="Node000001" title="Component to handle network input for server entities." alt="" coords="5,5,164,148"/>
+</map>

@@ -1,0 +1,3 @@
+<map id="rtp::ecs::components::Controllable" name="rtp::ecs::components::Controllable">
+<area shape="rect" id="Node000001" title="Component indicating that an entity can be controlled by a player." alt="" coords="5,5,139,87"/>
+</map>

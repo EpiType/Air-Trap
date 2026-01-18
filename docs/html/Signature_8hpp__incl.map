@@ -1,0 +1,7 @@
+<map id="common/include/RType/ECS/Signature.hpp" name="common/include/RType/ECS/Signature.hpp">
+<area shape="rect" id="Node000001" title="Component signature representation for ECS." alt="" coords="5,5,164,46"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="18,94,71,120"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="77,45,60,81,55,78,72,48"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="96,94,156,120"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="96,44,115,80,110,80,93,49"/>
+</map>
