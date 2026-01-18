@@ -539,7 +539,7 @@ namespace rtp::client {
                 t = EntityTemplate::effect_1(pos);
                 break;
             case net::EntityType::Boss:
-                t = EntityTemplate::effect_3(pos);
+                t = EntityTemplate::createBossShip(pos);
                 break;
 
             case net::EntityType::Player:
@@ -597,6 +597,10 @@ namespace rtp::client {
             case net::EntityType::PowerupShield:
                 log::debug("Creating PowerupShield template at ({}, {})", pos.x, pos.y);
                 t = EntityTemplate::createPowerUpShield(pos);
+                break;
+            case net::EntityType::BossShield:
+                log::debug("Creating BossShield template at ({}, {})", pos.x, pos.y);
+                t = EntityTemplate::createBossShield(pos);
                 break;
 
             default:

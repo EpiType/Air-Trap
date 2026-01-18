@@ -42,24 +42,36 @@ namespace rtp::server
                 const float dx = btf.position.x - b.startPos.x;
                 const float dy = btf.position.y - b.startPos.y;
                 const float d2 = dx * dx + dy * dy;
-                if (d2 >= b.maxDistance * b.maxDistance) {
+                const float threshold = b.maxDistance * b.maxDistance;
+                if (d2 >= threshold) {
                     b.returning = true;
+                    log::info("Boomerang {} reached maxDistance (d2={} threshold={}), starting return", e.index(), d2, threshold);
                 }
             }
 
             // If returning, steer towards owner
             if (b.returning) {
-                ecs::Entity owner{b.ownerIndex, 0};
-                if (!transforms.has(owner)) {
+                // Find the owner entity by index in the transforms storage
+                ecs::Entity owner;
+                bool ownerFound = false;
+                for (auto pe : transforms.entities()) {
+                    if (static_cast<uint32_t>(pe.index()) == b.ownerIndex) {
+                        owner = pe;
+                        ownerFound = true;
+                        break;
+                    }
+                }
+                if (!ownerFound) {
                     // Owner no longer exists: remove projectile
-                    _registry.kill(ecs::Entity{static_cast<uint32_t>(e.index()), 0});
+                    log::info("Boomerang {} owner not found (ownerIndex={}), despawning", e.index(), b.ownerIndex);
+                    _registry.kill(e);
                     continue;
                 }
 
                 const auto &otf = transforms[owner];
                 rtp::Vec2f desired{otf.position.x - btf.position.x, otf.position.y - btf.position.y};
                 if (bvel.speed > 0.0f) {
-                    desired.normalize();
+                    static_cast<void>(desired.normalize());
                     bvel.direction = desired; // maintain speed scalar
                 } else {
                     const float sp = bvel.direction.length();
@@ -71,6 +83,8 @@ namespace rtp::server
                         desired = desired.normalized();
                         bvel.direction = desired * sp;
                     }
+                    log::debug("Boomerang {} steering towards owner {}: boomerang=({},{}), owner=({},{}), vel=({},{} )",
+                           e.index(), owner.index(), btf.position.x, btf.position.y, otf.position.x, otf.position.y, bvel.direction.x, bvel.direction.y);
                 }
             }
         }

@@ -17,16 +17,18 @@
     "spawn_triggers": [
         {
             "at_time": 3.0,
-            "entity_type": "scout",
-            "template_path": "templates/enemy/fighter_01.json",
+            "entity_type": "boss",
+            "template_path": "templates/enemy/boss/boss_01.json",
             "start_position": {
                 "x": 1280,
-                "y": 200
+                "y": 360
             },
-            "count": 4,
+            "count": 1,
             "delay_between_spawn": 0.6,
-            "pattern": "sine",
-            "speed": 140.0
+            "pattern": "straight",
+            "speed": 60.0,
+            "amplitude": 80.0,
+            "frequency": 0.5
         },
         {
             "at_time": 10.0,
@@ -38,7 +40,7 @@
             },
             "count": 5,
             "delay_between_spawn": 0.55,
-            "pattern": "straight",
+            "pattern": "circle",
             "speed": 160.0
         },
         {
@@ -69,7 +71,7 @@
         },
         {
             "at_time": 36.0,
-            "entity_type": "boss",
+            "entity_type": "scout",
             "template_path": "templates/enemy/boss/boss_01.json",
             "start_position": {
                 "x": 1200,
@@ -133,7 +135,7 @@
         },
         {
             "at_time": 85.0,
-            "entity_type": "boss",
+            "entity_type": "scout",
             "template_path": "templates/enemy/boss/boss_01.json",
             "start_position": {
                 "x": 1200,
@@ -197,7 +199,7 @@
         },
         {
             "at_time": 134.0,
-            "entity_type": "boss",
+            "entity_type": "scout",
             "template_path": "templates/enemy/boss/boss_01.json",
             "start_position": {
                 "x": 1200,
@@ -261,7 +263,7 @@
         },
         {
             "at_time": 183.0,
-            "entity_type": "boss",
+            "entity_type": "scout",
             "template_path": "templates/enemy/boss/boss_01.json",
             "start_position": {
                 "x": 1200,
