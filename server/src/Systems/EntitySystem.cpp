@@ -83,7 +83,12 @@ namespace rtp::server
             ammoComp.max = 0;
             ammoComp.current = 0;
         }
-        ammoComp.reloadCooldown = 2.0f;
+        // Use weapon-specific reload/cooldown when appropriate (Beam uses beamCooldown)
+        if (weapon.kind == ecs::components::WeaponKind::Beam) {
+            ammoComp.reloadCooldown = weapon.beamCooldown;
+        } else {
+            ammoComp.reloadCooldown = 2.0f;
+        }
         ammoComp.reloadTimer = 0.0f;
         ammoComp.isReloading = false;
         ammoComp.dirty = true;
@@ -147,6 +152,12 @@ namespace rtp::server
             if (ammos.has(entity) && wcfg.maxAmmo >= 0) {
                 ammos[entity].max = static_cast<uint16_t>(wcfg.maxAmmo);
                 ammos[entity].current = static_cast<uint16_t>(wcfg.ammo > 0 ? wcfg.ammo : ammos[entity].current);
+            }
+            // Update reload cooldown if this is a Beam weapon
+            if (ammos.has(entity)) {
+                if (wcfg.kind == ecs::components::WeaponKind::Beam) {
+                    ammos[entity].reloadCooldown = wcfg.beamCooldown;
+                }
             }
         }
 

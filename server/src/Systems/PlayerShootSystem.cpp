@@ -21,7 +21,6 @@
 
 namespace rtp::server
 {
-    //////////////////////////////////////////////////////////////////////////
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
@@ -153,7 +152,7 @@ namespace rtp::server
                                 // Y proximity check: support single or double beam offsets
                                 std::vector<float> centers;
                                 centers.push_back(tf.position.y);
-                                if (hasDoubleFire) {
+                                if (weapon.beamWasDouble) {
                                     centers.clear();
                                     centers.push_back(tf.position.y - 4.0f);
                                     centers.push_back(tf.position.y + 4.0f);
@@ -214,7 +213,7 @@ namespace rtp::server
                         for (const auto &p : playersForEnd) sessionsForEnd.push_back(p->getId());
 
                         // send beam end notifications. If double fire, send two end packets
-                        if (hasDoubleFire) {
+                        if (weapon.beamWasDouble) {
                             net::Packet b1(net::OpCode::BeamState);
                             net::BeamStatePayload bp1{};
                             bp1.ownerNetId = net.id;
@@ -246,6 +245,8 @@ namespace rtp::server
                             _networkSync.sendPacketToSessions(sessionsForEnd, bpacket, net::NetworkMode::TCP);
                         }
                     }
+                    // reset captured double-fire flag after beam ended
+                    weapon.beamWasDouble = false;
                 }
             }
             
@@ -308,6 +309,8 @@ namespace rtp::server
                 if (weapon.beamCooldownRemaining <= 0.0f && !weapon.beamActive && ammo.current > 0) {
                     weapon.beamActive = true;
                     weapon.beamActiveTime = weapon.beamDuration;
+                    // capture whether this beam instance was started with double-fire
+                    weapon.beamWasDouble = hasDoubleFire;
                     // consume one ammo
                     if (ammo.current > 0 && ammo.max > 0) {
                         ammo.current = static_cast<uint16_t>(std::max<int>(0, static_cast<int>(ammo.current) - 1));
@@ -330,7 +333,7 @@ namespace rtp::server
 
                             // send beam start(s). If double fire is active, send two beams with vertical offsets
                             const float visualLength = 800.0f;
-                            if (hasDoubleFire) {
+                            if (weapon.beamWasDouble) {
                                 net::Packet bpacket1(net::OpCode::BeamState);
                                 net::BeamStatePayload bp1{};
                                 bp1.ownerNetId = net.id;
