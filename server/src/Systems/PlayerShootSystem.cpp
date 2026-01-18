@@ -135,7 +135,7 @@ namespace rtp::server
             auto& net = netIds[entity];
             auto& ammo = ammos[entity];
             if (type.type != net::EntityType::Player)
-                return;
+                continue;
             
             // Update double fire timer
             bool hasDoubleFire = false;
@@ -153,6 +153,10 @@ namespace rtp::server
             }
 
             weapon.lastShotTime += dt;
+
+            const bool hasInfiniteAmmo = (weapon.maxAmmo < 0);
+            const bool canShoot = !ammo.isReloading &&
+                (ammo.current > 0 || hasInfiniteAmmo);
 
             // Update beam cooldown timer
             if (weapon.beamCooldownRemaining > 0.0f) {
@@ -193,7 +197,7 @@ namespace rtp::server
                                 // Y proximity check: support single or double beam offsets
                                 std::vector<float> centers;
                                 centers.push_back(tf.position.y);
-                                if (hasDoubleFire) {
+                                if (weapon.beamWasDouble) {
                                     centers.clear();
                                     centers.push_back(tf.position.y - 4.0f);
                                     centers.push_back(tf.position.y + 4.0f);
@@ -256,7 +260,7 @@ namespace rtp::server
                         for (const auto &p : playersForEnd) sessionsForEnd.push_back(p->getId());
 
                         // send beam end notifications. If double fire, send two end packets
-                        if (hasDoubleFire) {
+                        if (weapon.beamWasDouble) {
                             net::Packet b1(net::OpCode::BeamState);
                             net::BeamStatePayload bp1{};
                             bp1.ownerNetId = net.id;
@@ -288,6 +292,8 @@ namespace rtp::server
                             _networkSync.sendPacketToSessions(sessionsForEnd, bpacket, net::NetworkMode::TCP);
                         }
                     }
+                    // reset captured double-fire flag after beam ended
+                    weapon.beamWasDouble = false;
                 }
             }
             
@@ -347,16 +353,16 @@ namespace rtp::server
 
             // Beam activation on press: if player has Beam weapon, not in cooldown and has ammo
             if (weapon.kind == ecs::components::WeaponKind::Beam && shootPressed && !shootWasPressed) {
-                if (weapon.beamCooldownRemaining <= 0.0f && !weapon.beamActive && ammo.current > 0) {
+                if (weapon.beamCooldownRemaining <= 0.0f && !weapon.beamActive && (ammo.current > 0 || hasInfiniteAmmo)) {
                     weapon.beamActive = true;
                     weapon.beamActiveTime = weapon.beamDuration;
+                    // capture whether this beam instance was started with double-fire
+                    weapon.beamWasDouble = hasDoubleFire;
                     // consume one ammo
-                    if (ammo.current > 0 && ammo.max > 0) {
+                    if (!hasInfiniteAmmo && ammo.current > 0 && ammo.max > 0) {
                         ammo.current = static_cast<uint16_t>(std::max<int>(0, static_cast<int>(ammo.current) - 1));
                         ammo.dirty = true;
                         sendAmmoUpdate(net.id, ammo);
-                    } else if (ammo.max < 0) {
-                        // infinite ammo case - do nothing
                     } else if (ammo.max == 0) {
                         // no ammo - cancel activation
                         weapon.beamActive = false;
@@ -372,7 +378,7 @@ namespace rtp::server
 
                             // send beam start(s). If double fire is active, send two beams with vertical offsets
                             const float visualLength = 800.0f;
-                            if (hasDoubleFire) {
+                            if (weapon.beamWasDouble) {
                                 net::Packet bpacket1(net::OpCode::BeamState);
                                 net::BeamStatePayload bp1{};
                                 bp1.ownerNetId = net.id;
@@ -420,29 +426,33 @@ namespace rtp::server
                 continue;
             }
 
-            if (ammo.isReloading || ammo.current == 0) {
+            if (ammo.isReloading || (ammo.current == 0 && !hasInfiniteAmmo)) {
                 input.chargeTime = 0.0f;
             }
 
-            if (shootPressed && !ammo.isReloading && ammo.current > 0) {
+            if (shootPressed && canShoot) {
                 input.chargeTime = std::min(input.chargeTime + dt, kChargeMax);
             }
 
-            if (!shootPressed && shootWasPressed) {
-                if (!ammo.isReloading && ammo.current > 0) {
-                    const float fireInterval = (weapon.fireRate > 0.0f)
-                        ? (1.0f / weapon.fireRate)
-                        : 0.0f;
+            const float fireInterval = (weapon.fireRate > 0.0f)
+                ? (1.0f / weapon.fireRate)
+                : 0.0f;
 
+            if (!shootPressed && shootWasPressed) {
+                if (canShoot) {
                     if (input.chargeTime >= kChargeMin && weapon.kind != ecs::components::WeaponKind::Beam) {
                         const float ratio = std::clamp(input.chargeTime / kChargeMax, 0.0f, 1.0f);
                         pendingChargedSpawns.emplace_back(entity, tf, roomId, ratio, hasDoubleFire);
-                        ammo.current -= 1;
+                        if (!hasInfiniteAmmo && ammo.current > 0) {
+                            ammo.current -= 1;
+                        }
                         ammo.dirty = true;
                         weapon.lastShotTime = 0.0f;
                     } else if (weapon.lastShotTime >= fireInterval) {
                         pendingSpawns.emplace_back(entity, tf, roomId, hasDoubleFire);
-                        ammo.current -= 1;
+                        if (!hasInfiniteAmmo && ammo.current > 0) {
+                            ammo.current -= 1;
+                        }
                         ammo.dirty = true;
                         weapon.lastShotTime = 0.0f;
                     }
