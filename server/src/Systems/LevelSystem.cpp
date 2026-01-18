@@ -12,6 +12,8 @@
 #include "RType/ECS/Components/RoomId.hpp"
 #include "RType/ECS/Components/Velocity.hpp"
 
+#include <cmath>
+
 namespace rtp::server {
 
     //////////////////////////////////////////////////////////////////////////
@@ -108,7 +110,9 @@ namespace rtp::server {
                 const float xOffsets[5] = {0.0f, 100.0f, -40.0f, 80.0f, -80.0f};
                 startPos.x += xOffsets[patternIndex];
                 const float frontX = getFrontPlayerX();
-                const float minAhead = 200.0f;
+                const float minAhead = (spawn.type == net::EntityType::Boss)
+                    ? 450.0f   // boss plus éloigné
+                    : 200.0f;  // distance standard pour scouts/tanks/etc.
                 if (startPos.x < frontX + minAhead) {
                     startPos.x = frontX + minAhead;
                 }
@@ -116,6 +120,28 @@ namespace rtp::server {
                     roomId, startPos, spawn.pattern,
                     spawn.speed, spawn.amplitude, spawn.frequency, spawn.type);
                 spawnEntityForRoom(roomId, entity);
+                
+                // If spawning a Boss, also spawn 4 BossShields in a semi-circle in front of it
+                if (spawn.type == net::EntityType::Boss) {
+                    const float shieldRadius = 250.0f; // Distance from boss center (more separation)
+                    // Semi-circle in front (left side, towards player): angles from 90° to 270°
+                    const float angles[4] = {120.0f, 150.0f, 210.0f, 240.0f}; // 4 shields spread in front (left)
+                    
+                    for (int i = 0; i < 4; i++) {
+                        float angleRad = angles[i] * 3.14159f / 180.0f;
+                        Vec2f shieldPos = {
+                            startPos.x + shieldRadius * std::cos(angleRad),
+                            startPos.y + shieldRadius * std::sin(angleRad)
+                        };
+                        
+                        auto shieldEntity = _entitySystem.createEnemyEntity(
+                            roomId, shieldPos, spawn.pattern,
+                            spawn.speed, spawn.amplitude, spawn.frequency, 
+                            net::EntityType::BossShield);
+                        spawnEntityForRoom(roomId, shieldEntity);
+                    }
+                }
+                
                 active.nextSpawn++;
             }
 
