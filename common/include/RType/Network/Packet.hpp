@@ -149,6 +149,7 @@ namespace rtp::net
         Enemy4 = 5,
         Tank   = 6,
         Boss   = 7,
+        Boss3Invincible = 20, // New invincible boss (unique value)
         Bullet = 8,
         PowerupHeal = 9,        // Red - Health regen
         PowerupSpeed = 10,       // (unused for now)

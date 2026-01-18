@@ -80,7 +80,7 @@
     { "at_time": 115, "template_path": "enemy_3", "entity_type": "enemy3", "start_position": { "x": 1200, "y": 200 }, "pattern": "Circular" },
     { "at_time": 115, "template_path": "enemy_3", "entity_type": "enemy3", "start_position": { "x": 1200, "y": 300 }, "pattern": "Circular" },
     { "at_time": 115, "template_path": "enemy_3", "entity_type": "enemy3", "start_position": { "x": 1200, "y": 400 }, "pattern": "Circular" },
-    { "at_time": 120, "template_path": "boss_1", "entity_type": "Boss", "start_position": { "x": 1200, "y": 360 }, "pattern": "Static" }
+    { "at_time": 120, "template_path": "boss3_invincible", "entity_type": "boss3_invincible", "start_position": { "x": 1200, "y": 360 }, "pattern": "Static" }
   ],
   "powerup_triggers": [],
   "obstacle_triggers": []

@@ -206,6 +206,8 @@ namespace rtp::server
             maxHealth = 800;  // Kraken is tougher!
         } else if (type == net::EntityType::BossShield) {
             maxHealth = 150;
+        } else if (type == net::EntityType::Boss3Invincible) {
+            maxHealth = 9999999; // Effectively invincible
         }
         _registry.add<ecs::components::Health>(
             entity, ecs::components::Health{maxHealth, maxHealth});
@@ -221,17 +223,17 @@ namespace rtp::server
                         pattern, speed, amplitude, frequency});
 
         float fireRate = 0.6f;
+        ecs::components::SimpleWeapon enemyWeapon;
+        enemyWeapon.kind = ecs::components::WeaponKind::Classic;
         if (type == net::EntityType::Tank) {
             fireRate = 0.4f;
         } else if (type == net::EntityType::Boss) {
             fireRate = 1.2f;
         } else if (type == net::EntityType::Boss2) {
             fireRate = 0.8f;  // Kraken shoots faster boomerangs
-        }
-        ecs::components::SimpleWeapon enemyWeapon;
-        enemyWeapon.kind = ecs::components::WeaponKind::Classic;
-        if (type == net::EntityType::Boss2) {
             enemyWeapon.isBoomerang = true;  // Kraken shoots boomerangs!
+        } else if (type == net::EntityType::Boss3Invincible) {
+            fireRate = 0.0f; // Boss3Invincible does not shoot
         }
         enemyWeapon.fireRate = fireRate;
         enemyWeapon.lastShotTime = 0.0f;
@@ -250,6 +252,9 @@ namespace rtp::server
         } else if (type == net::EntityType::BossShield) {
             bboxWidth = 90.0f;
             bboxHeight = 99.0f;
+        } else if (type == net::EntityType::Boss3Invincible) {
+            bboxWidth = 66.0f * 2.0f; // 2x sprite size for hitbox
+            bboxHeight = 66.0f * 2.0f;
         }
 
         _registry.add<ecs::components::BoundingBox>(

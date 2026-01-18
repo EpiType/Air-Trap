@@ -1,0 +1,55 @@
+{
+    "name": "Boss3Invincible",
+    "type": "BOSS",
+    "description": "Invincible boss with 3 phases: spawns waves of enemies.",
+    "components": {
+        "Transform": {
+            "position": { "x": 0, "y": 0 },
+            "rotation": 0,
+            "scale": { "x": 2.0, "y": 2.0 }
+        },
+        "Sprite": {
+            "texture": "r-typesheet17.gif",
+            "comment": "Spritesheet: 528x528, 8 columns x 1 row = 8 frames (top row only)",
+            "rectLeft": 0,
+            "rectTop": 0,
+            "rectWidth": 66,
+            "rectHeight": 66,
+            "zIndex": 5,
+            "opacity": 255,
+            "red": 200,
+            "green": 200,
+            "blue": 255,
+            "isAnimated": true,
+            "frameCount": 8,
+            "frameDuration": 0.14,
+            "columns": 8,
+            "rows": 1
+        },
+        "Health": {
+            "maxHealth": 9999999,
+            "currentHealth": 9999999
+        },
+        "AIBehavior": {
+            "pattern": "Boss3Phases",
+            "phases": [
+                { "duration": 20, "spawnCount": 3, "spawnInterval": 2.0 },
+                { "duration": 20, "spawnCount": 7, "spawnInterval": 2.0 },
+                { "duration": 20, "spawnCount": 10, "spawnInterval": 2.0 }
+            ],
+            "enemyType": "enemy3",
+            "spawnArea": { "x": 1100, "yMin": 60, "yMax": 660 }
+        },
+        "HitBox": {
+            "shape": "rectangle",
+            "width": 132,
+            "height": 132,
+            "offsetX": 0,
+            "offsetY": 0
+        },
+        "MouvementPattern": {
+            "patternType": "Static",
+            "speed": 0.0
+        }
+    }
+}

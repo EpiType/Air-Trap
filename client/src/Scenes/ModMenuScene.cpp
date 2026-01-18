@@ -145,7 +145,8 @@ namespace rtp::client {
                      {"boss_ship", "assets/sprites/r-typesheet39.gif", 33, 1, 66, 66}, // boss_ship (main boss)
                      {"boss_shield", "assets/sprites/r-typesheet39.gif", 0, 72, 30, 30}, // boss_shield (shield, carré pour alignement)
                      {"boss2_kraken", "assets/sprites/r-typesheet35.gif", 0, 0, 264, 143},  // boss2_kraken (kraken boss, frame complète)
-                     {"boss2_bullet", "assets/sprites/r-typesheet1.gif", 215, 85, 18, 12}  // boss2_bullet (kraken projectile)
+                     {"boss2_bullet", "assets/sprites/r-typesheet1.gif", 215, 85, 18, 12},  // boss2_bullet (kraken projectile)
+                     {"boss3_invincible", "assets/sprites/r-typesheet17.gif", 0, 0, 66, 66} // boss3_invincible (haut, 8 frames, preview 66x66)
             };
 
             // Projectiles category (projectiles)

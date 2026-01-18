@@ -76,6 +76,13 @@ class LevelSystem {
             size_t nextPowerup{0};
             size_t nextObstacle{0};
             bool bossHasSpawnedInWorld{false};
+            // Boss3Invincible logic
+            bool boss3Active{false};
+            float boss3Timer{0.0f};
+            float boss3PhaseTimer{0.0f};
+            int boss3PhaseIndex{0};
+            float boss3NextEnemySpawn{0.0f};
+            int boss3EnemiesSpawnedThisPhase{0};
         };
 
         /**
