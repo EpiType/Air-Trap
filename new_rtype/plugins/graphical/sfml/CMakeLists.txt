@@ -22,3 +22,9 @@ set_target_properties(render_sfml PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins
 )
+
+if(UNIX)
+    set_target_properties(render_sfml PROPERTIES
+        BUILD_RPATH "$ORIGIN/.."
+    )
+endif()

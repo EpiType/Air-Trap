@@ -13,7 +13,7 @@ namespace rtp::client {
         : _registry(registry) {}
 
     auto EntityBuilder::spawn(const EntityTemplate &t)
-        -> std::expected<aer::ecs::Entity, aer::core::Error>
+        -> std::expected<aer::ecs::Entity, aer::log::Error>
     {
         auto e = _registry.spawn();
         if (!e) {

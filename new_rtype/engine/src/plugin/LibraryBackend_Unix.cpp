@@ -51,7 +51,7 @@ namespace aer::plugin::impl
     ///////////////////////////////////////////////////////////////////////////
 
     auto LibraryBackend::open(std::string_view path)
-        -> std::expected<void *, aer::core::Error>
+        -> std::expected<void *, aer::log::Error>
     {
         std::string safeNullTerminatedPath(path);
         void *handle = dlopen(safeNullTerminatedPath.c_str(),
@@ -59,8 +59,8 @@ namespace aer::plugin::impl
         if (!handle) [[unlikely]] {
             const char *err = dlerror();
             return std::unexpected{
-                aer::core::Error::failure(
-                    aer::core::ErrorCode::LibraryLoadFailed,
+                aer::log::Error::failure(
+                    aer::log::ErrorCode::LibraryLoadFailed,
                     "dlopen error: {}",
                     err ? err : "Unknown dlopen error")};
         }
@@ -69,14 +69,14 @@ namespace aer::plugin::impl
     }
 
     auto LibraryBackend::close(void *handle) noexcept
-        -> std::expected<void, aer::core::Error>
+        -> std::expected<void, aer::log::Error>
     {
         if (dlclose(handle) != 0) [[unlikely]] {
             const char *err = dlerror();
             if (err) {
                 return std::unexpected{
-                    aer::core::Error::failure(
-                        aer::core::ErrorCode::LibraryLoadFailed,
+                    aer::log::Error::failure(
+                        aer::log::ErrorCode::LibraryLoadFailed,
                         "dlclose error: {}",
                         err ? err : "Unknown dlclose error")};
             }
@@ -86,7 +86,7 @@ namespace aer::plugin::impl
     }
 
     auto LibraryBackend::getSymbol(void *handle, std::string_view name)
-        -> std::expected<void *, aer::core::Error>
+        -> std::expected<void *, aer::log::Error>
     {
         RTP_ASSERT(handle != nullptr,
                    "LoaderBackend: Handle cannot be null during symbol lookup");
@@ -98,8 +98,8 @@ namespace aer::plugin::impl
         const char *err = dlerror();
         if (err) [[unlikely]] {
             return std::unexpected{
-                aer::core::Error::failure(
-                    aer::core::ErrorCode::SymbolNotFound,
+                aer::log::Error::failure(
+                    aer::log::ErrorCode::SymbolNotFound,
                     "dlsym error: {}", err)};
         }
 

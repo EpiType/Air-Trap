@@ -101,7 +101,7 @@ namespace rtp::server
                 handlePing(sessionId, packet);
                 break;
             default:
-                aer::core::debug("Server: unhandled opcode {}", static_cast<uint32_t>(packet.header.opCode));
+                aer::log::debug("Server: unhandled opcode {}", static_cast<uint32_t>(packet.header.opCode));
                 break;
         }
 

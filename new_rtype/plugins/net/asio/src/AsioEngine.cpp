@@ -78,20 +78,24 @@ public:
     auto endpoints =
         resolver.resolve(_config.host, std::to_string(_config.tcpPort), ec);
     if (ec) {
+      aer::log::error("AsioClientNetwork: resolve failed: {}", ec.message());
       return false;
     }
 
     ::asio::connect(_tcp, endpoints, ec);
     if (ec) {
+      aer::log::error("AsioClientNetwork: connect failed: {}", ec.message());
       return false;
     }
 
     _udp.open(udp::v4(), ec);
     if (ec) {
+      aer::log::error("AsioClientNetwork: udp open failed: {}", ec.message());
       return false;
     }
     _udp.bind(udp::endpoint(udp::v4(), 0), ec);
     if (ec) {
+      aer::log::error("AsioClientNetwork: udp bind failed: {}", ec.message());
       return false;
     }
 
@@ -99,6 +103,7 @@ public:
     auto uendpoints =
         uresolver.resolve(_config.host, std::to_string(_config.udpPort), ec);
     if (ec) {
+      aer::log::error("AsioClientNetwork: udp resolve failed: {}", ec.message());
       return false;
     }
     _udpEndpoint = *uendpoints.begin();
@@ -111,6 +116,7 @@ public:
       try {
         _io.run();
       } catch (...) {
+        aer::log::error("AsioClientNetwork: io_context crashed");
         _running = false;
       }
     });
@@ -495,17 +501,17 @@ private:
 
 } // namespace
 
-std::string Asioaer::getName(void) const { return "asio"; }
+std::string AsioEngine::getName(void) const { return "asio"; }
 
-INetwork *Asioaer::createClient(const ClientConfig &config) {
+INetwork *AsioEngine::createClient(const ClientConfig &config) {
   return new AsioClientNetwork(config);
 }
 
-INetwork *Asioaer::createServer(const ServerConfig &config) {
+INetwork *AsioEngine::createServer(const ServerConfig &config) {
   return new AsioServerNetwork(config);
 }
 
-void Asioaer::destroy(INetwork *network) { delete network; }
+void AsioEngine::destroy(INetwork *network) { delete network; }
 } // namespace aer::net::asio
 
 extern "C" {

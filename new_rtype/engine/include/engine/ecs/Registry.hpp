@@ -48,7 +48,7 @@ namespace aer::ecs
             ~Registry() noexcept = default;
 
             [[nodiscard]]
-            auto spawn(void) -> std::expected<Entity, aer::core::Error>;
+            auto spawn(void) -> std::expected<Entity, aer::log::Error>;
 
             void kill(Entity entity);
 
@@ -56,27 +56,27 @@ namespace aer::ecs
             auto registerComponent(this Self &self)
                 -> std::expected<std::reference_wrapper<ConstLike<Self,
                                                                   SparseArray<T>>>,
-                                 aer::core::Error>;
+                                 aer::log::Error>;
 
             template <Component T, typename Self>
             auto getComponents(this Self &self)
                 -> std::expected<std::reference_wrapper<ConstLike<Self,
                                                                   SparseArray<T>>>,
-                                 aer::core::Error>;
+                                 aer::log::Error>;
 
             [[nodiscard]]
             bool isAlive(Entity entity) const noexcept;
 
             template <Component T, typename... Args>
             auto add(Entity entity, Args &&...args)
-                -> std::expected<std::reference_wrapper<T>, aer::core::Error>;
+                -> std::expected<std::reference_wrapper<T>, aer::log::Error>;
 
             template <Component T, typename Self>
             [[nodiscard]]
             auto get(this Self &self)
                 -> std::expected<std::reference_wrapper<ConstLike<Self,
                                                                   SparseArray<T>>>,
-                                 aer::core::Error>;
+                                 aer::log::Error>;
 
             template <Component T>
             [[nodiscard]]

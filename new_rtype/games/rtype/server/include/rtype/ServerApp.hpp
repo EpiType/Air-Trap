@@ -91,6 +91,17 @@ extern "C"
     RTYPE_SERVER_API rtp::server::ServerApp *CreateServerApp(
         rtp::server::ServerApp::Config config);
     RTYPE_SERVER_API void DestroyServerApp(rtp::server::ServerApp *app);
+    RTYPE_SERVER_API rtp::server::ServerApp *CreateServerAppWithConfig(
+        const char *networkPluginPath,
+        const char *bindAddress,
+        std::uint16_t tcpPort,
+        std::uint16_t udpPort,
+        std::uint32_t maxSessions,
+        double tickRate);
+    RTYPE_SERVER_API bool ServerAppInit(rtp::server::ServerApp *app);
+    RTYPE_SERVER_API void ServerAppRun(rtp::server::ServerApp *app);
+    RTYPE_SERVER_API void ServerAppStop(rtp::server::ServerApp *app);
+    RTYPE_SERVER_API void ServerAppShutdown(rtp::server::ServerApp *app);
 }
 
 #endif /* !RTYPE_SERVER_APP_HPP_ */

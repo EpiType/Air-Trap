@@ -17,22 +17,22 @@ namespace aer::ecs
     auto Registry::registerComponent(this Self &self)
         -> std::expected<std::reference_wrapper<ConstLike<Self,
                                                           SparseArray<T>>>,
-                         aer::core::Error>
+                         aer::log::Error>
     {
         std::unique_lock lock(self._mutex);
         std::type_index type = typeid(T);
 
         if (self._arrays.contains(type)) [[unlikely]]
-            return std::unexpected{aer::core::Error::failure(
-                aer::core::ErrorCode::InternalRuntimeError,
+            return std::unexpected{aer::log::Error::failure(
+                aer::log::ErrorCode::InternalRuntimeError,
                 "Component already registered: {}",
                 type.name())};
 
         auto [it, inserted] = self._arrays.emplace(
             type, std::make_unique<SparseArray<T>>());
         if (!inserted) [[unlikely]]
-            return std::unexpected{aer::core::Error::failure(
-                aer::core::ErrorCode::InternalRuntimeError,
+            return std::unexpected{aer::log::Error::failure(
+                aer::log::ErrorCode::InternalRuntimeError,
                 "Failed to register component: {}",
                 type.name())};
 
@@ -42,7 +42,7 @@ namespace aer::ecs
 
     template <Component T, typename... Args>
     auto Registry::add(Entity entity, Args &&...args)
-        -> std::expected<std::reference_wrapper<T>, aer::core::Error>
+        -> std::expected<std::reference_wrapper<T>, aer::log::Error>
     {
         auto result = this->get<T>();
 
@@ -53,14 +53,14 @@ namespace aer::ecs
         if (entity.index() >= this->_generations.size() ||
             this->_generations[entity.index()] != entity.generation()) {
             return std::unexpected{
-                aer::core::Error::failure(aer::core::ErrorCode::EntityInvalid,
+                aer::log::Error::failure(aer::log::ErrorCode::EntityInvalid,
                                              "Registry: Invalid entity")};
         }
 
         const auto componentId = getStaticComponentID<T>();
         if (componentId >= MAX_COMPONENTS) {
             return std::unexpected{
-                aer::core::Error::failure(aer::core::ErrorCode::RegistryFull,
+                aer::log::Error::failure(aer::log::ErrorCode::RegistryFull,
                                              "Registry: Max component types reached")};
         }
 
@@ -76,14 +76,14 @@ namespace aer::ecs
     auto Registry::get(this Self &self)
         -> std::expected<std::reference_wrapper<ConstLike<Self,
                                                           SparseArray<T>>>,
-                         aer::core::Error>
+                         aer::log::Error>
     {
         std::shared_lock lock{self._mutex};
         std::type_index type = typeid(T);
 
         if (!self._arrays.contains(type)) [[unlikely]]
-            return std::unexpected{aer::core::Error::failure(
-                aer::core::ErrorCode::ComponentMissing,
+            return std::unexpected{aer::log::Error::failure(
+                aer::log::ErrorCode::ComponentMissing,
                 "Missing component: {}",
                 type.name())};
 
@@ -97,7 +97,7 @@ namespace aer::ecs
     auto Registry::getComponents(this Self &self)
         -> std::expected<std::reference_wrapper<ConstLike<Self,
                                                           SparseArray<T>>>,
-                         aer::core::Error>
+                         aer::log::Error>
     {
         return self.template get<T>();
     }
@@ -176,8 +176,8 @@ namespace aer::ecs
             std::type_index index(typeid(T));
             
             if (self._arrays.find(index) == self._arrays.end()) {
-                throw aer::core::Error::failure(
-                    aer::core::ErrorCode::ComponentMissing,
+                throw aer::log::Error::failure(
+                    aer::log::ErrorCode::ComponentMissing,
                     "Component not registered in zipView: {}",
                     typeid(T).name());
             }

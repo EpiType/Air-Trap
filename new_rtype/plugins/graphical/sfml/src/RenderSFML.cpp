@@ -151,6 +151,7 @@ namespace aer::render
     void RenderSFML::unloadTexture(std::uint32_t id)
     {
         _textures.erase(id);
+        _window.setSize({1, 1});
     }
 
     std::uint32_t RenderSFML::loadFont(const std::string& path)

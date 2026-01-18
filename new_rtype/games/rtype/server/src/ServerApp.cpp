@@ -150,4 +150,60 @@ extern "C"
     {
         delete app;
     }
+
+    RTYPE_SERVER_API rtp::server::ServerApp *CreateServerAppWithConfig(
+        const char *networkPluginPath,
+        const char *bindAddress,
+        std::uint16_t tcpPort,
+        std::uint16_t udpPort,
+        std::uint32_t maxSessions,
+        double tickRate)
+    {
+        rtp::server::ServerApp::Config config{};
+        if (networkPluginPath) {
+            config.networkPluginPath = networkPluginPath;
+        }
+        if (bindAddress) {
+            config.bindAddress = bindAddress;
+        }
+        if (tcpPort != 0) {
+            config.tcpPort = tcpPort;
+        }
+        if (udpPort != 0) {
+            config.udpPort = udpPort;
+        }
+        if (maxSessions != 0) {
+            config.maxSessions = maxSessions;
+        }
+        if (tickRate > 0.0) {
+            config.tickRate = tickRate;
+        }
+        return new rtp::server::ServerApp(std::move(config));
+    }
+
+    RTYPE_SERVER_API bool ServerAppInit(rtp::server::ServerApp *app)
+    {
+        return app ? app->init() : false;
+    }
+
+    RTYPE_SERVER_API void ServerAppRun(rtp::server::ServerApp *app)
+    {
+        if (app) {
+            app->run();
+        }
+    }
+
+    RTYPE_SERVER_API void ServerAppStop(rtp::server::ServerApp *app)
+    {
+        if (app) {
+            app->stop();
+        }
+    }
+
+    RTYPE_SERVER_API void ServerAppShutdown(rtp::server::ServerApp *app)
+    {
+        if (app) {
+            app->shutdown();
+        }
+    }
 }

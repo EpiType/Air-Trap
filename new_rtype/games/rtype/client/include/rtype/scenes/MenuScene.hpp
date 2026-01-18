@@ -16,7 +16,7 @@
     /* R-Type Client */
     #include "rtype/utility/Settings.hpp"
     #include "rtype/utility/TranslationManager.hpp"
-    #include "client/include/rtype/systems/NetworkSyncSystem.hpp"
+    #include "rtype/systems/NetworkSyncSystem.hpp"
     #include "rtype/utility/SceneId.hpp"
 
     #include <functional>

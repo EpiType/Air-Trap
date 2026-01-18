@@ -19,7 +19,10 @@
     #include "rtype/systems/NetworkSyncSystem.hpp"
     #include "rtype/utility/SceneId.hpp"
 
+    #include <cstddef>
     #include <functional>
+    #include <list>
+    #include <string>
     #include <string>
 
 namespace rtp::client::scenes
@@ -43,6 +46,8 @@ namespace rtp::client::scenes
             void update(float dt) override;
 
         private:
+            void buildUi(void);
+
             aer::ecs::Registry& _uiRegistry;
             Settings& _settings;
             TranslationManager& _translation;
@@ -50,6 +55,9 @@ namespace rtp::client::scenes
             std::function<void(SceneId)> _changeScene;
 
             std::string _roomName{"Room"};
+            std::size_t _roomsHash{0};
+            bool _uiBuilt{false};
+            uint32_t _uiSelectedRoomId{0};
     };
 }
 

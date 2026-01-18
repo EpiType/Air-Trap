@@ -35,7 +35,8 @@ namespace rtp::client
           _uiFrame(),
           _settings(),
           _translation(),
-          _networkSystem(_network, _worldRegistry, EntityBuilder(_worldRegistry)),
+          _entityBuilder(_worldRegistry),
+          _networkSystem(_network, _worldRegistry, _entityBuilder),
           _inputSystem(_worldRegistry, _uiRegistry, _settings, _network, 0),
           _renderSystem(_worldRegistry, _renderer, _worldFrame),
           _uiRenderSystem(_uiRegistry, _renderer, _uiFrame),
@@ -148,6 +149,71 @@ namespace rtp::client
                             _networkSystem,
                             [this](SceneId s) { setScene(s); }
                         ));
+
+        _scenes.emplace(SceneId::CreateRoom,
+                        std::make_unique<scenes::CreateRoomScene>(
+                            _uiRegistry,
+                            _settings,
+                            _translation,
+                            _networkSystem,
+                            [this](SceneId s) { setScene(s); }
+                        ));
+
+        _scenes.emplace(SceneId::RoomWaiting,
+                        std::make_unique<scenes::RoomWaitingScene>(
+                            _uiRegistry,
+                            _settings,
+                            _translation,
+                            _networkSystem,
+                            [this](SceneId s) { setScene(s); }
+                        ));
+
+        _scenes.emplace(SceneId::Playing,
+                        std::make_unique<scenes::PlayingScene>(
+                            _worldRegistry,
+                            _uiRegistry,
+                            _settings,
+                            _translation,
+                            _networkSystem,
+                            _entityBuilder,
+                            [this](SceneId s) { setScene(s); }
+                        ));
+
+        _scenes.emplace(SceneId::Paused,
+                        std::make_unique<scenes::PauseScene>(
+                            _uiRegistry,
+                            _settings,
+                            _translation,
+                            _networkSystem,
+                            [this](SceneId s) { setScene(s); }
+                        ));
+
+        _scenes.emplace(SceneId::Settings,
+                        std::make_unique<scenes::SettingsScene>(
+                            _uiRegistry,
+                            _settings,
+                            _translation,
+                            _networkSystem,
+                            [this](SceneId s) { setScene(s); }
+                        ));
+
+        _scenes.emplace(SceneId::KeyBindings,
+                        std::make_unique<scenes::KeyBindingScene>(
+                            _uiRegistry,
+                            _settings,
+                            _translation,
+                            _networkSystem,
+                            [this](SceneId s) { setScene(s); }
+                        ));
+
+        _scenes.emplace(SceneId::GamepadSettings,
+                        std::make_unique<scenes::GamepadSettingsScene>(
+                            _uiRegistry,
+                            _settings,
+                            _translation,
+                            _networkSystem,
+                            [this](SceneId s) { setScene(s); }
+                        ));
     }
 
     void ClientApp::registerComponents(void)
@@ -197,5 +263,42 @@ extern "C"
     RTYPE_CLIENT_API void DestroyClientApp(rtp::client::ClientApp *app)
     {
         delete app;
+    }
+
+    RTYPE_CLIENT_API void ClientAppInit(rtp::client::ClientApp *app)
+    {
+        if (app) {
+            app->init();
+        }
+    }
+
+    RTYPE_CLIENT_API void ClientAppShutdown(rtp::client::ClientApp *app)
+    {
+        if (app) {
+            app->shutdown();
+        }
+    }
+
+    RTYPE_CLIENT_API void ClientAppUpdate(rtp::client::ClientApp *app, float dt)
+    {
+        if (app) {
+            app->update(dt);
+        }
+    }
+
+    RTYPE_CLIENT_API void ClientAppRender(rtp::client::ClientApp *app,
+                                          aer::render::RenderFrame *frame)
+    {
+        if (app && frame) {
+            app->render(*frame);
+        }
+    }
+
+    RTYPE_CLIENT_API void ClientAppHandleEvent(rtp::client::ClientApp *app,
+                                               const aer::input::Event *event)
+    {
+        if (app && event) {
+            app->handleEvents(*event);
+        }
     }
 }

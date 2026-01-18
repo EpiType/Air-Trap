@@ -271,7 +271,7 @@ namespace rtp::client
         explicit EntityBuilder(aer::ecs::Registry &registry);
 
         [[nodiscard]]
-        auto spawn(const EntityTemplate &t) -> std::expected<aer::ecs::Entity, aer::core::Error>;
+        auto spawn(const EntityTemplate &t) -> std::expected<aer::ecs::Entity, aer::log::Error>;
 
         void kill(aer::ecs::Entity entity);
 

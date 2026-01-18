@@ -1,0 +1,8 @@
+window:
+  width: 1280
+  height: 720
+  title: RType Game
+assetsPath: ./games/rtype/assets/
+network:
+  networkIp: 127.0.0.1
+  networkPort: 5000

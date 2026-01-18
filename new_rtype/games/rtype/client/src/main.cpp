@@ -78,7 +78,7 @@ int main(int argc, char **argv)
         network.stop();
         core.shutdown();
         return EXIT_SUCCESS;
-    } catch (const aer::core::Error &err) {
+    } catch (const aer::log::Error &err) {
         aer::log::error("Client: exception: {}", err);
     } catch (const std::exception &err) {
         aer::log::error("Client: exception: {}", err.what());

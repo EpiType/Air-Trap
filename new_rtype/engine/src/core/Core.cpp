@@ -11,6 +11,7 @@
 #include <chrono>
 #include <cctype>
 #include <charconv>
+#include <filesystem>
 #include <fstream>
 #include <string_view>
 #include <utility>
@@ -24,6 +25,17 @@ namespace aer::core
         using DestroyRendererFn = void (*)(render::IRenderer*);
         using CreateNetworkEngineFn = net::INetworkEngine* (*)();
         using DestroyNetworkEngineFn = void (*)(net::INetworkEngine*);
+
+        std::string_view trimValue(std::string_view input)
+        {
+            while (!input.empty() && std::isspace(static_cast<unsigned char>(input.front()))) {
+                input.remove_prefix(1);
+            }
+            while (!input.empty() && std::isspace(static_cast<unsigned char>(input.back()))) {
+                input.remove_suffix(1);
+            }
+            return input;
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -55,6 +67,18 @@ namespace aer::core
         }
         if (!config.title.empty()) {
             _config.title = config.title;
+        }
+        if (config.width > 0) {
+            _config.width = config.width;
+        }
+        if (config.height > 0) {
+            _config.height = config.height;
+        }
+        _config.headless = config.headless;
+
+        if (_config.headless) {
+            _initialized = true;
+            return true;
         }
 
         if (!loadRendererPlugin(_config.rendererPluginPath)) {
@@ -146,7 +170,7 @@ namespace aer::core
     }
 
     auto Core::loadLibrary(const std::string& path)
-        -> std::expected<std::shared_ptr<plugin::DynamicLibrary>, core::Error>
+        -> std::expected<std::shared_ptr<plugin::DynamicLibrary>, log::Error>
     {
         return _libraries.loadShared(path);
     }
@@ -156,15 +180,24 @@ namespace aer::core
         if (path.empty()) return false;
 
         auto libRes = _libraries.loadShared(_config.rendererPluginPath);
-        if (!libRes) return false;
+        if (!libRes) {
+            aer::log::error("Renderer plugin load failed: {}", libRes.error());
+            return false;
+        }
 
         _rendererLoader = libRes.value();
 
         auto createRes = _rendererLoader->get<CreateRendererFn>("CreateRenderer");
-        if (!createRes) return false;
+        if (!createRes) {
+            aer::log::error("Renderer CreateRenderer not found: {}", createRes.error());
+            return false;
+        }
 
         _activeRendererEngine = createRes.value()();
-        if (!_activeRendererEngine) return false;
+        if (!_activeRendererEngine) {
+            aer::log::error("Renderer CreateRenderer returned null");
+            return false;
+        }
 
         _config.rendererPluginPath = path;
 
@@ -176,12 +209,18 @@ namespace aer::core
         if (path.empty()) return false;
 
         auto libRes = _libraries.loadShared(_config.networkPluginPath);
-        if (!libRes) return false;
+        if (!libRes) {
+            aer::log::error("Network plugin load failed: {}", libRes.error());
+            return false;
+        }
 
         _networkLoader = libRes.value();
 
         auto createRes = _networkLoader->get<CreateNetworkEngineFn>("CreateNetworkEngine");
-        if (!createRes) return false;
+        if (!createRes) {
+            aer::log::error("Network CreateNetworkEngine not found: {}", createRes.error());
+            return false;
+        }
 
         _config.networkPluginPath = path;
 
@@ -365,6 +404,18 @@ namespace aer::core
                              _config.defaultNetworkPluginPath);
             _config.networkPluginPath = _config.defaultNetworkPluginPath;
         }
+        if (std::size_t pos = findValueStart("defaultGameClient");
+            pos != std::string_view::npos) {
+            parseString(pos, _config.defaultGameClientPath);
+            aer::log::info("Default Game Client Path: {}",
+                             _config.defaultGameClientPath);
+        }
+        if (std::size_t pos = findValueStart("defaultGameServer");
+            pos != std::string_view::npos) {
+            parseString(pos, _config.defaultGameServerPath);
+            aer::log::info("Default Game Server Path: {}",
+                             _config.defaultGameServerPath);
+        }
         if (std::size_t pos = findValueStart("title");
             pos != std::string_view::npos) {
             parseString(pos, _config.title);
@@ -404,6 +455,92 @@ namespace aer::core
             }
             aer::log::info("Network Port: {}", _config.networkPort);
         }
+
+        if (!_config.defaultGameClientPath.empty()) {
+            namespace fs = std::filesystem;
+            fs::path clientPath{_config.defaultGameClientPath};
+            fs::path baseDir = clientPath.has_parent_path()
+                ? clientPath.parent_path()
+                : fs::path{};
+            const fs::path ymlPath = baseDir / "config.yml";
+            const fs::path yamlPath = baseDir / "config.yaml";
+            if (fs::exists(ymlPath)) {
+                loadGameConfiguration(ymlPath.string());
+            } else if (fs::exists(yamlPath)) {
+                loadGameConfiguration(yamlPath.string());
+            } else {
+                aer::log::warning("Game config not found next to default game client: {}",
+                                   _config.defaultGameClientPath);
+            }
+        }
+
         aer::log::info("====================================================");
+    }
+
+    void Core::loadGameConfiguration(const std::string& path)
+    {
+        std::ifstream file(path);
+        if (!file) {
+            aer::log::warning("Failed to open game configuration file: {}", path);
+            return;
+        }
+
+        bool inWindow = false;
+        bool applied = false;
+        std::string line;
+        while (std::getline(file, line)) {
+            std::string_view view(line);
+            const auto hash = view.find('#');
+            if (hash != std::string_view::npos) {
+                view = view.substr(0, hash);
+            }
+            view = trimValue(view);
+            if (view.empty()) continue;
+
+            if (view == "window:" || view == "window") {
+                inWindow = true;
+                continue;
+            }
+            if (view.back() == ':') {
+                inWindow = false;
+                continue;
+            }
+            if (!inWindow) {
+                continue;
+            }
+
+            const auto colon = view.find(':');
+            if (colon == std::string_view::npos) continue;
+            auto key = trimValue(view.substr(0, colon));
+            auto value = trimValue(view.substr(colon + 1));
+
+            if (!value.empty() && value.front() == '"' && value.back() == '"' && value.size() >= 2) {
+                value = value.substr(1, value.size() - 2);
+            }
+
+            if (key == "width") {
+                int parsed = _config.width;
+                auto res = std::from_chars(value.data(), value.data() + value.size(), parsed);
+                if (res.ec == std::errc()) {
+                    _config.width = parsed;
+                    applied = true;
+                }
+            } else if (key == "height") {
+                int parsed = _config.height;
+                auto res = std::from_chars(value.data(), value.data() + value.size(), parsed);
+                if (res.ec == std::errc()) {
+                    _config.height = parsed;
+                    applied = true;
+                }
+            } else if (key == "title") {
+                _config.title.assign(value);
+                applied = true;
+            }
+        }
+
+        if (applied) {
+            aer::log::info("Game config applied: window {}x{} '{}'",
+                           _config.width, _config.height, _config.title);
+        }
     }
 }

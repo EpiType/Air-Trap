@@ -31,10 +31,13 @@ namespace aer::core
              * @brief Configuration parameters for initializing the Core
              */
             struct Config {
+                bool headless{false};
                 std::vector<std::string> availableRenderers{};
                 std::vector<std::string> availableNetworkEngines{};
                 std::string defaultRendererPluginPath{};
                 std::string defaultNetworkPluginPath{};
+                std::string defaultGameClientPath{};
+                std::string defaultGameServerPath{};
                 std::string rendererPluginPath;
                 std::string networkPluginPath;
                 int width;
@@ -73,6 +76,7 @@ namespace aer::core
              */
             void shutdown();
 
+
             /**
              * @brief Get the library manager instance
              * @return Reference to the LibraryManager instance
@@ -86,7 +90,7 @@ namespace aer::core
              */
             [[nodiscard]]
             auto loadLibrary(const std::string& path)
-                -> std::expected<std::shared_ptr<plugin::DynamicLibrary>, core::Error>;
+                -> std::expected<std::shared_ptr<plugin::DynamicLibrary>, log::Error>;
 
             /**
              * @brief Load a renderer plugin
@@ -141,6 +145,7 @@ namespace aer::core
              * @param path Path to the configuration file
              */
             void loadConfiguration(const std::string& path);
+            void loadGameConfiguration(const std::string& path);
 
         private:
             Config _config{};

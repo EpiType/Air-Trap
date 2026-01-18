@@ -48,7 +48,7 @@ namespace aer::log
                         std::format_string<Args...> fmt,
                         Args &&...args) -> Error
     {
-        return Error(code, aer::core::Level::Error,
+        return Error(code, aer::log::Level::Error,
                      std::format(fmt, std::forward<Args>(args)...));
     }
             
@@ -57,7 +57,7 @@ namespace aer::log
                         std::format_string<Args...> fmt,
                         Args &&...args) -> Error
     {
-        return Error(code, aer::core::Level::Warning,
+        return Error(code, aer::log::Level::Warning,
                      std::format(fmt, std::forward<Args>(args)...));
     }
             
@@ -66,7 +66,7 @@ namespace aer::log
                       std::format_string<Args...> fmt,
                       Args &&...args) -> Error
     {
-        return Error(code, aer::core::Level::Fatal,
+        return Error(code, aer::log::Level::Fatal,
                      std::format(fmt, std::forward<Args>(args)...));
     }
 }

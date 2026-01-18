@@ -88,7 +88,7 @@ namespace aer::plugin
     }
 
     auto DynamicLibrary::getSymbolAddress(std::string_view name) const 
-        -> std::expected<void *, aer::core::Error>
+        -> std::expected<void *, aer::log::Error>
     {
         return impl::LibraryBackend::getSymbol(this->_handle, name);
     }

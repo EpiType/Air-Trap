@@ -30,6 +30,13 @@
     #include "rtype/scenes/LoginScene.hpp"
     #include "rtype/scenes/MenuScene.hpp"
     #include "rtype/scenes/LobbyScene.hpp"
+    #include "rtype/scenes/CreateRoomScene.hpp"
+    #include "rtype/scenes/RoomWaitingScene.hpp"
+    #include "rtype/scenes/PlayingScene.hpp"
+    #include "rtype/scenes/PauseScene.hpp"
+    #include "rtype/scenes/SettingsScene.hpp"
+    #include "rtype/scenes/KeyBindingScene.hpp"
+    #include "rtype/scenes/GamepadSettingsScene.hpp"
     #include "rtype/utility/SceneId.hpp"
 
     #include <memory>
@@ -115,6 +122,7 @@ namespace rtp::client
             Settings _settings;                                     /**< Client settings manager */
             TranslationManager _translation;                        /**< Translation manager */
 
+            EntityBuilder _entityBuilder;                           /**< Entity builder for client scenes */
             NetworkSyncSystem _networkSystem;                       /**< Network synchronization system */
             systems::InputSystem _inputSystem;                      /**< Input handling system */
             systems::RenderSystem _renderSystem;                    /**< Rendering system for game entities */
@@ -136,6 +144,13 @@ extern "C"
         aer::render::IRenderer *renderer,
         aer::net::INetwork *network);
     RTYPE_CLIENT_API void DestroyClientApp(rtp::client::ClientApp *app);
+    RTYPE_CLIENT_API void ClientAppInit(rtp::client::ClientApp *app);
+    RTYPE_CLIENT_API void ClientAppShutdown(rtp::client::ClientApp *app);
+    RTYPE_CLIENT_API void ClientAppUpdate(rtp::client::ClientApp *app, float dt);
+    RTYPE_CLIENT_API void ClientAppRender(rtp::client::ClientApp *app,
+                                          aer::render::RenderFrame *frame);
+    RTYPE_CLIENT_API void ClientAppHandleEvent(rtp::client::ClientApp *app,
+                                               const aer::input::Event *event);
 }
 
 #endif /* !RTYPE_CLIENT_APP_HPP_ */

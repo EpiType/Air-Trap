@@ -18,3 +18,9 @@ set_target_properties(net_asio PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins
 )
+
+if(UNIX)
+    set_target_properties(net_asio PROPERTIES
+        BUILD_RPATH "$ORIGIN/.."
+    )
+endif()

@@ -52,26 +52,22 @@ namespace rtp::client::systems
         const auto &input = aer::input::Input::instance();
         uint8_t mask = 0;
 
-        if (input.isKeyDown(aer::input::KeyCode::W) ||
-            input.isKeyDown(aer::input::KeyCode::Up)) {
+        if (input.isKeyDown(_settings.getKey(KeyAction::MoveUp))) {
             mask |= InputBits::MoveUp;
         }
-        if (input.isKeyDown(aer::input::KeyCode::S) ||
-            input.isKeyDown(aer::input::KeyCode::Down)) {
+        if (input.isKeyDown(_settings.getKey(KeyAction::MoveDown))) {
             mask |= InputBits::MoveDown;
         }
-        if (input.isKeyDown(aer::input::KeyCode::A) ||
-            input.isKeyDown(aer::input::KeyCode::Left)) {
+        if (input.isKeyDown(_settings.getKey(KeyAction::MoveLeft))) {
             mask |= InputBits::MoveLeft;
         }
-        if (input.isKeyDown(aer::input::KeyCode::D) ||
-            input.isKeyDown(aer::input::KeyCode::Right)) {
+        if (input.isKeyDown(_settings.getKey(KeyAction::MoveRight))) {
             mask |= InputBits::MoveRight;
         }
-        if (input.isKeyDown(aer::input::KeyCode::Space)) {
+        if (input.isKeyDown(_settings.getKey(KeyAction::Shoot))) {
             mask |= InputBits::Shoot;
         }
-        if (input.isKeyDown(aer::input::KeyCode::R)) {
+        if (input.isKeyDown(_settings.getKey(KeyAction::Reload))) {
             mask |= InputBits::Reload;
         }
 

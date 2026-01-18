@@ -42,7 +42,7 @@
 #include "engine/log/Assert.hpp"
 #include "engine/ecs/Registry.hpp"
 
-using namespace engine;
+using namespace aer;
 
 namespace aer::ecs
 {
@@ -50,7 +50,7 @@ namespace aer::ecs
     // Public API
     ///////////////////////////////////////////////////////////////////////////
 
-    auto Registry::spawn(void) -> std::expected<Entity, core::Error>
+    auto Registry::spawn(void) -> std::expected<Entity, log::Error>
     {
         std::unique_lock lock(this->_mutex);
 
@@ -65,7 +65,7 @@ namespace aer::ecs
         }
 
         if (this->_generations.size() >= Entity::MAX_INDEX)
-            return std::unexpected{core::Error::failure(core::ErrorCode::RegistryFull,
+            return std::unexpected{log::Error::failure(log::ErrorCode::RegistryFull,
                 "Registry: Max entities reached, cannot spawn new entity.")};
 
         std::size_t idx = this->_generations.size();

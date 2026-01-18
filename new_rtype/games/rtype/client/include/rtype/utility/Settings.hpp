@@ -7,7 +7,12 @@
 #ifndef RTYPE_CLIENT_SETTINGS_HPP_
     #define RTYPE_CLIENT_SETTINGS_HPP_
 
+    #include "engine/input/Event.hpp"
+    #include "rtype/utility/KeyAction.hpp"
+
     #include <algorithm>
+    #include <array>
+    #include <cstddef>
     #include <cstdint>
     #include <string>
 
@@ -38,7 +43,7 @@ namespace rtp::client
                 Infernal
             };
 
-            Settings() = default;
+            Settings();
 
             float masterVolume() const;
             void setMasterVolume(float volume);
@@ -85,6 +90,10 @@ namespace rtp::client
             unsigned int gamepadPauseButton() const;
             void setGamepadPauseButton(unsigned int button);
 
+            aer::input::KeyCode getKey(KeyAction action) const;
+            void setKey(KeyAction action, aer::input::KeyCode key);
+            std::string getKeyName(aer::input::KeyCode key) const;
+
             bool save(const std::string &filename = "config/settings.cfg") const;
             bool load(const std::string &filename = "config/settings.cfg");
 
@@ -94,6 +103,9 @@ namespace rtp::client
             static Language parseLanguage(const std::string &value);
             static ColorBlindMode parseColorBlindMode(const std::string &value);
             static Difficulty parseDifficulty(const std::string &value);
+            static std::string keyToString(aer::input::KeyCode key);
+            static aer::input::KeyCode stringToKey(const std::string &value);
+            static std::size_t actionIndex(KeyAction action);
 
             float _masterVolume{1.0f};
             float _musicVolume{0.7f};
@@ -111,6 +123,9 @@ namespace rtp::client
             unsigned int _gamepadValidateButton{0};
             float _gamepadCursorSpeed{8.0f};
             unsigned int _gamepadPauseButton{7};
+
+            static constexpr std::size_t kKeyActionCount = 7;
+            std::array<aer::input::KeyCode, kKeyActionCount> _keyBindings{};
     };
 } // namespace rtp::client
 

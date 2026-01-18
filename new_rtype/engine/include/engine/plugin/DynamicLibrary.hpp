@@ -78,12 +78,12 @@ namespace aer::plugin
              * @brief Get a symbol from the dynamic library.
              * @tparam T The expected type of the symbol.
              * @param name The name of the symbol to retrieve.
-             * @return std::expected<T, aer::core::Error>
+             * @return std::expected<T, aer::log::Error>
              */
             template <typename T>
             [[nodiscard]]
             auto get(std::string_view name) const
-                -> std::expected<T, aer::core::Error>;
+                -> std::expected<T, aer::log::Error>;
 
         private:
             void *_handle{nullptr}; /**< The handle to the dynamic library. */
@@ -91,11 +91,11 @@ namespace aer::plugin
             /**
              * @brief Get the address of a symbol from the dynamic library.
              * @param name The name of the symbol to retrieve.
-             * @return std::expected<void *, aer::core::Error>
+             * @return std::expected<void *, aer::log::Error>
              */
             [[nodiscard]]
             auto getSymbolAddress(std::string_view name) const 
-                -> std::expected<void *, aer::core::Error>;
+                -> std::expected<void *, aer::log::Error>;
 
     };
 }

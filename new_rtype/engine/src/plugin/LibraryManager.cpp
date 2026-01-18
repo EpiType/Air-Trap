@@ -55,7 +55,7 @@ namespace aer::plugin
     ///////////////////////////////////////////////////////////////////////////
 
     auto LibraryManager::load(std::string_view path)
-        -> std::expected<const DynamicLibrary *, aer::core::Error>
+        -> std::expected<const DynamicLibrary *, aer::log::Error>
     {
         return this->getOrLoadInternal(path).transform(
             [](const std::shared_ptr<DynamicLibrary> &libPtr) 
@@ -66,19 +66,19 @@ namespace aer::plugin
     }
 
     auto LibraryManager::loadShared(std::string_view path)
-        -> std::expected<std::shared_ptr<DynamicLibrary>, aer::core::Error>
+        -> std::expected<std::shared_ptr<DynamicLibrary>, aer::log::Error>
     {
         return this->getOrLoadInternal(path);
     }
 
     auto LibraryManager::loadStandalone(std::string_view path)
-        -> std::expected<std::unique_ptr<DynamicLibrary>, aer::core::Error>
+        -> std::expected<std::unique_ptr<DynamicLibrary>, aer::log::Error>
     {
         auto handle = impl::LibraryBackend::open(path);
         if (!handle.has_value()) [[unlikely]] {
             return std::unexpected{
-                aer::core::Error::failure(
-                    aer::core::ErrorCode::LibraryLoadFailed,
+                aer::log::Error::failure(
+                    aer::log::ErrorCode::LibraryLoadFailed,
                     "Failed to load dynamic library at '{}': {}",
                     path, handle.error())};
         }
@@ -91,7 +91,7 @@ namespace aer::plugin
     ///////////////////////////////////////////////////////////////////////////
 
     auto LibraryManager::getOrLoadInternal(std::string_view path)
-        -> std::expected<std::shared_ptr<DynamicLibrary>, aer::core::Error>
+        -> std::expected<std::shared_ptr<DynamicLibrary>, aer::log::Error>
     {
         const std::string pathStr{path}; // TODO: avoid copy, by adding HashStringView
                                          //       as key in unordered_map
@@ -113,8 +113,8 @@ namespace aer::plugin
             auto handle = impl::LibraryBackend::open(path);
             if (!handle.has_value()) [[unlikely]] {
                 return std::unexpected{
-                    aer::core::Error::failure(
-                        aer::core::ErrorCode::LibraryLoadFailed,
+                    aer::log::Error::failure(
+                        aer::log::ErrorCode::LibraryLoadFailed,
                         "Failed to load dynamic library at '{}': {}",
                         path, handle.error())};
             }

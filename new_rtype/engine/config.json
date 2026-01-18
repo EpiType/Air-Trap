@@ -7,14 +7,11 @@
     ],
     "defaultRenderPlugin": "./plugins/librender_sfml.so",
     "defaultNetworkPlugin": "./plugins/libnet_asio.so",
+    "defaultGameClient": "./games/rtype/client.so",
+    "defaultGameServer": "./games/rtype/server.so",
     "window": {
         "width": 1280,
         "height": 720,
         "title": "Enigne"
-    },
-    "assetsPath": "./assets/",
-    "network": {
-        "networkIp": "127.0.0.1",
-        "networkPort": 4242
     }
 }

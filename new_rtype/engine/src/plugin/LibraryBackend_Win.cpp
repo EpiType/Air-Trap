@@ -52,15 +52,15 @@ namespace aer::plugin::impl
     ///////////////////////////////////////////////////////////////////////////
 
     auto LibraryBackend::open(std::string_view path)
-        -> std::expected<void *, aer::core::Error>
+        -> std::expected<void *, aer::log::Error>
     {
         std::string safeNullTerminatedPath(path);
         HMODULE handle = LoadLibraryA(safeNullTerminatedPath.c_str());
         if (!handle) [[unlikely]] {
             DWORD errorCode = GetLastError();
             return std::unexpected{
-                aer::core::Error::failure(
-                    aer::core::ErrorCode::LibraryLoadFailed,
+                aer::log::Error::failure(
+                    aer::log::ErrorCode::LibraryLoadFailed,
                     "LoadLibrary error: {} (code: {})",
                     std::system_category().message(errorCode), errorCode)};
         }
@@ -69,13 +69,13 @@ namespace aer::plugin::impl
     }
 
     auto LibraryBackend::close(void *handle) noexcept
-        -> std::expected<void, aer::core::Error>
+        -> std::expected<void, aer::log::Error>
     {
         if (!FreeLibrary(reinterpret_cast<HMODULE>(handle))) [[unlikely]] {
             DWORD errorCode = GetLastError();
             return std::unexpected{
-                aer::core::Error::failure(
-                    aer::core::ErrorCode::LibraryLoadFailed,
+                aer::log::Error::failure(
+                    aer::log::ErrorCode::LibraryLoadFailed,
                     "FreeLibrary error: {} (code: {})",
                     std::system_category().message(errorCode), errorCode)};
         }
@@ -84,7 +84,7 @@ namespace aer::plugin::impl
     }
 
     auto LibraryBackend::getSymbol(void *handle, std::string_view name)
-        -> std::expected<void *, aer::core::Error>
+        -> std::expected<void *, aer::log::Error>
     {
         RTP_ASSERT(handle != nullptr,
                    "LoaderBackend: Handle cannot be null during symbol lookup");
@@ -96,8 +96,8 @@ namespace aer::plugin::impl
         if (!symbol) [[unlikely]] {
             DWORD errorCode = GetLastError();
             return std::unexpected{
-                aer::core::Error::failure(
-                    aer::core::ErrorCode::SymbolNotFound,
+                aer::log::Error::failure(
+                    aer::log::ErrorCode::SymbolNotFound,
                     "GetProcAddress error: {} (code: {})",
                     std::system_category().message(errorCode), errorCode)};
         }

@@ -12,7 +12,7 @@
     #include <string>
 
 /**
- * @namespace aer::net::asio
+ * @namespace engine::net::asio
  * @brief ASIO-based networking engine implementation
  */
 namespace aer::net::asio
@@ -54,6 +54,6 @@ namespace aer::net::asio
              */
             void destroy(INetwork *network) override;
     };
-} // namespace aer::net::asio
+} // namespace engine::net::asio
 
 #endif /* !ENGINE_NET_ASIO_ASIOENGINE_HPP_ */
