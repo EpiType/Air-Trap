@@ -268,10 +268,11 @@ namespace rtp::server
         EntitySystem::creaetEnemyEntity(uint32_t roomId, const Vec2f &pos,
                                         ecs::components::Patterns pattern,
                                         float speed, float amplitude,
-                                        float frequency)
+                                        float frequency,
+                                        net::EntityType type)
     {
         return createEnemyEntity(roomId, pos, pattern, speed, amplitude,
-                                 frequency, net::EntityType::Scout);
+                                 frequency, type);
     }
 
     ecs::Entity EntitySystem::createPowerupEntity(

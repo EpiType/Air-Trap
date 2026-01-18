@@ -28,7 +28,11 @@ namespace rtp::server
         int getKillScore(net::EntityType type)
         {
             switch (type) {
-                case net::EntityType::Scout: return 10;
+                case net::EntityType::Enemy1:
+                case net::EntityType::Enemy2:
+                case net::EntityType::Enemy3:
+                case net::EntityType::Enemy4:
+                    return 10;
                 case net::EntityType::Tank: return 25;
                 case net::EntityType::Boss: return 100;
                 case net::EntityType::Boss2: return 200;  // Kraken gives more points!

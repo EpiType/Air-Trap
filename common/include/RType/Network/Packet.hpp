@@ -143,21 +143,24 @@ namespace rtp::net
      */
     enum class EntityType : uint8_t {
         Player = 1,
-        Scout  = 2,
-        Tank   = 3,
-        Boss   = 4,
-        Bullet = 5,
-        PowerupHeal = 6,        // Red - Health regen
-        PowerupSpeed = 7,       // (unused for now)
-        Obstacle = 8,
-        EnemyBullet = 9,
-        ObstacleSolid = 10,
-        ChargedBullet = 11,
-        PowerupDoubleFire = 12, // Yellow/White - Double fire for 20s
-        PowerupShield = 13,      // Green - Shield (absorb 1 hit)
-        BossShield = 14,
-        Boss2 = 15,              // Kraken Alien Boss (r-typesheet35.gif)
-        Boss2Bullet = 16         // Kraken's boomerang projectile
+        Enemy1 = 2,
+        Enemy2 = 3,
+        Enemy3 = 4,
+        Enemy4 = 5,
+        Tank   = 6,
+        Boss   = 7,
+        Bullet = 8,
+        PowerupHeal = 9,        // Red - Health regen
+        PowerupSpeed = 10,       // (unused for now)
+        Obstacle = 11,
+        EnemyBullet = 12,
+        ObstacleSolid = 13,
+        ChargedBullet = 14,
+        PowerupDoubleFire = 15, // Yellow/White - Double fire for 20s
+        PowerupShield = 16,      // Green - Shield (absorb 1 hit)
+        BossShield = 17,
+        Boss2 = 18,              // Kraken Alien Boss (r-typesheet35.gif)
+        Boss2Bullet = 19         // Kraken's boomerang projectile
     };
 
     //////////////////////////////////////////////////////////////////////////

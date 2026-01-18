@@ -39,7 +39,10 @@ namespace rtp::server
                               ecs::components::SimpleWeapon>();
 
         for (auto &&[tf, type, roomId, weapon] : view) {
-            if (type.type != net::EntityType::Scout &&
+            if (type.type != net::EntityType::Enemy1 &&
+                type.type != net::EntityType::Enemy2 &&
+                type.type != net::EntityType::Enemy3 &&
+                type.type != net::EntityType::Enemy4 &&
                 type.type != net::EntityType::Tank &&
                 type.type != net::EntityType::Boss &&
                 type.type != net::EntityType::Boss2 &&

@@ -40,7 +40,7 @@ namespace rtp::server
         auto targetView = _registry.zipView<Transform, EntityType, Health, RoomId>();
 
         for (auto &&[homing, tf, vel, room] : _registry.zipView<Homing, Transform, Velocity, RoomId>()) {
-            // find nearest hostile (Scout/Tank/Boss) in same room
+            // find nearest hostile (Enemy1/Enemy2/Enemy3/Enemy4/Tank/Boss) in same room
             float bestDist2 = std::numeric_limits<float>::infinity();
             bool found = false;
             rtp::Vec2f targetPos{0.0f, 0.0f};
@@ -51,7 +51,10 @@ namespace rtp::server
                 // skip players and non-enemies
                 if (otype.type == net::EntityType::Player)
                     continue;
-                if (otype.type != net::EntityType::Scout && 
+                if (otype.type != net::EntityType::Enemy1 && 
+                    otype.type != net::EntityType::Enemy2 && 
+                    otype.type != net::EntityType::Enemy3 && 
+                    otype.type != net::EntityType::Enemy4 && 
                     otype.type != net::EntityType::Tank && 
                     otype.type != net::EntityType::Boss &&
                     otype.type != net::EntityType::Boss2)

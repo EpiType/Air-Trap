@@ -532,8 +532,17 @@ namespace rtp::client {
 
         EntityTemplate t;
         switch (static_cast<net::EntityType>(payload.type)) {
-            case net::EntityType::Scout:
+                        case net::EntityType::Enemy4:
+                            t = EntityTemplate::enemy_4(pos);
+                            break;
+            case net::EntityType::Enemy1:
+                t = EntityTemplate::enemy_1(pos);
+                break;
+            case net::EntityType::Enemy2:
                 t = EntityTemplate::enemy_2(pos);
+                break;
+            case net::EntityType::Enemy3:
+                t = EntityTemplate::enemy_3(pos);
                 break;
             case net::EntityType::Tank:
                 t = EntityTemplate::effect_1(pos);

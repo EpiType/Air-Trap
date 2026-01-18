@@ -87,7 +87,10 @@ namespace rtp::server
             if (etype != net::EntityType::Bullet &&
                 etype != net::EntityType::ChargedBullet &&
                 etype != net::EntityType::EnemyBullet &&
-                etype != net::EntityType::Scout &&
+                etype != net::EntityType::Enemy1 &&
+                etype != net::EntityType::Enemy2 &&
+                etype != net::EntityType::Enemy3 &&
+                etype != net::EntityType::Enemy4 &&
                 etype != net::EntityType::Tank &&
                 etype != net::EntityType::Boss &&
                 etype != net::EntityType::BossShield &&

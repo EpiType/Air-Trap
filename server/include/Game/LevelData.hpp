@@ -20,7 +20,7 @@ namespace rtp::server {
 
 struct SpawnEvent {
     float atTime{0.0f};
-    net::EntityType type{net::EntityType::Scout};
+    net::EntityType type{net::EntityType::Enemy1}; // Default remains Enemy1, Enemy4 is available
     Vec2f startPosition{0.0f, 0.0f};
     ecs::components::Patterns pattern{ecs::components::Patterns::StraightLine};
     float speed{120.0f};

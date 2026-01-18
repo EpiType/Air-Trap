@@ -215,6 +215,18 @@ namespace {
     rtp::net::EntityType parseEntityType(const std::string& value, const std::string& templatePath)
     {
         const std::string lower = toLower(value);
+        if (lower == "enemy1" || lower == "scout" || lower == "enemy_1") {
+            return rtp::net::EntityType::Enemy1;
+        }
+        if (lower == "enemy2" || lower == "enemy_2") {
+            return rtp::net::EntityType::Enemy2;
+        }
+        if (lower == "enemy3" || lower == "enemy_3") {
+            return rtp::net::EntityType::Enemy3;
+        }
+        if (lower == "enemy4" || lower == "enemy_4") {
+            return rtp::net::EntityType::Enemy4;
+        }
         if (lower == "tank") {
             return rtp::net::EntityType::Tank;
         }
@@ -227,11 +239,20 @@ namespace {
         if (lower == "boss_shield") {
             return rtp::net::EntityType::BossShield;
         }
-        if (lower == "scout") {
-            return rtp::net::EntityType::Scout;
-        }
 
         const std::string templateLower = toLower(templatePath);
+        if (templateLower.find("enemy_1") != std::string::npos) {
+            return rtp::net::EntityType::Enemy1;
+        }
+        if (templateLower.find("enemy_2") != std::string::npos) {
+            return rtp::net::EntityType::Enemy2;
+        }
+        if (templateLower.find("enemy_3") != std::string::npos) {
+            return rtp::net::EntityType::Enemy3;
+        }
+        if (templateLower.find("enemy_4") != std::string::npos) {
+            return rtp::net::EntityType::Enemy4;
+        }
         if (templateLower.find("boss_02") != std::string::npos || templateLower.find("boss2") != std::string::npos) {
             return rtp::net::EntityType::Boss2;
         }
@@ -241,7 +262,7 @@ namespace {
         if (templateLower.find("tank") != std::string::npos) {
             return rtp::net::EntityType::Tank;
         }
-        return rtp::net::EntityType::Scout;
+        return rtp::net::EntityType::Enemy1;
     }
 
     rtp::ecs::components::PowerupType parsePowerupType(const std::string& value)

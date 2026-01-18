@@ -73,11 +73,11 @@ namespace rtp::server {
                 float speed,
                 float amplitude,
                 float frequency,
-                net::EntityType type = net::EntityType::Scout
+                net::EntityType type = net::EntityType::Enemy1
             );
 
             /**
-             * @brief Create a new enemy entity in the ECS with default type Scout
+             * @brief Create a new enemy entity in the ECS with default type Enemy1
              * @param roomId ID of the room the enemy belongs to
              * @param pos Position to spawn the enemy at
              * @param pattern Movement pattern for the enemy
@@ -92,7 +92,8 @@ namespace rtp::server {
                 ecs::components::Patterns pattern,
                 float speed,
                 float amplitude,
-                float frequency
+                float frequency,
+                net::EntityType type
             );
 
             /**

@@ -96,7 +96,7 @@ void RenderSystem::update(float dt)
             type.type != net::EntityType::Boss &&
             type.type != net::EntityType::Boss2 &&
             type.type != net::EntityType::BossShield &&
-            type.type != net::EntityType::Scout &&
+            type.type != net::EntityType::Enemy1 &&
             type.type != net::EntityType::Tank) {
             continue;
         }
@@ -108,7 +108,7 @@ void RenderSystem::update(float dt)
         if (type.type == net::EntityType::Boss ||
             type.type == net::EntityType::Boss2 ||
             type.type == net::EntityType::BossShield ||
-            type.type == net::EntityType::Scout ||
+            type.type == net::EntityType::Enemy1 ||
             type.type == net::EntityType::Tank) {
             // Centrer la hitbox autour de la position du sprite
             posX = trans.position.x - box.width / 2.0f;

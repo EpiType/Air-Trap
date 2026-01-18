@@ -148,7 +148,7 @@ namespace rtp::server {
                 if (startPos.x < frontX + minAhead) {
                     startPos.x = frontX + minAhead;
                 }
-                auto entity = _entitySystem.createEnemyEntity(
+                auto entity = _entitySystem.creaetEnemyEntity(
                     roomId, startPos, spawn.pattern,
                     spawn.speed, spawn.amplitude, spawn.frequency, spawn.type);
                 spawnEntityForRoom(roomId, entity);

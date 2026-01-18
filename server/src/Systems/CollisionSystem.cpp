@@ -23,7 +23,11 @@ namespace rtp::server
         int getKillScore(net::EntityType type)
         {
             switch (type) {
-                case net::EntityType::Scout: return 10;
+                case net::EntityType::Enemy1:
+                case net::EntityType::Enemy2:
+                case net::EntityType::Enemy3:
+                case net::EntityType::Enemy4:
+                    return 10;
                 case net::EntityType::Tank: return 25;
                 case net::EntityType::Boss: return 100;
                 case net::EntityType::Boss2: return 200;
@@ -211,16 +215,14 @@ namespace rtp::server
                     speeds.has(entity)) {
                     players.push_back(entity);
                 }
-            } else if (type ==
-                       net::EntityType::Scout ||
-                       type ==
-                       net::EntityType::Tank ||
-                       type ==
-                       net::EntityType::Boss ||
-                       type ==
-                       net::EntityType::Boss2 ||
-                       type ==
-                       net::EntityType::BossShield) {
+            } else if ((type == net::EntityType::Enemy1 ||
+                        type == net::EntityType::Enemy2 ||
+                        type == net::EntityType::Enemy3 ||
+                        type == net::EntityType::Enemy4 ||
+                        type == net::EntityType::Tank ||
+                        type == net::EntityType::Boss ||
+                        type == net::EntityType::Boss2 ||
+                        type == net::EntityType::BossShield)) {
                 if (transforms.has(entity) &&
                     boxes.has(entity) &&
                     rooms.has(entity) &&
