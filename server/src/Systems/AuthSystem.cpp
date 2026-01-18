@@ -22,7 +22,7 @@ namespace rtp::server {
         (void)dt;
     };
 
-    std::pair<bool, std::string> AuthSystem::handleLoginRequest(uint32_t sessionId, const net::Packet& packet)
+    std::tuple<bool, std::string, uint8_t> AuthSystem::handleLoginRequest(uint32_t sessionId, const net::Packet& packet)
     {
         std::ifstream inFile("logins.txt");
 
@@ -34,6 +34,7 @@ namespace rtp::server {
         tempPacket >> payload;
         username = std::string(payload.username);
         password = std::string(payload.password);
+        uint8_t weaponKind = payload.weaponKind;
 
         log::info("Login attempt: session={} username='{}' password='{}'",
                        sessionId, username, password);
@@ -41,7 +42,7 @@ namespace rtp::server {
         if (!inFile) {
             log::error("Failed to open logins.txt for reading");
             sendLoginResponse(sessionId, false, username);
-            return {false, username};
+            return {false, username, weaponKind};
         }
 
         std::string line;
@@ -51,12 +52,12 @@ namespace rtp::server {
             if (line == record) {
                 log::info("Login successful for username '{}'", username);
                 sendLoginResponse(sessionId, true, username);
-                return {true, username};
+                return {true, username, weaponKind};
             }
         }
         log::warning("Login failed for username '{}'", username);
         sendLoginResponse(sessionId, false, username);
-        return {false, username};
+        return {false, username, weaponKind};
     }
 
     std::pair<bool, std::string> AuthSystem::handleRegisterRequest(uint32_t sessionId, const net::Packet& packet)

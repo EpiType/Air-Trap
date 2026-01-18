@@ -13,6 +13,7 @@
     #include <mutex>
     #include <memory>
     #include "RType/Network/Session.hpp"
+    #include "RType/ECS/Components/SimpleWeapon.hpp"
 
 /**
  * @namespace rtp::server
@@ -126,6 +127,18 @@ namespace rtp::server
             void setMuted(bool muted);
             bool isMuted() const;
 
+            /**
+             * @brief Set the selected weapon kind for this player
+             * @param weapon Weapon kind
+             */
+            void setWeaponKind(rtp::ecs::components::WeaponKind weapon);
+
+            /**
+             * @brief Get the selected weapon kind for this player
+             * @return Current weapon kind
+             */
+            rtp::ecs::components::WeaponKind getWeaponKind() const;
+
         private:
             uint32_t _sessionId;         /**< Unique player identifier */
             std::string _username;       /**< Player username */
@@ -136,6 +149,7 @@ namespace rtp::server
             uint32_t _entityId = 0;      /**< Associated entity ID in the ECS */
             mutable std::mutex _mutex;   /**< Mutex to protect access to player state */
             bool _isMuted = false;       /**< Mute status of the player */
+            rtp::ecs::components::WeaponKind _weaponKind{rtp::ecs::components::WeaponKind::Classic}; /**< Selected weapon */
     };
 
     /**

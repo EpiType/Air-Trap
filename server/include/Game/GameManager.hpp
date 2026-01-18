@@ -163,6 +163,11 @@ namespace rtp::server
             void handleSetReady(uint32_t sessionId, const net::Packet &packet);
 
             /**
+             * @brief Handle an update to the selected weapon sent by client
+             */
+            void handleUpdateSelectedWeapon(uint32_t sessionId, const net::Packet &packet);
+
+            /**
              * @brief Handle a generic incoming packet from a player
              * @param sessionId Unique identifier of the player sending the packet
              * @param packet Reference to the received Packet

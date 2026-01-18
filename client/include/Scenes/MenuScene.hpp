@@ -81,6 +81,10 @@ namespace rtp::client {
                 graphics::UiFactory& _uiFactory;            /**< UI Factory for creating UI components */
                 ChangeStateFn _changeState;                 /**< Function to change the game state */
                 ecs::Entity _menuMusicEntity;               /**< Entity for menu background music */
+                ecs::Entity _weaponNameText;                /**< Entity for weapon name display */
+                ecs::Entity _weaponStatsText;               /**< Entity for weapon stats display */
+
+                void updateWeaponDisplay();                 /**< Update weapon name and stats texts */
         };
     } // namespace scenes
 } // namespace rtp::client

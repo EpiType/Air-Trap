@@ -10,6 +10,7 @@
     #define RTYPE_CLIENT_CORE_SETTINGS_HPP_
 
 #include "RType/Logger.hpp"
+#include "RType/ECS/Components/SimpleWeapon.hpp"
 #include "Utils/KeyAction.hpp"
 
 #include <SFML/Window/Keyboard.hpp>
@@ -158,6 +159,18 @@ namespace rtp::client
 
             std::string getDifficultyName(Difficulty difficulty) const;
 
+            ecs::components::WeaponKind getSelectedWeapon() const
+            {
+                return _selectedWeapon;
+            }
+
+            void setSelectedWeapon(ecs::components::WeaponKind weapon)
+            {
+                _selectedWeapon = weapon;
+            }
+
+            std::string getWeaponName(ecs::components::WeaponKind weapon) const;
+
             bool getGamepadEnabled() const
             {
                 return _gamepadEnabled;
@@ -247,6 +260,7 @@ namespace rtp::client
             ColorBlindMode _colorBlindMode{ColorBlindMode::None};
             bool _highContrast{false};
             Difficulty _difficulty{Difficulty::Normal};
+            ecs::components::WeaponKind _selectedWeapon{ecs::components::WeaponKind::Classic};
 
             // Gamepad settings
             bool _gamepadEnabled{true};

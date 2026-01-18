@@ -103,6 +103,7 @@ namespace rtp::net
 
         // Gameplay (C -> S)
         InputTick = 0x10,               /**< Client input state */
+        UpdateSelectedWeapon = 0x11,    /**< Client selected weapon changed */
 
         // Game State (S -> C)
         // RoomUpdate = 0x20,             /**< Entity state snapshot */
@@ -184,6 +185,7 @@ namespace rtp::net
     struct LoginPayload {
         char username[32];              /**< Player username */
         char password[32];              /**< Player password */
+        uint8_t weaponKind;             /**< Selected weapon kind */
     };
 
     /**
@@ -342,6 +344,7 @@ namespace rtp::net
         float posY;                     /**< Spawn Y position */
         float sizeX{0.0f};              /**< Optional width for static entities */
         float sizeY{0.0f};              /**< Optional height for static entities */
+        uint8_t weaponKind{0};          /**< Optional weapon kind for player entities */
     };
 
     /**
