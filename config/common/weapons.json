@@ -19,16 +19,6 @@
     "ammo": 1,
     "maxAmmo": 1
   },
-  "Paddle": {
-    "kind": 2,
-    "displayName": "Reflector Paddle",
-    "fireRate": 0.0,
-    "damage": 0,
-    "difficulty": 4,
-    "canReflect": true,
-    "ammo": -1,
-    "maxAmmo": -1
-  },
   "Tracker": {
     "kind": 3,
     "displayName": "Auto-Tracker",

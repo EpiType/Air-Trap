@@ -47,7 +47,7 @@ struct SimpleWeapon {
     
     int difficulty{2};           /**< Difficulty to use this weapon (1-5) */
     
-    bool canReflect{false};      /**< Can reflect enemy bullets (Paddle) */
+    // Reflect feature removed
     bool homing{false};          /**< Shots home to enemies (Tracker) */
     float homingSteering{3.0f};  /**< Steering factor for homing bullets */
     float homingRange{600.0f};   /**< Detection range for homing bullets */
