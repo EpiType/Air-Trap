@@ -203,6 +203,12 @@ namespace {
         if (lower == "static") {
             return rtp::ecs::components::Patterns::Static;
         }
+        if (lower == "circular" || lower == "circle") {
+            return rtp::ecs::components::Patterns::Circular;
+        }
+        if (lower == "zigzag" || lower == "zig-zag") {
+            return rtp::ecs::components::Patterns::ZigZag;
+        }
         return rtp::ecs::components::Patterns::StraightLine;
     }
 
@@ -214,6 +220,9 @@ namespace {
         }
         if (lower == "boss") {
             return rtp::net::EntityType::Boss;
+        }
+        if (lower == "boss_shield") {
+            return rtp::net::EntityType::BossShield;
         }
         if (lower == "scout") {
             return rtp::net::EntityType::Scout;

@@ -103,7 +103,10 @@ namespace rtp::server
                        net::EntityType::Scout ||
                        type ==
                        net::EntityType::Tank ||
-                       type == net::EntityType::Boss) {
+                       type ==
+                       net::EntityType::Boss ||
+                       type ==
+                       net::EntityType::BossShield) {
                 if (transforms.has(entity) &&
                     boxes.has(entity) &&
                     rooms.has(entity) &&
@@ -294,6 +297,25 @@ namespace rtp::server
                 auto &health = healths[enemy];
                 if (!overlaps(btf, bbox, etf, ebox)) {
                     continue;
+                }
+
+                // Check if enemy is a Boss and if there are shields protecting it
+                if (types[enemy].type == net::EntityType::Boss) {
+                    // Count living BossShields in the same room
+                    int shieldCount = 0;
+                    for (auto potentialShield : enemies) {
+                        if (rooms[potentialShield].id == broom.id &&
+                            types[potentialShield].type == net::EntityType::BossShield &&
+                            healths[potentialShield].currentHealth > 0) {
+                            shieldCount++;
+                        }
+                    }
+                    
+                    // If shields exist, boss is protected - don't take damage
+                    if (shieldCount > 0) {
+                        markForDespawn(bullet, broom.id);
+                        break;
+                    }
                 }
 
                 health.currentHealth -= damage.amount;
