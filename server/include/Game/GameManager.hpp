@@ -38,6 +38,7 @@
     #include "Systems/EnemyShootSystem.hpp"
     #include "Systems/BulletCleanupSystem.hpp"
     #include "Systems/HomingSystem.hpp"
+    #include "Systems/BoomerangSystem.hpp"
 
     /* Components */
     #include "RType/ECS/Components/InputComponent.hpp"
@@ -56,6 +57,7 @@
     #include "RType/ECS/Components/Shield.hpp"
     #include "RType/ECS/Components/DoubleFire.hpp"
     #include "RType/ECS/Components/Homing.hpp"
+    #include "RType/ECS/Components/Boomerang.hpp"
 
 /**
  * @namespace rtp::server
@@ -208,6 +210,7 @@ namespace rtp::server
             std::unique_ptr<EnemyAISystem> _enemyAISystem;              /**< Enemy AI system for movement patterns */
             std::unique_ptr<LevelSystem> _levelSystem;                  /**< Level system for timed spawns */
             std::unique_ptr<HomingSystem> _homingSystem;                /**< Homing system for tracker bullets */
+            std::unique_ptr<BoomerangSystem> _boomerangSystem;          /**< Boomerang system for boomerang projectiles */
             std::unique_ptr<CollisionSystem> _collisionSystem;          /**< Collision system for pickups/obstacles */
             std::unique_ptr<EnemyShootSystem> _enemyShootSystem;        /**< Enemy shooting system */
             std::unique_ptr<BulletCleanupSystem> _bulletCleanupSystem;  /**< Bullet cleanup system */
