@@ -26,6 +26,7 @@ add_executable(r-type_server
     src/Systems/LevelSystem.cpp
     src/Systems/CollisionSystem.cpp
     src/Systems/BulletCleanupSystem.cpp
+    src/Systems/BoomerangSystem.cpp
     src/Systems/HomingSystem.cpp
 )
 

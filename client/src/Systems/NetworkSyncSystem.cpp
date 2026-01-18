@@ -490,9 +490,23 @@ namespace rtp::client {
 
             case net::EntityType::Bullet:
                 t = EntityTemplate::createBulletPlayer(pos);
+                // If server indicates this bullet was fired by a Boomerang weapon, use shot_1 sprite
+                if (payload.weaponKind == static_cast<uint8_t>(ecs::components::WeaponKind::Boomerang)) {
+                    t = EntityTemplate::shot_1(pos);
+                    // Do not set tag, so custom sprite mappings for player_bullet
+                    // (e.g. player_shot_6) do not override the boomerang visual.
+                    // Mark as boomerang-specific so EntityBuilder maps it deterministically
+                    t.tag = "boomerang_bullet";
+                }
                 break;
             case net::EntityType::ChargedBullet:
                 t = EntityTemplate::createBulletPlayer(pos);
+                // Charged bullets may also originate from boomerang weapon
+                if (payload.weaponKind == static_cast<uint8_t>(ecs::components::WeaponKind::Boomerang)) {
+                    t = EntityTemplate::shot_1(pos);
+                    // Do not set tag here for the same reason as above.
+                    t.tag = "boomerang_bullet";
+                }
                 if (payload.sizeX > 0.0f) {
                     float scale = 1.0f;
                     if (payload.sizeX <= 6.0f) {

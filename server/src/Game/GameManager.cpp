@@ -38,6 +38,7 @@ namespace rtp::server
         _registry.subscribe<ecs::components::Shield>();
         _registry.subscribe<ecs::components::DoubleFire>();
         _registry.subscribe<ecs::components::Homing>();
+        _registry.subscribe<ecs::components::Boomerang>();
 
         _networkSyncSystem = std::make_unique<NetworkSyncSystem>(_networkManager, _registry);
         _movementSystem = std::make_unique<MovementSystem>(_registry);
@@ -52,6 +53,7 @@ namespace rtp::server
         _collisionSystem = std::make_unique<CollisionSystem>(_registry, *_roomSystem, *_networkSyncSystem);
         _enemyShootSystem = std::make_unique<EnemyShootSystem>(_registry, *_roomSystem, *_networkSyncSystem);
         _homingSystem = std::make_unique<HomingSystem>(_registry);
+        _boomerangSystem = std::make_unique<BoomerangSystem>(_registry);
         _bulletCleanupSystem = std::make_unique<BulletCleanupSystem>(_registry, *_roomSystem, *_networkSyncSystem);
 
         _levelSystem->registerLevelPath(1, "config/levels/level_01.json");
@@ -120,6 +122,7 @@ namespace rtp::server
                 _playerShootSystem->update(scaledDt);
                 _enemyShootSystem->update(scaledDt);
                 _homingSystem->update(scaledDt);
+                _boomerangSystem->update(scaledDt);
                 _movementSystem->update(scaledDt);
                 _collisionSystem->update(scaledDt);
                 _bulletCleanupSystem->update(scaledDt);
