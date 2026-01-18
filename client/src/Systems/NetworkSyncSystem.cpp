@@ -490,28 +490,26 @@ namespace rtp::client {
 
             case net::EntityType::Bullet:
                 t = EntityTemplate::createBulletPlayer(pos);
-                // If server indicates this bullet was fired by a Boomerang weapon, use shot_1 sprite
                 if (payload.weaponKind == static_cast<uint8_t>(ecs::components::WeaponKind::Boomerang)) {
                     t = EntityTemplate::shot_1(pos);
-                    // Do not set tag, so custom sprite mappings for player_bullet
-                    // (e.g. player_shot_6) do not override the boomerang visual.
-                    // Mark as boomerang-specific so EntityBuilder maps it deterministically
                     t.tag = "boomerang_bullet";
                 }
                 break;
             case net::EntityType::ChargedBullet:
                 t = EntityTemplate::createBulletPlayer(pos);
-                // Charged bullets may also originate from boomerang weapon
                 if (payload.weaponKind == static_cast<uint8_t>(ecs::components::WeaponKind::Boomerang)) {
                     t = EntityTemplate::shot_1(pos);
-                    // Do not set tag here for the same reason as above.
                     t.tag = "boomerang_bullet";
                 }
                 if (payload.sizeX > 0.0f) {
                     float scale = 1.0f;
                     if (payload.sizeX <= 6.0f) {
                         scale = 0.5f;
-                    } else if (payload.sizeX >= 12.0f) {
+                    } else if (payload.sizeX < 12.0f) {
+                        scale = 1.0f;
+                    } else if (payload.sizeX < 16.0f) {
+                        scale = 1.5f;
+                    } else {
                         scale = 2.0f;
                     }
                     t.scale = {scale, scale};
@@ -532,7 +530,7 @@ namespace rtp::client {
                 t = EntityTemplate::createPowerUpHeal(pos);
                 break;
             case net::EntityType::PowerupSpeed:
-                t = EntityTemplate::createPowerUpHeal(pos); // Speed uses same sprite as Heal for now
+                t = EntityTemplate::createPowerUpHeal(pos);
                 break;
             case net::EntityType::PowerupDoubleFire:
                 log::debug("Creating PowerupDoubleFire template at ({}, {})", pos.x, pos.y);
@@ -568,7 +566,6 @@ namespace rtp::client {
             e, ecs::components::EntityType{entityType}
         );
 
-            // If server sent a weaponKind for this spawn, apply it to player entities
         if (entityType == net::EntityType::Player) {
             ecs::components::SimpleWeapon wcfg;
             wcfg.kind = static_cast<ecs::components::WeaponKind>(payload.weaponKind);
@@ -584,12 +581,9 @@ namespace rtp::client {
                         wcfg.fireRate = 0.0f;
                         wcfg.damage = 4;
                         wcfg.beamDuration = 5.0f;
-                        wcfg.beamCooldown = 3.0f; // use weapon-specific cooldown
-                        wcfg.ammo = 1;
+                        wcfg.beamCooldown = 3.0f;
                         wcfg.maxAmmo = 1;
                         break;
-                    case ecs::components::WeaponKind::Paddle:
-                        wcfg.fireRate = 0.0f; wcfg.damage = 0; wcfg.canReflect = true; wcfg.ammo = -1; wcfg.maxAmmo = -1; break;
                     case ecs::components::WeaponKind::Tracker:
                         wcfg.fireRate = 2.0f; wcfg.damage = 6; wcfg.homing = true; wcfg.ammo = 50; wcfg.maxAmmo = 50; break;
                     case ecs::components::WeaponKind::Boomerang:
@@ -599,7 +593,6 @@ namespace rtp::client {
                 }
             }
 
-            // Add or replace SimpleWeapon component
             if (auto weaponsOpt = _registry.get<ecs::components::SimpleWeapon>()) {
                 auto &weapons = weaponsOpt.value().get();
                 if (weapons.has(e)) {
@@ -611,7 +604,6 @@ namespace rtp::client {
                 _registry.add<ecs::components::SimpleWeapon>(e, wcfg);
             }
 
-            // Ensure Ammo component matches weapon config where applicable
             if (auto ammoOpt = _registry.get<ecs::components::Ammo>()) {
                 auto &ammos = ammoOpt.value().get();
                 if (ammos.has(e)) {
@@ -878,7 +870,6 @@ namespace rtp::client {
                 }
             }
 
-            // Prepare template
             EntityTemplate t = EntityTemplate::shot_5(pos);
             const float spriteW = 81.0f;
 

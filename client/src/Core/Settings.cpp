@@ -326,8 +326,7 @@ namespace rtp::client
                 return "Classic Laser";
             case ecs::components::WeaponKind::Beam:
                 return "Beam Cannon";
-            case ecs::components::WeaponKind::Paddle:
-                return "Reflector Paddle";
+            // Paddle (Reflector) removed
             case ecs::components::WeaponKind::Tracker:
                 return "Auto-Tracker";
             case ecs::components::WeaponKind::Boomerang:

@@ -45,7 +45,7 @@ namespace rtp::config {
             } else {
                 if (name == "Classic") kind = rtp::ecs::components::WeaponKind::Classic;
                 else if (name == "Beam") kind = rtp::ecs::components::WeaponKind::Beam;
-                else if (name == "Paddle") kind = rtp::ecs::components::WeaponKind::Paddle;
+                // Paddle (Reflector) removed from configs
                 else if (name == "Tracker") kind = rtp::ecs::components::WeaponKind::Tracker;
                 else if (name == "Boomerang") kind = rtp::ecs::components::WeaponKind::Boomerang;
             }
@@ -59,7 +59,7 @@ namespace rtp::config {
             cfg.maxAmmo = data.getInt("maxAmmo", -1);
             cfg.beamDuration = data.getFloat("beamDuration", 0.0f);
             cfg.beamCooldown = data.getFloat("beamCooldown", 0.0f);
-            cfg.canReflect = data.getBool("canReflect", false);
+            // Reflect feature removed; no longer loading canReflect
             cfg.homing = data.getBool("homing", false);
             cfg.homingSteering = data.getFloat("homingSteering", 3.0f);
             cfg.homingRange = data.getFloat("homingRange", 600.0f);
@@ -132,13 +132,12 @@ namespace rtp::config {
 
             for (const auto& [name, data] : weapons) {
                 int k = data.getInt("kind", -1);
-                if (k < 0) {
+                    if (k < 0) {
                     if (name == "Classic") k = 0;
                     else if (name == "Beam") k = 1;
-                    else if (name == "Paddle") k = 2;
                     else if (name == "Tracker") k = 3;
                     else if (name == "Boomerang") k = 4;
-                }
+                    }
                 
                 if (static_cast<uint8_t>(kind) == static_cast<uint8_t>(k)) {
                     std::string displayName = data.getString("displayName", "");
