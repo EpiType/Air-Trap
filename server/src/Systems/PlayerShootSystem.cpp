@@ -31,6 +31,7 @@ namespace rtp::server
                 case net::EntityType::Scout: return 10;
                 case net::EntityType::Tank: return 25;
                 case net::EntityType::Boss: return 100;
+                case net::EntityType::Boss2: return 200;  // Kraken gives more points!
                 case net::EntityType::Obstacle: return 5;
                 case net::EntityType::ObstacleSolid: return 15;
                 default: return 0;

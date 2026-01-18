@@ -1,34 +1,75 @@
 {
     "level_id": 3,
-    "name": "Crimson Dwarf Run",
+    "name": "Kraken's Lair",
     "game_metadata": {
-        "level_width_in_pixels": 30000,
-        "player_start_position": { "x": 100, "y": 450 },
+        "level_width_in_pixels": 35000,
+        "player_start_position": { "x": 100, "y": 360 },
         "tileset_path": "config/levels/geometry/level_01_tiles.json"
     },
     "theme_data": {
         "background_texture": "assets/textures/backgrounds/nebula_01.png",
-        "scroll_speed_factor": 0.7,
+        "scroll_speed_factor": 0.55,
         "music_track": "assets/audio/music/theme_A.ogg"
     },
     "spawn_triggers": [
-        { "at_time": 2.5, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 260 }, "count": 6, "delay_between_spawn": 0.45, "pattern": "straight", "speed": 170.0 },
-        { "at_time": 8.0, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 180 }, "count": 8, "delay_between_spawn": 0.4, "pattern": "sine", "speed": 180.0 },
-        { "at_time": 14.0, "entity_type": "tank", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 520 }, "count": 4, "delay_between_spawn": 0.75, "pattern": "sine", "speed": 130.0 },
-        { "at_time": 21.0, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 320 }, "count": 7, "delay_between_spawn": 0.4, "pattern": "straight", "speed": 175.0 },
-        { "at_time": 33.0, "entity_type": "boss", "template_path": "templates/enemy/boss/boss_01.json", "start_position": { "x": 1200, "y": 450 }, "count": 1, "pattern": "static", "speed": 0.0 },
+        { "at_time": 2.0, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 200 }, "count": 3, "delay_between_spawn": 0.5, "pattern": "sine", "speed": 140.0, "amplitude": 50.0, "frequency": 1.5 },
+        { "at_time": 4.0, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 520 }, "count": 3, "delay_between_spawn": 0.5, "pattern": "sine", "speed": 140.0, "amplitude": 50.0, "frequency": 1.5 },
 
-        { "at_time": 49.0, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 240 }, "count": 6, "delay_between_spawn": 0.45, "pattern": "straight", "speed": 170.0 },
-        { "at_time": 55.0, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 160 }, "count": 8, "delay_between_spawn": 0.4, "pattern": "sine", "speed": 180.0 },
-        { "at_time": 62.0, "entity_type": "tank", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 520 }, "count": 4, "delay_between_spawn": 0.75, "pattern": "sine", "speed": 130.0 },
-        { "at_time": 70.0, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 300 }, "count": 7, "delay_between_spawn": 0.4, "pattern": "straight", "speed": 175.0 },
-        { "at_time": 82.0, "entity_type": "boss", "template_path": "templates/enemy/boss/boss_01.json", "start_position": { "x": 1200, "y": 450 }, "count": 1, "pattern": "static", "speed": 0.0 }
+        { "at_time": 8.0, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 100 }, "count": 4, "delay_between_spawn": 0.4, "pattern": "straight", "speed": 160.0 },
+        { "at_time": 9.0, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 620 }, "count": 4, "delay_between_spawn": 0.4, "pattern": "straight", "speed": 160.0 },
+        
+        { "at_time": 14.0, "entity_type": "tank", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 360 }, "count": 2, "delay_between_spawn": 1.0, "pattern": "sine", "speed": 100.0, "amplitude": 80.0, "frequency": 0.8 },
+        { "at_time": 16.0, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 250 }, "count": 5, "delay_between_spawn": 0.35, "pattern": "circle", "speed": 170.0 },
+
+        { "at_time": 22.0, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 180 }, "count": 6, "delay_between_spawn": 0.3, "pattern": "sine", "speed": 175.0, "amplitude": 60.0, "frequency": 2.0 },
+        { "at_time": 24.0, "entity_type": "tank", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 500 }, "count": 3, "delay_between_spawn": 0.8, "pattern": "straight", "speed": 110.0 },
+        
+        { "at_time": 30.0, "entity_type": "boss", "template_path": "templates/enemy/boss/boss_01.json", "start_position": { "x": 1200, "y": 360 }, "count": 1, "pattern": "sine", "speed": 30.0, "amplitude": 100.0, "frequency": 0.3 },
+
+        { "at_time": 42.0, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 300 }, "count": 4, "delay_between_spawn": 0.45, "pattern": "circle", "speed": 155.0 },
+        { "at_time": 45.0, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 420 }, "count": 4, "delay_between_spawn": 0.45, "pattern": "circle", "speed": 155.0 },
+
+        { "at_time": 50.0, "entity_type": "tank", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 200 }, "count": 2, "delay_between_spawn": 0.9, "pattern": "sine", "speed": 90.0, "amplitude": 40.0, "frequency": 1.0 },
+        { "at_time": 51.0, "entity_type": "tank", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 520 }, "count": 2, "delay_between_spawn": 0.9, "pattern": "sine", "speed": 90.0, "amplitude": 40.0, "frequency": 1.0 },
+        { "at_time": 53.0, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 360 }, "count": 8, "delay_between_spawn": 0.25, "pattern": "straight", "speed": 190.0 },
+
+        { "at_time": 60.0, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 150 }, "count": 3, "delay_between_spawn": 0.6, "pattern": "sine", "speed": 130.0, "amplitude": 30.0, "frequency": 2.0 },
+        { "at_time": 62.0, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 570 }, "count": 3, "delay_between_spawn": 0.6, "pattern": "sine", "speed": 130.0, "amplitude": 30.0, "frequency": 2.0 },
+
+        { "at_time": 70.0, "entity_type": "boss2", "template_path": "templates/enemy/boss/boss_02.json", "start_position": { "x": 1100, "y": 360 }, "count": 1, "pattern": "sine", "speed": 25.0, "amplitude": 150.0, "frequency": 0.2 },
+        
+        { "at_time": 75.0, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 100 }, "count": 4, "delay_between_spawn": 0.5, "pattern": "sine", "speed": 150.0, "amplitude": 40.0, "frequency": 1.8 },
+        { "at_time": 77.0, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 620 }, "count": 4, "delay_between_spawn": 0.5, "pattern": "sine", "speed": 150.0, "amplitude": 40.0, "frequency": 1.8 },
+
+        { "at_time": 82.0, "entity_type": "tank", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 250 }, "count": 2, "delay_between_spawn": 1.2, "pattern": "straight", "speed": 80.0 },
+        { "at_time": 84.0, "entity_type": "tank", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 470 }, "count": 2, "delay_between_spawn": 1.2, "pattern": "straight", "speed": 80.0 },
+        { "at_time": 86.0, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 360 }, "count": 6, "delay_between_spawn": 0.35, "pattern": "circle", "speed": 165.0 },
+
+        { "at_time": 92.0, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 180 }, "count": 5, "delay_between_spawn": 0.3, "pattern": "straight", "speed": 180.0 },
+        { "at_time": 93.0, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 540 }, "count": 5, "delay_between_spawn": 0.3, "pattern": "straight", "speed": 180.0 },
+        { "at_time": 95.0, "entity_type": "tank", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 360 }, "count": 3, "delay_between_spawn": 1.0, "pattern": "sine", "speed": 70.0, "amplitude": 100.0, "frequency": 0.5 },
+
+        { "at_time": 100.0, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 200 }, "count": 7, "delay_between_spawn": 0.28, "pattern": "sine", "speed": 185.0, "amplitude": 55.0, "frequency": 2.2 },
+        { "at_time": 104.0, "entity_type": "scout", "template_path": "templates/enemy/fighter_01.json", "start_position": { "x": 1280, "y": 520 }, "count": 7, "delay_between_spawn": 0.28, "pattern": "sine", "speed": 185.0, "amplitude": 55.0, "frequency": 2.2 }
     ],
     "powerup_triggers": [
-        { "at_time": 11.0, "type": "heal", "position": { "x": 900, "y": 300 }, "value": 25.0, "duration": 0.0 },
-        { "at_time": 18.0, "type": "speed", "position": { "x": 900, "y": 500 }, "value": 1.5, "duration": 5.0 },
-        { "at_time": 52.0, "type": "heal", "position": { "x": 900, "y": 300 }, "value": 25.0, "duration": 0.0 },
-        { "at_time": 68.0, "type": "speed", "position": { "x": 900, "y": 500 }, "value": 1.5, "duration": 5.0 }
+        { "at_time": 6.0, "type": "heal", "position": { "x": 950, "y": 360 }, "value": 20.0, "duration": 0.0 },
+        { "at_time": 12.0, "type": "double_fire", "position": { "x": 900, "y": 250 }, "value": 1.0, "duration": 20.0 },
+        
+        { "at_time": 26.0, "type": "heal", "position": { "x": 950, "y": 400 }, "value": 30.0, "duration": 0.0 },
+        { "at_time": 28.0, "type": "shield", "position": { "x": 900, "y": 300 }, "value": 1.0, "duration": 0.0 },
+        
+        { "at_time": 40.0, "type": "heal", "position": { "x": 950, "y": 360 }, "value": 40.0, "duration": 0.0 },
+        { "at_time": 48.0, "type": "double_fire", "position": { "x": 900, "y": 450 }, "value": 1.0, "duration": 25.0 },
+        
+        { "at_time": 58.0, "type": "shield", "position": { "x": 950, "y": 360 }, "value": 1.0, "duration": 0.0 },
+        { "at_time": 65.0, "type": "heal", "position": { "x": 900, "y": 280 }, "value": 50.0, "duration": 0.0 },
+        { "at_time": 68.0, "type": "double_fire", "position": { "x": 920, "y": 450 }, "value": 1.0, "duration": 30.0 },
+        
+        { "at_time": 80.0, "type": "heal", "position": { "x": 200, "y": 200 }, "value": 35.0, "duration": 0.0 },
+        { "at_time": 88.0, "type": "shield", "position": { "x": 200, "y": 520 }, "value": 1.0, "duration": 0.0 },
+        { "at_time": 96.0, "type": "heal", "position": { "x": 200, "y": 360 }, "value": 40.0, "duration": 0.0 },
+        { "at_time": 102.0, "type": "double_fire", "position": { "x": 200, "y": 450 }, "value": 1.0, "duration": 20.0 }
     ],
     "obstacle_triggers": []
 }

@@ -1,0 +1,114 @@
+{
+    "name": "Kraken",
+    "type": "BOSS",
+    "description": "A massive tentacled space creature with boomerang projectiles",
+    "components": {
+        "Transform": {
+            "position": { "x": 0, "y": 0 },
+            "rotation": 0,
+            "scale": { "x": 1.5, "y": 1.5 }
+        },
+        "Sprite": {
+            "texture": "r-typesheet35.gif",
+            "comment": "Spritesheet: 528x574, 2 columns x 4 rows = 8 frames",
+            
+            "rectLeft": 0,
+            "rectTop": 0,
+            "rectWidth": 264,
+            "rectHeight": 143,
+            
+            "zIndex": 5,
+
+            "opacity": 255,
+            "red": 255,
+            "green": 220,
+            "blue": 220,
+
+            "isAnimated": true,
+            "frameCount": 8,
+            "frameDuration": 0.12,
+            "columns": 2,
+            "rows": 4
+        },
+        "Health": {
+            "maxHealth": 800,
+            "currentHealth": 800
+        },
+        "Weapon": {
+            "type": "Boomerang",
+            "fireRate": 0.8,
+            "bulletSpeed": 350,
+            "bulletDamage": 25,
+            "isBoomerang": true,
+            "boomerangDistance": 500
+        },
+        "AIBehavior": {
+            "pattern": "Boss",
+            "detectionRange": 1000,
+            "aggressiveness": "High"
+        },
+        "HitBox": {
+            "shape": "rectangle",
+            "width": 350,
+            "height": 180,
+            "offsetX": 0,
+            "offsetY": 0
+        },
+        "MouvementPattern": {
+            "patternType": "SineWave",
+            "speed": 80.0,
+            "amplitude": 150,
+            "frequency": 0.2,
+            "verticalOnly": true
+        },
+        "Score": {
+            "killValue": 200
+        }
+    },
+    "spawnBehavior": {
+        "spawnPosition": "right",
+        "offsetX": 100,
+        "offsetY": 0,
+        "enterAnimation": "slideIn",
+        "enterDuration": 2.0
+    },
+    "phases": [
+        {
+            "name": "Phase 1",
+            "healthThreshold": 1.0,
+            "fireRate": 0.8,
+            "movementSpeed": 80,
+            "pattern": "SineWave"
+        },
+        {
+            "name": "Phase 2 - Enraged",
+            "healthThreshold": 0.5,
+            "fireRate": 0.5,
+            "movementSpeed": 120,
+            "pattern": "SineWave",
+            "spawnMinions": true,
+            "minionType": "scout",
+            "minionCount": 2,
+            "minionInterval": 5.0
+        },
+        {
+            "name": "Phase 3 - Desperate",
+            "healthThreshold": 0.2,
+            "fireRate": 0.3,
+            "movementSpeed": 150,
+            "pattern": "Erratic",
+            "spawnMinions": true,
+            "minionType": "tank",
+            "minionCount": 1,
+            "minionInterval": 8.0
+        }
+    ],
+    "loot": {
+        "guaranteedDrops": ["heal"],
+        "randomDrops": [
+            { "type": "shield", "chance": 0.5 },
+            { "type": "double_fire", "chance": 0.3 },
+            { "type": "speed", "chance": 0.4 }
+        ]
+    }
+}

@@ -26,6 +26,7 @@ namespace rtp::server
                 case net::EntityType::Scout: return 10;
                 case net::EntityType::Tank: return 25;
                 case net::EntityType::Boss: return 100;
+                case net::EntityType::Boss2: return 200;
                 case net::EntityType::Obstacle: return 5;
                 case net::EntityType::ObstacleSolid: return 15;
                 default: return 0;
@@ -216,6 +217,8 @@ namespace rtp::server
                        net::EntityType::Tank ||
                        type ==
                        net::EntityType::Boss ||
+                       type ==
+                       net::EntityType::Boss2 ||
                        type ==
                        net::EntityType::BossShield) {
                 if (transforms.has(entity) &&
@@ -576,15 +579,15 @@ namespace rtp::server
                     }
                 }
                 
-                if (!shieldBlocked) {
-                    // No shield - take damage
+                if (!shieldBlocked && !_invincibleMode) {
+                    // No shield and not invincible - take damage
                     health.currentHealth =
                         std::max(0, health.currentHealth - damage.amount);
                     sendPlayerHealth(broom.id, player, health);
                 }
                 markForDespawn(bullet, broom.id);
 
-                if (!shieldBlocked && health.currentHealth <= 0) {
+                if (!shieldBlocked && !_invincibleMode && health.currentHealth <= 0) {
                     auto room = _roomSystem.getRoom(broom.id);
                     if (room) {
                         const auto playersInRoom = room->getPlayers();

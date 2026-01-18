@@ -155,7 +155,9 @@ namespace rtp::net
         ChargedBullet = 11,
         PowerupDoubleFire = 12, // Yellow/White - Double fire for 20s
         PowerupShield = 13,      // Green - Shield (absorb 1 hit)
-        BossShield = 14
+        BossShield = 14,
+        Boss2 = 15,              // Kraken Alien Boss (r-typesheet35.gif)
+        Boss2Bullet = 16         // Kraken's boomerang projectile
     };
 
     //////////////////////////////////////////////////////////////////////////
