@@ -173,6 +173,7 @@ namespace rtp::client {
                 std::string bestPlayer;
                 int bestScore{0};
                 int playerScore{0};
+                bool isWin{false};
             };
 
             void setGameOverSummary(const GameOverSummary& summary);

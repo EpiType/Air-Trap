@@ -32,14 +32,16 @@ namespace rtp::client {
             const auto summary = _network.getGameOverSummary();
             const std::string bestName = summary.bestPlayer.empty() ? "Player" : summary.bestPlayer;
 
+            std::string title = summary.isWin ? "VICTORY" : "GAME OVER";
+            sf::Color titleColor = summary.isWin ? sf::Color(0, 255, 128) : sf::Color(255, 120, 120);
             _uiFactory.createText(
                 _uiRegistry,
                 {468.0f, 160.0f},
-                "GAME OVER",
+                title,
                 "assets/fonts/title.ttf",
                 64,
                 10,
-                {255, 120, 120}
+                titleColor
             );
 
             _uiFactory.createText(

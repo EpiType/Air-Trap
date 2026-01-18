@@ -410,6 +410,7 @@ namespace rtp::net
         char bestPlayer[32];            /**< Best player username */
         int32_t bestScore;              /**< Best score */
         int32_t playerScore;            /**< Receiver player score */
+        bool isWin;                     /**< True if victory, false if defeat */
     };
 
     /**

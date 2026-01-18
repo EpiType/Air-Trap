@@ -386,6 +386,7 @@ namespace rtp::client {
                 summary.bestPlayer = std::string(payload.bestPlayer);
                 summary.bestScore = payload.bestScore;
                 summary.playerScore = payload.playerScore;
+                summary.isWin = payload.isWin;
                 _gameOverSummary = summary;
                 _gameOverPending = true;
                 break;

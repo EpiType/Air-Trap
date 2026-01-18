@@ -88,9 +88,54 @@ namespace rtp::server {
             // --- Boss3Invincible logic (phase-driven) ---
             if (active.boss3Active && active.data.boss3Data.has_value()) {
                 const auto& boss3Data = active.data.boss3Data.value();
+                active.boss3Timer += dt;
+                if (active.boss3Timer >= 60.0f) {
+                    // WIN: 1 minute survived since boss spawn
+                    bool anyPlayerAlive = false;
+                    auto view = _registry.zipView<
+                        ecs::components::EntityType,
+                        ecs::components::RoomId,
+                        ecs::components::Health
+                    >();
+                    for (auto &&[type, roomComp, health] : view) {
+                        if (roomComp.id != roomId) continue;
+                        if (type.type == net::EntityType::Player && health.currentHealth > 0) {
+                            anyPlayerAlive = true;
+                        }
+                    }
+                    if (anyPlayerAlive) {
+                        // Victory: send GameOver with win
+                        auto room = _roomSystem.getRoom(roomId);
+                        if (room) {
+                            auto players = room->getPlayers();
+                            int32_t bestScore = 0;
+                            std::string bestPlayer;
+                            for (const auto& p : players) {
+                                if (p->getScore() > bestScore || bestPlayer.empty()) {
+                                    bestScore = p->getScore();
+                                    bestPlayer = p->getUsername();
+                                }
+                            }
+                            for (const auto& p : players) {
+                                rtp::net::Packet packet(rtp::net::OpCode::GameOver);
+                                rtp::net::GameOverPayload payload{};
+                                std::strncpy(payload.bestPlayer, bestPlayer.c_str(), sizeof(payload.bestPlayer) - 1);
+                                payload.bestPlayer[sizeof(payload.bestPlayer) - 1] = '\0';
+                                payload.bestScore = bestScore;
+                                payload.playerScore = p->getScore();
+                                payload.isWin = true;
+                                packet << payload;
+                                _networkSync.sendPacketToSession(p->getId(), packet, rtp::net::NetworkMode::TCP);
+                            }
+                            room->forceFinishGame();
+                        }
+                    }
+                    active.boss3Active = false;
+                    // TODO: supprimer l'entité boss3 du monde ici si tu veux qu'il disparaisse visuellement
+                    continue;
+                }
                 if (active.boss3PhaseIndex < static_cast<int>(boss3Data.phases.size())) {
                     const auto& phase = boss3Data.phases[active.boss3PhaseIndex];
-                    active.boss3Timer += dt;
                     active.boss3PhaseTimer += dt;
                     // Spawn enemies at intervals for this phase
                     if (active.boss3EnemiesSpawnedThisPhase < phase.spawnCount &&
@@ -125,49 +170,6 @@ namespace rtp::server {
                         active.boss3NextEnemySpawn = 0.0f;
                         active.boss3EnemiesSpawnedThisPhase = 0;
                     }
-                } else {
-                    // All phases complete: win condition
-                    bool anyPlayerAlive = false;
-                    auto view = _registry.zipView<
-                        ecs::components::EntityType,
-                        ecs::components::RoomId,
-                        ecs::components::Health
-                    >();
-                    for (auto &&[type, roomComp, health] : view) {
-                        if (roomComp.id != roomId) continue;
-                        if (type.type == net::EntityType::Player && health.currentHealth > 0) {
-                            anyPlayerAlive = true;
-                        }
-                    }
-                    if (anyPlayerAlive) {
-                        // Victory: send GameOver with win
-                        auto room = _roomSystem.getRoom(roomId);
-                        if (room) {
-                            auto players = room->getPlayers();
-                            int32_t bestScore = 0;
-                            std::string bestPlayer;
-                            for (const auto& p : players) {
-                                if (p->getScore() > bestScore || bestPlayer.empty()) {
-                                    bestScore = p->getScore();
-                                    bestPlayer = p->getUsername();
-                                }
-                            }
-                            for (const auto& p : players) {
-                                rtp::net::Packet packet(rtp::net::OpCode::GameOver);
-                                rtp::net::GameOverPayload payload{};
-                                std::strncpy(payload.bestPlayer, bestPlayer.c_str(), sizeof(payload.bestPlayer) - 1);
-                                payload.bestPlayer[sizeof(payload.bestPlayer) - 1] = '\0';
-                                payload.bestScore = bestScore;
-                                payload.playerScore = p->getScore();
-                                packet << payload;
-                                _networkSync.sendPacketToSession(p->getId(), packet, rtp::net::NetworkMode::TCP);
-                            }
-                            room->forceFinishGame();
-                        }
-                    }
-                    active.boss3Active = false;
-                    // TODO: supprimer l'entité boss3 du monde ici si tu veux qu'il disparaisse visuellement
-                    continue;
                 }
             }
 
@@ -216,6 +218,7 @@ namespace rtp::server {
                     payload.bestPlayer[sizeof(payload.bestPlayer) - 1] = '\0';
                     payload.bestScore = bestScore;
                     payload.playerScore = p->getScore();
+                    payload.isWin = false;
                     packet << payload;
                     _networkSync.sendPacketToSession(p->getId(), packet, rtp::net::NetworkMode::TCP);
                 }

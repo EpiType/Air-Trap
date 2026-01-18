@@ -505,6 +505,7 @@ namespace rtp::net
         *this << std::string_view(data.bestPlayer, strnlen(data.bestPlayer, sizeof(data.bestPlayer)));
         *this << data.bestScore;
         *this << data.playerScore;
+        *this << static_cast<uint8_t>(data.isWin ? 1 : 0);
         return *this;
     }
 
@@ -517,6 +518,9 @@ namespace rtp::net
         data.bestPlayer[sizeof(data.bestPlayer) - 1] = '\0';
         *this >> data.bestScore;
         *this >> data.playerScore;
+        uint8_t winFlag = 0;
+        *this >> winFlag;
+        data.isWin = (winFlag != 0);
         return *this;
     }
 
