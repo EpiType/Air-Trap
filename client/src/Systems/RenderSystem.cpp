@@ -83,59 +83,6 @@ void RenderSystem::update(float dt)
             _window.draw(box);
         }
     }
-
-    auto obstacleView = _r.zipView<
-        ecs::components::Transform,
-        ecs::components::BoundingBox,
-        ecs::components::EntityType
-    >();
-
-    for (auto&& [trans, box, type] : obstacleView) {
-        if (type.type != net::EntityType::Obstacle &&
-            type.type != net::EntityType::ObstacleSolid &&
-            type.type != net::EntityType::Boss &&
-            type.type != net::EntityType::Boss2 &&
-            type.type != net::EntityType::BossShield &&
-            type.type != net::EntityType::Enemy1 &&
-            type.type != net::EntityType::Tank) {
-            continue;
-        }
-
-        // Pour les ennemis, centrer la hitbox
-        float posX = trans.position.x;
-        float posY = trans.position.y;
-        
-        if (type.type == net::EntityType::Boss ||
-            type.type == net::EntityType::Boss2 ||
-            type.type == net::EntityType::BossShield ||
-            type.type == net::EntityType::Enemy1 ||
-            type.type == net::EntityType::Tank) {
-            // Centrer la hitbox autour de la position du sprite
-            posX = trans.position.x - box.width / 2.0f;
-            posY = trans.position.y - box.height / 2.0f;
-        }
-
-        sf::RectangleShape rect({box.width, box.height});
-        rect.setPosition({posX, posY});
-        if (type.type == net::EntityType::ObstacleSolid) {
-            rect.setFillColor(sf::Color(40, 40, 40, 220));
-            rect.setOutlineColor(sf::Color(90, 90, 90, 240));
-        } else if (type.type == net::EntityType::Boss) {
-            rect.setFillColor(sf::Color::Transparent);
-            rect.setOutlineColor(sf::Color(255, 0, 0, 240)); // Rouge pour le boss
-        } else if (type.type == net::EntityType::Boss2) {
-            rect.setFillColor(sf::Color::Transparent);
-            rect.setOutlineColor(sf::Color(200, 50, 200, 240)); // Magenta pour le Kraken
-        } else if (type.type == net::EntityType::BossShield) {
-            rect.setFillColor(sf::Color::Transparent);
-            rect.setOutlineColor(sf::Color(255, 165, 0, 240)); // Orange pour le shield
-        } else {
-            rect.setFillColor(sf::Color(60, 60, 60, 180));
-            rect.setOutlineColor(sf::Color(120, 120, 120, 220));
-        }
-        rect.setOutlineThickness(1.0f);
-        _window.draw(rect);
-    }
     
     auto shieldView = _r.zipView<
         ecs::components::Transform,
