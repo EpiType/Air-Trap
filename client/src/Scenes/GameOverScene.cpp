@@ -33,7 +33,7 @@ namespace rtp::client {
             const std::string bestName = summary.bestPlayer.empty() ? "Player" : summary.bestPlayer;
 
             std::string title = summary.isWin ? "VICTORY" : "GAME OVER";
-            sf::Color titleColor = summary.isWin ? sf::Color(0, 255, 128) : sf::Color(255, 120, 120);
+            graphics::color titleColor = summary.isWin ? graphics::color{0, 255, 128} : graphics::color{255, 120, 120};
             _uiFactory.createText(
                 _uiRegistry,
                 {468.0f, 160.0f},

@@ -103,32 +103,30 @@ namespace rtp::server {
                             anyPlayerAlive = true;
                         }
                     }
-                    if (anyPlayerAlive) {
-                        // Victory: send GameOver with win
-                        auto room = _roomSystem.getRoom(roomId);
-                        if (room) {
-                            auto players = room->getPlayers();
-                            int32_t bestScore = 0;
-                            std::string bestPlayer;
-                            for (const auto& p : players) {
-                                if (p->getScore() > bestScore || bestPlayer.empty()) {
-                                    bestScore = p->getScore();
-                                    bestPlayer = p->getUsername();
-                                }
+                    log::info("Level completed for room {}: players alive={}", roomId, anyPlayerAlive);
+                    auto room = _roomSystem.getRoom(roomId);
+                    if (room) {
+                        auto players = room->getPlayers();
+                        int32_t bestScore = 0;
+                        std::string bestPlayer;
+                        for (const auto& p : players) {
+                            if (p->getScore() > bestScore || bestPlayer.empty()) {
+                                bestScore = p->getScore();
+                                bestPlayer = p->getUsername();
                             }
-                            for (const auto& p : players) {
-                                rtp::net::Packet packet(rtp::net::OpCode::GameOver);
-                                rtp::net::GameOverPayload payload{};
-                                std::strncpy(payload.bestPlayer, bestPlayer.c_str(), sizeof(payload.bestPlayer) - 1);
-                                payload.bestPlayer[sizeof(payload.bestPlayer) - 1] = '\0';
-                                payload.bestScore = bestScore;
-                                payload.playerScore = p->getScore();
-                                payload.isWin = true;
-                                packet << payload;
-                                _networkSync.sendPacketToSession(p->getId(), packet, rtp::net::NetworkMode::TCP);
-                            }
-                            room->forceFinishGame();
                         }
+                        for (const auto& p : players) {
+                            rtp::net::Packet packet(rtp::net::OpCode::GameOver);
+                            rtp::net::GameOverPayload payload{};
+                            std::strncpy(payload.bestPlayer, bestPlayer.c_str(), sizeof(payload.bestPlayer) - 1);
+                            payload.bestPlayer[sizeof(payload.bestPlayer) - 1] = '\0';
+                            payload.bestScore = bestScore;
+                            payload.playerScore = p->getScore();
+                            payload.isWin = anyPlayerAlive; // true if at least one player survived
+                            packet << payload;
+                            _networkSync.sendPacketToSession(p->getId(), packet, rtp::net::NetworkMode::TCP);
+                        }
+                        room->forceFinishGame();
                     }
                     active.boss3Active = false;
                     // TODO: supprimer l'entité boss3 du monde ici si tu veux qu'il disparaisse visuellement
