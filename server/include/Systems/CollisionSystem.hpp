@@ -49,6 +49,18 @@ class CollisionSystem : public ecs::ISystem {
          */
         void update(float dt) override;
 
+        /**
+         * @brief Set invincibility mode for all players
+         * @param enabled Whether invincibility is enabled
+         */
+        void setInvincible(bool enabled) { _invincibleMode = enabled; }
+
+        /**
+         * @brief Check if invincibility mode is enabled
+         * @return true if invincibility is enabled
+         */
+        bool isInvincible() const { return _invincibleMode; }
+
     private:
         /**
          * @brief Check if two entities overlap based on their transforms and bounding boxes
@@ -82,6 +94,7 @@ class CollisionSystem : public ecs::ISystem {
         ecs::Registry& _registry;      /**< Reference to the ECS registry */
         RoomSystem& _roomSystem;            /**< Reference to the RoomSystem */
         NetworkSyncSystem& _networkSync;    /**< Reference to the NetworkSyncSystem */
+        bool _invincibleMode = false;       /**< Debug: players are invincible */
 };
 
 }  // namespace rtp::server

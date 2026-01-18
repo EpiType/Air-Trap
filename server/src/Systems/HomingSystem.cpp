@@ -51,7 +51,10 @@ namespace rtp::server
                 // skip players and non-enemies
                 if (otype.type == net::EntityType::Player)
                     continue;
-                if (otype.type != net::EntityType::Scout && otype.type != net::EntityType::Tank && otype.type != net::EntityType::Boss)
+                if (otype.type != net::EntityType::Scout && 
+                    otype.type != net::EntityType::Tank && 
+                    otype.type != net::EntityType::Boss &&
+                    otype.type != net::EntityType::Boss2)
                     continue;
 
                 const float dx = otf.position.x - tf.position.x;

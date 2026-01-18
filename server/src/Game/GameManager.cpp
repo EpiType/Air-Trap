@@ -558,6 +558,7 @@ namespace rtp::server
         if (cmd == "/help") {
             sendChatToSession(player->getId(), "Commands: /help, /kick <name>, /ban <name>, /mute <name>,");
             sendChatToSession(player->getId(), "/stop, /run, /speed <float>, /debug <true|false>");
+            sendChatToSession(player->getId(), "/debug enables invincibility + hitbox display");
             sendChatToSession(player->getId(), "Examples: /speed 0.5 | /debug true | /kick player1");
             return true;
         }
@@ -595,6 +596,10 @@ namespace rtp::server
                 return true;
             }
             const bool enabled = (v == "true");
+            
+            // Enable invincibility mode in CollisionSystem
+            _collisionSystem->setInvincible(enabled);
+            
             net::Packet packet(net::OpCode::DebugModeUpdate);
             net::DebugModePayload payload{ static_cast<uint8_t>(enabled ? 1 : 0) };
             packet << payload;
@@ -602,7 +607,7 @@ namespace rtp::server
             for (const auto& p : players) {
                 _networkManager.sendPacket(p->getId(), packet, net::NetworkMode::TCP);
             }
-            sendSystemMessageToRoom(roomId, std::string("Debug mode ") + (enabled ? "enabled" : "disabled"));
+            sendSystemMessageToRoom(roomId, std::string("Debug mode ") + (enabled ? "enabled (invincibility ON)" : "disabled (invincibility OFF)"));
             return true;
         }
 

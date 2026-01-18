@@ -408,6 +408,31 @@ namespace rtp::client
             1.0f,        {-1.0f, 0.0f},
             {3.0f,  3.0f}
         };
+        // Kraken Alien Boss (r-typesheet35.gif) - 528x574 spritesheet, 2 cols x 4 rows = 8 frames
+        // Each frame: 264x143 (approx)
+        static constexpr SpriteAnimDef k_rt35_boss2{
+            "boss2_kraken",   "assets/sprites/r-typesheet35.gif",
+            0,          0,
+            264,        143,
+            5,          255,         200, 200,  // Slight red tint for menacing look
+            true,       264,
+            143,        0,
+            0,          8,
+            0.5f,       {-1.0f, 0.0f},
+            {1.5f,  1.5f}  // Large scale for intimidating boss
+        };
+        // Kraken Boomerang projectile (uses a menacing tentacle-like look)
+        static constexpr SpriteAnimDef k_rt35_boss2_bullet{
+            "boss2_bullet",   "assets/sprites/r-typesheet1.gif",
+            215,        85,
+            18,         12,
+            5,          255,         100, 100,  // Red tint for enemy projectile
+            true,       18,
+            12,         215,
+            85,         3,
+            5.0f,       {-1.0f, 0.0f},
+            {2.0f,  2.0f}
+        };
 
     static EntityTemplate createParrallaxLvl1_1()
     {
@@ -650,6 +675,20 @@ namespace rtp::client
         static EntityTemplate createBossShield(const Vec2f &initialPos)
         {
             return makeFromDef(initialPos, k_rt39_2);
+        }
+
+        static EntityTemplate createBoss2Kraken(const Vec2f &initialPos)
+        {
+            auto t = makeFromDef(initialPos, k_rt35_boss2);
+            t.tag = "boss2_kraken";
+            return t;
+        }
+
+        static EntityTemplate createBoss2Bullet(const Vec2f &initialPos)
+        {
+            auto t = makeFromDef(initialPos, k_rt35_boss2_bullet);
+            t.tag = "boss2_bullet";
+            return t;
         }
     };
 
