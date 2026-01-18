@@ -201,7 +201,9 @@ namespace rtp::server
         if (type == net::EntityType::Tank) {
             maxHealth = 80;
         } else if (type == net::EntityType::Boss) {
-            maxHealth = 200;
+            maxHealth = 500;
+        } else if (type == net::EntityType::BossShield) {
+            maxHealth = 150;
         }
         _registry.add<ecs::components::Health>(
             entity, ecs::components::Health{maxHealth, maxHealth});
@@ -229,8 +231,19 @@ namespace rtp::server
         enemyWeapon.damage = 0;
         _registry.add<ecs::components::SimpleWeapon>(entity, enemyWeapon);
 
+        float bboxWidth = 30.0f;
+        float bboxHeight = 18.0f;
+
+        if (type == net::EntityType::Boss) {
+            bboxWidth = 198.0f;
+            bboxHeight = 198.0f;
+        } else if (type == net::EntityType::BossShield) {
+            bboxWidth = 90.0f;
+            bboxHeight = 99.0f;
+        }
+
         _registry.add<ecs::components::BoundingBox>(
-            entity, ecs::components::BoundingBox{30.0f, 18.0f});
+            entity, ecs::components::BoundingBox{bboxWidth, bboxHeight});
 
         // _registry.add<ecs::components::IABehaviorComponent>(
         //     entity,

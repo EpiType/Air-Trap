@@ -102,6 +102,12 @@ namespace rtp::client
             } else if (sprite.rectLeft == 128 && sprite.rectTop == 0) {
                 entityKey = "power_up_shield";
             }
+        } else if (sprite.texturePath.find("r-typesheet39.gif") != std::string::npos) {
+            if (sprite.rectLeft == 33 && sprite.rectTop == 1) {
+                entityKey = "boss_ship";
+            } else if (sprite.rectLeft == 1 && sprite.rectTop == 72) {
+                entityKey = "boss_shield";
+            }
         }
 
         if (!entityKey.empty()) {

@@ -37,7 +37,8 @@ namespace rtp::server
         for (auto &&[tf, type, roomId, weapon] : view) {
             if (type.type != net::EntityType::Scout &&
                 type.type != net::EntityType::Tank &&
-                type.type != net::EntityType::Boss) {
+                type.type != net::EntityType::Boss &&
+                type.type != net::EntityType::BossShield) {
                 continue;
             }
 

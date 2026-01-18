@@ -154,7 +154,8 @@ namespace rtp::net
         ObstacleSolid = 10,
         ChargedBullet = 11,
         PowerupDoubleFire = 12, // Yellow/White - Double fire for 20s
-        PowerupShield = 13      // Green - Shield (absorb 1 hit)
+        PowerupShield = 13,      // Green - Shield (absorb 1 hit)
+        BossShield = 14
     };
 
     //////////////////////////////////////////////////////////////////////////
