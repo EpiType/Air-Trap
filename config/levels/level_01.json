@@ -7,7 +7,7 @@
             "x": 100,
             "y": 450
         },
-        "tileset_path": "common/assets/levels/geometry/level_01_tiles.json"
+        "tileset_path": "config/levels/geometry/level_01_tiles.json"
     },
     "theme_data": {
         "background_texture": "assets/textures/backgrounds/nebula_01.png",

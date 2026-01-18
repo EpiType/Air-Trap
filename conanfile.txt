@@ -2,7 +2,6 @@
 asio/1.28.0
 sfml/3.0.2
 gtest/1.14.0
-nlohmann_json/3.11.3
 
 [generators]
 CMakeDeps

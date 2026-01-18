@@ -18,8 +18,11 @@
     #include <SFML/Graphics.hpp>
     #include <memory>
     #include <functional>
+    #include <vector>
 
 namespace rtp::client {
+    class EntityBuilder;
+
     namespace scenes {
         /**
          * @class MenuScene
@@ -40,10 +43,12 @@ namespace rtp::client {
                  * @param window Reference to the SFML render window
                  */
                 MenuScene(ecs::Registry& UiRegistry,
+                          ecs::Registry& worldRegistry,
                           Settings& settings,
                           TranslationManager& translationManager,
                           NetworkSyncSystem& network,
                           graphics::UiFactory& uiFactory,
+                          EntityBuilder& worldEntityBuilder,
                           std::function<void(GameState)> changeState);
 
                 /**
@@ -74,13 +79,32 @@ namespace rtp::client {
                 void update(float dt) override;
             
             private:
+                struct MenuEnemy {
+                    ecs::Entity entity;
+                    float speed;
+                    float baseY;
+                    float amplitude;
+                    float frequency;
+                    float phase;
+                    float resetX;
+                };
+
                 ecs::Registry& _uiRegistry;                 /**< Reference to the ECS registry */
+                ecs::Registry& _worldRegistry;              /**< Reference to the world ECS registry */
                 Settings& _settings;                        /**< Reference to the application settings */
                 TranslationManager& _translationManager;    /**< Reference to the translation manager */
                 NetworkSyncSystem& _network;                /**< Reference to the client network */
                 graphics::UiFactory& _uiFactory;            /**< UI Factory for creating UI components */
+                EntityBuilder& _worldEntityBuilder;         /**< World entity builder for menu visuals */
                 ChangeStateFn _changeState;                 /**< Function to change the game state */
                 ecs::Entity _menuMusicEntity;               /**< Entity for menu background music */
+                std::vector<ecs::Entity> _menuWorldEntities; /**< Menu background entities */
+                std::vector<MenuEnemy> _menuEnemies;        /**< Moving enemies for menu decor */
+                float _menuTime{0.0f};                      /**< Menu animation timer */
+                ecs::Entity _weaponNameText;                /**< Entity for weapon name display */
+                ecs::Entity _weaponStatsText;               /**< Entity for weapon stats display */
+
+                void updateWeaponDisplay();                 /**< Update weapon name and stats texts */
         };
     } // namespace scenes
 } // namespace rtp::client

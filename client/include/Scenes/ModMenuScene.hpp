@@ -19,7 +19,6 @@
     #include <functional>
     #include <filesystem>
     #include <map>
-    #include <nlohmann/json.hpp>
 
 namespace rtp::client {
     namespace scenes {
@@ -114,7 +113,7 @@ namespace rtp::client {
                 std::map<std::string, sf::Texture> _loadedTextures; /**< Cache of loaded textures */
                 
                 // Custom sprite mappings: entity key -> custom sprite path
-                std::map<std::string, std::string> _customSpriteMappings;
+                std::unordered_map<std::string, std::string> _customSpriteMappings;
 
                 /**
                  * @brief Initialize the custom sprites directory

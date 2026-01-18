@@ -561,7 +561,10 @@ namespace rtp::client
 
         static EntityTemplate shot_5(const Vec2f &initialPos)
         {
-            return makeFromDef(initialPos, k_rt1_8);
+            auto t = makeFromDef(initialPos, k_rt1_8);
+            // Default shot_5 sprites point left; flip horizontally so tip faces right
+            t.scale.x = -std::abs(t.scale.x);
+            return t;
         }
 
         static EntityTemplate effect_2(const Vec2f &initialPos)

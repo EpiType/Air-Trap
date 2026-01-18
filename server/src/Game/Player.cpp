@@ -107,4 +107,16 @@ namespace rtp::server
         std::lock_guard lock(_mutex);
         return _isMuted;
     }
+
+    void Player::setWeaponKind(rtp::ecs::components::WeaponKind weapon)
+    {
+        std::lock_guard lock(_mutex);
+        _weaponKind = weapon;
+    }
+
+    rtp::ecs::components::WeaponKind Player::getWeaponKind() const
+    {
+        std::lock_guard lock(_mutex);
+        return _weaponKind;
+    }
 } // namespace rtp::server

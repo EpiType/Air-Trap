@@ -37,6 +37,8 @@ namespace rtp::server
         _registry.subscribe<ecs::components::MovementSpeed>();
         _registry.subscribe<ecs::components::Shield>();
         _registry.subscribe<ecs::components::DoubleFire>();
+        _registry.subscribe<ecs::components::Homing>();
+        _registry.subscribe<ecs::components::Boomerang>();
 
         _networkSyncSystem = std::make_unique<NetworkSyncSystem>(_networkManager, _registry);
         _movementSystem = std::make_unique<MovementSystem>(_registry);
@@ -50,12 +52,14 @@ namespace rtp::server
         _levelSystem = std::make_unique<LevelSystem>(_registry, *_entitySystem, *_roomSystem, *_networkSyncSystem);
         _collisionSystem = std::make_unique<CollisionSystem>(_registry, *_roomSystem, *_networkSyncSystem);
         _enemyShootSystem = std::make_unique<EnemyShootSystem>(_registry, *_roomSystem, *_networkSyncSystem);
+        _homingSystem = std::make_unique<HomingSystem>(_registry);
+        _boomerangSystem = std::make_unique<BoomerangSystem>(_registry);
         _bulletCleanupSystem = std::make_unique<BulletCleanupSystem>(_registry, *_roomSystem, *_networkSyncSystem);
 
-        _levelSystem->registerLevelPath(1, "common/assets/levels/level_01.json");
-        _levelSystem->registerLevelPath(2, "common/assets/levels/level_02.json");
-        _levelSystem->registerLevelPath(3, "common/assets/levels/level_03.json");
-        _levelSystem->registerLevelPath(4, "common/assets/levels/level_04.json");
+        _levelSystem->registerLevelPath(1, "config/levels/level_01.json");
+        _levelSystem->registerLevelPath(2, "config/levels/level_02.json");
+        _levelSystem->registerLevelPath(3, "config/levels/level_03.json");
+        _levelSystem->registerLevelPath(4, "config/levels/level_04.json");
 
         _roomSystem->setOnRoomStarted(
             [this](uint32_t roomId) {
@@ -117,6 +121,8 @@ namespace rtp::server
                 _playerMouvementSystem->update(scaledDt);
                 _playerShootSystem->update(scaledDt);
                 _enemyShootSystem->update(scaledDt);
+                _homingSystem->update(scaledDt);
+                _boomerangSystem->update(scaledDt);
                 _movementSystem->update(scaledDt);
                 _collisionSystem->update(scaledDt);
                 _bulletCleanupSystem->update(scaledDt);
@@ -174,6 +180,10 @@ namespace rtp::server
                 case SetReady:
                     handleSetReady(event.sessionId, event.packet);
                     break;
+                case UpdateSelectedWeapon: {
+                    handleUpdateSelectedWeapon(event.sessionId, event.packet);
+                    break;
+                }
                 case RoomChatSended:
                     handleRoomChatSended(event.sessionId, event.packet);
                     break;
@@ -248,13 +258,17 @@ namespace rtp::server
     void GameManager::handlePlayerLoginAuth(uint32_t sessionId, const net::Packet &packet)
     {
         log::info("Handling authentication for Session ID {}", sessionId);
-        auto res = _authSystem->handleLoginRequest(sessionId, packet);
-        if (!res.first) return;
+        auto [success, username, weaponKind] = _authSystem->handleLoginRequest(sessionId, packet);
+        if (!success) return;
 
         PlayerPtr player;
         {
             std::lock_guard lock(_mutex);
-            player = _playerSystem->createPlayer(sessionId, res.second);
+            player = _playerSystem->createPlayer(sessionId, username);
+            if (player) {
+                player->setWeaponKind(static_cast<rtp::ecs::components::WeaponKind>(weaponKind));
+                log::info("Player {} weapon set to {}", sessionId, static_cast<int>(weaponKind));
+            }
         }
 
         if (_roomSystem->joinLobby(player)) {
@@ -312,7 +326,7 @@ namespace rtp::server
                 static_cast<uint8_t>(payload.maxPlayers),
                 payload.difficulty,
                 payload.speed,
-                Room::RoomType::Public,
+                static_cast<Room::RoomType>(payload.roomType),
                 payload.levelId,
                 payload.seed,
                 payload.duration
@@ -321,6 +335,12 @@ namespace rtp::server
         }
         if (success) {
             success = _roomSystem->joinRoom(player, newId, false) ? 1 : 0;
+            
+            if (success && payload.roomType == static_cast<uint8_t>(net::roomType::Private) && 
+                payload.maxPlayers == 1) {
+                player->setReady(true);
+                log::info("Auto-ready player {} for solo game", sessionId);
+            }
         }
         net::Packet response(net::OpCode::CreateRoom);
         response << success;
@@ -382,6 +402,34 @@ namespace rtp::server
         log::info("Handle Set Ready request from Session ID {}: isReady={}",
                   sessionId, payload.isReady);
         _playerSystem->getPlayer(sessionId)->setReady(payload.isReady != 0);
+    }
+
+    void GameManager::handleUpdateSelectedWeapon(uint32_t sessionId, const net::Packet &packet)
+    {
+        net::Packet tmp = packet;
+        uint8_t kind = 0;
+        try {
+            tmp >> kind;
+        } catch (...) {
+            log::warning("Failed to parse UpdateSelectedWeapon packet from session {}", sessionId);
+            return;
+        }
+
+        std::lock_guard lock(_mutex);
+        PlayerPtr player = _playerSystem->getPlayer(sessionId);
+        if (!player) {
+            log::warning("UpdateSelectedWeapon: player for session {} not found", sessionId);
+            return;
+        }
+
+        player->setWeaponKind(static_cast<rtp::ecs::components::WeaponKind>(kind));
+        log::info("Player {} updated weapon to {}", sessionId, static_cast<int>(kind));
+
+        uint32_t entityId = player->getEntityId();
+        if (entityId != 0) {
+            ecs::Entity e(entityId, 0);
+            _entitySystem->applyWeaponToEntity(e, static_cast<rtp::ecs::components::WeaponKind>(kind));
+        }
     }
 
     void GameManager::handleRoomChatSended(uint32_t sessionId, const net::Packet &packet)
@@ -636,6 +684,14 @@ namespace rtp::server
             sizeX = box.width;
             sizeY = box.height;
         }
+        uint8_t weaponKind = 0;
+        if (auto weaponRes = _registry.get<ecs::components::SimpleWeapon>()) {
+            auto &weapons = weaponRes->get();
+            if (weapons.has(entity)) {
+                weaponKind = static_cast<uint8_t>(weapons[entity].kind);
+            }
+        }
+
         net::Packet packet(net::OpCode::EntitySpawn);
         net::EntitySpawnPayload payload = {
             net.id,
@@ -643,7 +699,8 @@ namespace rtp::server
             transform.position.x,
             transform.position.y,
             sizeX,
-            sizeY
+            sizeY,
+            weaponKind
         };
         packet << payload;
         _networkSyncSystem->sendPacketToSessions(sessions, packet, net::NetworkMode::TCP);
@@ -685,6 +742,15 @@ namespace rtp::server
                 }
             }
 
+            uint8_t weaponKind = 0;
+            if (auto weaponRes = _registry.get<ecs::components::SimpleWeapon>()) {
+                auto &weapons = weaponRes->get();
+                auto it2 = netToEntity.find(net.id);
+                if (it2 != netToEntity.end() && weapons.has(it2->second)) {
+                    weaponKind = static_cast<uint8_t>(weapons[it2->second].kind);
+                }
+            }
+
             net::Packet packet(net::OpCode::EntitySpawn);
             net::EntitySpawnPayload payload = {
                 net.id,
@@ -692,7 +758,8 @@ namespace rtp::server
                 tf.position.x,
                 tf.position.y,
                 sizeX,
-                sizeY
+                sizeY,
+                weaponKind
             };
             packet << payload;
             _networkSyncSystem->sendPacketToSession(sessionId, packet, net::NetworkMode::TCP);

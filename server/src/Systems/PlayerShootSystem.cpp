@@ -10,6 +10,11 @@
 #include "Systems/PlayerShootSystem.hpp"
 #include "RType/Logger.hpp"
 #include "RType/ECS/Components/Powerup.hpp"
+#include "RType/ECS/Components/Health.hpp"
+#include "RType/ECS/Components/BoundingBox.hpp"
+#include "RType/ECS/Components/Homing.hpp"
+#include "RType/ECS/Components/Boomerang.hpp"
+#include <cmath>
 
 #include <algorithm>
 #include <tuple>
@@ -18,7 +23,6 @@
 
 namespace rtp::server
 {
-    //////////////////////////////////////////////////////////////////////////
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
@@ -31,13 +35,15 @@ namespace rtp::server
 
     void PlayerShootSystem::update(float dt)
     {
-        std::vector<std::tuple<ecs::components::Transform,
-                              ecs::components::RoomId,
-                              bool>> pendingSpawns; // Added bool for doubleFire
-        std::vector<std::tuple<ecs::components::Transform,
-                               ecs::components::RoomId,
-                               float,
-                               bool>> pendingChargedSpawns; // Added bool for doubleFire
+        std::vector<std::tuple<ecs::Entity,
+                      ecs::components::Transform,
+                      ecs::components::RoomId,
+                      bool>> pendingSpawns; // owner, transform, roomId, doubleFire
+        std::vector<std::tuple<ecs::Entity,
+                       ecs::components::Transform,
+                       ecs::components::RoomId,
+                       float,
+                       bool>> pendingChargedSpawns; // owner, transform, roomId, ratio, doubleFire
 
         constexpr float kChargeMax = 2.0f;
         constexpr float kChargeMin = 0.2f;
@@ -72,6 +78,8 @@ namespace rtp::server
         auto& weapons = weaponRes->get();
         auto& netIds = netIdRes->get();
         auto& ammos = ammoRes->get();
+        auto healthRes = _registry.get<ecs::components::Health>();
+        auto boxRes = _registry.get<ecs::components::BoundingBox>();
         
         for (size_t i = 0; i < transforms.size(); ++i) {
             ecs::Entity entity{static_cast<uint32_t>(i), 0};
@@ -106,6 +114,143 @@ namespace rtp::server
             }
 
             weapon.lastShotTime += dt;
+
+            // Update beam cooldown timer
+            if (weapon.beamCooldownRemaining > 0.0f) {
+                weapon.beamCooldownRemaining = std::max(0.0f, weapon.beamCooldownRemaining - dt);
+            }
+
+            // Beam active handling: apply periodic damage along a horizontal line in front of the player
+            if (weapon.kind == ecs::components::WeaponKind::Beam && weapon.beamActive) {
+                weapon.beamActiveTime -= dt;
+                // accumulate tick
+                auto &acc = _beamTickTimers[static_cast<uint32_t>(entity.index())];
+                acc += dt;
+                constexpr float kBeamTick = 0.2f; // apply damage every 0.2s
+                    if (acc >= kBeamTick) {
+                    acc -= kBeamTick;
+                    // apply damage to entities in same room whose x is in front of player
+                    if (healthRes && typeRes && transformRes && roomIdRes) {
+                        auto &healths = healthRes->get();
+                        auto *boxes = boxRes ? &boxRes->get() : nullptr;
+                        auto room = _roomSystem.getRoom(roomId.id);
+                        if (room) {
+                            const auto players = room->getPlayers();
+                            std::vector<uint32_t> sessions;
+                            sessions.reserve(players.size());
+                            for (const auto& p : players) sessions.push_back(p->getId());
+                            for (auto target : healths.entities()) {
+                                ecs::Entity t = target;
+                                if (!transforms.has(t) || !types.has(t) || !roomIds.has(t) || !healths.has(t))
+                                    continue;
+                                if (roomIds[t].id != roomId.id)
+                                    continue;
+                                if (types[t].type == net::EntityType::Player)
+                                    continue;
+                                // Only hit entities located in front of player (x greater)
+                                const auto &ttf = transforms[t];
+                                if (ttf.position.x <= tf.position.x)
+                                    continue;
+                                // Y proximity check: support single or double beam offsets
+                                std::vector<float> centers;
+                                centers.push_back(tf.position.y);
+                                if (weapon.beamWasDouble) {
+                                    centers.clear();
+                                    centers.push_back(tf.position.y - 4.0f);
+                                    centers.push_back(tf.position.y + 4.0f);
+                                }
+
+                                float halfH = 8.0f;
+                                if (boxes && boxes->has(t)) {
+                                    halfH = (*boxes)[t].height * 0.5f;
+                                }
+
+                                // For each beam center, if within vertical range apply damage
+                                for (float centerY : centers) {
+                                    if (std::fabs(ttf.position.y - centerY) > halfH + 4.0f)
+                                        continue;
+
+                                    // Apply damage for this beam
+                                    auto &ht = healths[t];
+                                    ht.currentHealth -= weapon.damage;
+                                    log::info("Beam: applied {} damage to entity {} (hp left={})", weapon.damage, t.index(), ht.currentHealth);
+                                    if (ht.currentHealth <= 0) {
+                                        // 30% chance to drop a power-up (beam kills should drop too)
+                                        const int dropChance = std::rand() % 100;
+                                        if (dropChance < 30) {
+                                            // spawn a powerup using this system's debug spawner
+                                            spawnDebugPowerup(transforms[t].position, roomId.id, dropChance);
+                                        }
+
+                                        // send death packet to players in room
+                                        net::Packet dpacket(net::OpCode::EntityDeath);
+                                        net::EntityDeathPayload dp{};
+                                        if (auto netRes = _registry.get<ecs::components::NetworkId>()) {
+                                            auto &nets = netRes->get();
+                                            if (nets.has(t)) dp.netId = nets[t].id;
+                                        }
+                                        dp.type = static_cast<uint8_t>(types[t].type);
+                                        dp.position = transforms[t].position;
+                                        dpacket << dp;
+                                        _networkSync.sendPacketToSessions(sessions, dpacket, net::NetworkMode::TCP);
+                                        _registry.kill(t);
+                                        break; // entity dead, stop processing centers
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                // If beam duration ended, stop beam and start cooldown
+                if (weapon.beamActiveTime <= 0.0f) {
+                    weapon.beamActive = false;
+                    weapon.beamCooldownRemaining = weapon.beamCooldown;
+                    _beamTickTimers.erase(static_cast<uint32_t>(entity.index()));
+                    // Notify clients in the room about beam end (visual removal)
+                    auto roomForEnd = _roomSystem.getRoom(roomId.id);
+                    if (roomForEnd) {
+                        const auto playersForEnd = roomForEnd->getPlayers();
+                        std::vector<uint32_t> sessionsForEnd;
+                        sessionsForEnd.reserve(playersForEnd.size());
+                        for (const auto &p : playersForEnd) sessionsForEnd.push_back(p->getId());
+
+                        // send beam end notifications. If double fire, send two end packets
+                        if (weapon.beamWasDouble) {
+                            net::Packet b1(net::OpCode::BeamState);
+                            net::BeamStatePayload bp1{};
+                            bp1.ownerNetId = net.id;
+                            bp1.active = 0;
+                            bp1.timeRemaining = 0.0f;
+                            bp1.length = 0.0f;
+                            bp1.offsetY = -4.0f;
+                            b1 << bp1;
+                            _networkSync.sendPacketToSessions(sessionsForEnd, b1, net::NetworkMode::TCP);
+
+                            net::Packet b2(net::OpCode::BeamState);
+                            net::BeamStatePayload bp2{};
+                            bp2.ownerNetId = net.id;
+                            bp2.active = 0;
+                            bp2.timeRemaining = 0.0f;
+                            bp2.length = 0.0f;
+                            bp2.offsetY = 4.0f;
+                            b2 << bp2;
+                            _networkSync.sendPacketToSessions(sessionsForEnd, b2, net::NetworkMode::TCP);
+                        } else {
+                            net::Packet bpacket(net::OpCode::BeamState);
+                            net::BeamStatePayload bp{};
+                            bp.ownerNetId = net.id;
+                            bp.active = 0;
+                            bp.timeRemaining = 0.0f;
+                            bp.length = 0.0f;
+                            bp.offsetY = 0.0f;
+                            bpacket << bp;
+                            _networkSync.sendPacketToSessions(sessionsForEnd, bpacket, net::NetworkMode::TCP);
+                        }
+                    }
+                    // reset captured double-fire flag after beam ended
+                    weapon.beamWasDouble = false;
+                }
+            }
             
             using Bits = ecs::components::server::InputComponent::InputBits;
 
@@ -127,7 +272,9 @@ namespace rtp::server
                 log::info("[DEBUG] Spawned all 3 powerup types at player position");
             }
             
-            if (ammo.isReloading) {
+            // Progress reload only when beam is not active (pause reload during beam)
+            // Also do not progress reload if the equipped weapon is a boomerang
+            if (ammo.isReloading && !weapon.beamActive && !weapon.isBoomerang) {
                 ammo.reloadTimer += dt;
                 if (ammo.reloadTimer >= ammo.reloadCooldown) {
                     ammo.current = ammo.max;
@@ -150,7 +297,9 @@ namespace rtp::server
                 log::info("[DEBUG] Spawned powerup at player position (roll: {})", debugRoll);
             }
 
-            if ((input.mask & Bits::Reload) && !ammo.isReloading && ammo.current < ammo.max) {
+            // Do not allow starting a reload while beam is active
+            // Also disallow starting a reload if the current weapon is a boomerang
+            if ((input.mask & Bits::Reload) && !ammo.isReloading && ammo.current < ammo.max && !weapon.beamActive && !weapon.isBoomerang) {
                 ammo.isReloading = true;
                 ammo.reloadTimer = 0.0f;
                 ammo.dirty = true;
@@ -158,6 +307,83 @@ namespace rtp::server
 
             const bool shootPressed = (input.mask & Bits::Shoot);
             const bool shootWasPressed = (input.lastMask & Bits::Shoot);
+
+            // Beam activation on press: if player has Beam weapon, not in cooldown and has ammo
+            if (weapon.kind == ecs::components::WeaponKind::Beam && shootPressed && !shootWasPressed) {
+                if (weapon.beamCooldownRemaining <= 0.0f && !weapon.beamActive && ammo.current > 0) {
+                    weapon.beamActive = true;
+                    weapon.beamActiveTime = weapon.beamDuration;
+                    // capture whether this beam instance was started with double-fire
+                    weapon.beamWasDouble = hasDoubleFire;
+                    // consume one ammo
+                    if (ammo.current > 0 && ammo.max > 0) {
+                        ammo.current = static_cast<uint16_t>(std::max<int>(0, static_cast<int>(ammo.current) - 1));
+                        ammo.dirty = true;
+                        sendAmmoUpdate(net.id, ammo);
+                    } else if (ammo.max < 0) {
+                        // infinite ammo case - do nothing
+                    } else if (ammo.max == 0) {
+                        // no ammo - cancel activation
+                        weapon.beamActive = false;
+                    }
+                    // Notify clients in the room about beam start (visual)
+                    {
+                        auto room = _roomSystem.getRoom(roomId.id);
+                        if (room) {
+                            const auto players = room->getPlayers();
+                            std::vector<uint32_t> sessions;
+                            sessions.reserve(players.size());
+                            for (const auto &p : players) sessions.push_back(p->getId());
+
+                            // send beam start(s). If double fire is active, send two beams with vertical offsets
+                            const float visualLength = 800.0f;
+                            if (weapon.beamWasDouble) {
+                                net::Packet bpacket1(net::OpCode::BeamState);
+                                net::BeamStatePayload bp1{};
+                                bp1.ownerNetId = net.id;
+                                bp1.active = 1;
+                                bp1.timeRemaining = weapon.beamActiveTime;
+                                bp1.length = visualLength;
+                                bp1.offsetY = -4.0f;
+                                bpacket1 << bp1;
+                                _networkSync.sendPacketToSessions(sessions, bpacket1, net::NetworkMode::TCP);
+
+                                net::Packet bpacket2(net::OpCode::BeamState);
+                                net::BeamStatePayload bp2{};
+                                bp2.ownerNetId = net.id;
+                                bp2.active = 1;
+                                bp2.timeRemaining = weapon.beamActiveTime;
+                                bp2.length = visualLength;
+                                bp2.offsetY = 4.0f;
+                                bpacket2 << bp2;
+                                _networkSync.sendPacketToSessions(sessions, bpacket2, net::NetworkMode::TCP);
+                            } else {
+                                net::Packet bpacket(net::OpCode::BeamState);
+                                net::BeamStatePayload bp{};
+                                bp.ownerNetId = net.id;
+                                bp.active = 1;
+                                bp.timeRemaining = weapon.beamActiveTime;
+                                bp.length = visualLength; // visual length in pixels (approx)
+                                bp.offsetY = 0.0f;
+                                bpacket << bp;
+                                _networkSync.sendPacketToSessions(sessions, bpacket, net::NetworkMode::TCP);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Prevent normal shooting while beam active or in beam cooldown
+            if (weapon.kind == ecs::components::WeaponKind::Beam && (weapon.beamActive || weapon.beamCooldownRemaining > 0.0f)) {
+                // still update input state and ammo reloads, skip normal shot logic
+                if (!shootPressed && shootWasPressed) input.chargeTime = 0.0f;
+                input.lastMask = input.mask;
+                if (ammo.dirty) {
+                    sendAmmoUpdate(net.id, ammo);
+                    ammo.dirty = false;
+                }
+                continue;
+            }
 
             if (ammo.isReloading || ammo.current == 0) {
                 input.chargeTime = 0.0f;
@@ -173,14 +399,14 @@ namespace rtp::server
                         ? (1.0f / weapon.fireRate)
                         : 0.0f;
 
-                    if (input.chargeTime >= kChargeMin) {
+                    if (input.chargeTime >= kChargeMin && weapon.kind != ecs::components::WeaponKind::Beam) {
                         const float ratio = std::clamp(input.chargeTime / kChargeMax, 0.0f, 1.0f);
-                        pendingChargedSpawns.emplace_back(tf, roomId, ratio, hasDoubleFire);
+                        pendingChargedSpawns.emplace_back(entity, tf, roomId, ratio, hasDoubleFire);
                         ammo.current -= 1;
                         ammo.dirty = true;
                         weapon.lastShotTime = 0.0f;
-                    } else if (weapon.lastShotTime >= fireInterval) {
-                        pendingSpawns.emplace_back(tf, roomId, hasDoubleFire);
+                    } else if (weapon.kind != ecs::components::WeaponKind::Beam && weapon.lastShotTime >= fireInterval) {
+                        pendingSpawns.emplace_back(entity, tf, roomId, hasDoubleFire);
                         ammo.current -= 1;
                         ammo.dirty = true;
                         weapon.lastShotTime = 0.0f;
@@ -201,12 +427,12 @@ namespace rtp::server
             }
         }
 
-        for (const auto& [tf, roomId, doubleFire] : pendingSpawns) {
-            spawnBullet(tf, roomId, doubleFire);
+        for (const auto& [owner, tf, roomId, doubleFire] : pendingSpawns) {
+            spawnBullet(owner, tf, roomId, doubleFire);
         }
 
-        for (const auto& [tf, roomId, ratio, doubleFire] : pendingChargedSpawns) {
-            spawnChargedBullet(tf, roomId, ratio, doubleFire);
+        for (const auto& [owner, tf, roomId, ratio, doubleFire] : pendingChargedSpawns) {
+            spawnChargedBullet(owner, tf, roomId, ratio, doubleFire);
         }
     }
 
@@ -215,6 +441,7 @@ namespace rtp::server
     //////////////////////////////////////////////////////////////////////////
 
     void PlayerShootSystem::spawnBullet(
+        ecs::Entity owner,
         const ecs::components::Transform& tf,
         const ecs::components::RoomId& roomId,
         bool doubleFire)
@@ -246,14 +473,30 @@ namespace rtp::server
             ecs::components::Velocity{ {_bulletSpeed, 0.f}, 0.f }
         );
 
+        // Use owner's weapon damage and size if available
+        int damageAmount = 25;
+        float boxW = 8.0f;
+        float boxH = 4.0f;
+        if (auto weaponRes = _registry.get<ecs::components::SimpleWeapon>()) {
+            auto &weapons = weaponRes->get();
+            if (weapons.has(owner)) {
+                const auto &w = weapons[owner];
+                damageAmount = w.damage;
+                // Optionally adjust box size based on difficulty
+                const float diffScale = 1.0f + (w.difficulty - 2) * 0.1f;
+                boxW = 8.0f * diffScale;
+                boxH = 4.0f * diffScale;
+            }
+        }
+
         _registry.add<ecs::components::BoundingBox>(
             bullet,
-            ecs::components::BoundingBox{ 8.0f, 4.0f }
+            ecs::components::BoundingBox{ boxW, boxH }
         );
 
         _registry.add<ecs::components::Damage>(
             bullet,
-            ecs::components::Damage{ 25, ecs::NullEntity }
+            ecs::components::Damage{ damageAmount, owner }
         );
 
         _registry.add<ecs::components::NetworkId>(
@@ -271,6 +514,54 @@ namespace rtp::server
             ecs::components::RoomId{ roomId.id }
         );
 
+        // Attach boomerang component for charged bullet if applicable
+        if (auto weaponRes = _registry.get<ecs::components::SimpleWeapon>()) {
+            auto &weapons = weaponRes->get();
+            if (weapons.has(owner) && weapons[owner].isBoomerang) {
+                ecs::components::Boomerang b;
+                b.ownerIndex = static_cast<uint32_t>(owner.index());
+                b.startPos = {x, y};
+                b.maxDistance = 400.0f;
+                b.returning = false;
+                _registry.add<ecs::components::Boomerang>(bullet, b);
+            }
+        }
+
+        // Attach boomerang component if owner's weapon is a boomerang
+        if (auto weaponRes = _registry.get<ecs::components::SimpleWeapon>()) {
+            auto &weapons = weaponRes->get();
+            if (weapons.has(owner) && weapons[owner].isBoomerang) {
+                ecs::components::Boomerang b;
+                b.ownerIndex = static_cast<uint32_t>(owner.index());
+                b.startPos = {x, y};
+                b.maxDistance = 400.0f; // default max distance, could be configurable
+                b.returning = false;
+                _registry.add<ecs::components::Boomerang>(bullet, b);
+            }
+        }
+
+        // Attach homing component for charged bullet if owner's weapon supports homing
+        if (auto weaponRes = _registry.get<ecs::components::SimpleWeapon>()) {
+            auto &weapons = weaponRes->get();
+            if (weapons.has(owner) && weapons[owner].homing) {
+                ecs::components::Homing h;
+                h.steering = weapons[owner].homingSteering;
+                h.range = weapons[owner].homingRange;
+                _registry.add<ecs::components::Homing>(bullet, h);
+            }
+        }
+
+        // Attach homing component if owner's weapon supports homing
+        if (auto weaponRes = _registry.get<ecs::components::SimpleWeapon>()) {
+            auto &weapons = weaponRes->get();
+            if (weapons.has(owner) && weapons[owner].homing) {
+                ecs::components::Homing h;
+                h.steering = weapons[owner].homingSteering;
+                h.range = weapons[owner].homingRange;
+                _registry.add<ecs::components::Homing>(bullet, h);
+            }
+        }
+
         auto room = _roomSystem.getRoom(roomId.id);
         if (!room)
             return;
@@ -285,11 +576,22 @@ namespace rtp::server
         }
 
         net::Packet packet(net::OpCode::EntitySpawn);
+        uint8_t weaponKind = 0;
+        if (auto weaponRes = _registry.get<ecs::components::SimpleWeapon>()) {
+            auto &weapons = weaponRes->get();
+            if (weapons.has(owner)) {
+                weaponKind = static_cast<uint8_t>(weapons[owner].kind);
+            }
+        }
+
         net::EntitySpawnPayload payload = {
             static_cast<uint32_t>(bullet.index()),
             static_cast<uint8_t>(net::EntityType::Bullet),
             x,
-            y
+            y,
+            0.0f,
+            0.0f,
+            weaponKind
         };
         packet << payload;
         _networkSync.sendPacketToSessions(sessions, packet, net::NetworkMode::TCP);
@@ -315,14 +617,15 @@ namespace rtp::server
                 ecs::components::Velocity{ {_bulletSpeed, 0.f}, 0.f }
             );
 
+            // second bullet uses same damage/size as first
             _registry.add<ecs::components::BoundingBox>(
                 bullet2,
-                ecs::components::BoundingBox{ 8.0f, 4.0f }
+                ecs::components::BoundingBox{ boxW, boxH }
             );
 
             _registry.add<ecs::components::Damage>(
                 bullet2,
-                ecs::components::Damage{ 25, ecs::NullEntity }
+                ecs::components::Damage{ damageAmount, owner }
             );
 
             _registry.add<ecs::components::NetworkId>(
@@ -340,12 +643,49 @@ namespace rtp::server
                 ecs::components::RoomId{ roomId.id }
             );
 
+                
+
+            // Attach boomerang for second bullet if owner's weapon is boomerang
+            if (auto weaponRes2 = _registry.get<ecs::components::SimpleWeapon>()) {
+                auto &weapons = weaponRes2->get();
+                if (weapons.has(owner) && weapons[owner].isBoomerang) {
+                    ecs::components::Boomerang b2;
+                    b2.ownerIndex = static_cast<uint32_t>(owner.index());
+                    b2.startPos = {x, y2};
+                    b2.maxDistance = 400.0f;
+                    b2.returning = false;
+                    _registry.add<ecs::components::Boomerang>(bullet2, b2);
+                }
+            }
+
+            // Attach homing for second bullet if applicable
+            if (auto weaponRes2 = _registry.get<ecs::components::SimpleWeapon>()) {
+                auto &weapons = weaponRes2->get();
+                if (weapons.has(owner) && weapons[owner].homing) {
+                    ecs::components::Homing h2;
+                    h2.steering = weapons[owner].homingSteering;
+                    h2.range = weapons[owner].homingRange;
+                    _registry.add<ecs::components::Homing>(bullet2, h2);
+                }
+            }
+
             net::Packet packet2(net::OpCode::EntitySpawn);
+            uint8_t weaponKind2 = 0;
+            if (auto weaponRes2 = _registry.get<ecs::components::SimpleWeapon>()) {
+                auto &weapons = weaponRes2->get();
+                if (weapons.has(owner)) {
+                    weaponKind2 = static_cast<uint8_t>(weapons[owner].kind);
+                }
+            }
+
             net::EntitySpawnPayload payload2 = {
                 static_cast<uint32_t>(bullet2.index()),
                 static_cast<uint8_t>(net::EntityType::Bullet),
                 x,
-                y2
+                y2,
+                0.0f,
+                0.0f,
+                weaponKind2
             };
             packet2 << payload2;
             _networkSync.sendPacketToSessions(sessions, packet2, net::NetworkMode::TCP);
@@ -353,6 +693,7 @@ namespace rtp::server
     }
 
     void PlayerShootSystem::spawnChargedBullet(
+        ecs::Entity owner,
         const ecs::components::Transform& tf,
         const ecs::components::RoomId& roomId,
         float chargeRatio,
@@ -375,12 +716,43 @@ namespace rtp::server
         }
         const float ratio = std::clamp(chargeRatio, 0.0f, 1.0f);
 
-        const float scale = (ratio < 0.34f) ? 0.5f : (ratio < 0.67f ? 1.0f : 2.0f);
-        const float sizeX = 8.0f * scale;
-        const float sizeY = 4.0f * scale;
-        const int minDamage = 25;
-        const int maxDamage = 120;
-        const int damage = static_cast<int>(minDamage + (maxDamage - minDamage) * ratio);
+        // Determine discrete charge tiers:
+        // Tier 1: normal shot (no change)
+        // Tier 2: slightly larger hitbox, damage x2
+        // Tier 3: larger hitbox, damage x4
+        const float baseW = 8.0f;
+        const float baseH = 4.0f;
+
+        float tierScale = 1.0f;
+        int damageMultiplier = 1;
+
+        if (ratio < 0.34f) {
+            // Tier 1
+            tierScale = 1.0f;
+            damageMultiplier = 1;
+        } else if (ratio < 0.67f) {
+            // Tier 2
+            tierScale = 1.5f; // a bit bigger
+            damageMultiplier = 2;
+        } else {
+            // Tier 3
+            tierScale = 2.0f; // biggest
+            damageMultiplier = 4;
+        }
+
+        const float sizeX = baseW * tierScale;
+        const float sizeY = baseH * tierScale;
+
+        // Base damage comes from owner's weapon if available, otherwise fallback
+        int baseDamage = 25;
+        if (auto weaponRes = _registry.get<ecs::components::SimpleWeapon>()) {
+            auto &weapons = weaponRes->get();
+            if (weapons.has(owner)) {
+                baseDamage = weapons[owner].damage;
+            }
+        }
+
+        int damage = baseDamage * damageMultiplier;
 
         _registry.add<ecs::components::Transform>(
             bullet,
@@ -399,7 +771,7 @@ namespace rtp::server
 
         _registry.add<ecs::components::Damage>(
             bullet,
-            ecs::components::Damage{ damage, ecs::NullEntity }
+            ecs::components::Damage{ damage, owner }
         );
 
         _registry.add<ecs::components::NetworkId>(
@@ -416,6 +788,30 @@ namespace rtp::server
             bullet,
             ecs::components::RoomId{ roomId.id }
         );
+
+        // Attach boomerang component for charged bullet if applicable
+        if (auto weaponRes = _registry.get<ecs::components::SimpleWeapon>()) {
+            auto &weapons = weaponRes->get();
+            if (weapons.has(owner) && weapons[owner].isBoomerang) {
+                ecs::components::Boomerang b;
+                b.ownerIndex = static_cast<uint32_t>(owner.index());
+                b.startPos = {x, y};
+                b.maxDistance = 400.0f * tierScale; // farther for bigger tiers
+                b.returning = false;
+                _registry.add<ecs::components::Boomerang>(bullet, b);
+            }
+        }
+
+        // Attach homing component for charged bullet if owner's weapon supports homing
+        if (auto weaponRes = _registry.get<ecs::components::SimpleWeapon>()) {
+            auto &weapons = weaponRes->get();
+            if (weapons.has(owner) && weapons[owner].homing) {
+                ecs::components::Homing h;
+                h.steering = weapons[owner].homingSteering;
+                h.range = weapons[owner].homingRange;
+                _registry.add<ecs::components::Homing>(bullet, h);
+            }
+        }
 
         auto room = _roomSystem.getRoom(roomId.id);
         if (!room)
@@ -439,6 +835,13 @@ namespace rtp::server
             sizeX,
             sizeY
         };
+        // Include owner's weapon kind for client-side visuals
+        if (auto weaponRes = _registry.get<ecs::components::SimpleWeapon>()) {
+            auto &weapons = weaponRes->get();
+            if (weapons.has(owner)) {
+                payload.weaponKind = static_cast<uint8_t>(weapons[owner].kind);
+            }
+        }
         packet << payload;
         _networkSync.sendPacketToSessions(sessions, packet, net::NetworkMode::TCP);
         
@@ -470,7 +873,7 @@ namespace rtp::server
 
             _registry.add<ecs::components::Damage>(
                 bullet2,
-                ecs::components::Damage{ damage, ecs::NullEntity }
+                ecs::components::Damage{ damage, owner }
             );
 
             _registry.add<ecs::components::NetworkId>(
@@ -495,8 +898,15 @@ namespace rtp::server
                 x,
                 y2,
                 sizeX,
-                sizeY
+                sizeY,
+                0
             };
+            if (auto weaponRes2 = _registry.get<ecs::components::SimpleWeapon>()) {
+                auto &weapons = weaponRes2->get();
+                if (weapons.has(owner)) {
+                    payload2.weaponKind = static_cast<uint8_t>(weapons[owner].kind);
+                }
+            }
             packet2 << payload2;
             _networkSync.sendPacketToSessions(sessions, packet2, net::NetworkMode::TCP);
         }
