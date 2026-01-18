@@ -46,11 +46,11 @@ namespace rtp::client
         }
         
         if (t.tag == "player_bullet") {
-            entityKey = "shot_6";
-            log::info("EntityBuilder: Mapped player_bullet to shot_6");
+            entityKey = "player_shot_6";
+            log::info("EntityBuilder: Mapped player_bullet to player_shot_6");
         } else if (t.tag == "enemy_bullet") {
-            entityKey = "shot_6";
-            log::info("EntityBuilder: Mapped enemy_bullet to shot_6");
+            entityKey = "enemy_shot_6";
+            log::info("EntityBuilder: Mapped enemy_bullet to enemy_shot_6");
         } else if (t.tag == "player_ship") {
             entityKey = "player_ship";
             log::info("EntityBuilder: Mapped player_ship to player_ship");

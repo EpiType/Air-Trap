@@ -66,8 +66,9 @@ namespace rtp::client {
              * @param sessionId ID of the network session
              * @param username Username string
              * @param password Password string
+             * @param weaponKind Selected weapon kind
              */
-            void tryLogin(const std::string& username, const std::string& password) const;
+            void tryLogin(const std::string& username, const std::string& password, uint8_t weaponKind) const;
 
             /**
              * @brief Send a request to server attempting to register with provided credentials
@@ -123,6 +124,12 @@ namespace rtp::client {
              * @param message The message string to send
              */
             void trySendMessage(const std::string& message) const;
+            
+            /**
+             * @brief Send currently selected weapon to server to apply immediately
+             * @param weaponKind weapon id (ecs::components::WeaponKind as uint8_t)
+             */
+            void sendSelectedWeapon(uint8_t weaponKind) const;
         
         public:
             /**
@@ -260,6 +267,11 @@ namespace rtp::client {
             void pushChatMessage(const std::string& message);
 
             void onAmmoUpdate(net::Packet& packet);
+            void onBeamState(net::Packet& packet);
+            // Map ownerNetId -> list of (beamEntity, offsetY)
+            std::unordered_map<uint32_t, std::vector<std::pair<ecs::Entity, float>>> _beamEntities;
+            // Map ownerNetId -> list of beam lengths (parallel to _beamEntities entries)
+            std::unordered_map<uint32_t, std::vector<float>> _beamLengths;
 
             void onPong(net::Packet& packet);
 

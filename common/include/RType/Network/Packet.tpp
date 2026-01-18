@@ -138,6 +138,7 @@ namespace rtp::net
     {
         *this << std::string_view(data.username, strnlen(data.username, sizeof(data.username)));
         *this << std::string_view(data.password, strnlen(data.password, sizeof(data.password)));
+        *this << data.weaponKind;
         return *this;
     }
 
@@ -152,6 +153,7 @@ namespace rtp::net
         data.username[sizeof(data.username) - 1] = '\0';
         std::strncpy(data.password, password.c_str(), sizeof(data.password));
         data.password[sizeof(data.password) - 1] = '\0';
+        *this >> data.weaponKind;
         return *this;
     }
 
@@ -404,6 +406,7 @@ namespace rtp::net
         *this << data.posY;
         *this << data.sizeX;
         *this << data.sizeY;
+        *this << data.weaponKind;
         return *this;
     }
 
@@ -416,6 +419,7 @@ namespace rtp::net
         *this >> data.posY;
         *this >> data.sizeX;
         *this >> data.sizeY;
+        *this >> data.weaponKind;
         return *this;
     }
 
@@ -456,6 +460,28 @@ namespace rtp::net
         *this >> data.max;
         *this >> data.isReloading;
         *this >> data.cooldownRemaining;
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator<<(BeamStatePayload data) -> Packet &
+    {
+        *this << data.ownerNetId;
+        *this << data.active;
+        *this << data.timeRemaining;
+        *this << data.length;
+        *this << data.offsetY;
+        return *this;
+    }
+
+    template <>
+    inline auto Packet::operator>>(BeamStatePayload &data) -> Packet &
+    {
+        *this >> data.ownerNetId;
+        *this >> data.active;
+        *this >> data.timeRemaining;
+        *this >> data.length;
+        *this >> data.offsetY;
         return *this;
     }
 

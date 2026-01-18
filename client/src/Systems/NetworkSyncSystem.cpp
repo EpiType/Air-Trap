@@ -15,11 +15,15 @@
 #include "RType/ECS/Components/BoundingBox.hpp"
 #include "RType/ECS/Components/ShieldVisual.hpp"
 #include "RType/ECS/Components/Controllable.hpp"
+#include "RType/ECS/Components/SimpleWeapon.hpp"
+#include "RType/ECS/Components/Ammo.hpp"
+#include "RType/Config/WeaponConfig.hpp"
 #include "RType/Network/Packet.hpp"
 #include "Game/EntityBuilder.hpp"
 #include "Utils/DebugFlags.hpp"
 
 #include <chrono>
+#include <cmath>
 
 namespace rtp::client {
     //////////////////////////////////////////////////////////////////////////
@@ -51,11 +55,12 @@ namespace rtp::client {
         }
     }
 
-    void NetworkSyncSystem::tryLogin(const std::string& username, const std::string& password) const
+    void NetworkSyncSystem::tryLogin(const std::string& username, const std::string& password, uint8_t weaponKind) const
     {
         net::LoginPayload payload;
         std::strncpy(payload.username, username.c_str(), sizeof(payload.username) - 1);
         std::strncpy(payload.password, password.c_str(), sizeof(payload.password) - 1);
+        payload.weaponKind = weaponKind;
 
         net::Packet packet(net::OpCode::LoginRequest);
         packet << payload;
@@ -151,6 +156,14 @@ namespace rtp::client {
         payload.message[sizeof(payload.message) - 1] = '\0';
         packet << payload;
 
+        _network.sendPacket(packet, net::NetworkMode::TCP);
+    }
+
+    void NetworkSyncSystem::sendSelectedWeapon(uint8_t weaponKind) const
+    {
+        log::info("Sending selected weapon {} to server", static_cast<int>(weaponKind));
+        net::Packet packet(net::OpCode::UpdateSelectedWeapon);
+        packet << weaponKind;
         _network.sendPacket(packet, net::NetworkMode::TCP);
     }
 
@@ -305,6 +318,10 @@ namespace rtp::client {
             }
             case net::OpCode::AmmoUpdate: {
                 onAmmoUpdate(event.packet);
+                break;
+            }
+            case net::OpCode::BeamState: {
+                onBeamState(event.packet);
                 break;
             }
             case net::OpCode::Pong: {
@@ -537,6 +554,64 @@ namespace rtp::client {
             e, ecs::components::EntityType{entityType}
         );
 
+            // If server sent a weaponKind for this spawn, apply it to player entities
+        if (entityType == net::EntityType::Player) {
+            ecs::components::SimpleWeapon wcfg;
+            wcfg.kind = static_cast<ecs::components::WeaponKind>(payload.weaponKind);
+
+            if (rtp::config::hasWeaponConfigs()) {
+                wcfg = rtp::config::getWeaponDef(wcfg.kind);
+                wcfg.kind = static_cast<ecs::components::WeaponKind>(payload.weaponKind);
+            } else {
+                switch (wcfg.kind) {
+                    case ecs::components::WeaponKind::Classic:
+                        wcfg.fireRate = 6.0f; wcfg.damage = 10; wcfg.ammo = -1; wcfg.maxAmmo = -1; break;
+                    case ecs::components::WeaponKind::Beam:
+                        wcfg.fireRate = 0.0f; wcfg.damage = 4; wcfg.beamDuration = 5.0f; wcfg.beamCooldown = 5.0f; wcfg.ammo = -1; wcfg.maxAmmo = -1; break;
+                    case ecs::components::WeaponKind::Paddle:
+                        wcfg.fireRate = 0.0f; wcfg.damage = 0; wcfg.canReflect = true; wcfg.ammo = -1; wcfg.maxAmmo = -1; break;
+                    case ecs::components::WeaponKind::Tracker:
+                        wcfg.fireRate = 2.0f; wcfg.damage = 6; wcfg.homing = true; wcfg.ammo = 50; wcfg.maxAmmo = 50; break;
+                    case ecs::components::WeaponKind::Boomerang:
+                        wcfg.fireRate = 0.5f; wcfg.damage = 18; wcfg.isBoomerang = true; wcfg.ammo = -1; wcfg.maxAmmo = -1; break;
+                    default:
+                        break;
+                }
+            }
+
+            // Add or replace SimpleWeapon component
+            if (auto weaponsOpt = _registry.get<ecs::components::SimpleWeapon>()) {
+                auto &weapons = weaponsOpt.value().get();
+                if (weapons.has(e)) {
+                    weapons[e] = wcfg;
+                } else {
+                    _registry.add<ecs::components::SimpleWeapon>(e, wcfg);
+                }
+            } else {
+                _registry.add<ecs::components::SimpleWeapon>(e, wcfg);
+            }
+
+            // Ensure Ammo component matches weapon config where applicable
+            if (auto ammoOpt = _registry.get<ecs::components::Ammo>()) {
+                auto &ammos = ammoOpt.value().get();
+                if (ammos.has(e)) {
+                    if (wcfg.maxAmmo >= 0) {
+                        ammos[e].max = static_cast<uint16_t>(wcfg.maxAmmo);
+                        if (wcfg.ammo > 0)
+                            ammos[e].current = static_cast<uint16_t>(wcfg.ammo);
+                    }
+                } else {
+                    uint16_t max = (wcfg.maxAmmo >= 0) ? static_cast<uint16_t>(wcfg.maxAmmo) : 100;
+                    uint16_t cur = (wcfg.ammo >= 0) ? static_cast<uint16_t>( (wcfg.ammo > 0) ? wcfg.ammo : max ) : max;
+                    _registry.add<ecs::components::Ammo>(e, ecs::components::Ammo{cur, max, 2.0f, 0.0f, false, true});
+                }
+            } else {
+                uint16_t max = (wcfg.maxAmmo >= 0) ? static_cast<uint16_t>(wcfg.maxAmmo) : 100;
+                uint16_t cur = (wcfg.ammo >= 0) ? static_cast<uint16_t>( (wcfg.ammo > 0) ? wcfg.ammo : max ) : max;
+                _registry.add<ecs::components::Ammo>(e, ecs::components::Ammo{cur, max, 2.0f, 0.0f, false, true});
+            }
+        }
+
         if (payload.sizeX > 0.0f && payload.sizeY > 0.0f) {
             _registry.add<ecs::components::BoundingBox>(
                 e, ecs::components::BoundingBox{payload.sizeX, payload.sizeY}
@@ -677,11 +752,50 @@ namespace rtp::client {
             if (!transforms.has(e))
                 continue;
 
-            // log::debug("Updating entity NetID={} Position=({}, {}) Rotation={}",
-            //     snap.netId, snap.position.x, snap.position.y, snap.rotation);
             transforms[e].position.x = snap.position.x;
             transforms[e].position.y = snap.position.y;
             transforms[e].rotation   = snap.rotation;
+            auto beamIt = _beamEntities.find(snap.netId);
+            if (beamIt != _beamEntities.end()) {
+                auto &vec = beamIt->second; // vector<pair<Entity, offsetY>>
+                if (auto tOpt2 = _registry.get<ecs::components::Transform>(); tOpt2) {
+                    auto &transforms2 = tOpt2.value().get();
+                    const float spriteW = 81.0f;
+
+                    // Compute frontOffset from player's sprite width
+                    float frontOffset = 20.0f;
+                    ecs::Entity ownerEntity = e;
+                    if (auto sOpt = _registry.get<ecs::components::Sprite>(); sOpt) {
+                        auto &sprites = sOpt.value().get();
+                        if (sprites.has(ownerEntity)) {
+                            const float playerSpriteW = static_cast<float>(sprites[ownerEntity].rectWidth);
+                            if (auto t3Opt = _registry.get<ecs::components::Transform>(); t3Opt) {
+                                auto &transforms3 = t3Opt.value().get();
+                                if (transforms3.has(ownerEntity)) {
+                                    const float playerScaleX = std::abs(transforms3[ownerEntity].scale.x);
+                                    frontOffset = (playerSpriteW * playerScaleX) * 0.5f + 4.0f;
+                                }
+                            }
+                        }
+                    }
+
+                    auto lenIt = _beamLengths.find(snap.netId);
+                    for (size_t i = 0; i < vec.size(); ++i) {
+                        ecs::Entity beamEntity = vec[i].first;
+                        float offsetY = vec[i].second;
+                        float length = 0.0f;
+                        if (lenIt != _beamLengths.end() && i < lenIt->second.size()) length = lenIt->second[i];
+
+                        if (!transforms2.has(beamEntity)) continue;
+                            float scaleMag = (length > 0.0f) ? (length / spriteW) : std::abs(transforms2[beamEntity].scale.x);
+                            transforms2[beamEntity].rotation = 0.0f;
+                            transforms2[beamEntity].scale.x = -std::abs(scaleMag);
+                            const float scaledWidth = spriteW * std::abs(transforms2[beamEntity].scale.x);
+                        transforms2[beamEntity].position.x = snap.position.x + frontOffset + (scaledWidth * 0.5f);
+                        transforms2[beamEntity].position.y = snap.position.y + offsetY;
+                    }
+                }
+            }
         }
     }
 
@@ -721,14 +835,98 @@ namespace rtp::client {
         _ammoReloadRemaining = payload.cooldownRemaining;
     }
 
+    void NetworkSyncSystem::onBeamState(net::Packet& packet)
+    {
+        net::BeamStatePayload payload{};
+        packet >> payload;
+
+        auto it = _netIdToEntity.find(payload.ownerNetId);
+        if (it == _netIdToEntity.end()) {
+            return;
+        }
+
+    
+
+        const ecs::Entity ownerEntity = it->second;
+
+        if (payload.active) {
+            Vec2f pos{0.0f, 0.0f};
+            if (auto tOpt = _registry.get<ecs::components::Transform>(); tOpt) {
+                auto &transforms = tOpt.value().get();
+                if (transforms.has(ownerEntity)) {
+                    pos = transforms[ownerEntity].position;
+                }
+            }
+
+            // Prepare template
+            EntityTemplate t = EntityTemplate::shot_5(pos);
+            const float spriteW = 81.0f;
+
+            float frontOffset = 20.0f;
+            if (auto sOpt = _registry.get<ecs::components::Sprite>(); sOpt) {
+                auto &sprites = sOpt.value().get();
+                if (sprites.has(ownerEntity)) {
+                    const float playerSpriteW = static_cast<float>(sprites[ownerEntity].rectWidth);
+                    if (auto t3Opt = _registry.get<ecs::components::Transform>(); t3Opt) {
+                        auto &transforms3 = t3Opt.value().get();
+                        if (transforms3.has(ownerEntity)) {
+                            const float playerScaleX = std::abs(transforms3[ownerEntity].scale.x);
+                            frontOffset = (playerSpriteW * playerScaleX) * 0.5f + 4.0f;
+                        }
+                    }
+                }
+            }
+
+            float scaleMag = (payload.length > 0.0f) ? (payload.length / spriteW) : 1.0f;
+            t.rotation = 0.0f;
+            t.scale.x = -std::abs(scaleMag);
+            t.scale.y = 1.0f;
+            t.tag = "beam_visual";
+            const float scaledWidth = spriteW * std::abs(t.scale.x);
+            t.position.x = pos.x + frontOffset + (scaledWidth * 0.5f);
+            t.position.y = pos.y + payload.offsetY;
+
+            auto res = _builder.spawn(t);
+            if (!res) {
+                log::error("Failed to spawn beam visual: {}", res.error().message());
+                return;
+            }
+            auto beamEntity = res.value();
+            _beamEntities[payload.ownerNetId].push_back({beamEntity, payload.offsetY});
+            _beamLengths[payload.ownerNetId].push_back(payload.length);
+        } else {
+            auto it2 = _beamEntities.find(payload.ownerNetId);
+            if (it2 != _beamEntities.end()) {
+                auto &vec = it2->second;
+                for (size_t i = 0; i < vec.size(); ++i) {
+                    if (std::fabs(vec[i].second - payload.offsetY) < 0.1f) {
+                        ecs::Entity beamEntity = vec[i].first;
+                        _builder.kill(beamEntity);
+                        vec.erase(vec.begin() + i);
+                        auto lenIt = _beamLengths.find(payload.ownerNetId);
+                        if (lenIt != _beamLengths.end() && i < lenIt->second.size()) lenIt->second.erase(lenIt->second.begin() + i);
+                        break;
+                    }
+                }
+                if (vec.empty()) {
+                    _beamEntities.erase(it2);
+                    _beamLengths.erase(payload.ownerNetId);
+                }
+            }
+        }
+        
+    }
+
     void NetworkSyncSystem::onPong(net::Packet& packet)
     {
         net::PingPayload payload{};
         packet >> payload;
         const auto now = std::chrono::steady_clock::now();
         const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
-        if (ms >= static_cast<int64_t>(payload.clientTimeMs)) {
+        if (ms >= payload.clientTimeMs) {
             _pingMs = static_cast<uint32_t>(ms - payload.clientTimeMs);
+        } else {
+            _pingMs = 0;
         }
     }
 
