@@ -139,7 +139,8 @@ conan install .. --build=missing --output-folder=. -s build_type=Release -s comp
 # Configure with detected compiler
 cmake .. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=$CMAKE_C_COMPILER -DCMAKE_CXX_COMPILER=$CMAKE_CXX_COMPILER
 
-# Build
+# Build with LD_LIBRARY_PATH for gcc-14's libstdc++
+export LD_LIBRARY_PATH=/usr/local/lib64:$LD_LIBRARY_PATH
 cmake --build . --config Release -j$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
 
 # Copy executables from bin/ to root

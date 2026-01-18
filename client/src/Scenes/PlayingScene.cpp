@@ -207,10 +207,8 @@ namespace rtp::client {
 
         void PlayingScene::spawnParallax()
         {
-            constexpr float baseTextureWidth = 1280.0f;
-
             auto spawnLayer = [&](EntityTemplate t) {
-                const float scaledW = baseTextureWidth * t.scale.x;
+                const float scaledW = t.parallax.textureWidth * t.scale.x;
 
                 t.position.x = 0.0f;
                 auto a = _worldBuilder.spawn(t);
@@ -230,35 +228,30 @@ namespace rtp::client {
             const uint32_t levelId = _network.getCurrentLevelId();
             switch (levelId) {
                 case 1:
-                    spawnLayer(EntityTemplate::createParrallaxLvl1_1());
-                    spawnLayer(EntityTemplate::createParrallaxLvl1_2());
+                    spawnLayer(EntityTemplate::createParallaxLvl1_1());
+                    spawnLayer(EntityTemplate::createParallaxLvl1_2());
                     break;
                 case 2:
                     spawnLayer(EntityTemplate::createParallaxLvl2_1());
-                    //spawnLayer(EntityTemplate::createParallaxLvl2_2());
-                    //spawnLayer(EntityTemplate::createParallaxLvl2_3());
-                    //spawnLayer(EntityTemplate::createParallaxLvl2_4());
-                    //spawnLayer(EntityTemplate::createParallaxLvl2_5());
-                    //spawnLayer(EntityTemplate::createParallaxLvl2_6());
+                    spawnLayer(EntityTemplate::createParallaxLvl2_2());
+                    spawnLayer(EntityTemplate::createParallaxLvl2_3());
+                    spawnLayer(EntityTemplate::createParallaxLvl2_4());
+                    spawnLayer(EntityTemplate::createParallaxLvl2_5());
+                    spawnLayer(EntityTemplate::createParallaxLvl2_6());
                     break;
                 case 3:
-                    spawnLayer(EntityTemplate::createParallaxLvl3_1());
-                    spawnLayer(EntityTemplate::createParallaxLvl3_5());
-                    spawnLayer(EntityTemplate::createParallaxLvl3_3());
-                    spawnLayer(EntityTemplate::createParallaxLvl3_2());
-                    spawnLayer(EntityTemplate::createParallaxLvl3_4());
-                    spawnLayer(EntityTemplate::createParallaxLvl3_6());
-                    spawnLayer(EntityTemplate::createParallaxLvl3_7());
-                    spawnLayer(EntityTemplate::createParallaxLvl3_8());
-                    spawnLayer(EntityTemplate::createParallaxLvl3_9());
+                    spawnLayer(EntityTemplate::createParallaxLvl3_1()); // Sky base
+                    spawnLayer(EntityTemplate::createParallaxLvl3_9()); // Mountains back
+                    spawnLayer(EntityTemplate::createParallaxLvl3_4()); // Clouds mid
+                    spawnLayer(EntityTemplate::createParallaxLvl3_3()); // Cloud floor
                     break;
                 case 4:
-                    spawnLayer(EntityTemplate::createParallaxLvl4_1());
-                    spawnLayer(EntityTemplate::createParallaxLvl4_2());
-                    spawnLayer(EntityTemplate::createParallaxLvl4_3());
-                    spawnLayer(EntityTemplate::createParallaxLvl4_4());
-                    spawnLayer(EntityTemplate::createParallaxLvl4_5());
-                    spawnLayer(EntityTemplate::createParallaxLvl4_6());
+                    spawnLayer(EntityTemplate::createParallaxLvl4_4()); // Moon (fond)
+                    spawnLayer(EntityTemplate::createParallaxLvl4_6()); // Sky
+                    spawnLayer(EntityTemplate::createParallaxLvl4_5()); // Mountains
+                    spawnLayer(EntityTemplate::createParallaxLvl4_1()); // Clouds
+                    spawnLayer(EntityTemplate::createParallaxLvl4_3()); // Dunes mid
+                    spawnLayer(EntityTemplate::createParallaxLvl4_2()); // Dunes front
                     break;
             }
         }

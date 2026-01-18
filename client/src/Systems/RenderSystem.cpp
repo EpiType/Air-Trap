@@ -54,9 +54,12 @@ void RenderSystem::update(float dt)
         s.setPosition({trans.position.x, trans.position.y});
         s.setRotation(sf::degrees(trans.rotation));
         s.setScale({trans.scale.x, trans.scale.y});
-        s.setOrigin(valid && spriteComp.rectWidth > 0
-                        ? sf::Vector2f(spriteComp.rectWidth / 2.0f, spriteComp.rectHeight / 2.0f)
-                        : sf::Vector2f(16.f, 16.f));
+        // Pour les parallax (rectWidth=0), utiliser origine (0,0) pour positionnement en haut à gauche
+        if (spriteComp.rectWidth > 0 && spriteComp.rectHeight > 0) {
+            s.setOrigin(sf::Vector2f(spriteComp.rectWidth / 2.0f, spriteComp.rectHeight / 2.0f));
+        } else {
+            s.setOrigin(sf::Vector2f(0.f, 0.f));
+        }
 
         itemsToDraw.push_back({spriteComp.zIndex, s});
     }
