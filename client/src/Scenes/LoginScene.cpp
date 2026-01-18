@@ -89,7 +89,8 @@ namespace rtp::client {
                 {270.0f, 60.0f},
                 "LOGIN",
                 [this]() {
-                    _network.tryLogin(_uiUsername, _uiPassword);
+                    auto weaponKind = static_cast<uint8_t>(_settings.getSelectedWeapon());
+                    _network.tryLogin(_uiUsername, _uiPassword, weaponKind);
                 }
             );
 

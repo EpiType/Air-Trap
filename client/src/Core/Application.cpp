@@ -160,7 +160,7 @@ namespace rtp::client
             _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
         );
         _scenes[GameState::Menu] = std::make_unique<scenes::MenuScene>(
-            _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb
+            _uiRegistry, _worldRegistry, _settings, _translations, net, _uiFactory, _worldEntityBuilder, changeStateCb
         );
         _scenes[GameState::Lobby] = std::make_unique<scenes::LobbyScene>(
             _uiRegistry, _settings, _translations, net, _uiFactory, changeStateCb

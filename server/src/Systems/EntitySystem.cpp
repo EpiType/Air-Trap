@@ -7,6 +7,7 @@
  */
 
 #include "Systems/EntitySystem.hpp"
+#include "RType/Config/WeaponConfig.hpp"
 
 namespace rtp::server
 {
@@ -61,12 +62,40 @@ namespace rtp::server
                         0.f
         });
 
-        _registry.add<ecs::components::SimpleWeapon>(
-            entity, ecs::components::SimpleWeapon{6.0f, 0.0f, 10});
+        ecs::components::SimpleWeapon weapon;
+        auto weaponKind = player->getWeaponKind();
+        weapon.kind = weaponKind;
+
+        if (rtp::config::hasWeaponConfigs()) {
+            weapon = rtp::config::getWeaponDef(weaponKind);
+            weapon.kind = weaponKind;
+        } else {
+            log::warning("Weapon configurations not found, using default weapon settings for kind {}", static_cast<int>(weaponKind));
+        }
+
+        _registry.add<ecs::components::SimpleWeapon>(entity, weapon);
+
+        ecs::components::Ammo ammoComp{};
+        if (weapon.maxAmmo >= 0) {
+            ammoComp.max = static_cast<uint16_t>(weapon.maxAmmo);
+            ammoComp.current = static_cast<uint16_t>(weapon.ammo > 0 ? weapon.ammo : weapon.maxAmmo);
+        } else {
+            ammoComp.max = 0;
+            ammoComp.current = 0;
+        }
+        // Use weapon-specific reload/cooldown when appropriate (Beam uses beamCooldown)
+        if (weapon.kind == ecs::components::WeaponKind::Beam) {
+            ammoComp.reloadCooldown = weapon.beamCooldown;
+        } else {
+            ammoComp.reloadCooldown = 2.0f;
+        }
+        ammoComp.reloadTimer = 0.0f;
+        ammoComp.isReloading = false;
+        ammoComp.dirty = true;
 
         _registry.add<ecs::components::Ammo>(
             entity,
-            ecs::components::Ammo{100, 100, 2.0f, 0.0f, false, true});
+            ammoComp);
 
         _registry.add<ecs::components::MovementSpeed>(
             entity, ecs::components::MovementSpeed{200.0f, 1.0f, 0.0f});
@@ -91,6 +120,48 @@ namespace rtp::server
             entity, ecs::components::RoomId{player->getRoomId()});
 
         return entity;
+    }
+
+    void EntitySystem::applyWeaponToEntity(ecs::Entity entity, ecs::components::WeaponKind weaponKind)
+    {
+        ecs::components::SimpleWeapon wcfg;
+        wcfg.kind = weaponKind;
+
+        if (rtp::config::hasWeaponConfigs()) {
+            wcfg = rtp::config::getWeaponDef(weaponKind);
+            wcfg.kind = weaponKind;
+        } else {
+            log::warning("Weapon configurations not found, using default weapon settings for kind {}", static_cast<int>(weaponKind));
+        }
+
+        auto weaponRes = _registry.get<ecs::components::SimpleWeapon>();
+        if (weaponRes) {
+            auto &weapons = weaponRes->get();
+            if (weapons.has(entity)) {
+                weapons[entity] = wcfg;
+            } else {
+                _registry.add<ecs::components::SimpleWeapon>(entity, wcfg);
+            }
+        } else {
+            _registry.add<ecs::components::SimpleWeapon>(entity, wcfg);
+        }
+
+        auto ammoRes = _registry.get<ecs::components::Ammo>();
+        if (ammoRes) {
+            auto &ammos = ammoRes->get();
+            if (ammos.has(entity) && wcfg.maxAmmo >= 0) {
+                ammos[entity].max = static_cast<uint16_t>(wcfg.maxAmmo);
+                ammos[entity].current = static_cast<uint16_t>(wcfg.ammo > 0 ? wcfg.ammo : ammos[entity].current);
+            }
+            // Update reload cooldown if this is a Beam weapon
+            if (ammos.has(entity)) {
+                if (wcfg.kind == ecs::components::WeaponKind::Beam) {
+                    ammos[entity].reloadCooldown = wcfg.beamCooldown;
+                }
+            }
+        }
+
+        log::info("Applied weapon {} to entity {}", static_cast<int>(weaponKind), entity.index());
     }
 
     ecs::Entity EntitySystem::createEnemyEntity(
@@ -153,8 +224,12 @@ namespace rtp::server
         } else if (type == net::EntityType::Boss) {
             fireRate = 1.2f;
         }
-        _registry.add<ecs::components::SimpleWeapon>(
-            entity, ecs::components::SimpleWeapon{fireRate, 0.0f, 0});
+        ecs::components::SimpleWeapon enemyWeapon;
+        enemyWeapon.kind = ecs::components::WeaponKind::Classic;
+        enemyWeapon.fireRate = fireRate;
+        enemyWeapon.lastShotTime = 0.0f;
+        enemyWeapon.damage = 0;
+        _registry.add<ecs::components::SimpleWeapon>(entity, enemyWeapon);
 
         float bboxWidth = 30.0f;
         float bboxHeight = 18.0f;

@@ -3,7 +3,10 @@
 # Menü
 menu.title=AIR-TRAP
 menu.play=SPIELEN
-menu.settings=EINSTELLUNGENmenu.mods=MODSmenu.exit=BEENDEN
+menu.singleplayer=EINZELSPIELER
+menu.settings=EINSTELLUNGEN
+menu.mods=MODS
+menu.exit=BEENDEN
 
 # Einstellungen
 settings.title=EINSTELLUNGEN

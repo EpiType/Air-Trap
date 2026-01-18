@@ -132,7 +132,6 @@ void RenderSystem::update(float dt)
         _window.draw(rect);
     }
     
-    // Dessiner les shields visuels (cercle vert autour du joueur)
     auto shieldView = _r.zipView<
         ecs::components::Transform,
         ecs::components::BoundingBox,
@@ -140,10 +139,8 @@ void RenderSystem::update(float dt)
     >();
     
     for (auto&& [trans, box, shield] : shieldView) {
-        // Calculer le rayon basé sur la taille de l'entité
         const float radius = std::max(box.width, box.height) / 2.0f + 8.0f;
         
-        // Créer le cercle avec effet de transparence
         sf::CircleShape circle(radius);
         circle.setPosition(sf::Vector2f(trans.position.x - radius, trans.position.y - radius));
         circle.setFillColor(sf::Color::Transparent);
@@ -152,7 +149,6 @@ void RenderSystem::update(float dt)
         
         _window.draw(circle);
         
-        // Dessiner un cercle intérieur plus fin pour l'effet
         sf::CircleShape innerCircle(radius - 4.0f);
         innerCircle.setPosition(sf::Vector2f(trans.position.x - (radius - 4.0f), trans.position.y - (radius - 4.0f)));
         innerCircle.setFillColor(sf::Color::Transparent);
