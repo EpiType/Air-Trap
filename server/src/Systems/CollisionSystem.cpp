@@ -9,14 +9,30 @@
 #include "Systems/CollisionSystem.hpp"
 
 #include "RType/Logger.hpp"
+#include "RType/Network/Packet.hpp"
 
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
+#include <cstring>
 #include <vector>
 
 namespace rtp::server
 {
+    namespace {
+        int getKillScore(net::EntityType type)
+        {
+            switch (type) {
+                case net::EntityType::Scout: return 10;
+                case net::EntityType::Tank: return 25;
+                case net::EntityType::Boss: return 100;
+                case net::EntityType::Obstacle: return 5;
+                case net::EntityType::ObstacleSolid: return 15;
+                default: return 0;
+            }
+        }
+    } // namespace
+
     //////////////////////////////////////////////////////////////////////////
     // Public API
     //////////////////////////////////////////////////////////////////////////
@@ -84,6 +100,101 @@ namespace rtp::server
             }
             removed.insert(entity.index());
             pending.emplace_back(entity, roomId);
+        };
+
+        auto updatePlayerScore = [&](uint32_t roomId, ecs::Entity playerEntity, int delta) {
+            if (delta == 0 || playerEntity == ecs::NullEntity) {
+                return;
+            }
+            auto room = _roomSystem.getRoom(roomId);
+            if (!room) {
+                return;
+            }
+            const auto playersInRoom = room->getPlayers();
+            for (const auto &player : playersInRoom) {
+                if (!player) {
+                    continue;
+                }
+                if (player->getEntityId() != static_cast<uint32_t>(playerEntity.index())) {
+                    continue;
+                }
+                player->addScore(delta);
+                net::Packet packet(net::OpCode::ScoreUpdate);
+                net::ScoreUpdatePayload payload{player->getScore()};
+                packet << payload;
+                _networkSync.sendPacketToSession(player->getId(), packet, net::NetworkMode::TCP);
+                break;
+            }
+        };
+
+        auto sendPlayerHealth = [&](uint32_t roomId, ecs::Entity playerEntity, const ecs::components::Health &health) {
+            auto room = _roomSystem.getRoom(roomId);
+            if (!room) {
+                return;
+            }
+            const auto playersInRoom = room->getPlayers();
+            for (const auto &player : playersInRoom) {
+                if (!player) {
+                    continue;
+                }
+                if (player->getEntityId() != static_cast<uint32_t>(playerEntity.index())) {
+                    continue;
+                }
+                net::Packet packet(net::OpCode::HealthUpdate);
+                net::HealthUpdatePayload payload{health.currentHealth, health.maxHealth};
+                packet << payload;
+                _networkSync.sendPacketToSession(player->getId(), packet, net::NetworkMode::TCP);
+                break;
+            }
+        };
+
+        auto sendGameOverIfNeeded = [&](const std::shared_ptr<Room> &room) {
+            if (!room) {
+                return;
+            }
+            if (room->getState() != Room::State::InGame) {
+                return;
+            }
+            if (room->hasActivePlayers()) {
+                return;
+            }
+
+            room->forceFinishGame();
+
+            const auto playersInRoom = room->getPlayers();
+            if (playersInRoom.empty()) {
+                return;
+            }
+
+            std::string bestName;
+            int bestScore = 0;
+            bool bestSet = false;
+
+            for (const auto &player : playersInRoom) {
+                if (!player) {
+                    continue;
+                }
+                const int score = player->getScore();
+                if (!bestSet || score > bestScore) {
+                    bestSet = true;
+                    bestScore = score;
+                    bestName = player->getUsername();
+                }
+            }
+
+            for (const auto &player : playersInRoom) {
+                if (!player) {
+                    continue;
+                }
+                net::Packet packet(net::OpCode::GameOver);
+                net::GameOverPayload payload{};
+                std::strncpy(payload.bestPlayer, bestName.c_str(), sizeof(payload.bestPlayer) - 1);
+                payload.bestPlayer[sizeof(payload.bestPlayer) - 1] = '\0';
+                payload.bestScore = bestScore;
+                payload.playerScore = player->getScore();
+                packet << payload;
+                _networkSync.sendPacketToSession(player->getId(), packet, net::NetworkMode::TCP);
+            }
         };
 
         for (auto entity : types.entities()) {
@@ -184,6 +295,7 @@ namespace rtp::server
                         health.currentHealth = std::min(
                             health.maxHealth,
                             health.currentHealth + 1);
+                        sendPlayerHealth(proom.id, player, health);
                         log::info("✚ HEAL: {} HP → {} HP (max: {})", oldHealth, health.currentHealth, health.maxHealth);
                     } else {
                         log::info("✚ HEAL: Already at max health ({}/{}), not applied", health.currentHealth, health.maxHealth);
@@ -332,6 +444,8 @@ namespace rtp::server
                     markForDespawn(bullet, broom.id);
                 }
                 if (health.currentHealth <= 0) {
+                    const int award = getKillScore(types[enemy].type);
+                    updatePlayerScore(broom.id, damage.sourceEntity, award);
                     // Enemy died - chance to drop power-up
                     const int dropChance = std::rand() % 100;
                     if (dropChance < 30) { // 30% chance to drop
@@ -466,8 +580,29 @@ namespace rtp::server
                     // No shield - take damage
                     health.currentHealth =
                         std::max(0, health.currentHealth - damage.amount);
+                    sendPlayerHealth(broom.id, player, health);
                 }
                 markForDespawn(bullet, broom.id);
+
+                if (!shieldBlocked && health.currentHealth <= 0) {
+                    auto room = _roomSystem.getRoom(broom.id);
+                    if (room) {
+                        const auto playersInRoom = room->getPlayers();
+                        for (const auto &roomPlayer : playersInRoom) {
+                            if (!roomPlayer) {
+                                continue;
+                            }
+                            if (roomPlayer->getEntityId() == static_cast<uint32_t>(player.index())) {
+                                room->setPlayerType(roomPlayer->getId(), Room::PlayerType::Spectator);
+                                roomPlayer->setEntityId(0);
+                                _networkSync.unbindSession(roomPlayer->getId());
+                                break;
+                            }
+                        }
+                        sendGameOverIfNeeded(room);
+                    }
+                    markForDespawn(player, broom.id);
+                }
                 break;
             }
         }

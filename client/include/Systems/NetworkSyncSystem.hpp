@@ -24,6 +24,7 @@
     #include <vector>
     #include <iostream>
     #include <list>
+    #include <string>
 
 /**
  * @namespace rtp::client
@@ -168,6 +169,19 @@ namespace rtp::client {
              */
             std::string getUsername(void) const;
 
+            struct GameOverSummary {
+                std::string bestPlayer;
+                int bestScore{0};
+                int playerScore{0};
+            };
+
+            void setGameOverSummary(const GameOverSummary& summary);
+            GameOverSummary getGameOverSummary(void) const;
+            bool consumeGameOver(void);
+            int getScore(void) const;
+            int getHealthCurrent(void) const;
+            int getHealthMax(void) const;
+
             /**
              * @brief Get a list of available rooms from the server
              * @return List of RoomInfo structures
@@ -236,6 +250,11 @@ namespace rtp::client {
             float _pingInterval = 1.0f;                                    /**< Ping interval in seconds */
             bool _kicked = false;                                          /**< Kicked flag */
             uint32_t _currentLevelId = 1;                                   /**< Current level id used by client visuals */
+            GameOverSummary _gameOverSummary{};                             /**< Cached game over summary */
+            bool _gameOverPending{false};                                   /**< Game over pending flag */
+            int _score{0};                                                  /**< Latest server score */
+            int _healthCurrent{0};                                          /**< Latest health */
+            int _healthMax{0};                                              /**< Latest max health */
         
         private:
             /**

@@ -63,6 +63,7 @@
 /* Scenes */
 #include "Interfaces/IScene.hpp"
 #include "Scenes/CreateRoomScene.hpp"
+#include "Scenes/GameOverScene.hpp"
 #include "Scenes/GamepadSettingsScene.hpp"
 #include "Scenes/KeyBindingScene.hpp"
 #include "Scenes/LobbyScene.hpp"

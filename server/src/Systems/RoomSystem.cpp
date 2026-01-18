@@ -380,16 +380,35 @@ namespace rtp::server
             return;
         }
 
-        ecs::Entity entity(entityId, 0);
+        // Find the entity by scanning the NetworkId sparse array for matching id
+        // This is necessary because we only store the entity index in Player, not the generation
+        auto netsRes = _registry.get<ecs::components::NetworkId>();
+        if (!netsRes) {
+            _networkSync.unbindSession(player->getId());
+            return;
+        }
+
+        auto &nets = netsRes->get();
+        ecs::Entity entity = ecs::NullEntity;
+        for (auto e : nets.entities()) {
+            if (nets[e].id == entityId) {
+                entity = e;
+                break;
+            }
+        }
+
+        if (entity.isNull()) {
+            _networkSync.unbindSession(player->getId());
+            return;
+        }
+
         auto transformsRes = _registry.get<ecs::components::Transform>();
         auto typesRes = _registry.get<ecs::components::EntityType>();
-        auto netsRes = _registry.get<ecs::components::NetworkId>();
         auto roomsRes = _registry.get<ecs::components::RoomId>();
 
-        if (transformsRes && typesRes && netsRes && roomsRes) {
+        if (transformsRes && typesRes && roomsRes) {
             auto &transforms = transformsRes->get();
             auto &types = typesRes->get();
-            auto &nets = netsRes->get();
             auto &rooms = roomsRes->get();
             if (transforms.has(entity) && types.has(entity) && nets.has(entity) && rooms.has(entity)) {
                 const bool shouldBroadcast = room && room->getType() != Room::RoomType::Lobby;

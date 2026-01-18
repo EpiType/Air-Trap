@@ -12,6 +12,7 @@
 #include "RType/ECS/Components/Powerup.hpp"
 #include "RType/ECS/Components/Health.hpp"
 #include "RType/ECS/Components/BoundingBox.hpp"
+#include "RType/Network/Packet.hpp"
 #include "RType/ECS/Components/Homing.hpp"
 #include "RType/ECS/Components/Boomerang.hpp"
 #include <cmath>
@@ -23,6 +24,21 @@
 
 namespace rtp::server
 {
+    namespace {
+        int getKillScore(net::EntityType type)
+        {
+            switch (type) {
+                case net::EntityType::Scout: return 10;
+                case net::EntityType::Tank: return 25;
+                case net::EntityType::Boss: return 100;
+                case net::EntityType::Obstacle: return 5;
+                case net::EntityType::ObstacleSolid: return 15;
+                default: return 0;
+            }
+        }
+    } // namespace
+
+    //////////////////////////////////////////////////////////////////////////
     // Public API
     //////////////////////////////////////////////////////////////////////////
 
@@ -44,6 +60,31 @@ namespace rtp::server
                        ecs::components::RoomId,
                        float,
                        bool>> pendingChargedSpawns; // owner, transform, roomId, ratio, doubleFire
+
+        auto updatePlayerScore = [&](uint32_t roomId, ecs::Entity owner, int delta) {
+            if (delta == 0 || owner == ecs::NullEntity) {
+                return;
+            }
+            auto room = _roomSystem.getRoom(roomId);
+            if (!room) {
+                return;
+            }
+            const auto playersInRoom = room->getPlayers();
+            for (const auto &player : playersInRoom) {
+                if (!player) {
+                    continue;
+                }
+                if (player->getEntityId() != static_cast<uint32_t>(owner.index())) {
+                    continue;
+                }
+                player->addScore(delta);
+                net::Packet packet(net::OpCode::ScoreUpdate);
+                net::ScoreUpdatePayload payload{player->getScore()};
+                packet << payload;
+                _networkSync.sendPacketToSession(player->getId(), packet, net::NetworkMode::TCP);
+                break;
+            }
+        };
 
         constexpr float kChargeMax = 2.0f;
         constexpr float kChargeMin = 0.2f;
@@ -81,12 +122,11 @@ namespace rtp::server
         auto healthRes = _registry.get<ecs::components::Health>();
         auto boxRes = _registry.get<ecs::components::BoundingBox>();
         
-        for (size_t i = 0; i < transforms.size(); ++i) {
-            ecs::Entity entity{static_cast<uint32_t>(i), 0};
-            
-            if (!transforms.has(entity) || !inputs.has(entity) || !types.has(entity) ||
-                !roomIds.has(entity) || !weapons.has(entity) || !netIds.has(entity) || !ammos.has(entity))
+        for (const auto &entity : transforms.entities()) {
+            if (!inputs.has(entity) || !types.has(entity) || !roomIds.has(entity) ||
+                !weapons.has(entity) || !netIds.has(entity) || !ammos.has(entity)) {
                 continue;
+            }
                 
             auto& tf = transforms[entity];
             auto& input = inputs[entity];
@@ -96,7 +136,7 @@ namespace rtp::server
             auto& net = netIds[entity];
             auto& ammo = ammos[entity];
             if (type.type != net::EntityType::Player)
-                return;
+                continue;
             
             // Update double fire timer
             bool hasDoubleFire = false;
@@ -114,6 +154,10 @@ namespace rtp::server
             }
 
             weapon.lastShotTime += dt;
+
+            const bool hasInfiniteAmmo = (weapon.maxAmmo < 0);
+            const bool canShoot = !ammo.isReloading &&
+                (ammo.current > 0 || hasInfiniteAmmo);
 
             // Update beam cooldown timer
             if (weapon.beamCooldownRemaining > 0.0f) {
@@ -175,6 +219,8 @@ namespace rtp::server
                                     ht.currentHealth -= weapon.damage;
                                     log::info("Beam: applied {} damage to entity {} (hp left={})", weapon.damage, t.index(), ht.currentHealth);
                                     if (ht.currentHealth <= 0) {
+                                        const int award = getKillScore(types[t].type);
+                                        updatePlayerScore(roomId.id, entity, award);
                                         // 30% chance to drop a power-up (beam kills should drop too)
                                         const int dropChance = std::rand() % 100;
                                         if (dropChance < 30) {
@@ -310,18 +356,16 @@ namespace rtp::server
 
             // Beam activation on press: if player has Beam weapon, not in cooldown and has ammo
             if (weapon.kind == ecs::components::WeaponKind::Beam && shootPressed && !shootWasPressed) {
-                if (weapon.beamCooldownRemaining <= 0.0f && !weapon.beamActive && ammo.current > 0) {
+                if (weapon.beamCooldownRemaining <= 0.0f && !weapon.beamActive && (ammo.current > 0 || hasInfiniteAmmo)) {
                     weapon.beamActive = true;
                     weapon.beamActiveTime = weapon.beamDuration;
                     // capture whether this beam instance was started with double-fire
                     weapon.beamWasDouble = hasDoubleFire;
                     // consume one ammo
-                    if (ammo.current > 0 && ammo.max > 0) {
+                    if (!hasInfiniteAmmo && ammo.current > 0 && ammo.max > 0) {
                         ammo.current = static_cast<uint16_t>(std::max<int>(0, static_cast<int>(ammo.current) - 1));
                         ammo.dirty = true;
                         sendAmmoUpdate(net.id, ammo);
-                    } else if (ammo.max < 0) {
-                        // infinite ammo case - do nothing
                     } else if (ammo.max == 0) {
                         // no ammo - cancel activation
                         weapon.beamActive = false;
@@ -385,29 +429,33 @@ namespace rtp::server
                 continue;
             }
 
-            if (ammo.isReloading || ammo.current == 0) {
+            if (ammo.isReloading || (ammo.current == 0 && !hasInfiniteAmmo)) {
                 input.chargeTime = 0.0f;
             }
 
-            if (shootPressed && !ammo.isReloading && ammo.current > 0) {
+            if (shootPressed && canShoot) {
                 input.chargeTime = std::min(input.chargeTime + dt, kChargeMax);
             }
 
-            if (!shootPressed && shootWasPressed) {
-                if (!ammo.isReloading && ammo.current > 0) {
-                    const float fireInterval = (weapon.fireRate > 0.0f)
-                        ? (1.0f / weapon.fireRate)
-                        : 0.0f;
+            const float fireInterval = (weapon.fireRate > 0.0f)
+                ? (1.0f / weapon.fireRate)
+                : 0.0f;
 
+            if (!shootPressed && shootWasPressed) {
+                if (canShoot) {
                     if (input.chargeTime >= kChargeMin && weapon.kind != ecs::components::WeaponKind::Beam) {
                         const float ratio = std::clamp(input.chargeTime / kChargeMax, 0.0f, 1.0f);
                         pendingChargedSpawns.emplace_back(entity, tf, roomId, ratio, hasDoubleFire);
-                        ammo.current -= 1;
+                        if (!hasInfiniteAmmo && ammo.current > 0) {
+                            ammo.current -= 1;
+                        }
                         ammo.dirty = true;
                         weapon.lastShotTime = 0.0f;
                     } else if (weapon.kind != ecs::components::WeaponKind::Beam && weapon.lastShotTime >= fireInterval) {
                         pendingSpawns.emplace_back(entity, tf, roomId, hasDoubleFire);
-                        ammo.current -= 1;
+                        if (!hasInfiniteAmmo && ammo.current > 0) {
+                            ammo.current -= 1;
+                        }
                         ammo.dirty = true;
                         weapon.lastShotTime = 0.0f;
                     }

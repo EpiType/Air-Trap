@@ -285,6 +285,17 @@ namespace rtp::server
                     sessionId, _name, _id);
     }
 
+    bool Room::hasActivePlayers() const
+    {
+        std::lock_guard lock(_mutex);
+        for (const auto &entry : _players) {
+            if (entry.second == PlayerType::Player) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     std::string Room::getName(void) const
     {
         return _name;
@@ -338,7 +349,30 @@ namespace rtp::server
 
     void Room::update(uint32_t serverTick, float dt)
     {
-        (void)dt;
+        if (_state == State::InGame) {
+            _scoreTick += dt;
+            if (_scoreTick >= 1.0f) {
+                const int ticks = static_cast<int>(_scoreTick);
+                _scoreTick -= static_cast<float>(ticks);
+
+                std::lock_guard lock(_mutex);
+                for (auto &entry : _players) {
+                    if (entry.second != PlayerType::Player) {
+                        continue;
+                    }
+                    auto &player = entry.first;
+                    if (!player) {
+                        continue;
+                    }
+                    player->addScore(ticks);
+                    net::Packet packet(net::OpCode::ScoreUpdate);
+                    net::ScoreUpdatePayload payload{player->getScore()};
+                    packet << payload;
+                    _network.sendPacketToSession(player->getId(), packet,
+                                                 net::NetworkMode::TCP);
+                }
+            }
+        }
         broadcastRoomState(serverTick);
     }
 

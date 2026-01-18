@@ -29,7 +29,8 @@ namespace rtp::client {
         KeyBindings,   /**< Key bindings configuration state */
         GamepadSettings, /**< Gamepad settings configuration state */
         Paused,         /**< Game paused state */
-        ModMenu      /**< Mod menu state */
+        ModMenu,      /**< Mod menu state */
+        GameOver     /**< Game over state */
     };
 } // namespace rtp::client
 
