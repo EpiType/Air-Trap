@@ -83,5 +83,31 @@
     { "at_time": 120, "template_path": "boss3_invincible", "entity_type": "boss3_invincible", "start_position": { "x": 1200, "y": 360 }, "pattern": "Static" }
   ],
   "powerup_triggers": [],
-  "obstacle_triggers": []
+  "obstacle_triggers": [
+    { "at_time": 3, "position": { "x": 1300, "y": 150 }, "size": { "width": 80, "height": 80 }, "health": 50 },
+    { "at_time": 8, "position": { "x": 1300, "y": 450 }, "size": { "width": 80, "height": 80 }, "health": 50 },
+    { "at_time": 12, "position": { "x": 1300, "y": 250 }, "size": { "width": 100, "height": 100 }, "health": 75 },
+    { "at_time": 18, "position": { "x": 1300, "y": 350 }, "size": { "width": 80, "height": 80 }, "health": 50 },
+    { "at_time": 22, "position": { "x": 1300, "y": 200 }, "size": { "width": 80, "height": 80 }, "health": 50 },
+    { "at_time": 22, "position": { "x": 1300, "y": 500 }, "size": { "width": 80, "height": 80 }, "health": 50 },
+    { "at_time": 28, "position": { "x": 1300, "y": 300 }, "size": { "width": 120, "height": 120 }, "health": 100 },
+    { "at_time": 33, "position": { "x": 1300, "y": 180 }, "size": { "width": 80, "height": 80 }, "health": 50 },
+    { "at_time": 38, "position": { "x": 1300, "y": 400 }, "size": { "width": 100, "height": 100 }, "health": 75 },
+    { "at_time": 43, "position": { "x": 1300, "y": 250 }, "size": { "width": 80, "height": 80 }, "health": 50 },
+    { "at_time": 48, "position": { "x": 1300, "y": 350 }, "size": { "width": 80, "height": 80 }, "health": 50 },
+    { "at_time": 53, "position": { "x": 1300, "y": 200 }, "size": { "width": 100, "height": 100 }, "health": 75 },
+    { "at_time": 53, "position": { "x": 1300, "y": 480 }, "size": { "width": 80, "height": 80 }, "health": 50 },
+    { "at_time": 58, "position": { "x": 1300, "y": 320 }, "size": { "width": 120, "height": 120 }, "health": 100 },
+    { "at_time": 63, "position": { "x": 1300, "y": 170 }, "size": { "width": 80, "height": 80 }, "health": 50 },
+    { "at_time": 68, "position": { "x": 1300, "y": 420 }, "size": { "width": 80, "height": 80 }, "health": 50 },
+    { "at_time": 73, "position": { "x": 1300, "y": 280 }, "size": { "width": 100, "height": 100 }, "health": 75 },
+    { "at_time": 78, "position": { "x": 1300, "y": 360 }, "size": { "width": 80, "height": 80 }, "health": 50 },
+    { "at_time": 83, "position": { "x": 1300, "y": 190 }, "size": { "width": 80, "height": 80 }, "health": 50 },
+    { "at_time": 88, "position": { "x": 1300, "y": 450 }, "size": { "width": 100, "height": 100 }, "health": 75 },
+    { "at_time": 93, "position": { "x": 1300, "y": 300 }, "size": { "width": 120, "height": 120 }, "health": 100 },
+    { "at_time": 98, "position": { "x": 1300, "y": 220 }, "size": { "width": 80, "height": 80 }, "health": 50 },
+    { "at_time": 103, "position": { "x": 1300, "y": 380 }, "size": { "width": 80, "height": 80 }, "health": 50 },
+    { "at_time": 108, "position": { "x": 1300, "y": 260 }, "size": { "width": 100, "height": 100 }, "health": 75 },
+    { "at_time": 113, "position": { "x": 1300, "y": 340 }, "size": { "width": 80, "height": 80 }, "health": 50 }
+  ]
 }
